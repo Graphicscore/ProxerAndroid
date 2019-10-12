@@ -25,7 +25,7 @@ import java.util.*
 class AllAnimeFragment : GridFragment()
 {
     companion object {
-        val NUMBER_OF_COLUMS = 4
+        val NUMBER_OF_COLUMS = 6
         val ZOOM_FACTOR = FocusHighlight.ZOOM_FACTOR_SMALL
     }
 
