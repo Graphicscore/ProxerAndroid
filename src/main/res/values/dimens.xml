@@ -16,4 +16,8 @@
     <dimen name="image_tabs_text_protection_scrim_bottom_size">64dp</dimen>
 
     <dimen name="stream_indicator_margin">32dp</dimen>
+
+
+    <dimen name="default_image_card_width">224dp</dimen>
+    <dimen name="default_image_card_height">126dp</dimen>
 </resources>
