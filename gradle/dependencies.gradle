@@ -92,6 +92,9 @@ dependencies {
     implementation "com.jakewharton.timber:timber:$timberVersion"
     implementation "com.github.anrwatchdog:anrwatchdog:$anrWatchdogVersion"
 
+    implementation "androidx.leanback:leanback:$leanbackVersion"
+    implementation "androidx.leanback:leanback-preference:$leanbackPreferenceVersion"
+
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanaryVersion"
 
     releaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"

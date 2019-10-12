@@ -77,6 +77,8 @@ ext {
     introductionVersion = "2.0.0"
     aspectRatioImageViewVersion = "1.0.8"
     gravitySnapHelperVersion = "2.2.0"
+    leanbackVersion = "1.1.0-alpha02"
+    leanbackPreferenceVersion = "1.1.0-alpha02"
 
     // Utils
     proxerLibVersion = "7eb207867e"
