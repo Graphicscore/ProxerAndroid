@@ -10,7 +10,6 @@ import androidx.lifecycle.Observer
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
 import me.proxer.app.tv.CardPresenterSelector
-import me.proxer.app.util.extension.enumSetOf
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.unsafeParametersOf
 import me.proxer.library.ProxerApi
@@ -78,7 +77,8 @@ class AllAnimeFragment : GridFragment()
 
     private fun setupUI(){
         gridPresenter = VerticalGridPresenter(ZOOM_FACTOR)
-        gridPresenter.numberOfColumns = NUMBER_OF_COLUMS
+        gridPresenter!!.numberOfColumns = NUMBER_OF_COLUMS
+        gridPresenter!!.onItemViewSelectedListener
 
         adapter = ArrayObjectAdapter(CardPresenterSelector(context!!))
     }
