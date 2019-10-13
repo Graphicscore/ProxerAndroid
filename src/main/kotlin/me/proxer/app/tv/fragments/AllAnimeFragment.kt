@@ -7,6 +7,11 @@ import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.FocusHighlight
 import androidx.leanback.widget.VerticalGridPresenter
 import androidx.lifecycle.Observer
+import com.uber.autodispose.AutoDispose.autoDisposable
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDisposable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
 import me.proxer.app.tv.CardPresenterSelector
@@ -81,6 +86,22 @@ class AllAnimeFragment : GridFragment()
         gridPresenter!!.onItemViewSelectedListener
 
         adapter = ArrayObjectAdapter(CardPresenterSelector(context!!))
+
+        viewSelected
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(this.scope())
+            .subscribe {
+                if(it > 0){
+                    var percent: Float = it.toFloat() / (adapter as ArrayObjectAdapter).size().toFloat()
+                    if(percent > 0.7F) {
+                        if (!viewModel.isLoading.value!!) {
+                            viewModel.load()
+                        }
+                    }
+                }
+            }
+
     }
 
     private fun hideData(){
