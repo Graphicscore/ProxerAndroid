@@ -94,7 +94,7 @@ class AllAnimeFragment : GridFragment()
             .subscribe {
                 if(it > 0){
                     var percent: Float = it.toFloat() / (adapter as ArrayObjectAdapter).size().toFloat()
-                    if(percent > 0.7F) {
+                    if(percent >= 0.7F) {
                         if (!viewModel.isLoading.value!!) {
                             viewModel.load()
                         }
