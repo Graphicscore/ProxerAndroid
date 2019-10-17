@@ -1,5 +1,6 @@
 package me.proxer.app.tv.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -15,6 +16,7 @@ import io.reactivex.schedulers.Schedulers
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
 import me.proxer.app.tv.CardPresenterSelector
+import me.proxer.app.tv.activity.DetailActivity
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.unsafeParametersOf
 import me.proxer.library.ProxerApi
@@ -100,6 +102,15 @@ class AllAnimeFragment : GridFragment()
                         }
                     }
                 }
+            }
+
+        viewClicked
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(this.scope())
+            .subscribe {
+                var intent = Intent(context,DetailActivity::class.java)
+                intent.putExtra(DetailActivity.ID_EXTRA,((adapter as ArrayObjectAdapter).get(it) as MediaListEntry).id)
+                startActivity(intent)
             }
 
     }
