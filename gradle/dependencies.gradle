@@ -94,6 +94,7 @@ dependencies {
 
     implementation "androidx.leanback:leanback:$leanbackVersion"
     implementation "androidx.leanback:leanback-preference:$leanbackPreferenceVersion"
+    implementation "jp.wasabeef:blurry:$blurryVersion"
 
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanaryVersion"
 

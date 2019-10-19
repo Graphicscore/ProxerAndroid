@@ -96,6 +96,7 @@ ext {
     concealVersion = "2.0.2"
     betterLinkMovementMethodVersion = "2.2.0"
     jsoupVersion = "1.12.1"
+    blurryVersion = "3.0.0"
 
     // Debugging
     customActivityOnCrashVersion = "2.2.0"
