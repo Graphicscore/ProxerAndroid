@@ -20,6 +20,7 @@ import me.proxer.app.util.extension.defaultLoad
 import me.proxer.library.ProxerApi
 import me.proxer.library.entity.list.MediaListEntry
 import me.proxer.library.util.ProxerUrls
+import timber.log.Timber
 
 /**
  * A very basic [ImageCardView] [androidx.leanback.widget.Presenter].You can
@@ -57,7 +58,7 @@ class AnimeCoverCardViewPresenter @JvmOverloads constructor(
                     .asBitmap()
                     .into(cardView.getMainImageView());
         }*/
-        Log.d("TV", "onBindViewHolder in AnimeCoverCardViewPresenter")
+        Timber.d("onBindViewHolder in AnimeCoverCardViewPresenter")
     }
 
 }

@@ -23,6 +23,7 @@ import me.proxer.library.ProxerApi
 import me.proxer.library.entity.list.MediaListEntry
 import me.proxer.library.enums.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
+import timber.log.Timber
 import java.util.*
 
 /**
@@ -56,11 +57,11 @@ class AllAnimeFragment : GridFragment()
             when (it) {
                 null -> {
                     //hideError()
-                    Log.e("TV","Unknown Error")
+                    Timber.e("Unknown Error")
                 }
                 else -> {
                     //showError(it)
-                    Log.e("TV",String.format("Error : %s",it.message))
+                    Timber.e(String.format("Error : %s",it.message))
                 }
             }
         })
@@ -116,11 +117,11 @@ class AllAnimeFragment : GridFragment()
     }
 
     private fun hideData(){
-        Log.d("TV","Hide Data")
+        Timber.d("Hide Data")
     }
 
     private fun showData(mediaList: List<MediaListEntry>?) {
-        Log.d("TV", String.format("ShowData %s", mediaList?.size))
+        Timber.d(String.format("ShowData %s", mediaList?.size))
         (adapter as ArrayObjectAdapter).setItems(viewModel.data.value,null);
     }
 }

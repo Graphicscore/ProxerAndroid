@@ -44,6 +44,7 @@ import me.proxer.app.R
 import me.proxer.app.tv.CardPresenterSelector
 import me.proxer.app.tv.presenters.DetailsDescriptionPresenter
 import me.proxer.app.tv.presenters.OneLineActionPresenter
+import timber.log.Timber
 
 
 /**
@@ -61,6 +62,14 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         super.onCreate(savedInstanceState)
         setupUi()
         setupEventListeners()
+    }
+
+    private fun showData(entry: Entry?){
+        Timber.d("$entry")
+    }
+
+    private fun hideData(){
+        Timber.d("Hide data")
     }
 
     private fun setupUi() {

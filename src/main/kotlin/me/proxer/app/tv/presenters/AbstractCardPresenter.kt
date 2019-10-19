@@ -15,6 +15,7 @@ import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.util.extension.safeInject
 import me.proxer.library.ProxerApi
 import me.proxer.library.entity.list.MediaListEntry
+import timber.log.Timber
 import java.util.logging.Logger
 
 /**
@@ -46,7 +47,7 @@ abstract class AbstractCardPresenter<T : BaseCardView>
     }
 
     fun onUnbindViewHolder(cardView: T) {
-        Log.d("TV",String.format("unbinding %s",cardView.id))
+        Timber.d(String.format("unbinding %s",cardView.id))
         // Nothing to clean up. Override if necessary.
     }
 
