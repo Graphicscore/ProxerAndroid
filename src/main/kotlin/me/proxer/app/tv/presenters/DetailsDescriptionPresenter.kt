@@ -3,8 +3,10 @@ package me.proxer.app.tv.presenters
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.leanback.widget.Presenter
 import me.proxer.app.R
+import me.proxer.library.entity.info.Entry
 
 /**
  * @author Graphicscore (Dominik Louven)
@@ -17,18 +19,18 @@ class DetailsDescriptionPresenter constructor(private val mContext: Context) : P
     }
 
     override fun onBindViewHolder(viewHolder: Presenter.ViewHolder, item: Any) {
-        /*val primaryText = viewHolder.view.findViewById<TextView>(R.id.primary_text)
+        val entry : Entry = item as Entry
+        val primaryText = viewHolder.view.findViewById<TextView>(R.id.primary_text)
         val sndText1 = viewHolder.view.findViewById<TextView>(R.id.secondary_text_first)
         val sndText2 =viewHolder.view.findViewById<TextView>(R.id.secondary_text_second)
         val extraText = viewHolder.view.findViewById<TextView>(R.id.extra_text)
 
-        val model = item as MediaInfoViewModel
-        primaryText.text = model.data.value?.name
-        sndText1.text = model.data.value?.description
-        sndText2.text = model.data.value?.seasons?.first()?.year.toString().let {
+        primaryText.text = entry.name
+        sndText1.text = entry.description
+        sndText2.text = entry.seasons.first().year.toString().let {
             it + ""
         }
-        extraText.text = model.data.value?.description*/
+        extraText.text = entry.description
     }
 
     override fun onUnbindViewHolder(viewHolder: Presenter.ViewHolder) {
