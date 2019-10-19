@@ -12,6 +12,7 @@ import androidx.transition.Scene
 import io.reactivex.subjects.PublishSubject
 import me.proxer.app.R
 import androidx.leanback.widget.VerticalGridPresenter
+import timber.log.Timber
 
 
 /**
@@ -125,7 +126,7 @@ open class GridFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterP
         row: Row?
     ) {
         var positon = gridViewHolder?.gridView?.selectedPosition!!
-        Log.v("TV", "grid selected position $positon")
+        Timber.v("grid selected position $positon")
         if(positon != selectedPosition){
             selectedPosition = positon
             showOrHideTitle()
