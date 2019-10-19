@@ -14,10 +14,14 @@
 
 package me.proxer.app.tv.fragments
 
+import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.media.ThumbnailUtils
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -25,23 +29,12 @@ import android.view.View
 
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
-import androidx.leanback.widget.Action
-import androidx.leanback.widget.ArrayObjectAdapter
-import androidx.leanback.widget.ClassPresenterSelector
-import androidx.leanback.widget.DetailsOverviewRow
-import androidx.leanback.widget.FullWidthDetailsOverviewRowPresenter
-import androidx.leanback.widget.FullWidthDetailsOverviewSharedElementHelper
-import androidx.leanback.widget.HeaderItem
-import androidx.leanback.widget.ListRow
-import androidx.leanback.widget.ListRowPresenter
-import androidx.leanback.widget.OnItemViewClickedListener
-import androidx.leanback.widget.OnItemViewSelectedListener
-import androidx.leanback.widget.Presenter
-import androidx.leanback.widget.Row
-import androidx.leanback.widget.RowPresenter
 
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.graphics.drawable.toBitmap
+import androidx.leanback.graphics.FitWidthBitmapDrawable
+import androidx.leanback.widget.*
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request
@@ -50,6 +43,13 @@ import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SizeReadyCallback
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
+import io.reactivex.Observable
+import io.reactivex.Scheduler
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import jp.wasabeef.blurry.Blurry
+import jp.wasabeef.blurry.internal.BlurFactor
+import jp.wasabeef.blurry.internal.BlurTask
 import me.proxer.app.GlideApp
 import me.proxer.app.R
 import me.proxer.app.media.MediaInfoViewModel
@@ -59,12 +59,17 @@ import me.proxer.app.tv.activity.DetailActivity
 import me.proxer.app.tv.presenters.DetailsDescriptionPresenter
 import me.proxer.app.tv.presenters.OneLineActionPresenter
 import me.proxer.app.util.extension.logErrors
+import me.proxer.app.util.extension.safeInject
+import me.proxer.library.ProxerApi
 import me.proxer.library.entity.info.Entry
 import me.proxer.library.util.ProxerUrls
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.sharedViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import timber.log.Timber
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 
 /**
@@ -141,6 +146,8 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         // Setup action and detail row.
         val detailsOverview = DetailsOverviewRow(data)
 
+        detailsOverview.imageDrawable = resources.getDrawable(R.drawable.ic_proxer,null)
+
         GlideApp.with(this)
             .load(ProxerUrls.entryImage(data.id).toString())
             .logErrors()
@@ -150,9 +157,24 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
 
                 override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                     detailsOverview.imageDrawable = resource
+                    val cover = (resource as BitmapDrawable).bitmap
+                    val blurFactor = BlurFactor()
+                    blurFactor.width = cover.width
+                    blurFactor.height = cover.height
+                    blurFactor.radius = 8
+                    blurFactor.sampling = 4
+                    BlurTask(context,
+                        cover,blurFactor,BlurTask.Callback {
+                            val cropped = ThumbnailUtils.extractThumbnail(it.bitmap,
+                                it.bitmap.width, (it.bitmap.height.toFloat() / 2.0F).toInt()
+                            )
+                            mDetailsBackground.coverBitmap = cropped
+                            mDetailsBackground.enableParallax()
+                        }
+                    ).execute()
+
                 }
             })
-
 
         val actionAdapter = ArrayObjectAdapter(OneLineActionPresenter())
 
@@ -188,9 +210,9 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
     }
 
     private fun initializeBackground() {
-        mDetailsBackground.enableParallax()
-        /*mDetailsBackground.setCoverBitmap(BitmapFactory.decodeResource(getResources(),
-                R.drawable.background_canyon));*/
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            mDetailsBackground.solidColor = resources.getColor(R.color.fastscroll_thumb,null)
+        }
     }
 
     private fun setupEventListeners() {
