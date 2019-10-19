@@ -11,6 +11,6 @@ class TVMainActivity() : FragmentActivity()
 {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_tv_main)
+        setContentView(R.layout.tv_activity_main)
     }
 }

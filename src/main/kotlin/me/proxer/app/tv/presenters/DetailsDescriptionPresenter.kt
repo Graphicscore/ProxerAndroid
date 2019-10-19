@@ -2,13 +2,9 @@ package me.proxer.app.tv.presenters
 
 import android.content.Context
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.leanback.widget.Presenter
 import me.proxer.app.R
-import me.proxer.app.media.MediaInfoViewModel
-import javax.inject.Inject
 
 /**
  * @author Graphicscore (Dominik Louven)
@@ -16,7 +12,7 @@ import javax.inject.Inject
 class DetailsDescriptionPresenter constructor(private val mContext: Context) : Presenter() {
 
     override fun onCreateViewHolder(parent: ViewGroup): Presenter.ViewHolder {
-        val view = LayoutInflater.from(mContext).inflate(R.layout.tv_detail_view_content, null)
+        val view = LayoutInflater.from(mContext).inflate(R.layout.tv_fragment_detail_content, null)
         return ViewHolder(view)
     }
 
