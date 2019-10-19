@@ -22,13 +22,15 @@ class DetailsDescriptionPresenter constructor(private val mContext: Context) : P
         val entry : Entry = item as Entry
         val primaryText = viewHolder.view.findViewById<TextView>(R.id.primary_text)
         val sndText1 = viewHolder.view.findViewById<TextView>(R.id.secondary_text_first)
-        val sndText2 =viewHolder.view.findViewById<TextView>(R.id.secondary_text_second)
+        val sndText2 = viewHolder.view.findViewById<TextView>(R.id.secondary_text_second)
         val extraText = viewHolder.view.findViewById<TextView>(R.id.extra_text)
 
         primaryText.text = entry.name
-        sndText1.text = entry.description
-        sndText2.text = entry.seasons.first().year.toString().let {
+        sndText1.text = entry.seasons.first().year.toString().let {
             it + ""
+        }
+        sndText2.text = entry.genres.joinToString {
+            it.name
         }
         extraText.text = entry.description
     }
