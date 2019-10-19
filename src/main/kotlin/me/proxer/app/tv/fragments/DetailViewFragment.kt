@@ -17,8 +17,11 @@ package me.proxer.app.tv.fragments
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
+import android.view.View
 
 import androidx.leanback.app.DetailsSupportFragment
 import androidx.leanback.app.DetailsSupportFragmentBackgroundController
@@ -39,11 +42,28 @@ import androidx.leanback.widget.RowPresenter
 
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.Request
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.target.ImageViewTarget
+import com.bumptech.glide.request.target.SizeReadyCallback
+import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.request.transition.Transition
+import me.proxer.app.GlideApp
 import me.proxer.app.R
+import me.proxer.app.media.MediaInfoViewModel
 
 import me.proxer.app.tv.CardPresenterSelector
+import me.proxer.app.tv.activity.DetailActivity
 import me.proxer.app.tv.presenters.DetailsDescriptionPresenter
 import me.proxer.app.tv.presenters.OneLineActionPresenter
+import me.proxer.app.util.extension.logErrors
+import me.proxer.library.entity.info.Entry
+import me.proxer.library.util.ProxerUrls
+import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.viewModel
+import org.koin.core.parameter.parametersOf
 import timber.log.Timber
 
 
@@ -52,11 +72,25 @@ import timber.log.Timber
  */
 class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, OnItemViewSelectedListener {
 
+    companion object {
+        private const val ACTION_WATCH: Long = 1
+        //private static final long ACTION_WISHLIST = 2;
+        private const val ACTION_SIMILIAR: Long = 2
+
+        fun newInstance(entry: Entry) : DetailViewFragment {
+            val fragment = DetailViewFragment()
+            fragment.data = entry
+            return fragment
+        }
+    }
+
     private var mActionWatch: Action? = null
     //private Action mActionWishList;
     private var mActionSimiliar: Action? = null
     private var mRowsAdapter: ArrayObjectAdapter? = null
     private val mDetailsBackground = DetailsSupportFragmentBackgroundController(this)
+
+    private lateinit var data : Entry
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,19 +98,11 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         setupEventListeners()
     }
 
-    private fun showData(entry: Entry?){
-        Timber.d("$entry")
-    }
-
-    private fun hideData(){
-        Timber.d("Hide data")
-    }
-
     private fun setupUi() {
         // Load the card we want to display from a JSON resource. This JSON data could come from
         // anywhere in a real world app, e.g. a server.
         //val extras = activity!!.intent.extras
-        val data = Any()//extras!!.getParcelable<Anime>(EXTRA_ANIME)
+        //extras!!.getParcelable<Anime>(EXTRA_ANIME)
         // Setup fragment
         //setTitle(getString(R.string.detail_view_title));
 
@@ -96,9 +122,9 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
             }
         }
 
-        val mHelper = FullWidthDetailsOverviewSharedElementHelper()
+        /*val mHelper = FullWidthDetailsOverviewSharedElementHelper()
         mHelper.setSharedElementEnterTransition(activity, TRANSITION_NAME)
-        rowPresenter.setListener(mHelper)
+        rowPresenter.setListener(mHelper)*/
         rowPresenter.isParticipatingEntranceTransition = false
         prepareEntranceTransition()
 
@@ -114,6 +140,18 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
 
         // Setup action and detail row.
         val detailsOverview = DetailsOverviewRow(data)
+
+        GlideApp.with(this)
+            .load(ProxerUrls.entryImage(data.id).toString())
+            .logErrors()
+            .into(object : CustomTarget<Drawable>() {
+                override fun onLoadCleared(placeholder: Drawable?) {
+                }
+
+                override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                    detailsOverview.imageDrawable = resource
+                }
+            })
 
 
         val actionAdapter = ArrayObjectAdapter(OneLineActionPresenter())
@@ -183,14 +221,5 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         }
     }
 
-    companion object {
 
-        val TRANSITION_NAME = "t_for_transition"
-        val EXTRA_CARD = "card"
-        val EXTRA_ANIME = "anime"
-
-        private val ACTION_WATCH: Long = 1
-        //private static final long ACTION_WISHLIST = 2;
-        private val ACTION_SIMILIAR: Long = 2
-    }
 }
