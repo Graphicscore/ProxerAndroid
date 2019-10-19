@@ -142,7 +142,8 @@
     </style>
 
     <style name="Theme.LeanbackDetails" parent="Theme.Leanback.Details">
-        <item name="android:colorPrimary">#9C0000</item>
+        <item name="android:colorPrimary">#353535</item>
+        <item name="defaultBrandColorDark">@color/primary</item>
     </style>
 
     <style name="TVActionTextBlack">
