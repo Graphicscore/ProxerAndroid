@@ -61,11 +61,10 @@ dependencies {
     implementation "com.google.android.exoplayer:extension-cast:$exoplayerVersion"
     implementation "com.google.android.exoplayer:extension-okhttp:$exoplayerVersion"
     implementation "com.google.android.exoplayer:extension-ima:$exoplayerVersion"
-    implementation "com.github.rubensousa:previewseekbar:$previewSeekbarVersion"
-    implementation "com.github.rubensousa:previewseekbar-exoplayer:$previewSeekbarExoplayerVersion"
+    implementation "com.github.rubengees.PreviewSeekBar:previewseekbar:$previewSeekbarVersion"
+    implementation "com.github.rubengees.PreviewSeekBar:previewseekbar-exoplayer:$previewSeekbarVersion"
 
     implementation "com.github.proxer:ProxerLibJava:$proxerLibVersion"
-    implementation "com.jakewharton.threetenabp:threetenabp:$threetenVersion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation "com.github.bumptech.glide:okhttp3-integration:$glideVersion"
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
@@ -104,8 +103,13 @@ dependencies {
 
 configurations {
     all {
-        resolutionStrategy.dependencySubstitution {
-            substitute module("com.squareup.moshi:moshi") with module("com.github.square.moshi:moshi:$moshiVersion")
+        resolutionStrategy {
+            // Due to a bug with WebView.
+            force "androidx.appcompat:appcompat:1.1.0-rc01"
+
+            dependencySubstitution {
+                substitute module("com.squareup.moshi:moshi") with module("com.github.square.moshi:moshi:$moshiVersion")
+            }
         }
     }
 }
