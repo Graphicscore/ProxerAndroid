@@ -1,10 +1,13 @@
 package me.proxer.app.tv.activity
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
 import me.proxer.app.R
+import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.media.MediaInfoViewModel
+import me.proxer.app.media.episode.EpisodeViewModel
 import me.proxer.app.tv.fragments.DetailViewFragment
 import me.proxer.app.tv.fragments.LoadingFragment
 import me.proxer.library.entity.info.Entry
@@ -26,7 +29,9 @@ class DetailActivity : FragmentActivity(){
     }
 
     val viewModel by viewModel<MediaInfoViewModel> { parametersOf(id) }
+    val episodeViewModel by viewModel<EpisodeViewModel> { parametersOf(id) }
 
+    lateinit var detailFragment: DetailViewFragment
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +57,8 @@ class DetailActivity : FragmentActivity(){
                 else -> {
                     //showError(it)
                     Timber.e(String.format("Error : %s",it.message))
+                    Toast.makeText(this,String.format("Error : %s",it.message),Toast.LENGTH_SHORT).show()
+                    onDestroy()
                 }
             }
         })
@@ -59,7 +66,10 @@ class DetailActivity : FragmentActivity(){
         viewModel.data.observe(this, Observer {
             when (it) {
                 null -> hideData()
-                else -> showData(it)
+                else -> {
+                    showData(it)
+                    loadEpisodes()
+                }
             }
         })
 
@@ -72,11 +82,33 @@ class DetailActivity : FragmentActivity(){
         Timber.d("hideData")
     }
 
+    private fun loadEpisodes(){
+        episodeViewModel.error.observe(this, Observer {
+            when (it){
+                null -> {
+                    Timber.e("Unknown Error?")
+                }
+                else -> {
+                    Timber.e(String.format("Error Loading episodes: %s",it.message))
+                    episodeViewModel.reload()
+                }
+            }
+        })
+
+        episodeViewModel.data.observe(this, Observer {
+            detailFragment.onEpisodeListLoaded(it)
+        })
+
+        if (episodeViewModel.isLoading.value != true && episodeViewModel.data.value == null && episodeViewModel.error.value == null) {
+            episodeViewModel.load()
+        }
+    }
+
     private fun showData(entry: Entry){
-        val fragment = DetailViewFragment.newInstance(entry)
+        detailFragment = DetailViewFragment.newInstance(entry)
         supportFragmentManager.beginTransaction()
             //.setCustomAnimations(android.R.anim.fade_in,android.R.anim.fade_out, android.R.anim.fade_in,android.R.anim.fade_out)
-            .replace(R.id.details_fragment,fragment)
+            .replace(R.id.details_fragment,detailFragment)
             .commit()
     }
 }

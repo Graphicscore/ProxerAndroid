@@ -35,6 +35,7 @@ import android.widget.Toast
 import androidx.core.graphics.drawable.toBitmap
 import androidx.leanback.graphics.FitWidthBitmapDrawable
 import androidx.leanback.widget.*
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.Request
@@ -52,7 +53,9 @@ import jp.wasabeef.blurry.internal.BlurFactor
 import jp.wasabeef.blurry.internal.BlurTask
 import me.proxer.app.GlideApp
 import me.proxer.app.R
+import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.media.MediaInfoViewModel
+import me.proxer.app.media.episode.EpisodeRow
 
 import me.proxer.app.tv.CardPresenterSelector
 import me.proxer.app.tv.activity.DetailActivity
@@ -96,6 +99,7 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
     private val mDetailsBackground = DetailsSupportFragmentBackgroundController(this)
 
     private lateinit var data : Entry
+    private var episodeRows : List<EpisodeRow>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -198,6 +202,8 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         HeaderItem header = new HeaderItem(0, getString(R.string.header_related));
         mRowsAdapter.add(new CardListRow(header, listRowAdapter, null));*/
 
+        //Setup Episode rows
+
         // Setup recommended row.
         val listRowAdapter = ArrayObjectAdapter(CardPresenterSelector(activity!!))
         //for (Card card : data.getRecommended()) listRowAdapter.add(card);
@@ -218,6 +224,15 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
     private fun setupEventListeners() {
         //setOnItemViewSelectedListener(this)
         onItemViewClickedListener = this
+    }
+
+    fun onEpisodeListLoaded(rows : List<EpisodeRow>?){
+        episodeRows = rows
+        if(episodeRows != null){
+            for(row in rows!!){
+                row.episodes
+            }
+        }
     }
 
     override fun onItemClicked(itemViewHolder: Presenter.ViewHolder, item: Any,
