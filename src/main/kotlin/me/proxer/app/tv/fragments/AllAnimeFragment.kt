@@ -2,13 +2,13 @@ package me.proxer.app.tv.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
+import androidx.core.app.ActivityOptionsCompat
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.FocusHighlight
+import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.VerticalGridPresenter
 import androidx.lifecycle.Observer
-import com.uber.autodispose.AutoDispose.autoDisposable
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -25,6 +25,7 @@ import me.proxer.library.enums.*
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 import java.util.*
+
 
 /**
  * @author Graphicscore (Dominik Louven)
@@ -110,8 +111,13 @@ class AllAnimeFragment : GridFragment()
             .autoDisposable(this.scope())
             .subscribe {
                 var intent = Intent(context,DetailActivity::class.java)
-                intent.putExtra(DetailActivity.ID_EXTRA,((adapter as ArrayObjectAdapter).get(it) as MediaListEntry).id)
-                startActivity(intent)
+                intent.putExtra(DetailActivity.ID_EXTRA,((adapter as ArrayObjectAdapter).get(it.first) as MediaListEntry).id)
+                val bundle = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    activity!!,
+                    (it.second.view as ImageCardView).mainImageView,
+                    "DetailActivity"
+                ).toBundle()
+                startActivity(intent,bundle)
             }
 
     }
