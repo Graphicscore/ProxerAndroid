@@ -23,7 +23,7 @@ open class GridFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterP
 
     public val viewSelected: PublishSubject<Int> = PublishSubject.create()
 
-    public val viewClicked: PublishSubject<Int> = PublishSubject.create()
+    public val viewClicked: PublishSubject<Pair<Int,Presenter.ViewHolder>> = PublishSubject.create()
 
     private var sceneAfterEntranceTransition: Scene? = null
 
@@ -141,6 +141,6 @@ open class GridFragment : Fragment(), BrowseSupportFragment.MainFragmentAdapterP
         row: Row?
     ) {
         var positon = gridViewHolder?.gridView?.selectedPosition!!
-        viewClicked.onNext(positon)
+        viewClicked.onNext(Pair(positon,itemViewHolder!!))
     }
 }
