@@ -14,6 +14,7 @@
 
 package me.proxer.app.tv.fragments
 
+import android.animation.LayoutTransition
 import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.graphics.Bitmap
@@ -107,6 +108,13 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         setupEventListeners()
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val transition = LayoutTransition()
+        transition.enableTransitionType(LayoutTransition.CHANGING)
+        (view as BrowseFrameLayout).layoutTransition = transition
+    }
+
     private fun setupUi() {
         // Load the card we want to display from a JSON resource. This JSON data could come from
         // anywhere in a real world app, e.g. a server.
@@ -116,11 +124,12 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         //setTitle(getString(R.string.detail_view_title));
 
         val rowPresenter = object : FullWidthDetailsOverviewRowPresenter(DetailsDescriptionPresenter(activity!!)) {
-
             override fun createRowViewHolder(parent: ViewGroup): RowPresenter.ViewHolder {
                 // Customize Actionbar and Content by using custom colors.
                 val viewHolder = super.createRowViewHolder(parent)
-
+                val group = ((viewHolder as FullWidthDetailsOverviewRowPresenter.ViewHolder).logoViewHolder.view.parent as ViewGroup)
+                group.layoutTransition = LayoutTransition()
+                group.layoutTransition.enableTransitionType(LayoutTransition.CHANGING)
                 /*val actionsView = viewHolder.view.findViewById<View>(R.id.details_overview_actions_background)
                 actionsView.setBackgroundColor(activity!!.resources.getColor(R.color.detail_view_actionbar_background))
 
@@ -132,7 +141,7 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         }
 
         /*val mHelper = FullWidthDetailsOverviewSharedElementHelper()
-        mHelper.setSharedElementEnterTransition(activity, TRANSITION_NAME)
+        mHelper.setSharedElementEnterTransition(activity, "TRANSITION")
         rowPresenter.setListener(mHelper)*/
         rowPresenter.isParticipatingEntranceTransition = false
         prepareEntranceTransition()
@@ -230,7 +239,7 @@ class DetailViewFragment : DetailsSupportFragment(), OnItemViewClickedListener, 
         episodeRows = rows
         if(episodeRows != null){
             for(row in rows!!){
-                row.episodes
+                Timber.d("${row.title}")
             }
         }
     }
