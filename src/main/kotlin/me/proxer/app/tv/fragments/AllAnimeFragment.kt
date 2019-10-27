@@ -4,24 +4,31 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.core.app.ActivityOptionsCompat
+import androidx.core.view.isVisible
 import androidx.leanback.widget.ArrayObjectAdapter
 import androidx.leanback.widget.FocusHighlight
 import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.VerticalGridPresenter
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import me.proxer.app.R
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
 import me.proxer.app.tv.CardPresenterSelector
+import me.proxer.app.tv.TVMainActivity
 import me.proxer.app.tv.activity.DetailActivity
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.unsafeParametersOf
 import me.proxer.library.ProxerApi
 import me.proxer.library.entity.list.MediaListEntry
 import me.proxer.library.enums.*
+import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 import java.util.*
@@ -61,7 +68,7 @@ class AllAnimeFragment : GridFragment()
                     Timber.e("Unknown Error")
                 }
                 else -> {
-                    //showError(it)
+                    showError(it)
                     Timber.e(String.format("Error : %s",it.message))
                 }
             }
@@ -120,6 +127,13 @@ class AllAnimeFragment : GridFragment()
                 startActivity(intent,bundle)
             }
 
+    }
+
+    private fun showError(action: ErrorUtils.ErrorAction) {
+        val errorFragment = ErrorFragment.newInstance(activity as TVMainActivity,viewModel, action)
+        activity?.supportFragmentManager?.beginTransaction()
+            ?.replace(R.id.root,errorFragment)
+            ?.commit()
     }
 
     private fun hideData(){
