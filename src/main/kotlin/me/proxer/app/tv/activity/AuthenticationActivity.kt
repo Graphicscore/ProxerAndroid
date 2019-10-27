@@ -2,6 +2,7 @@ package me.proxer.app.tv.activity
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
 import me.proxer.app.R
 import me.proxer.app.auth.LoginViewModel
+import me.proxer.app.tv.TVMainActivity
 import me.proxer.app.util.extension.safeText
 import me.proxer.app.util.extension.toast
 import me.proxer.library.util.ProxerUrls
@@ -53,7 +55,6 @@ class AuthenticationActivity : AppCompatActivity() {
 
         if (savedInstanceState == null) {
             username.requestFocus()
-
             window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
         }
 
@@ -122,7 +123,8 @@ class AuthenticationActivity : AppCompatActivity() {
     private fun setupViewModel() {
         viewModel.success.observe(this, Observer {
             it?.let {
-                toast("LOGIN SUCCESS")
+                startActivity(Intent(this, TVMainActivity::class.java))
+                finish()
             }
         })
 
