@@ -1,9 +1,12 @@
 package me.proxer.app.util
 
+import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.view.View
+import androidx.fragment.app.FragmentActivity
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.upstream.HttpDataSource
 import com.google.android.exoplayer2.upstream.Loader
@@ -21,6 +24,8 @@ import me.proxer.app.exception.StreamResolutionException
 import me.proxer.app.manga.MangaLinkException
 import me.proxer.app.manga.MangaNotAvailableException
 import me.proxer.app.settings.AgeConfirmationDialog
+import me.proxer.app.tv.TVMainActivity
+import me.proxer.app.tv.activity.AuthenticationActivity
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction.AGE_CONFIRMATION
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction.CAPTCHA
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction.LOGIN
@@ -335,6 +340,27 @@ object ErrorUtils : KoinComponent {
             }
             LOGIN -> View.OnClickListener { LoginDialog.show(activity) }
             AGE_CONFIRMATION -> View.OnClickListener { AgeConfirmationDialog.show(activity) }
+            OPEN_LINK -> data[LINK_DATA_KEY].let { link ->
+                when (link) {
+                    is HttpUrl -> View.OnClickListener { activity.showPage(link) }
+                    else -> null
+                }
+            }
+            else -> null
+        }
+
+        fun toTVClickListener(activity: TVMainActivity) = when(buttonAction) {
+            CAPTCHA -> View.OnClickListener { activity.showPage(ProxerUrls.captchaWeb(Device.MOBILE)) }
+            NETWORK_SETTINGS -> View.OnClickListener {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    activity.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+                } else {
+                    activity.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+                }
+            }
+            LOGIN -> View.OnClickListener { activity.startActivity(Intent(activity,AuthenticationActivity::class.java)) }
+            AGE_CONFIRMATION -> View.OnClickListener {  AgeConfirmationDialog()
+                .show(activity.supportFragmentManager, "age_confirmation_dialog") }
             OPEN_LINK -> data[LINK_DATA_KEY].let { link ->
                 when (link) {
                     is HttpUrl -> View.OnClickListener { activity.showPage(link) }
