@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_night"
+    android:animateLayoutChanges="true">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/usernameContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="@string/dialog_login_username_hint"
+        android:labelFor="@id/username"
+        android:textColorHint="@color/lb_browse_title_color"
+        app:boxStrokeErrorColor="#FF0000"
+        app:errorTextColor="#FF0000"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.44">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/username"
+            android:layout_width="384dp"
+            android:layout_height="wrap_content"
+            android:autofillHints="username"
+            android:backgroundTint="@color/md_amber_200"
+            android:imeOptions="actionNext"
+            android:importantForAutofill="yes"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="@android:color/white" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/passwordContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="@string/dialog_login_password_hint"
+        android:labelFor="@id/password"
+        app:boxStrokeErrorColor="#FF0000"
+        app:errorTextColor="#FF0000"
+        android:textColorHint="@color/lb_browse_title_color"
+        app:layout_constraintEnd_toEndOf="@+id/usernameContainer"
+        app:layout_constraintStart_toStartOf="@+id/usernameContainer"
+        app:layout_constraintTop_toBottomOf="@+id/usernameContainer">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/password"
+            android:layout_width="384dp"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/md_amber_200"
+            android:layout_marginTop="24dp"
+            android:autofillHints="password"
+            android:ems="10"
+            android:imeOptions="actionGo"
+            android:importantForAutofill="yes"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            android:textColor="@android:color/white" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/secretContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="@string/dialog_login_secret_hint"
+        android:textColorHint="@color/lb_browse_title_color"
+        app:layout_constraintEnd_toEndOf="@+id/passwordContainer"
+        app:layout_constraintStart_toStartOf="@+id/passwordContainer"
+        app:layout_constraintTop_toBottomOf="@+id/passwordContainer">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/secret"
+            android:layout_width="384dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="@color/md_amber_200"
+            android:ems="10"
+            android:imeOptions="actionGo"
+            android:importantForAutofill="yes"
+            android:inputType="numberPassword"
+            android:maxLines="1"
+            android:textColor="@android:color/white"
+            tools:ignore="UnusedAttribute" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="112dp"
+        android:layout_height="112dp"
+        android:layout_marginBottom="64dp"
+        app:layout_constraintBottom_toTopOf="@+id/usernameContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:src="@drawable/ic_proxer"
+        android:contentDescription="@string/default_icon"/>
+
+    <Button
+        android:id="@+id/buttonLogin"
+        style="@style/TV_RedButtonStyle"
+        android:layout_width="384dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="@string/section_login"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/secretContainer"
+        app:layout_constraintStart_toStartOf="@+id/secretContainer"
+        app:layout_constraintTop_toBottomOf="@+id/secretContainer"
+        app:rippleColor="#491818" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+            android:id="@+id/progress"
+            style="@style/Widget.MaterialProgressBar.ProgressBar.Large"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_centerInParent="true"
+            android:indeterminate="true"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
