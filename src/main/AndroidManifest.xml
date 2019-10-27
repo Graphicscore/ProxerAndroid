@@ -55,6 +55,7 @@
             android:theme="@style/Theme.LeanbackDetails"/>
 
         <activity android:name=".tv.activity.AuthenticationActivity"/>
+        <activity android:name=".tv.activity.WebbrowserActivity" />
 
         <activity
             android:name=".tv.TVMainActivity"
