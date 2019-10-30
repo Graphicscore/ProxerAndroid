@@ -48,6 +48,8 @@ class TVMainFragment : BrowseSupportFragment() {
     }
 
     fun setupUIElements(){
+        badgeDrawable = resources.getDrawable(R.drawable.ic_proxer,null)
+        isHeadersTransitionOnBackEnabled = true
         adapter = ArrayObjectAdapter(ListRowPresenter())
         (adapter as ArrayObjectAdapter).add(
             PageRow(
