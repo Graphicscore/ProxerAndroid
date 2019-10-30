@@ -11,6 +11,8 @@ import androidx.leanback.widget.ImageCardView
 import androidx.leanback.widget.VerticalGridPresenter
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
@@ -133,6 +135,7 @@ class AllAnimeFragment : GridFragment()
         val errorFragment = ErrorFragment.newInstance(activity as TVMainActivity,viewModel, action)
         activity?.supportFragmentManager?.beginTransaction()
             ?.replace(R.id.root,errorFragment)
+            ?.addToBackStack(errorFragment.javaClass.name)
             ?.commit()
     }
 
