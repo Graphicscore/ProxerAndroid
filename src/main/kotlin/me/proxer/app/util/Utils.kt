@@ -8,8 +8,9 @@ import com.bumptech.glide.request.target.Target
 import me.proxer.app.GlideApp
 import me.proxer.app.util.extension.androidUri
 import okhttp3.HttpUrl
+import org.threeten.bp.format.DateTimeFormatter
 import timber.log.Timber
-import java.time.format.DateTimeFormatter
+import java.net.NetworkInterface
 
 /**
  * @author Ruben Gees
@@ -28,6 +29,18 @@ object Utils {
             .get()
     } catch (error: Throwable) {
         Timber.e(error)
+
+        null
+    }
+
+    fun getIpAddress(): String? = try {
+        NetworkInterface.getNetworkInterfaces().asSequence()
+            .flatMap { it.inetAddresses.asSequence() }
+            .filterNot { it.isLoopbackAddress || it.isLinkLocalAddress }
+            .map { it.hostAddress }
+            .firstOrNull()
+    } catch (error: Throwable) {
+        Timber.e(error, "Error trying to get ip address")
 
         null
     }
