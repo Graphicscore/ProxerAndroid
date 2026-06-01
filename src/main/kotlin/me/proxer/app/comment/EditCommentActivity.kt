@@ -122,7 +122,7 @@ class EditCommentActivity : BaseActivity() {
         supportActionBar?.subtitle = name?.trim()
     }
 
-    class Contract : ActivityResultContract<Contract.Input, LocalComment>() {
+    class Contract : ActivityResultContract<Contract.Input, LocalComment?>() {
 
         override fun createIntent(context: Context, input: Input) = context.intentFor<EditCommentActivity>(
             ID_ARGUMENT to input.id,

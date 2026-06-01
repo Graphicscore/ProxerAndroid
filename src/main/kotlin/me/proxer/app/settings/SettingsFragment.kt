@@ -124,11 +124,11 @@ class SettingsFragment : XpPreferenceFragment(), OnSharedPreferenceChangeListene
     override fun onResume() {
         super.onResume()
 
-        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
+        preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
-        preferenceManager.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
+        preferenceManager.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(this)
 
         super.onPause()
     }
@@ -139,7 +139,8 @@ class SettingsFragment : XpPreferenceFragment(), OnSharedPreferenceChangeListene
         super.onDestroyView()
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (key == null) return
         when (key) {
             AGE_CONFIRMATION -> if (preferenceHelper.isAgeRestrictedMediaAllowed) {
                 ageConfirmation.isChecked = true
@@ -174,7 +175,7 @@ class SettingsFragment : XpPreferenceFragment(), OnSharedPreferenceChangeListene
             actionCallback = View.OnClickListener {
                 val intent = packageManager.getLaunchIntentForPackage(BuildConfig.APPLICATION_ID)?.clearTop()
 
-                startActivity(intent)
+                if (intent != null) startActivity(intent)
                 exitProcess(0)
             }
         )

@@ -131,12 +131,6 @@ class AboutFragment : MaterialAboutFragment(), CustomTabsAware {
             )
             .setOnClickAction {
                 LibsBuilder()
-                    .withAutoDetect(false)
-                    .withShowLoadingProgress(false)
-                    .withAboutVersionShown(false)
-                    .withAboutIconShown(false)
-                    .withVersionShown(false)
-                    .withOwnLibsActivityClass(ProxerLibsActivity::class.java)
                     .withActivityTitle(getString(R.string.about_licenses_activity_title))
                     .start(requireActivity())
             }.build(),
