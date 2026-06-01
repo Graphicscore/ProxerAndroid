@@ -125,6 +125,7 @@ class RecommendationAdapter : BaseAdapter<Recommendation, ViewHolder>() {
             when (item.userVote) {
                 true -> upvotesImage.setImageDrawable(generateUpvotesImage(true))
                 false -> downvotesImage.setImageDrawable(generateUpvotesImage(true))
+                null -> Unit
             }
 
             upvotesText.text = item.positiveVotes.toString()

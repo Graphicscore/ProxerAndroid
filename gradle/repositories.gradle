@@ -5,19 +5,18 @@ repositories {
             includeGroupByRegex "androidx.*"
             includeGroupByRegex "zipflinger.*"
             includeGroupByRegex "com\\.android.*"
-            includeGroupByRegex "com\\.google\\.android.*"
+            includeGroupByRegex "com\\.google\\..*"
             includeModuleByRegex "org\\.jetbrains\\.kotlin.*", "kotlin-symbol-processing-api"
         }
     }
 
-    jcenter {
+    mavenCentral {
         mavenContent { releasesOnly() }
         content {
             excludeGroupByRegex "androidx.*"
             excludeGroupByRegex "zipflinger.*"
             excludeGroupByRegex "com\\.android.*"
             excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad).*"
-            excludeModuleByRegex "com\\.google\\.android\\.*", "(?!flexbox).*"
             excludeModuleByRegex "org\\.jetbrains\\.kotlin.*", "kotlin-symbol-processing-api"
         }
     }

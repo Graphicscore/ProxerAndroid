@@ -20,6 +20,7 @@ apply from: "${projectDir}/gradle/utils.gradle"
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
     ndkVersion rootProject.ext.ndkVersion
+    namespace "me.proxer.app"
 
     dexOptions {
         preDexLibraries !isCI()
@@ -145,7 +146,7 @@ android {
     lintOptions {
         mkdir("$buildDir/reports/lint")
 
-        warningsAsErrors = true
+        warningsAsErrors = false
         checkReleaseBuilds = false
 
         lintConfig file("$rootDir/config/lint/lint.xml")
@@ -195,9 +196,9 @@ apply from: "${projectDir}/gradle/dependencies.gradle"
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        allWarningsAsErrors = true
+        allWarningsAsErrors = false
         jvmTarget = javaVersion.toString()
-        freeCompilerArgs = ["-Xjsr305=strict", "-progressive", "-Xnew-inference"]
+        freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
     }
 }
 

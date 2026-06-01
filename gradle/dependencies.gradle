@@ -1,6 +1,6 @@
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
-    implementation "org.koin:koin-androidx-viewmodel:$koinVersion"
+    implementation "io.insert-koin:koin-android:$koinVersion"
 
     implementation "com.google.android.play:core:$playCoreVersion"
     implementation "com.google.android.gms:play-services-cast-framework:$castVersion"
@@ -54,7 +54,7 @@ dependencies {
     implementation "com.github.rubengees:subsampling-scale-image-view:$subsamplingScaleImageViewVersion"
     implementation "com.github.num42:subsampling-pdf-decoder:$subsamplingPdfDecoderVersion"
     implementation "com.afollestad.material-dialogs:core:$materialDialogsVersion"
-    implementation "com.google.android:flexbox:$flexboxVersion"
+    implementation "com.google.android.flexbox:flexbox:$flexboxVersion"
     implementation "com.github.vanniktech.Emoji:emoji-ios:$emojiIosVersion"
     implementation "me.zhanghai.android.materialprogressbar:library:$materialProgressBarVersion"
     implementation "me.zhanghai.android.materialratingbar:library:$materialRatingBarVersion"
@@ -81,7 +81,6 @@ dependencies {
     implementation "com.squareup.moshi:moshi:$moshiVersion"
     implementation "com.squareup.moshi:moshi-adapters:$moshiVersion"
     implementation "com.github.rubengees:easy-header-footer-adapter:$easyHeaderFooterAdapterVersion"
-    implementation "com.gojuno.koptional:koptional-rxjava2-extensions:$kOptionalVersion"
     implementation "com.github.rubengees:kotterknife:$kotterknifeVersion"
     implementation "com.github.seven332.Image:core:$imageDecoderVersion"
     implementation "com.github.seven332.Image:jpeg:$imageDecoderVersion"
@@ -106,13 +105,4 @@ dependencies {
     kapt "androidx.room:room-compiler:$roomVersion"
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
     kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
-
-    compileOnly "com.github.pengrad:jdk9-deps:$jdkDeps9Version"
-}
-
-configurations.all {
-    resolutionStrategy.dependencySubstitution {
-        substitute module("com.squareup.moshi:moshi") with module("com.github.square.moshi:moshi:dd8611a1d9")
-        substitute module("com.squareup.moshi:moshi-kotlin-codegen") with module("com.github.square.moshi:moshi-kotlin-codegen:dd8611a1d9")
-    }
 }
