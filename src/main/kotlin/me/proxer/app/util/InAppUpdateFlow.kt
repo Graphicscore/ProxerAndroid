@@ -12,8 +12,8 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.android.play.core.tasks.OnFailureListener
-import com.google.android.play.core.tasks.OnSuccessListener
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import me.proxer.app.R
 import timber.log.Timber
 
@@ -28,7 +28,7 @@ class InAppUpdateFlow {
 
     private var appUpdateManager: AppUpdateManager? = null
 
-    private var successListener: OnSuccessListener<AppUpdateInfo>? = null
+    private lateinit var successListener: OnSuccessListener<in AppUpdateInfo>
     private var progressListener: InstallStateUpdatedListener? = null
     private var failureListener: OnFailureListener? = null
 
@@ -100,7 +100,6 @@ class InAppUpdateFlow {
         snackbar?.dismiss()
 
         appUpdateManager = null
-        successListener = null
         failureListener = null
         progressListener = null
         snackbar = null
