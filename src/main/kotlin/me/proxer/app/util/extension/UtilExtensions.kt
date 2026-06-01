@@ -41,7 +41,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.koin.android.ext.android.get
 import org.koin.android.ext.android.getKoin
 import org.koin.core.context.GlobalContext
-import org.koin.core.parameter.DefinitionParameters
+import org.koin.core.parameter.ParametersHolder
 import org.koin.core.parameter.ParametersDefinition
 import org.koin.core.qualifier.Qualifier
 import timber.log.Timber
@@ -134,8 +134,8 @@ inline fun Intent.addReferer(): Intent {
 
 // TODO: https://github.com/InsertKoinIO/koin/issues/303
 @Suppress("UNCHECKED_CAST")
-inline fun unsafeParametersOf(vararg parameters: Any?): DefinitionParameters {
-    return DefinitionParameters(parameters.toList())
+inline fun unsafeParametersOf(vararg parameters: Any?): ParametersHolder {
+    return ParametersHolder(parameters.toMutableList())
 }
 
 fun CustomTabsHelperFragment.fallbackHandleLink(

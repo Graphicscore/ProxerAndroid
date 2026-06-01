@@ -2,6 +2,8 @@ package me.proxer.app.profile
 
 import com.gojuno.koptional.None
 import com.gojuno.koptional.Optional
+import com.gojuno.koptional.toNullable
+import com.gojuno.koptional.toOptional
 import io.reactivex.Single
 import io.reactivex.rxkotlin.plusAssign
 import me.proxer.app.base.BaseViewModel
@@ -22,7 +24,7 @@ class ProfileViewModel(
             .flatMap { api.user.info(userId, username).buildSingle() }
             .flatMap { userInfo ->
                 val maybeUcpSingle = when (storageHelper.user?.matches(userId, username) == true) {
-                    true -> api.ucp.watchedEpisodes().buildSingle().map { Optional.toOptional(it) }
+                    true -> api.ucp.watchedEpisodes().buildSingle().map { it.toOptional() }
                     false -> Single.just(None)
                 }
 

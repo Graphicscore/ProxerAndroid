@@ -11,31 +11,43 @@ import timber.log.Timber
 @SuppressLint("RestrictedApi")
 class WorkManagerTimberLogger(loggingLevel: Int = Log.INFO) : Logger(loggingLevel) {
 
-    override fun verbose(tag: String?, message: String, vararg throwables: Throwable) {
-        log(Log.VERBOSE, message, throwables)
+    override fun verbose(tag: String, message: String) {
+        Timber.tag(tag).v(message)
     }
 
-    override fun debug(tag: String?, message: String, vararg throwables: Throwable) {
-        log(Log.DEBUG, message, throwables)
+    override fun verbose(tag: String, message: String, throwable: Throwable) {
+        Timber.tag(tag).v(throwable, message)
     }
 
-    override fun info(tag: String?, message: String, vararg throwables: Throwable) {
-        log(Log.INFO, message, throwables)
+    override fun debug(tag: String, message: String) {
+        Timber.tag(tag).d(message)
     }
 
-    override fun warning(tag: String?, message: String, vararg throwables: Throwable) {
-        log(Log.WARN, message, throwables)
+    override fun debug(tag: String, message: String, throwable: Throwable) {
+        Timber.tag(tag).d(throwable, message)
     }
 
-    override fun error(tag: String?, message: String, vararg throwables: Throwable) {
-        log(Log.ERROR, message, throwables)
+    override fun info(tag: String, message: String) {
+        Timber.tag(tag).i(message)
     }
 
-    private fun log(priority: Int, message: String, throwables: Array<out Throwable>) {
-        if (throwables.isEmpty()) {
-            Timber.log(priority, message)
-        } else {
-            throwables.forEach { Timber.log(priority, message, it) }
-        }
+    override fun info(tag: String, message: String, throwable: Throwable) {
+        Timber.tag(tag).i(throwable, message)
+    }
+
+    override fun warning(tag: String, message: String) {
+        Timber.tag(tag).w(message)
+    }
+
+    override fun warning(tag: String, message: String, throwable: Throwable) {
+        Timber.tag(tag).w(throwable, message)
+    }
+
+    override fun error(tag: String, message: String) {
+        Timber.tag(tag).e(message)
+    }
+
+    override fun error(tag: String, message: String, throwable: Throwable) {
+        Timber.tag(tag).e(throwable, message)
     }
 }

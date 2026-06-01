@@ -11,9 +11,7 @@ import android.os.Environment
 import android.os.Looper
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.getSystemService
-import androidx.work.Configuration
 import androidx.work.Logger
-import androidx.work.WorkManager
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.github.anrwatchdog.ANRWatchDog
 import com.google.android.gms.common.GoogleApiAvailability
@@ -164,10 +162,8 @@ class MainApplication : Application() {
         }
     }
 
-    // TODO: Remove once api becomes public.
     @SuppressLint("RestrictedApi")
     private fun initLibs() {
-        WorkManager.initialize(this, Configuration.Builder().build())
         AndroidThreeTen.init(this)
 
         if (BuildConfig.LOG) {
