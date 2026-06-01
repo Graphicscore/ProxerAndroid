@@ -57,7 +57,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
             .subscribeAndLogErrors()
     }
 
-    private fun getMessageText(intent: Intent) = RemoteInput.getResultsFromIntent(intent)
+    private fun getMessageText(intent: Intent) = requireNotNull(RemoteInput.getResultsFromIntent(intent))
         .getSafeCharSequence(REMOTE_REPLY_EXTRA)
         .toString()
 }

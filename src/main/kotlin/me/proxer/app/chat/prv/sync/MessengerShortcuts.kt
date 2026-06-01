@@ -46,7 +46,9 @@ object MessengerShortcuts {
             }
 
             val newShortcuts = messengerDao.getMostRecentConferences(shortcutsLeft).map {
-                val icon = IconCompat.createWithBitmap(getConferenceIcon(context, it))
+                val icon = getConferenceIcon(context, it)
+                    ?.let { bitmap -> IconCompat.createWithBitmap(bitmap) }
+                    ?: IconCompat.createWithResource(context, R.drawable.ic_shortcut_messenger_person)
                 val intent = PrvMessengerActivity.getIntent(context, it.id.toString()).setAction(Intent.ACTION_DEFAULT)
 
                 ShortcutInfoCompat.Builder(context, it.id.toString())

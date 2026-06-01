@@ -253,7 +253,7 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
             else -> error("Unsupported sort criteria: $sortCriteria")
         }
 
-        val filterSubMenu = menu.findItem(R.id.filter).subMenu
+        val filterSubMenu = menu.findItem(R.id.filter).subMenu ?: return
 
         when (category) {
             Category.ANIME -> filterSubMenu.setGroupVisible(R.id.filterManga, false)
