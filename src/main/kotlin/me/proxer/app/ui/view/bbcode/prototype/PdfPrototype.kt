@@ -112,12 +112,12 @@ object PdfPrototype : AutoClosingPrototype {
     ) = glide
         .download(url.toString())
         .listener(
-            object : SimpleGlideRequestListener<File?> {
+            object : SimpleGlideRequestListener<File>() {
                 override fun onResourceReady(
-                    resource: File?,
-                    model: Any?,
-                    target: Target<File?>?,
-                    dataSource: DataSource?,
+                    resource: File,
+                    model: Any,
+                    target: Target<File>,
+                    dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
                     (target as? GlidePdfTarget)?.view?.also { view ->

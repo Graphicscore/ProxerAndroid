@@ -7,6 +7,7 @@ plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
     id "org.jetbrains.kotlin.kapt"
+    id "com.google.devtools.ksp"
 
     id "com.mikepenz.aboutlibraries.plugin"
 
@@ -18,7 +19,7 @@ plugins {
 apply from: "${projectDir}/gradle/utils.gradle"
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
     ndkVersion rootProject.ext.ndkVersion
     namespace "me.proxer.app"
 
@@ -28,23 +29,13 @@ android {
 
     defaultConfig {
         applicationId "me.proxer.app"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
         versionCode appVersionMajor * 1000000 + appVersionMinor * 10000 + appVersionPatch * 100
         versionName "$appVersionMajor.$appVersionMinor.$appVersionPatch"
 
         vectorDrawables.useSupportLibrary true
         resConfigs "de"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                if (project.property("kapt.incremental.apt").toBoolean() == true) {
-                    arguments << ["room.incremental": "true"]
-                }
-
-                arguments << ["room.schemaLocation": "$projectDir/schemas".toString()]
-            }
-        }
     }
 
     sourceSets {
@@ -100,13 +91,9 @@ android {
         }
 
         release {
-            postprocessing {
-                obfuscate true
-                optimizeCode true
-                removeUnusedCode true
-                removeUnusedResources true
-                proguardFile "config/shrinker/shrinker-rules.pro"
-            }
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles "config/shrinker/shrinker-rules.pro"
 
             multiDexEnabled true
 
@@ -121,13 +108,9 @@ android {
         }
 
         logRelease {
-            postprocessing {
-                obfuscate true
-                optimizeCode true
-                removeUnusedCode true
-                removeUnusedResources true
-                proguardFile "config/shrinker/shrinker-rules.pro"
-            }
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles "config/shrinker/shrinker-rules.pro"
 
             multiDexEnabled true
 
@@ -143,15 +126,13 @@ android {
         }
     }
 
-    lintOptions {
-        mkdir("$buildDir/reports/lint")
-
+    lint {
         warningsAsErrors = false
         checkReleaseBuilds = false
 
-        lintConfig file("$rootDir/config/lint/lint.xml")
-        xmlOutput file("$buildDir/reports/lint/lint-results.xml")
-        htmlOutput file("$buildDir/reports/lint/lint-results.html")
+        lintConfig = file("$rootDir/config/lint/lint.xml")
+        xmlOutput = file("$buildDir/reports/lint/lint-results.xml")
+        htmlOutput = file("$buildDir/reports/lint/lint-results.html")
     }
 
     packagingOptions {
@@ -181,29 +162,26 @@ android {
             enableSplit = false
         }
     }
-
-    applicationVariants.all { variant ->
-        def suffix = variant.buildType.name == "release" ? "-release" : ""
-
-        variant.outputs.all {
-            outputFileName = "app-${variant.versionName}${suffix}.apk"
-        }
-    }
 }
 
 apply from: "${projectDir}/gradle/repositories.gradle"
 apply from: "${projectDir}/gradle/dependencies.gradle"
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
+kapt {
+    useBuildCache = true
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         allWarningsAsErrors = false
         jvmTarget = javaVersion.toString()
         freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
     }
-}
-
-kapt {
-    useBuildCache = true
 }
 
 detekt {

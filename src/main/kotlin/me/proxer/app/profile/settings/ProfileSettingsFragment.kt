@@ -165,7 +165,7 @@ class ProfileSettingsFragment : XpPreferenceFragment() {
         val value = videoAdsInterval.value ?: "0"
         val index = resources.getStringArray(R.array.profile_settings_video_ads_interval_values).indexOf(value)
         val keyword = resources.getStringArray(R.array.profile_settings_video_ads_interval_titles)[index]
-        val newSummary = getString(R.string.profile_preference_video_ads_summary, keyword.toLowerCase(Locale.GERMANY))
+        val newSummary = getString(R.string.profile_preference_video_ads_summary, keyword.lowercase(Locale.GERMANY))
 
         videoAdsInterval.summary = newSummary
     }

@@ -97,7 +97,7 @@ dependencies {
     releaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"
     logReleaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"
 
-    kapt "androidx.room:room-compiler:$roomVersion"
+    ksp "androidx.room:room-compiler:$roomVersion"
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
 }

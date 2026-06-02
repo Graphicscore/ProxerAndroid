@@ -92,8 +92,13 @@ inline fun GlideRequests.defaultLoad(view: ImageView, url: HttpUrl): Target<Draw
     .into(view)
 
 inline fun <T> GlideRequest<T>.logErrors(): GlideRequest<T> = this.addListener(
-    object : SimpleGlideRequestListener<T> {
-        override fun onLoadFailed(error: GlideException?): Boolean {
+    object : SimpleGlideRequestListener<T>() {
+        override fun onLoadFailed(
+            error: GlideException?,
+            model: Any?,
+            target: Target<T>,
+            isFirstResource: Boolean
+        ): Boolean {
             if (error != null) Timber.e(error)
 
             return false

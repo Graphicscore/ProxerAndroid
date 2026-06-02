@@ -18,6 +18,7 @@ import me.proxer.app.util.extension.proxyIfRequired
 import me.proxer.app.util.extension.resolveColor
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.toPrefixedUrlOrNull
+import com.bumptech.glide.request.target.Target
 import me.proxer.app.util.wrapper.SimpleGlideRequestListener
 import me.proxer.library.util.ProxerUrls
 import okhttp3.HttpUrl
@@ -153,7 +154,7 @@ class ProxerWebView @JvmOverloads constructor(
             val url = request.url.toString().toPrefixedUrlOrNull()
 
             return if (url != null) {
-                val fileExtension = url.toString().substringAfterLast(".", "").toLowerCase(Locale.US)
+                val fileExtension = url.toString().substringAfterLast(".", "").lowercase(Locale.US)
 
                 if (
                     url.host == ProxerUrls.cdnBase.host ||
@@ -180,8 +181,13 @@ class ProxerWebView @JvmOverloads constructor(
                 val imageFile = GlideApp.with(view)
                     .download(url.proxyIfRequired().toString())
                     .listener(
-                        object : SimpleGlideRequestListener<File> {
-                            override fun onLoadFailed(error: GlideException?): Boolean {
+                        object : SimpleGlideRequestListener<File>() {
+                            override fun onLoadFailed(
+                                error: GlideException?,
+                                model: Any?,
+                                target: Target<File>,
+                                isFirstResource: Boolean
+                            ): Boolean {
                                 Timber.e(error)
 
                                 return false
