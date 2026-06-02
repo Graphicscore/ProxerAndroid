@@ -85,6 +85,12 @@
         <item name="android:background">?attr/colorPrimary</item>
     </style>
 
+    <style name="Widget.App.TabLayout" parent="Widget.Material3.TabLayout">
+        <item name="tabIndicatorColor">@color/on_primary</item>
+        <item name="tabSelectedTextColor">@color/on_primary</item>
+        <item name="tabTextColor">@color/on_primary</item>
+    </style>
+
     <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="popupTheme">@style/ThemeOverlay.App</item>
         <item name="colorControlNormal">?attr/colorOnSurface</item>
