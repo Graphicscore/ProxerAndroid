@@ -88,10 +88,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [],
         "foreignKeys": []
@@ -150,10 +150,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -162,6 +162,7 @@
             "columnNames": [
               "conferenceId"
             ],
+            "orders": [],
             "createSql": "CREATE INDEX IF NOT EXISTS `index_messages_conferenceId` ON `${TABLE_NAME}` (`conferenceId`)"
           }
         ],
