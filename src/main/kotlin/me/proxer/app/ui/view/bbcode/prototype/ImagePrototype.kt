@@ -104,10 +104,10 @@ object ImagePrototype : AutoClosingPrototype {
         .listener(
             object : SimpleGlideRequestListener<Drawable?> {
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
+                    resource: Drawable,
+                    model: Any,
                     target: Target<Drawable?>?,
-                    dataSource: DataSource?,
+                    dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
                     if (resource is Drawable && model is String) {

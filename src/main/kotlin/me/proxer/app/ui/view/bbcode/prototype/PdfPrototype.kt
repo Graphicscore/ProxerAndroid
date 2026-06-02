@@ -114,10 +114,10 @@ object PdfPrototype : AutoClosingPrototype {
         .listener(
             object : SimpleGlideRequestListener<File?> {
                 override fun onResourceReady(
-                    resource: File?,
-                    model: Any?,
+                    resource: File,
+                    model: Any,
                     target: Target<File?>?,
-                    dataSource: DataSource?,
+                    dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
                     (target as? GlidePdfTarget)?.view?.also { view ->
