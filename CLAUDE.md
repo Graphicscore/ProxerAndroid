@@ -118,5 +118,7 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 - `android.builtInKotlin=false` + `android.newDsl=false` in `gradle.properties` are intentional workarounds to allow kapt (Glide compiler) to coexist with KSP in AGP 9. Remove when Glide 5 ships KSP support.
 - `coreLibraryDesugaringEnabled true` + `desugar_jdk_libs` dependency required by IMA (interactive media ads) 3.37+.
 - `RoomConverters.kt` `@TypeConverter` functions must have explicit return types — kapt stub generation fails on inferred lambda return types with `kapt.include.compile.classpath=false`.
-- `gradle/versions.gradle` line 28 contains a pre-existing comment `[redacted]` — origin unknown, investigate and remove if sensitive.
+- `CommunityMaterial.Icon.cmd_discord` was removed in CommunityMaterial 7.x — Discord entry in `AboutFragment.kt` currently has no icon. Find an equivalent in CommunityMaterial 7.x or add a custom typeface before re-adding it.
+- `applicationVariants.all {}` was removed in AGP 9 — APK output now uses AGP defaults instead of `app-1.11.5.apk`. Re-implement with `androidComponents.onVariants {}` if custom naming is needed.
+- `lifecycle` 2.11 and `core-ktx` 1.19 require compileSdk 37 (not yet stable). Current ceiling: lifecycle 2.10.0, core-ktx 1.18.0.
 - `concealVersion` was deleted — Hawk/Conceal removed for 16KB page size compatibility.
