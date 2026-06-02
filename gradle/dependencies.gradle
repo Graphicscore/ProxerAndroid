@@ -87,10 +87,6 @@ dependencies {
     implementation "me.saket:better-link-movement-method:$betterLinkMovementMethodVersion"
     implementation "org.jsoup:jsoup:$jsoupVersion"
 
-    implementation("com.github.rubengees:hawk:$hawkVersion") {
-        exclude module: "gson"
-    }
-
     implementation "com.github.kirich1409:StrictModeCompat:$strictModeCompatVersion"
     implementation "com.jakewharton.timber:timber:$timberVersion"
     implementation "com.github.anrwatchdog:anrwatchdog:$anrWatchdogVersion"
