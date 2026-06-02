@@ -10,6 +10,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.target.Target
 import io.reactivex.subjects.PublishSubject
 import me.proxer.app.GlideApp
 import me.proxer.app.MainApplication.Companion.USER_AGENT
@@ -18,7 +19,6 @@ import me.proxer.app.util.extension.proxyIfRequired
 import me.proxer.app.util.extension.resolveColor
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.toPrefixedUrlOrNull
-import com.bumptech.glide.request.target.Target
 import me.proxer.app.util.wrapper.SimpleGlideRequestListener
 import me.proxer.library.util.ProxerUrls
 import okhttp3.HttpUrl

@@ -6,7 +6,7 @@ buildscript { scriptHandler ->
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.kapt"
+    id "org.jetbrains.kotlin.kapt" // keep: Glide 4.x has no KSP processor; remove when Glide 5 ships KSP support
     id "com.google.devtools.ksp"
 
     id "com.mikepenz.aboutlibraries.plugin"
@@ -94,6 +94,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
+            // R8 in AGP 9 applies code optimization and unused-code removal by default; no postprocessing{} block needed
             proguardFiles "config/shrinker/shrinker-rules.pro"
 
             multiDexEnabled true
@@ -111,6 +112,7 @@ android {
         logRelease {
             minifyEnabled true
             shrinkResources true
+            // R8 in AGP 9 applies code optimization and unused-code removal by default; no postprocessing{} block needed
             proguardFiles "config/shrinker/shrinker-rules.pro"
 
             multiDexEnabled true

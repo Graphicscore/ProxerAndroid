@@ -8,11 +8,14 @@ Requires `secrets.properties` in the project root with at least:
 ```
 PROXER_API_KEY=<your_key>
 ```
+For build-testing without a real key: `echo "PROXER_API_KEY=dummy_build_key" > secrets.properties`
+
+**Always use `./gradlew`, not `gradle`** — the system `gradle` binary is 7.6.3 (incompatible with Java 21 JBR).
 
 Gradle uses the JBR at `/opt/android-studio/jbr` (configured via `org.gradle.java.home` in `gradle.properties`).
 
 ```bash
-./gradlew assembleDebug       # debug build
+./gradlew assembleDebug --no-daemon --max-workers 2   # reliable in low-resource / CI contexts
 ./gradlew assembleRelease     # obfuscated + signed (needs keystore in secrets.properties)
 ./gradlew installDebug        # build + install to connected device
 ./gradlew ktlint              # style check
@@ -50,7 +53,7 @@ Key base classes:
 
 ## Dependency Injection
 
-Koin 3.4.3. All modules in `MainModules.kt`. Singletons created at app startup (OkHttpClient, ProxerApi, Moshi, Room databases, PreferenceHelper, StorageHelper). ViewModels registered with `viewModel { }`.
+Koin 3.5.6. All modules in `MainModules.kt`. Singletons created at app startup (OkHttpClient, ProxerApi, Moshi, Room databases, PreferenceHelper, StorageHelper). ViewModels registered with `viewModel { }`.
 
 Inject via `safeInject<Type>()` (delegates to Koin's `inject()`).
 
@@ -69,7 +72,7 @@ Inject via `safeInject<Type>()` (delegates to Koin's `inject()`).
 
 ## Networking
 
-OkHttp 4.10.0 + Retrofit via `ProxerLibJava:5.4.0`. Custom interceptors in `util/http/`:
+OkHttp 4.12.0 + Retrofit 2.12.0 via `ProxerLibJava:5.4.0`. Custom interceptors in `util/http/`:
 
 | Interceptor | Role |
 |---|---|
@@ -84,9 +87,9 @@ OkHttp 4.10.0 + Retrofit via `ProxerLibJava:5.4.0`. Custom interceptors in `util
 
 ## Media Playback
 
-Anime streaming: Media3 1.4.1 (`StreamActivity`, `StreamPlayerManager`, `TouchablePlayerView`). Supports HLS, DASH, SmoothStreaming, progressive. IMA ad integration. Chromecast via Cast framework.
+Anime streaming: Media3 1.10.1 (`StreamActivity`, `StreamPlayerManager`, `TouchablePlayerView`). Supports HLS, DASH, SmoothStreaming, progressive. IMA ad integration. Chromecast via Cast framework.
 
-Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory` / `BitmapRegionDecoder`. PDF rendering: `AndroidPdfDecoder` / `AndroidPdfRegionDecoder` using `android.graphics.pdf.PdfRenderer` (API 21+).
+Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory` / `BitmapRegionDecoder`. PDF rendering: `AndroidPdfDecoder` / `AndroidPdfRegionDecoder` using `android.graphics.pdf.PdfRenderer` (API 23+).
 
 ## Error Handling
 
@@ -96,13 +99,14 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 
 | Property | Value |
 |---|---|
-| AGP | 8.7.2 |
-| Kotlin | 1.9.25 |
+| AGP | 9.2.1 |
+| Kotlin | 2.2.0 |
 | Java | 17 (JBR at `/opt/android-studio/jbr`) |
-| Gradle | 8.10.2 |
-| NDK | r27b (27.2.12479018) — 16KB ELF page alignment |
-| minSdk | 21 |
-| targetSdk / compileSdk | 35 |
+| Gradle | 9.5.1 |
+| NDK | r29 (29.0.14206865) |
+| KSP | 2.2.0-2.0.2 (Room + Moshi); Glide compiler stays on kapt — Glide 4.x has no KSP processor |
+| minSdk | 23 |
+| targetSdk / compileSdk | 36 |
 
 ## Key Gotchas
 
@@ -110,4 +114,9 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 - `secrets.properties` is gitignored. Without it, build fails. See `gradle/utils.gradle` for required keys.
 - `BUILD_CONFIG=true` is explicit in `build.gradle` — AGP 8.0+ disables it by default.
 - Detekt and ktlint are configured permissively; most checks disabled. Don't rely on them to catch correctness issues.
-- `concealVersion` remains in `versions.gradle` for historical reference but is unused — Hawk/Conceal was removed for 16KB page size compatibility.
+- `gh` CLI is not installed on this machine — use `git push` + open PRs at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
+- `android.builtInKotlin=false` + `android.newDsl=false` in `gradle.properties` are intentional workarounds to allow kapt (Glide compiler) to coexist with KSP in AGP 9. Remove when Glide 5 ships KSP support.
+- `coreLibraryDesugaringEnabled true` + `desugar_jdk_libs` dependency required by IMA (interactive media ads) 3.37+.
+- `RoomConverters.kt` `@TypeConverter` functions must have explicit return types — kapt stub generation fails on inferred lambda return types with `kapt.include.compile.classpath=false`.
+- `gradle/versions.gradle` line 28 contains a pre-existing comment `[redacted]` — origin unknown, investigate and remove if sensitive.
+- `concealVersion` was deleted — Hawk/Conceal removed for 16KB page size compatibility.
