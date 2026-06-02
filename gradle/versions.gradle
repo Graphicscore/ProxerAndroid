@@ -58,14 +58,14 @@ ext {
     materialComponentsVersion = "1.13.0"
     constaintLayoutVersion = "2.2.1"
     preferenceVersion = "1.2.1"
-    supportPreferenceVersion = "6d5ebc7934"
+    supportPreferenceVersion = "v2.3.2"
     iconicsVersion = "5.2.4"
     communityMaterialTypefaceVersion = "5.8.55.0-kotlin"
     materialDrawerVersion = "8.3.1"
     aboutLibrariesVersion = "10.6.3"
     crossfaderVersion = "1.6.0"
     materialAboutVersion = "3.2.0-rc01"
-    subsamplingScaleImageViewVersion = "90c6b27c13"
+    subsamplingScaleImageViewVersion = "3.10.0"
     materialDialogsVersion = "3.3.0"
     flexboxVersion = "3.0.0"
     emojiIosVersion = "9058c30868"
@@ -75,7 +75,7 @@ ext {
     customtabsHelperVersion = "1.0.6"
     introductionVersion = "2.0.0"
     aspectRatioImageViewVersion = "1.0.9"
-    gravitySnapHelperVersion = "2.2.1"
+    gravitySnapHelperVersion = "2.3.0"
 
     // Utils
     proxerLibVersion = "5.4.0"
@@ -87,7 +87,6 @@ ext {
     moshiVersion = "1.15.0"
     easyHeaderFooterAdapterVersion = "3.0.0"
     kotterknifeVersion = "2.0"
-    concealVersion = "2.0.2"
     betterLinkMovementMethodVersion = "2.2.0"
     jsoupVersion = "1.13.1"
     // Debugging

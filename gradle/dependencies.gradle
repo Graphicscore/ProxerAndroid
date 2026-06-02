@@ -51,7 +51,7 @@ dependencies {
     implementation "com.mikepenz:aboutlibraries:$aboutLibrariesVersion"
     implementation "com.mikepenz:crossfader:$crossfaderVersion@aar"
     implementation "com.github.daniel-stoneuk:material-about-library:$materialAboutVersion"
-    implementation "com.github.rubengees:subsampling-scale-image-view:$subsamplingScaleImageViewVersion"
+    implementation "com.davemorrissey.labs:subsampling-scale-image-view:$subsamplingScaleImageViewVersion"
     implementation "com.afollestad.material-dialogs:core:$materialDialogsVersion"
     implementation "com.google.android.flexbox:flexbox:$flexboxVersion"
     implementation "com.github.vanniktech.Emoji:emoji-ios:$emojiIosVersion"
