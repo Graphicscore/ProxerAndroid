@@ -16,38 +16,38 @@ import java.util.Date
 class RoomConverters {
 
     @TypeConverter
-    fun fromDate(date: Date?) = date?.time
+    fun fromDate(date: Date?): Long? = date?.time
 
     @TypeConverter
-    fun toDate(value: Long?) = value?.let { Date(it) }
+    fun toDate(value: Long?): Date? = value?.let { Date(it) }
 
     @TypeConverter
-    fun fromInstant(date: Instant?) = date?.toEpochMilli()
+    fun fromInstant(date: Instant?): Long? = date?.toEpochMilli()
 
     @TypeConverter
-    fun toInstant(value: Long?) = value?.let { Instant.ofEpochMilli(it) }
+    fun toInstant(value: Long?): Instant? = value?.let { Instant.ofEpochMilli(it) }
 
     @TypeConverter
-    fun fromMessageAction(value: MessageAction?) = value?.let { ProxerUtils.getSafeApiEnumName(it) }
+    fun fromMessageAction(value: MessageAction?): String? = value?.let { ProxerUtils.getSafeApiEnumName(it) }
 
     @TypeConverter
-    fun toMessageAction(value: String?) = value?.let { ProxerUtils.toSafeApiEnum<MessageAction>(it) }
+    fun toMessageAction(value: String?): MessageAction? = value?.let { ProxerUtils.toSafeApiEnum<MessageAction>(it) }
 
     @TypeConverter
-    fun fromDevice(value: Device?) = value?.let { ProxerUtils.getSafeApiEnumName(it) }
+    fun fromDevice(value: Device?): String? = value?.let { ProxerUtils.getSafeApiEnumName(it) }
 
     @TypeConverter
-    fun toDevice(value: String?) = value?.let { ProxerUtils.toSafeApiEnum<Device>(it) }
+    fun toDevice(value: String?): Device? = value?.let { ProxerUtils.toSafeApiEnum<Device>(it) }
 
     @TypeConverter
-    fun fromTagType(value: TagType?) = value?.let { ProxerUtils.getSafeApiEnumName(it) }
+    fun fromTagType(value: TagType?): String? = value?.let { ProxerUtils.getSafeApiEnumName(it) }
 
     @TypeConverter
-    fun toTagType(value: String?) = value?.let { ProxerUtils.toSafeApiEnum<TagType>(it) }
+    fun toTagType(value: String?): TagType? = value?.let { ProxerUtils.toSafeApiEnum<TagType>(it) }
 
     @TypeConverter
-    fun fromTagSubType(value: TagSubType?) = value?.let { ProxerUtils.getSafeApiEnumName(it) }
+    fun fromTagSubType(value: TagSubType?): String? = value?.let { ProxerUtils.getSafeApiEnumName(it) }
 
     @TypeConverter
-    fun toTagSubType(value: String?) = value?.let { ProxerUtils.toSafeApiEnum<TagSubType>(it) }
+    fun toTagSubType(value: String?): TagSubType? = value?.let { ProxerUtils.toSafeApiEnum<TagSubType>(it) }
 }

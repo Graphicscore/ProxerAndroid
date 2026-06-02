@@ -58,6 +58,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility javaVersion
         targetCompatibility javaVersion
     }

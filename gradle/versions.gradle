@@ -37,9 +37,9 @@ ext {
     shareTargetVersion = "1.2.0"
     securityCryptoVersion = "1.1.0"
     appUpdateVersion = "2.1.0"
-    adsIdentifierVersion = "17.0.0"
-    interactiveMediaVersion = "3.33.0"
-    castVersion = "21.5.0"
+    adsIdentifierVersion = "18.2.0"
+    interactiveMediaVersion = "3.37.0"
+    castVersion = "22.0.0"
 
     // RxJava
     rxJavaVersion = "2.2.20"
