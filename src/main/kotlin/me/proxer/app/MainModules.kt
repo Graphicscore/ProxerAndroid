@@ -56,7 +56,6 @@ import me.proxer.app.settings.status.ServerStatusViewModel
 import me.proxer.app.ui.LinkCheckViewModel
 import me.proxer.app.util.Mp4UploadTrustManagerWorkaround
 import me.proxer.app.util.Validators
-import me.proxer.app.util.data.HawkMoshiParser
 import me.proxer.app.util.data.InstantJsonAdapter
 import me.proxer.app.util.data.LocalDataInitializer
 import me.proxer.app.util.data.PreferenceHelper
@@ -222,12 +221,9 @@ private val applicationModules = module {
     single { get<MessengerDatabase>().dao() }
     single { get<TagDatabase>().dao() }
 
-    single { HawkMoshiParser(get()) }
-
     single {
         LocalDataInitializer(
             androidContext(),
-            get(),
             get(named(DEFAULT_PREFERENCES)),
             get(named(STORAGE_PREFERENCES))
         )

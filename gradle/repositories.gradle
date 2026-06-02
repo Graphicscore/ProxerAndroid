@@ -3,6 +3,7 @@ repositories {
         mavenContent { releasesOnly() }
         content {
             includeGroupByRegex "androidx.*"
+            includeGroupByRegex "android\\.arch.*"
             includeGroupByRegex "zipflinger.*"
             includeGroupByRegex "com\\.android.*"
             includeGroupByRegex "com\\.google\\..*"

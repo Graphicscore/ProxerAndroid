@@ -1,4 +1,5 @@
 dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.1.5"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "io.insert-koin:koin-android:$koinVersion"
 
@@ -11,7 +12,9 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation "androidx.browser:browser:$browserVersion"
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-rxjava2:$roomVersion"
     implementation "androidx.work:work-runtime-ktx:$workVersion"
@@ -51,8 +54,7 @@ dependencies {
     implementation "com.mikepenz:aboutlibraries:$aboutLibrariesVersion"
     implementation "com.mikepenz:crossfader:$crossfaderVersion@aar"
     implementation "com.github.daniel-stoneuk:material-about-library:$materialAboutVersion"
-    implementation "com.github.rubengees:subsampling-scale-image-view:$subsamplingScaleImageViewVersion"
-    implementation "com.github.num42:subsampling-pdf-decoder:$subsamplingPdfDecoderVersion"
+    implementation "com.davemorrissey.labs:subsampling-scale-image-view:$subsamplingScaleImageViewVersion"
     implementation "com.afollestad.material-dialogs:core:$materialDialogsVersion"
     implementation "com.google.android.flexbox:flexbox:$flexboxVersion"
     implementation "com.github.vanniktech.Emoji:emoji-ios:$emojiIosVersion"
@@ -62,12 +64,15 @@ dependencies {
     implementation "com.github.rubengees:introduction:$introductionVersion"
     implementation "com.github.santalu:aspect-ratio-imageview:$aspectRatioImageViewVersion"
     implementation "com.github.rubensousa:gravitysnaphelper:$gravitySnapHelperVersion"
-    implementation "com.google.android.exoplayer:exoplayer:$exoplayerVersion"
-    implementation "com.google.android.exoplayer:extension-cast:$exoplayerVersion"
-    implementation "com.google.android.exoplayer:extension-okhttp:$exoplayerVersion"
-    implementation "com.google.android.exoplayer:extension-ima:$exoplayerVersion"
-    implementation "com.github.rubengees.PreviewSeekBar:previewseekbar:$previewSeekbarVersion"
-    implementation "com.github.rubengees.PreviewSeekBar:previewseekbar-exoplayer:$previewSeekbarVersion"
+
+    implementation "androidx.media3:media3-exoplayer:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-dash:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-hls:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-smoothstreaming:$media3Version"
+    implementation "androidx.media3:media3-exoplayer-ima:$media3Version"
+    implementation "androidx.media3:media3-datasource-okhttp:$media3Version"
+    implementation "androidx.media3:media3-cast:$media3Version"
+    implementation "androidx.media3:media3-ui:$media3Version"
 
     implementation "com.github.proxer:ProxerLibJava:$proxerLibVersion"
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenVersion"
@@ -82,15 +87,8 @@ dependencies {
     implementation "com.squareup.moshi:moshi-adapters:$moshiVersion"
     implementation "com.github.rubengees:easy-header-footer-adapter:$easyHeaderFooterAdapterVersion"
     implementation "com.github.rubengees:kotterknife:$kotterknifeVersion"
-    implementation "com.github.seven332.Image:core:$imageDecoderVersion"
-    implementation "com.github.seven332.Image:jpeg:$imageDecoderVersion"
-    implementation "com.github.seven332.Image:png:$imageDecoderVersion"
     implementation "me.saket:better-link-movement-method:$betterLinkMovementMethodVersion"
     implementation "org.jsoup:jsoup:$jsoupVersion"
-
-    implementation("com.github.rubengees:hawk:$hawkVersion") {
-        exclude module: "gson"
-    }
 
     implementation "com.github.kirich1409:StrictModeCompat:$strictModeCompatVersion"
     implementation "com.jakewharton.timber:timber:$timberVersion"
@@ -102,7 +100,7 @@ dependencies {
     releaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"
     logReleaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"
 
-    kapt "androidx.room:room-compiler:$roomVersion"
+    ksp "androidx.room:room-compiler:$roomVersion"
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
-    kapt "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
+    ksp "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
 }

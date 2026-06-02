@@ -4,9 +4,8 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.view.View
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.upstream.HttpDataSource
-import com.google.android.exoplayer2.upstream.Loader
+import androidx.media3.common.PlaybackException
+import androidx.media3.datasource.HttpDataSource
 import me.proxer.app.R
 import me.proxer.app.auth.LoginDialog
 import me.proxer.app.base.BaseActivity
@@ -316,8 +315,7 @@ object ErrorUtils {
         }
         is PartialException -> error.innerError
         is ChatException -> error.innerError
-        is ExoPlaybackException -> error.cause?.let { getInnermostError(it) } ?: error
-        is Loader.UnexpectedLoaderException -> error.cause?.let { getInnermostError(it) } ?: error
+        is PlaybackException -> error.cause?.let { getInnermostError(it) } ?: error
         else -> error
     }
 

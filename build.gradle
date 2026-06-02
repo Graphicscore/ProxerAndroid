@@ -6,7 +6,8 @@ buildscript { scriptHandler ->
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.kapt"
+    id "org.jetbrains.kotlin.kapt" // keep: Glide 4.x has no KSP processor; remove when Glide 5 ships KSP support
+    id "com.google.devtools.ksp"
 
     id "com.mikepenz.aboutlibraries.plugin"
 
@@ -18,33 +19,23 @@ plugins {
 apply from: "${projectDir}/gradle/utils.gradle"
 
 android {
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdk rootProject.ext.compileSdkVersion
     ndkVersion rootProject.ext.ndkVersion
     namespace "me.proxer.app"
 
-    dexOptions {
-        preDexLibraries !isCI()
+    buildFeatures {
+        buildConfig true
     }
 
     defaultConfig {
         applicationId "me.proxer.app"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
         versionCode appVersionMajor * 1000000 + appVersionMinor * 10000 + appVersionPatch * 100
         versionName "$appVersionMajor.$appVersionMinor.$appVersionPatch"
 
         vectorDrawables.useSupportLibrary true
         resConfigs "de"
-
-        javaCompileOptions {
-            annotationProcessorOptions {
-                if (project.property("kapt.incremental.apt").toBoolean() == true) {
-                    arguments << ["room.incremental": "true"]
-                }
-
-                arguments << ["room.schemaLocation": "$projectDir/schemas".toString()]
-            }
-        }
     }
 
     sourceSets {
@@ -67,6 +58,7 @@ android {
     }
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility javaVersion
         targetCompatibility javaVersion
     }
@@ -100,13 +92,10 @@ android {
         }
 
         release {
-            postprocessing {
-                obfuscate true
-                optimizeCode true
-                removeUnusedCode true
-                removeUnusedResources true
-                proguardFile "config/shrinker/shrinker-rules.pro"
-            }
+            minifyEnabled true
+            shrinkResources true
+            // R8 in AGP 9 applies code optimization and unused-code removal by default; no postprocessing{} block needed
+            proguardFiles "config/shrinker/shrinker-rules.pro"
 
             multiDexEnabled true
 
@@ -121,13 +110,10 @@ android {
         }
 
         logRelease {
-            postprocessing {
-                obfuscate true
-                optimizeCode true
-                removeUnusedCode true
-                removeUnusedResources true
-                proguardFile "config/shrinker/shrinker-rules.pro"
-            }
+            minifyEnabled true
+            shrinkResources true
+            // R8 in AGP 9 applies code optimization and unused-code removal by default; no postprocessing{} block needed
+            proguardFiles "config/shrinker/shrinker-rules.pro"
 
             multiDexEnabled true
 
@@ -143,15 +129,13 @@ android {
         }
     }
 
-    lintOptions {
-        mkdir("$buildDir/reports/lint")
-
+    lint {
         warningsAsErrors = false
         checkReleaseBuilds = false
 
-        lintConfig file("$rootDir/config/lint/lint.xml")
-        xmlOutput file("$buildDir/reports/lint/lint-results.xml")
-        htmlOutput file("$buildDir/reports/lint/lint-results.html")
+        lintConfig = file("$rootDir/config/lint/lint.xml")
+        xmlOutput = file("$buildDir/reports/lint/lint-results.xml")
+        htmlOutput = file("$buildDir/reports/lint/lint-results.html")
     }
 
     packagingOptions {
@@ -181,20 +165,21 @@ android {
             enableSplit = false
         }
     }
-
-    applicationVariants.all { variant ->
-        def suffix = variant.buildType.name == "release" ? "-release" : ""
-
-        variant.outputs.all {
-            outputFileName = "app-${variant.versionName}${suffix}.apk"
-        }
-    }
 }
 
 apply from: "${projectDir}/gradle/repositories.gradle"
 apply from: "${projectDir}/gradle/dependencies.gradle"
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+    arg("room.incremental", "true")
+}
+
+kapt {
+    useBuildCache = true
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         allWarningsAsErrors = false
         jvmTarget = javaVersion.toString()
@@ -202,25 +187,20 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     }
 }
 
-kapt {
-    useBuildCache = true
-}
-
 detekt {
-    version = detektPluginVersion
     buildUponDefaultConfig = true
-
-    config = files("$projectDir/config/detekt/detekt.yml")
+    config.from(files("$projectDir/config/detekt/detekt.yml"))
 
     reports {
-        xml.destination = file("$buildDir/reports/detekt/detekt.xml")
-        html.destination = file("$buildDir/reports/detekt/detekt.html")
+        xml.required.set(true)
+        xml.outputLocation.set(file("$buildDir/reports/detekt/detekt.xml"))
+        html.required.set(true)
+        html.outputLocation.set(file("$buildDir/reports/detekt/detekt.html"))
     }
 }
 
 ktlint {
     version = ktlintVersion
-    disabledRules = ["import-ordering"]
     reporters {
         reporter org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE
     }

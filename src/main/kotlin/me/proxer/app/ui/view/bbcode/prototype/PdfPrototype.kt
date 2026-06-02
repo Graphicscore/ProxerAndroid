@@ -20,8 +20,8 @@ import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.android.ViewScopeProvider
 import com.uber.autodispose.autoDisposable
-import de.number42.subsampling_pdf_decoder.PDFDecoder
-import de.number42.subsampling_pdf_decoder.PDFRegionDecoder
+import me.proxer.app.manga.AndroidPdfDecoder
+import me.proxer.app.manga.AndroidPdfRegionDecoder
 import me.proxer.app.GlideRequests
 import me.proxer.app.R
 import me.proxer.app.ui.view.bbcode.BBArgs
@@ -112,12 +112,12 @@ object PdfPrototype : AutoClosingPrototype {
     ) = glide
         .download(url.toString())
         .listener(
-            object : SimpleGlideRequestListener<File?> {
+            object : SimpleGlideRequestListener<File>() {
                 override fun onResourceReady(
-                    resource: File?,
-                    model: Any?,
-                    target: Target<File?>?,
-                    dataSource: DataSource?,
+                    resource: File,
+                    model: Any,
+                    target: Target<File>,
+                    dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
                     (target as? GlidePdfTarget)?.view?.also { view ->
@@ -164,7 +164,7 @@ object PdfPrototype : AutoClosingPrototype {
         var view: SubsamplingScaleImageView? = view
             private set
 
-        private var regionDecoder: PDFRegionDecoder? = null
+        private var regionDecoder: AndroidPdfRegionDecoder? = null
 
         init {
             view.doOnLayout {
@@ -190,11 +190,11 @@ object PdfPrototype : AutoClosingPrototype {
 
         override fun onResourceReady(resource: File, transition: Transition<in File>?) {
             view?.also { safeView ->
-                regionDecoder = PDFRegionDecoder(0, resource, 8f).also {
+                regionDecoder = AndroidPdfRegionDecoder(0, resource, 8f).also {
                     safeView.setRegionDecoderFactory { it }
                 }
 
-                safeView.setBitmapDecoderFactory { PDFDecoder(0, resource, 8f) }
+                safeView.setBitmapDecoderFactory { AndroidPdfDecoder(0, resource, 8f) }
 
                 safeView.setImage(ImageSource.uri(resource.absolutePath))
             }

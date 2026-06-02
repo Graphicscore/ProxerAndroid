@@ -190,11 +190,6 @@ class AboutFragment : MaterialAboutFragment(), CustomTabsAware {
         MaterialAboutActionItem.Builder()
             .text(R.string.about_discord_title)
             .subText(R.string.about_discord_description)
-            .icon(
-                IconicsDrawable(context, CommunityMaterial.Icon.cmd_discord).apply {
-                    colorInt = context.resolveColor(R.attr.colorIcon)
-                }
-            )
             .setOnClickAction { showPage(discordLink, skipCheck = true) }
             .build()
     )

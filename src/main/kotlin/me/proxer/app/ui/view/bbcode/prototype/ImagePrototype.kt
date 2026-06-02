@@ -102,15 +102,15 @@ object ImagePrototype : AutoClosingPrototype {
         .load(url.toString())
         .centerInside()
         .listener(
-            object : SimpleGlideRequestListener<Drawable?> {
+            object : SimpleGlideRequestListener<Drawable>() {
                 override fun onResourceReady(
-                    resource: Drawable?,
-                    model: Any?,
-                    target: Target<Drawable?>?,
-                    dataSource: DataSource?,
+                    resource: Drawable,
+                    model: Any,
+                    target: Target<Drawable>,
+                    dataSource: DataSource,
                     isFirstResource: Boolean
                 ): Boolean {
-                    if (resource is Drawable && model is String) {
+                    if (model is String) {
                         heightMap?.put(model, resource.intrinsicHeight)
                     }
 
@@ -121,7 +121,12 @@ object ImagePrototype : AutoClosingPrototype {
                     return false
                 }
 
-                override fun onLoadFailed(error: GlideException?): Boolean {
+                override fun onLoadFailed(
+                    error: GlideException?,
+                    model: Any?,
+                    target: Target<Drawable>,
+                    isFirstResource: Boolean
+                ): Boolean {
                     view.setTag(R.id.error_tag, true)
 
                     return false

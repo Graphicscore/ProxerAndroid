@@ -5,6 +5,7 @@ pluginManagement { scriptHandler ->
     plugins {
         id "org.jetbrains.kotlin.android" version "${kotlinVersion}"
         id "org.jetbrains.kotlin.kapt" version "${kotlinVersion}"
+        id "com.google.devtools.ksp" version "${kspVersion}"
 
         id "com.mikepenz.aboutlibraries.plugin" version "${aboutLibrariesVersion}"
 

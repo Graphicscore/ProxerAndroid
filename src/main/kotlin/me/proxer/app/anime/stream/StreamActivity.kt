@@ -39,9 +39,9 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onCancel
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
-import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
-import com.google.android.exoplayer2.ext.cast.CastPlayer
-import com.google.android.exoplayer2.ui.PlayerView
+import androidx.media3.ui.DefaultTimeBar
+import androidx.media3.cast.CastPlayer
+import androidx.media3.ui.PlayerView
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
@@ -149,7 +149,7 @@ class StreamActivity : BaseActivity() {
     private val toolbar: Toolbar by bindView(R.id.toolbar)
 
     private val loading: ProgressBar by bindView(R.id.loading)
-    private val progress: PreviewTimeBar by bindView(R.id.exo_progress)
+    private val progress: DefaultTimeBar by bindView(R.id.exo_progress)
     private val rewindIndicator: TextView by bindView(R.id.rewindIndicator)
     private val fastForwardIndicator: TextView by bindView(R.id.fastForwardIndicator)
 
@@ -435,11 +435,11 @@ class StreamActivity : BaseActivity() {
                 )
         }
 
-        playerView.setControllerVisibilityListener {
-            toggleFullscreen(it == View.GONE)
+        playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
+            toggleFullscreen(visibility == View.GONE)
 
-            toolbar.isVisible = it == View.VISIBLE
-        }
+            toolbar.isVisible = visibility == View.VISIBLE
+        })
 
         // Nobody understands fitsSystemWindows so this can probably be done better, but seems to work for now.
         ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->

@@ -17,9 +17,8 @@ class ResettingMutableLiveData<T> : MutableLiveData<T>() {
         super.observe(
             owner,
             Observer {
-                observer.onChanged(it)
-
                 if (it != null) {
+                    observer.onChanged(it)
                     deliveredAmount.incrementAndGet()
 
                     if (deliveredAmount.compareAndSet(observerAmount.get(), 0)) {
