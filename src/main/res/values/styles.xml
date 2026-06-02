@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Base.Theme.App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Base.Theme.App" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorOnSecondary">@color/on_secondary</item>
 
@@ -53,7 +53,7 @@
         <item name="colorFastscrollThumb">@color/fastscroll_thumb</item>
     </style>
 
-    <style name="ThemeOverlay.App" parent="@style/ThemeOverlay.MaterialComponents.Light" />
+    <style name="ThemeOverlay.App" parent="@style/ThemeOverlay.Material3.Light" />
 
     <style name="Theme.Placeholder.App.Splash" parent="Base.Theme.App">
         <item name="android:windowContentOverlay">@null</item>
@@ -71,12 +71,12 @@
         <item name="android:textCursorDrawable">@drawable/cursor</item>
     </style>
 
-    <style name="Widget.App.CheckBox" parent="Widget.MaterialComponents.CompoundButton.CheckBox">
+    <style name="Widget.App.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="android:minHeight">32dp</item>
         <item name="android:minWidth">32dp</item>
     </style>
 
-    <style name="Widget.App.RadioButton" parent="Widget.MaterialComponents.CompoundButton.RadioButton">
+    <style name="Widget.App.RadioButton" parent="Widget.Material3.CompoundButton.RadioButton">
         <item name="android:minHeight">32dp</item>
         <item name="android:minWidth">32dp</item>
     </style>
@@ -85,7 +85,7 @@
         <item name="android:background">?attr/colorPrimary</item>
     </style>
 
-    <style name="Widget.App.Toolbar" parent="Widget.MaterialComponents.Toolbar">
+    <style name="Widget.App.Toolbar" parent="Widget.Material3.Toolbar">
         <item name="popupTheme">@style/ThemeOverlay.App</item>
         <item name="colorControlNormal">?attr/colorOnSurface</item>
     </style>

@@ -18,5 +18,5 @@
         <item name="colorFastscrollThumb">@color/fastscroll_thumb_night</item>
     </style>
 
-    <style name="ThemeOverlay.App" parent="@style/ThemeOverlay.MaterialComponents.Dark" />
+    <style name="ThemeOverlay.App" parent="@style/ThemeOverlay.Material3.Dark" />
 </resources>
