@@ -191,7 +191,7 @@ class AboutFragment : MaterialAboutFragment(), CustomTabsAware {
             .text(R.string.about_discord_title)
             .subText(R.string.about_discord_description)
             .icon(
-                IconicsDrawable(context, CommunityMaterial.Icon.cmd_discord).apply {
+                IconicsDrawable(context, CommunityMaterial.Icon.cmd_chat_processing).apply {
                     colorInt = context.resolveColor(R.attr.colorIcon)
                 }
             )
