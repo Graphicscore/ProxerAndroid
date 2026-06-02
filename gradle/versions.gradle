@@ -5,19 +5,19 @@ ext {
     appVersionPatch = 5
 
     minSdkVersion = 21
-    targetSdkVersion = 34
-    compileSdkVersion = 34
-    ndkVersion = "21.3.6528147"
+    targetSdkVersion = 35
+    compileSdkVersion = 35
+    ndkVersion = "27.2.12479018"
 
     // Java
-    javaVersion = JavaVersion.VERSION_1_8
+    javaVersion = JavaVersion.VERSION_17
 
     // Gradle
-    gradleVersion = "7.6.3"
+    gradleVersion = "8.10.2"
 
     // Core plugins
-    androidPluginVersion = "7.4.2"
-    kotlinVersion = "1.8.20"
+    androidPluginVersion = "8.7.2"
+    kotlinVersion = "1.9.25"
 
     // Utility plugins
     versionsPluginVersion = "0.36.0"
@@ -38,8 +38,8 @@ ext {
     securityCryptoVersion = "1.1.0-alpha03"
     appUpdateVersion = "2.1.0"
     adsIdentifierVersion = "17.0.0"
-    interactiveMediaVersion = "3.14.0"
-    castVersion = "19.0.0"
+    interactiveMediaVersion = "3.33.0"
+    castVersion = "21.5.0"
 
     // RxJava
     rxJavaVersion = "2.2.20"
@@ -67,12 +67,10 @@ ext {
     crossfaderVersion = "1.6.0"
     materialAboutVersion = "3.2.0-rc01"
     subsamplingScaleImageViewVersion = "90c6b27c13"
-    subsamplingPdfDecoderVersion = "ad07ddf671"
     materialDialogsVersion = "3.3.0"
     flexboxVersion = "3.0.0"
     emojiIosVersion = "9058c30868"
-    exoplayerVersion = "2.19.1"
-    previewSeekbarVersion = "09eec85551"
+    media3Version = "1.4.1"
     materialProgressBarVersion = "1.6.1"
     materialRatingBarVersion = "1.4.0"
     customtabsHelperVersion = "1.0.6"
@@ -90,8 +88,7 @@ ext {
     okioVersion = "2.10.0"
     moshiVersion = "1.15.0"
     easyHeaderFooterAdapterVersion = "3.0.0"
-kotterknifeVersion = "2.0"
-    imageDecoderVersion = "a7b102262a"
+    kotterknifeVersion = "2.0"
     concealVersion = "2.0.2"
     betterLinkMovementMethodVersion = "2.2.0"
     jsoupVersion = "1.13.1"

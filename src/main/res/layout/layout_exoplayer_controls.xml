@@ -39,7 +39,7 @@
             app:layout_constraintTop_toTopOf="@+id/fullscreen"
             tools:text="18:20" />
 
-        <com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
+        <androidx.media3.ui.DefaultTimeBar
             android:id="@+id/exo_progress"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -49,7 +49,6 @@
             app:layout_constraintEnd_toStartOf="@+id/exo_duration"
             app:layout_constraintStart_toEndOf="@+id/exo_position"
             app:layout_constraintTop_toTopOf="@+id/fullscreen"
-            app:previewFrameLayout="@id/previewFrameLayout"
             tools:ignore="UnusedIds" />
 
         <TextView

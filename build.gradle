@@ -22,8 +22,8 @@ android {
     ndkVersion rootProject.ext.ndkVersion
     namespace "me.proxer.app"
 
-    dexOptions {
-        preDexLibraries !isCI()
+    buildFeatures {
+        buildConfig true
     }
 
     defaultConfig {

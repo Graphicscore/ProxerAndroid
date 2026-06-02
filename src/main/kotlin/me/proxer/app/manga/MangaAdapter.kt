@@ -206,8 +206,6 @@ class MangaAdapter(var isVertical: Boolean) : BaseAdapter<Page, MangaViewHolder>
             image.setMinimumTileDpi(196)
             image.setMinimumDpi(90)
 
-            image.setBitmapDecoderFactory { ImageLibDecoder() }
-            image.setRegionDecoderFactory { ImageLibRegionDecoder() }
         }
 
         override fun bind(item: Page) {

@@ -1,38 +1,45 @@
 package me.proxer.app.util.rx
 
-import com.github.rubensousa.previewseekbar.PreviewLoader
-import com.github.rubensousa.previewseekbar.exoplayer.PreviewTimeBar
+import androidx.media3.ui.DefaultTimeBar
+import androidx.media3.ui.TimeBar
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.android.MainThreadDisposable
 import me.proxer.app.util.extension.checkMainThread
 
-/**
- * @author Ruben Gees
- */
-class PreviewTimeBarRequestObservable(private val view: PreviewTimeBar) : Observable<Long>() {
+class PreviewTimeBarRequestObservable(private val view: DefaultTimeBar) : Observable<Long>() {
 
     override fun subscribeActual(observer: Observer<in Long>) {
         if (!observer.checkMainThread()) {
             return
         }
 
-        val loader = Loader(view, observer)
+        val listener = Listener(view, observer)
 
-        observer.onSubscribe(loader)
+        observer.onSubscribe(listener)
 
-        view.setPreviewLoader(loader)
+        view.addListener(listener)
     }
 
-    internal class Loader(
-        private val view: PreviewTimeBar,
+    internal class Listener(
+        private val view: DefaultTimeBar,
         private val observer: Observer<in Long>
-    ) : MainThreadDisposable(), PreviewLoader {
+    ) : MainThreadDisposable(), TimeBar.OnScrubListener {
 
-        override fun loadPreview(currentPosition: Long, max: Long) {
+        override fun onScrubStart(timeBar: TimeBar, position: Long) {
+            emit(position)
+        }
+
+        override fun onScrubMove(timeBar: TimeBar, position: Long) {
+            emit(position)
+        }
+
+        override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) = Unit
+
+        private fun emit(position: Long) {
             if (!isDisposed) {
                 try {
-                    observer.onNext(currentPosition)
+                    observer.onNext(position)
                 } catch (e: Exception) {
                     observer.onError(e)
                     dispose()
@@ -41,7 +48,7 @@ class PreviewTimeBarRequestObservable(private val view: PreviewTimeBar) : Observ
         }
 
         override fun onDispose() {
-            view.setPreviewLoader(null)
+            view.removeListener(this)
         }
     }
 }
