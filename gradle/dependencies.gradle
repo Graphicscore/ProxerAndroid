@@ -11,7 +11,9 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation "androidx.browser:browser:$browserVersion"
-    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion"
     implementation "androidx.room:room-runtime:$roomVersion"
     implementation "androidx.room:room-rxjava2:$roomVersion"
     implementation "androidx.work:work-runtime-ktx:$workVersion"
