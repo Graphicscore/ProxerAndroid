@@ -14,9 +14,9 @@ import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
 import androidx.core.content.getSystemService
-import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.util.Util
+import androidx.media3.common.C
+import androidx.media3.ui.PlayerView
+import androidx.media3.common.util.Util
 import io.reactivex.subjects.PublishSubject
 import me.proxer.app.util.DeviceUtils
 import me.proxer.app.util.extension.unsafeLazy
