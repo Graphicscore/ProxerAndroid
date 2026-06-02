@@ -207,20 +207,19 @@ kapt {
 }
 
 detekt {
-    version = detektPluginVersion
     buildUponDefaultConfig = true
-
-    config = files("$projectDir/config/detekt/detekt.yml")
+    config.from(files("$projectDir/config/detekt/detekt.yml"))
 
     reports {
-        xml.destination = file("$buildDir/reports/detekt/detekt.xml")
-        html.destination = file("$buildDir/reports/detekt/detekt.html")
+        xml.required.set(true)
+        xml.outputLocation.set(file("$buildDir/reports/detekt/detekt.xml"))
+        html.required.set(true)
+        html.outputLocation.set(file("$buildDir/reports/detekt/detekt.html"))
     }
 }
 
 ktlint {
     version = ktlintVersion
-    disabledRules = ["import-ordering"]
     reporters {
         reporter org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE
     }
