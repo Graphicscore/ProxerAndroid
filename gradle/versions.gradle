@@ -17,8 +17,9 @@ ext {
 
     // Core plugins
     androidPluginVersion = "9.2.1"
-    kotlinVersion = "2.2.0"
+
     kspVersion = "2.3.9"
+    kotlinVersion = "2.4.0"
 
     // Utility plugins
     versionsPluginVersion = "0.54.0"
@@ -63,7 +64,7 @@ ext {
     iconicsVersion = "5.4.0"
     communityMaterialTypefaceVersion = "7.0.96.2-kotlin"
     materialDrawerVersion = "9.0.2"
-    aboutLibrariesVersion = "11.2.3"
+    aboutLibrariesVersion = "11.6.3"
     crossfaderVersion = "1.6.0"
     materialAboutVersion = "3.2.0-rc01"
     subsamplingScaleImageViewVersion = "3.10.0"
@@ -84,7 +85,7 @@ ext {
     glideVersion = "4.16.0"
     retrofitVersion = "2.12.0"
     okHttpVersion = "4.12.0"
-    okioVersion = "3.12.0"
+    okioVersion = "3.17.0"
     moshiVersion = "1.15.2"
     easyHeaderFooterAdapterVersion = "3.0.0"
     kotterknifeVersion = "2.0"
