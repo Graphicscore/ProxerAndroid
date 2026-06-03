@@ -27,6 +27,17 @@ No unit or instrumented tests exist in the project.
 
 Three build variants: **debug** (unobfuscated, logging on), **release** (obfuscated, no logging), **logRelease** (obfuscated, logging on).
 
+## Android TV Frontend
+
+TV implementation lives on the `tv-support` branch in `me.proxer.app.tv`. All screens are Compose (Compose for TV + Material3); activities are plain `ComponentActivity`. No Fragments.
+
+- `TvMainActivity` → `TvBrowseScreen` (browse/home)
+- `TvLoginActivity` → `TvLoginScreen` (mirrors `LoginDialog` flow including 2FA)
+- `TvSearchActivity` → `TvSearchScreen`
+- `TvMediaDetailActivity` → `TvMediaDetailScreen`
+- `TvEpisodeActivity` → `TvEpisodeScreen`
+- Shared error composable: `TvErrorView` (`me.proxer.app.tv`)
+
 ## Architecture
 
 MVVM with RxJava 2. No coroutines.
@@ -48,6 +59,9 @@ me.proxer.app/
 
 Key base classes:
 - `BaseViewModel` — wraps RxJava `Single<T>` into `LiveData`; handles loading, error, and reload states
+  - **`isLoginRequired = true` by default** — all VMs require login unless overridden. Only `ServerStatusViewModel` sets it `false`.
+  - **No auto-load** — `BaseContentFragment.onViewCreated` calls `viewModel.load()`. Compose screens must do this manually: `LaunchedEffect(Unit) { viewModel.load() }`.
+  - `isLoggedInObservable` uses `.skip(1)` — already-logged-in users at cold start do not trigger the reactive reload; the explicit `load()` call is the only trigger.
 - `BaseContentFragment<T>` — subscribes to ViewModel, renders swipe-to-refresh + error UI
 - `BaseActivity` — applies theme dynamically, provides snackbar helper
 
@@ -95,6 +109,10 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 
 `ErrorUtils.handle(Throwable)` → `ErrorAction` (user-facing string + optional button). Propagated via `BaseViewModel.error: LiveData<ErrorAction>`. `BaseContentFragment` renders the error UI automatically.
 
+`ErrorAction` button sentinel constants (`ACTION_MESSAGE_DEFAULT = -1`, `ACTION_MESSAGE_HIDE = -2`) are in the companion object — import as `ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT`.
+
+Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_CONFIRMATION`. Confirm by setting `preferenceHelper.isAgeRestrictedMediaAllowed = true`; the ViewModel reloads automatically via `isAgeRestrictedMediaAllowedObservable`. Mobile uses `AgeConfirmationDialog`; TV uses a Compose `AlertDialog` in `TvErrorView`.
+
 ## Toolchain
 
 | Property | Value                                                                                     |
@@ -122,3 +140,6 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 - `applicationVariants.all {}` was removed in AGP 9 — APK output now uses AGP defaults instead of `app-1.11.5.apk`. Re-implement with `androidComponents.onVariants {}` if custom naming is needed.
 - `lifecycle` 2.11 and `core-ktx` 1.19 require compileSdk 37 (not yet stable). Current ceiling: lifecycle 2.10.0, core-ktx 1.18.0.
 - `concealVersion` was deleted — Hawk/Conceal removed for 16KB page size compatibility.
+- `koin-androidx-compose` 3.5.6 exposes `get<T>()` for singleton injection in composables, **not** `koinInject()`. Import: `org.koin.androidx.compose.get`.
+- `./gradlew compileDebugKotlin` (no `:app:` prefix) — fast type-check without a full build.
+- Source root is `src/` at the project root (no `app/` subdirectory). `.claude/worktrees/` dirs appear in `find` results — exclude with `-not -path "*/.claude/*"`.
