@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.tv.material3.MaterialTheme
+import me.proxer.app.tv.auth.TvLoginActivity
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
 import me.proxer.library.enums.AnimeLanguage
@@ -20,6 +21,7 @@ class TvStreamActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val activity = this
         val id = entryId
         val ep = episode
         val lang = language
@@ -31,6 +33,7 @@ class TvStreamActivity : ComponentActivity() {
                     episode = ep,
                     language = lang,
                     entryName = name,
+                    onLoginClick = { activity.startActivity<TvLoginActivity>() },
                     onBack = { finish() }
                 )
             }

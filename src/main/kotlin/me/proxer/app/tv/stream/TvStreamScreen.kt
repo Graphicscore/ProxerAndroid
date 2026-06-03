@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.anime.resolver.StreamResolutionResult
+import me.proxer.app.tv.TvErrorView
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.androidUri
 import me.proxer.app.util.extension.toast
 import me.proxer.library.enums.AnimeLanguage
@@ -51,6 +51,7 @@ fun TvStreamScreen(
     episode: Int,
     language: AnimeLanguage,
     entryName: String,
+    onLoginClick: () -> Unit,
     onBack: () -> Unit
 ) {
     val viewModel: AnimeViewModel = koinViewModel { parametersOf(entryId, language, episode) }
@@ -61,14 +62,16 @@ fun TvStreamScreen(
     val resolutionError by viewModel.resolutionError.observeAsState()
     val context = LocalContext.current
     var resolvingStreamId by remember { mutableStateOf<String?>(null) }
-    // ResettingMutableLiveData suppresses null re-delivery to Compose, so we use local state to
-    // track transient error visibility rather than checking the LiveData value directly.
+    // ResettingMutableLiveData suppresses null re-delivery to Compose, so we capture the
+    // ErrorAction in local state before the LiveData resets to null.
     var showResolutionError by remember { mutableStateOf(false) }
+    var resolutionErrorAction by remember { mutableStateOf<ErrorUtils.ErrorAction?>(null) }
 
-    LaunchedEffect(Unit) { viewModel.loadIfPossible() }
+    LaunchedEffect(Unit) { viewModel.load() }
 
     LaunchedEffect(resolutionError) {
         if (resolutionError != null) {
+            resolutionErrorAction = resolutionError
             showResolutionError = true
             resolvingStreamId = null
         }
@@ -125,11 +128,11 @@ fun TvStreamScreen(
             }
         }
 
-        if (showResolutionError) {
-            Text(
-                "Resolution error",
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(bottom = 8.dp)
+        if (showResolutionError && resolutionErrorAction != null) {
+            TvErrorView(
+                error = resolutionErrorAction!!,
+                onLoginClick = onLoginClick,
+                onRetryClick = { showResolutionError = false }
             )
         }
 
@@ -140,10 +143,12 @@ fun TvStreamScreen(
                 }
             }
             error != null -> {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Failed to load streams", color = MaterialTheme.colorScheme.error)
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = { viewModel.reload() }) { Text("Retry") }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    TvErrorView(
+                        error = error!!,
+                        onLoginClick = onLoginClick,
+                        onRetryClick = { viewModel.reload() }
+                    )
                 }
             }
             else -> {
