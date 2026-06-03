@@ -36,6 +36,7 @@ import org.koin.core.parameter.parametersOf
 fun TvMediaDetailScreen(
     entryId: String,
     entryName: String,
+    onLoginClick: () -> Unit,
     onWatchEpisodes: (episodeAmount: Int) -> Unit,
     onBack: () -> Unit
 ) {
@@ -74,10 +75,11 @@ fun TvMediaDetailScreen(
             OutlinedButton(onClick = onBack) { Text("← Back", color = Color.White) }
 
             when {
-                isLoading == true && entry == null -> CircularProgressIndicator(color = Color.White)
+                isLoading == true -> CircularProgressIndicator(color = Color.White)
                 error != null -> {
                     TvErrorView(
                         error = error!!,
+                        onLoginClick = onLoginClick,
                         onRetryClick = { viewModel.load() }
                     )
                 }

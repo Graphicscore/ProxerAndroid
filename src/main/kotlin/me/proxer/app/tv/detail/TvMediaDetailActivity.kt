@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.tv.material3.MaterialTheme
+import me.proxer.app.tv.auth.TvLoginActivity
 import me.proxer.app.tv.episode.TvEpisodeActivity
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
@@ -24,6 +25,7 @@ class TvMediaDetailActivity : ComponentActivity() {
                 TvMediaDetailScreen(
                     entryId = id,
                     entryName = name,
+                    onLoginClick = { activity.startActivity<TvLoginActivity>() },
                     onWatchEpisodes = { episodeAmount ->
                         TvEpisodeActivity.navigateTo(activity, id, name, episodeAmount)
                     },
