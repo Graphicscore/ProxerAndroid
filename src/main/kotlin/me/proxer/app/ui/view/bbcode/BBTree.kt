@@ -84,7 +84,6 @@ class BBTree(
     private fun getRecursiveChildren(current: List<BBTree>): List<BBTree> = current
         .plus(current.flatMap { getRecursiveChildren(it.children) })
 
-    @Suppress("EqualsAlwaysReturnsTrueOrFalse") // False positive
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

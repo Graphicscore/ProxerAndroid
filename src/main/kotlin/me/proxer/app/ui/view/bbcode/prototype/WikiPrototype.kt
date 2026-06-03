@@ -29,7 +29,6 @@ object WikiPrototype : AutoClosingPrototype {
         val link = children.firstOrNull()?.args?.text?.toString() ?: ""
 
         if (link.isNotBlank()) {
-            @Suppress("UNCHECKED_CAST")
             val heightMap = args[ImagePrototype.HEIGHT_MAP_ARGUMENT] as MutableMap<String, Int>?
             val height = heightMap?.get(link) ?: WRAP_CONTENT
 

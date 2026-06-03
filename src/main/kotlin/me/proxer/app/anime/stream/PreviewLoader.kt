@@ -39,7 +39,6 @@ object PreviewLoader {
                 } catch (error: Throwable) {
                     // MediaMetadataRetriever throws IllegalArgumentExceptions on some devices due to bugs in the
                     // implementation. Ignore these by rethrowing a generic RuntimeException.
-                    @Suppress("TooGenericExceptionThrown")
                     throw RuntimeException(error)
                 }
             }

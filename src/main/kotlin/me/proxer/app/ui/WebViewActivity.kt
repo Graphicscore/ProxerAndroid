@@ -35,7 +35,6 @@ class WebViewActivity : AppCompatActivity() {
     private val toolbar: Toolbar by bindView(R.id.toolbar)
     private val webView: WebView by bindView(R.id.webview)
 
-    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         val theme = preferenceHelper.themeContainer.theme
 

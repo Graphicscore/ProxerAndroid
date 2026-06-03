@@ -29,7 +29,6 @@ class MessengerViewModel(initialConference: LocalConference) : PagedViewModel<Lo
 
     override val itemsOnPage = MessengerWorker.MESSAGES_ON_PAGE
 
-    @Suppress("UNUSED_PARAMETER")
     override var hasReachedEnd
         get() = safeConference.isFullyLoaded
         set(value) = Unit

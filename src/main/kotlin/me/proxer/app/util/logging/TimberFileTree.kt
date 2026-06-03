@@ -17,7 +17,6 @@ import java.util.concurrent.Executors
 /**
  * @author Ruben Gees
  */
-@SuppressLint("LogNotTimber")
 class TimberFileTree : Timber.Tree() {
 
     private companion object {
@@ -28,7 +27,6 @@ class TimberFileTree : Timber.Tree() {
         private val executor = Executors.newSingleThreadExecutor()
     }
 
-    @Suppress("DEPRECATION") // What is Android even doing?
     private val downloadsDirectory
         get() = Environment.getExternalStoragePublicDirectory(DIRECTORY_DOWNLOADS)
 
@@ -36,7 +34,6 @@ class TimberFileTree : Timber.Tree() {
 
     override fun isLoggable(tag: String?, priority: Int) = priority >= Log.INFO
 
-    @SuppressLint("CheckResult")
     override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (!resolvedLogsDirectory.canWrite()) {
             return

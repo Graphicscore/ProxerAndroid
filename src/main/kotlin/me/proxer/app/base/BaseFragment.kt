@@ -18,7 +18,6 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-@Suppress("UnnecessaryAbstractClass")
 abstract class BaseFragment(@LayoutRes contentLayoutId: Int) : Fragment(contentLayoutId), CustomTabsAware {
 
     protected val bus by safeInject<RxBus>()

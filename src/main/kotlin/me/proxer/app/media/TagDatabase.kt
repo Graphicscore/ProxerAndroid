@@ -10,7 +10,6 @@ import me.proxer.app.util.converter.RoomConverters
 /**
  * @author Ruben Gees
  */
-@Suppress("UnnecessaryAbstractClass")
 @Database(entities = [LocalTag::class], version = 2)
 @TypeConverters(RoomConverters::class)
 abstract class TagDatabase : RoomDatabase() {

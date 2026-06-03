@@ -162,7 +162,6 @@ class MainApplication : Application() {
         }
     }
 
-    @SuppressLint("RestrictedApi")
     private fun initLibs() {
         AndroidThreeTen.init(this)
 
@@ -208,7 +207,6 @@ class MainApplication : Application() {
         }
     }
 
-    @SuppressLint("CheckResult")
     private fun initNightMode() {
         AppCompatDelegate.setDefaultNightMode(preferenceHelper.themeContainer.variant.value)
 

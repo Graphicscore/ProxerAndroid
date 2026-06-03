@@ -29,7 +29,6 @@ class CrashDialog : BaseDialog() {
     private val errorDetails: String
         get() = requireArguments().getSafeString(ERROR_DETAILS_ARGUMENT)
 
-    @Suppress("DEPRECATION")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
         .title(R.string.dialog_crash_title)
         .message(text = errorDetails)

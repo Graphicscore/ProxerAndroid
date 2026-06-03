@@ -26,7 +26,6 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-@Suppress("UnnecessaryAbstractClass")
 abstract class DrawerActivity : BaseActivity() {
 
     protected open val contentView

@@ -128,7 +128,6 @@ class TouchablePlayerView @JvmOverloads constructor(
         super.onDetachedFromWindow()
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (event.action == MotionEvent.ACTION_UP) {
             isScrolling = false
@@ -192,7 +191,6 @@ class TouchablePlayerView @JvmOverloads constructor(
         volumeChangeSubject.onNext((localVolume / maxVolume * 100).toInt())
     }
 
-    @Suppress("SwallowedException")
     private fun adjustBrightness(distanceY: Float) {
         val increment = distanceY / (height / 0.75f)
         val window = (context as? Activity)?.window

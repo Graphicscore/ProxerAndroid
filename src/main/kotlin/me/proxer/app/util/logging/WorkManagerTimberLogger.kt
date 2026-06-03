@@ -8,7 +8,6 @@ import timber.log.Timber
 /**
  * @author Ruben Gees
  */
-@SuppressLint("RestrictedApi")
 class WorkManagerTimberLogger(loggingLevel: Int = Log.INFO) : Logger(loggingLevel) {
 
     override fun verbose(tag: String, message: String) {

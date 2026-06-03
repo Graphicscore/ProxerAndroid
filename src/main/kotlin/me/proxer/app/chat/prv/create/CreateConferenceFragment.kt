@@ -301,7 +301,6 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         }
     }
 
-    @Suppress("ThrowsCount")
     private fun initSendButton() {
         sendButton.clicks()
             .map {

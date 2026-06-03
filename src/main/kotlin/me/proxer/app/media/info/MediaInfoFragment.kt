@@ -430,7 +430,6 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         )
     }
 
-    @Suppress("LabeledExpression")
     private fun <T> bindChips(
         layout: FlexboxLayout,
         items: List<T>,

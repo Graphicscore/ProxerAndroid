@@ -21,7 +21,6 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-@Suppress("UnnecessaryAbstractClass")
 abstract class BaseDialog : DialogFragment(), CustomTabsAware {
 
     val dialogLifecycleOwner: LifecycleOwner = object : LifecycleOwner {

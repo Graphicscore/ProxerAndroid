@@ -96,7 +96,6 @@ import timber.log.Timber
 /**
  * @author Ruben Gees
  */
-@Suppress("DEPRECATION") // TODO: Wait for androidx fullscreen support library.
 class StreamActivity : BaseActivity() {
 
     companion object {
@@ -394,7 +393,6 @@ class StreamActivity : BaseActivity() {
         handleUIChange()
     }
 
-    @Suppress("SwallowedException")
     internal fun getSafeCastContext(): CastContext? {
         val availabilityResult = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this)
 
@@ -465,7 +463,6 @@ class StreamActivity : BaseActivity() {
         toggleFullscreen(true)
     }
 
-    @SuppressLint("SourceLockedOrientationActivity")
     private fun toggleOrientation() {
         if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED

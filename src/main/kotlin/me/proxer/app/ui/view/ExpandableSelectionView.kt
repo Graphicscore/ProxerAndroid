@@ -277,7 +277,6 @@ class ExpandableSelectionView @JvmOverloads constructor(
 
         companion object {
 
-            @Suppress("unused")
             @JvmField
             val CREATOR = object : Parcelable.Creator<SavedState> {
                 override fun createFromParcel(source: Parcel) = SavedState(source)

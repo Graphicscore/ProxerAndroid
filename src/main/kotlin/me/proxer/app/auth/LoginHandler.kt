@@ -25,7 +25,6 @@ class LoginHandler(
     private val messengerDao: MessengerDao
 ) {
 
-    @SuppressLint("CheckResult")
     fun listen(context: Context) {
         storageHelper.isLoggedInObservable
             .subscribe { isLoggedIn ->

@@ -22,7 +22,6 @@ data class LocalTag(
 ) : Parcelable {
 
     companion object {
-        @Suppress("unused")
         @JvmField
         val CREATOR = object : Parcelable.Creator<LocalTag> {
             override fun createFromParcel(parcel: Parcel) = LocalTag(parcel)

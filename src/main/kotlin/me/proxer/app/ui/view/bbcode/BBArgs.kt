@@ -86,7 +86,6 @@ class BBArgs : LinkedHashMap<String, Any?> {
         return true
     }
 
-    @Suppress("RedundantOverride")
     override fun hashCode() = super.hashCode()
 
     override fun toString() = "BBArgs() ${super.toString()}"

@@ -20,7 +20,6 @@ object DeviceUtils {
 
     fun isLargeTablet(context: Context) = context.resources.getBoolean(R.bool.is_large_tablet)
 
-    @Suppress("DEPRECATION")
     fun getScreenWidth(context: Context): Int {
         val windowManager = requireNotNull(context.getSystemService<WindowManager>())
 
@@ -36,7 +35,6 @@ object DeviceUtils {
         }
     }
 
-    @Suppress("DEPRECATION")
     fun getScreenHeight(context: Context): Int {
         val windowManager = requireNotNull(context.getSystemService<WindowManager>())
 

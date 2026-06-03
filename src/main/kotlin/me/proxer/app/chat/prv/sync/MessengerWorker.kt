@@ -223,7 +223,6 @@ class MessengerWorker(
         return SynchronizationResult.CHANGES
     }
 
-    @Suppress("RethrowCaughtException")
     private fun synchronize(): Map<LocalConference, List<LocalMessage>> {
         val sentMessages = sendMessages()
 
@@ -284,7 +283,6 @@ class MessengerWorker(
         return fetchedMessages
     }
 
-    @Suppress("RethrowCaughtException")
     private fun sendMessages() = messengerDao.getMessagesToSend().apply {
         forEachIndexed { index, (messageId, conferenceId, _, _, message) ->
             val result = try {

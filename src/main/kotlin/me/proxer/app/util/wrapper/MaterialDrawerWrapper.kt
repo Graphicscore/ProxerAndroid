@@ -45,7 +45,6 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-@Suppress("UNUSED_PARAMETER")
 class MaterialDrawerWrapper(
     context: Activity,
     toolbar: Toolbar,

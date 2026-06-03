@@ -45,14 +45,11 @@ object TextPrototype : BBPrototype, ContentPrototype {
         }
     }
 
-    @SuppressLint("RestrictedApi")
     private val webUrlRegex = PatternsCompat.AUTOLINK_WEB_URL.toRegex()
     private val validLinkPredicate = { link: String -> link.startsWith("@") || webUrlRegex.matches(link) }
 
-    @Suppress("RegExpUnexpectedAnchor")
     override val startRegex = Regex("x^")
 
-    @Suppress("RegExpUnexpectedAnchor")
     override val endRegex = Regex("x^")
 
     override fun construct(code: String, parent: BBTree): BBTree {

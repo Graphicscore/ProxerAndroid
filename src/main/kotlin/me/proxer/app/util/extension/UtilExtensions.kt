@@ -138,7 +138,6 @@ inline fun Intent.addReferer(): Intent {
 }
 
 // TODO: https://github.com/InsertKoinIO/koin/issues/303
-@Suppress("UNCHECKED_CAST")
 inline fun unsafeParametersOf(vararg parameters: Any?): ParametersHolder {
     return ParametersHolder(parameters.toMutableList())
 }

@@ -9,7 +9,6 @@ import me.proxer.library.entity.ProxerIdItem
 /**
  * @author Ruben Gees
  */
-@Suppress("UnnecessaryAbstractClass")
 abstract class BaseAdapter<T, VH : RecyclerView.ViewHolder> : RecyclerView.Adapter<VH>() {
 
     var positionResolver: PositionResolver = PositionResolver()

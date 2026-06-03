@@ -169,7 +169,6 @@ class AnimeViewModel(
         .sorted(streamComparator)
         .toList()
 
-    @Suppress("ForbiddenVoid")
     private fun updateUserState(endpoint: Endpoint<Unit?>) {
         userStateDisposable?.dispose()
         userStateDisposable = Single.fromCallable { validators.validateLogin() }
