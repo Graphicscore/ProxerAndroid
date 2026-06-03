@@ -2,6 +2,7 @@ package me.proxer.app.auth
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import me.proxer.app.util.data.ResettingMutableLiveData
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -21,7 +22,7 @@ import me.proxer.library.ProxerException.ServerErrorType
  */
 class LoginViewModel : ViewModel() {
 
-    val success = MutableLiveData<Unit?>()
+    val success = ResettingMutableLiveData<Unit?>()
     val error = MutableLiveData<ErrorUtils.ErrorAction?>()
     val isLoading = MutableLiveData<Boolean?>()
     val isTwoFactorAuthenticationEnabled = MutableLiveData<Boolean?>()
