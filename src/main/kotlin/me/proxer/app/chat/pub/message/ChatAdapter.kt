@@ -23,7 +23,7 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindOptionalView
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -55,7 +55,7 @@ class ChatAdapter(
         private const val MESSAGE_SELECTION_STATE = "chat_message_selection"
     }
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val titleClickSubject: PublishSubject<Pair<ImageView, ParsedChatMessage>> = PublishSubject.create()
     val messageSelectionSubject: PublishSubject<Int> = PublishSubject.create()
     val linkClickSubject: PublishSubject<HttpUrl> = PublishSubject.create()

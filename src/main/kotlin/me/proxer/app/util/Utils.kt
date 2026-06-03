@@ -5,7 +5,7 @@ import android.content.Intent
 import android.content.pm.ResolveInfo
 import android.net.Uri
 import com.bumptech.glide.request.target.Target
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.util.extension.androidUri
 import okhttp3.HttpUrl
 import org.threeten.bp.format.DateTimeFormatter
@@ -21,7 +21,7 @@ object Utils {
     val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
 
     fun getCircleBitmapFromUrl(context: Context, url: HttpUrl) = try {
-        GlideApp.with(context)
+        Glide.with(context)
             .asBitmap()
             .load(url.toString())
             .circleCrop()

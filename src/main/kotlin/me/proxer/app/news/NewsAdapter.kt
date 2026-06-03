@@ -18,7 +18,7 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -41,7 +41,7 @@ class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAd
         private const val EXPANDED_STATE = "news_expansion_map"
     }
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val clickSubject: PublishSubject<NewsArticle> = PublishSubject.create()
     val imageClickSubject: PublishSubject<Pair<ImageView, NewsArticle>> = PublishSubject.create()
 

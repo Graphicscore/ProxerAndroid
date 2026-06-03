@@ -6,7 +6,7 @@ import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.base.PagedContentFragment
@@ -92,6 +92,6 @@ class HistoryFragment : PagedContentFragment<LocalUserHistoryEntry>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        innerAdapter.glide = GlideApp.with(this)
+        innerAdapter.glide = Glide.with(this)
     }
 }

@@ -22,7 +22,7 @@ import com.uber.autodispose.android.ViewScopeProvider
 import com.uber.autodispose.autoDisposable
 import me.proxer.app.manga.AndroidPdfDecoder
 import me.proxer.app.manga.AndroidPdfRegionDecoder
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.ui.view.bbcode.BBArgs
 import me.proxer.app.ui.view.bbcode.BBCodeView
@@ -105,7 +105,7 @@ object PdfPrototype : AutoClosingPrototype {
     }
 
     private fun loadImage(
-        glide: GlideRequests,
+        glide: RequestManager,
         view: SubsamplingScaleImageView,
         url: HttpUrl?,
         heightMap: MutableMap<String, Int>?

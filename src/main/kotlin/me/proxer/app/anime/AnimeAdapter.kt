@@ -21,7 +21,7 @@ import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.ProxerStreamResolver
 import me.proxer.app.anime.resolver.StreamResolutionResult
@@ -56,7 +56,7 @@ class AnimeAdapter(
         private const val MESSAGE_VIEW_TYPE = 101
     }
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val uploaderClickSubject: PublishSubject<AnimeStream> = PublishSubject.create()
     val translatorGroupClickSubject: PublishSubject<AnimeStream> = PublishSubject.create()
     val playClickSubject: PublishSubject<AnimeStream> = PublishSubject.create()

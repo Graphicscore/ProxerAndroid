@@ -35,7 +35,7 @@ import com.vanniktech.emoji.EmojiEditText
 import com.vanniktech.emoji.EmojiPopup
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.PagedContentFragment
 import me.proxer.app.profile.ProfileActivity
@@ -201,7 +201,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
             viewModel.loadDraft()
         }
 
-        innerAdapter.glide = GlideApp.with(this)
+        innerAdapter.glide = Glide.with(this)
 
         scrollToBottom.setIconicsImage(CommunityMaterial.Icon.cmd_chevron_down, 32, colorAttr = R.attr.colorOnSurface)
 

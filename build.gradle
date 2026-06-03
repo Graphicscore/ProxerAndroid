@@ -6,7 +6,6 @@ buildscript { scriptHandler ->
 plugins {
     id "com.android.application"
     id "org.jetbrains.kotlin.android"
-    id "org.jetbrains.kotlin.kapt" // keep: Glide 4.x has no KSP processor; remove when Glide 5 ships KSP support
     id "com.google.devtools.ksp"
 
     id "com.mikepenz.aboutlibraries.plugin"
@@ -173,10 +172,6 @@ apply from: "${projectDir}/gradle/dependencies.gradle"
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
-}
-
-kapt {
-    useBuildCache = true
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

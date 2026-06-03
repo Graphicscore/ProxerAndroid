@@ -17,7 +17,7 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val profileClickSubject: PublishSubject<Pair<ImageView, ParsedPost>> = PublishSubject.create()
 
     private val heightMap = ConcurrentHashMap<String, Int>()

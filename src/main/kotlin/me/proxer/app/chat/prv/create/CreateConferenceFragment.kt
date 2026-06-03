@@ -32,7 +32,7 @@ import com.vanniktech.emoji.EmojiEditText
 import com.vanniktech.emoji.EmojiPopup
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseAdapter.ContainerPositionResolver
 import me.proxer.app.base.BaseFragment
@@ -170,7 +170,7 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         updateIcons()
         initFooter()
 
-        innerAdapter.glide = GlideApp.with(this)
+        innerAdapter.glide = Glide.with(this)
 
         participants.isNestedScrollingEnabled = false
         participants.layoutManager = LinearLayoutManager(context)
