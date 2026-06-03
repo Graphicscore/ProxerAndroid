@@ -78,10 +78,7 @@ fun TvEpisodeScreen(
                     TvErrorView(
                         error = error!!,
                         onLoginClick = onLoginClick,
-                        onRetryClick = {
-                            if (episodes.isNullOrEmpty()) viewModel.reload()
-                            else viewModel.loadIfPossible()
-                        }
+                        onRetryClick = { viewModel.reload() }
                     )
                 }
             }
