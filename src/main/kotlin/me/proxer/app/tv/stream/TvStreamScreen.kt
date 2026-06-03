@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,6 +39,7 @@ import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.util.extension.androidUri
+import me.proxer.app.util.extension.toast
 import me.proxer.library.enums.AnimeLanguage
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
@@ -56,6 +60,9 @@ fun TvStreamScreen(
     val resolutionResult by viewModel.resolutionResult.observeAsState()
     val resolutionError by viewModel.resolutionError.observeAsState()
     val context = LocalContext.current
+    var resolvingStreamId by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) { viewModel.loadIfPossible() }
 
     LaunchedEffect(resolutionResult) {
         when (val result = resolutionResult) {
@@ -67,14 +74,14 @@ fun TvStreamScreen(
                 try {
                     context.startActivity(result.makeIntent())
                 } catch (e: Exception) {
-                    Toast.makeText(context, "No app found to open this link", Toast.LENGTH_SHORT).show()
+                    context.toast("No app found to open this link", Toast.LENGTH_SHORT)
                 }
             }
             is StreamResolutionResult.App -> {
                 try {
                     result.navigate(context)
                 } catch (e: Exception) {
-                    Toast.makeText(context, "No app found to handle this stream", Toast.LENGTH_SHORT).show()
+                    context.toast("No app found to handle this stream", Toast.LENGTH_SHORT)
                 }
             }
             is StreamResolutionResult.Message -> Toast.makeText(
@@ -82,6 +89,7 @@ fun TvStreamScreen(
             ).show()
             null -> Unit
         }
+        resolvingStreamId = null
     }
 
     Column(
@@ -139,8 +147,11 @@ fun TvStreamScreen(
                         items(streams, key = { it.id }) { stream ->
                             TvStreamItem(
                                 stream = stream,
-                                isResolving = isLoading == true,
-                                onClick = { viewModel.resolve(stream) }
+                                isResolving = resolvingStreamId == stream.id,
+                                onClick = {
+                                    resolvingStreamId = stream.id
+                                    viewModel.resolve(stream)
+                                }
                             )
                         }
                     }
