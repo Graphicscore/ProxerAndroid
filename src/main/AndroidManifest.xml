@@ -12,6 +12,12 @@
     <uses-feature
         android:name="android.hardware.telephony"
         android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
 
     <queries>
         <package android:name="com.crunchyroll.crunchyroid" />
@@ -168,6 +174,17 @@
                     android:host="proxer.me"
                     android:pathPattern="/user/.*"
                     android:scheme="https" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".tv.TvMainActivity"
+            android:exported="true"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
 

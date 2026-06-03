@@ -103,4 +103,15 @@ dependencies {
     ksp "androidx.room:room-compiler:$roomVersion"
     ksp "com.github.bumptech.glide:ksp:$glideVersion"
     ksp "com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion"
+
+    implementation platform("androidx.compose:compose-bom:$composeBomVersion")
+    implementation "androidx.compose.ui:ui"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.runtime:runtime"
+    implementation "androidx.compose.runtime:runtime-livedata"
+    implementation "androidx.tv:tv-material:$tvMaterialVersion"
+    implementation "androidx.activity:activity-compose:$activityComposeVersion"
+    implementation "io.insert-koin:koin-androidx-compose:$koinVersion"
+    implementation "io.coil-kt:coil-compose:$coilVersion"
+    debugImplementation "androidx.compose.ui:ui-tooling"
 }
