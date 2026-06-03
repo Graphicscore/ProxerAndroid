@@ -61,8 +61,18 @@ fun TvStreamScreen(
     val resolutionError by viewModel.resolutionError.observeAsState()
     val context = LocalContext.current
     var resolvingStreamId by remember { mutableStateOf<String?>(null) }
+    // ResettingMutableLiveData suppresses null re-delivery to Compose, so we use local state to
+    // track transient error visibility rather than checking the LiveData value directly.
+    var showResolutionError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.loadIfPossible() }
+
+    LaunchedEffect(resolutionError) {
+        if (resolutionError != null) {
+            showResolutionError = true
+            resolvingStreamId = null
+        }
+    }
 
     LaunchedEffect(resolutionResult) {
         when (val result = resolutionResult) {
@@ -89,7 +99,10 @@ fun TvStreamScreen(
             ).show()
             null -> Unit
         }
-        resolvingStreamId = null
+        if (resolutionResult != null) {
+            showResolutionError = false
+            resolvingStreamId = null
+        }
     }
 
     Column(
@@ -112,7 +125,7 @@ fun TvStreamScreen(
             }
         }
 
-        resolutionError?.let {
+        if (showResolutionError) {
             Text(
                 "Resolution error",
                 color = MaterialTheme.colorScheme.error,
