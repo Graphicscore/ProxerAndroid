@@ -14,7 +14,6 @@ class TvEpisodeActivity : ComponentActivity() {
 
     private val entryId: String get() = intent.getSafeStringExtra(ID_EXTRA)
     private val entryName: String get() = intent.getStringExtra(NAME_EXTRA) ?: ""
-    private val episodeAmount: Int get() = intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 0)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
