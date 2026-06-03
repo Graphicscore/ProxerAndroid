@@ -91,6 +91,12 @@ ext {
     kotterknifeVersion = "2.0"
     betterLinkMovementMethodVersion = "2.2.0"
     jsoupVersion = "1.22.2"
+    // Compose / TV
+    composeBomVersion = "2024.09.03"
+    tvMaterialVersion = "1.0.0"
+    activityComposeVersion = "1.9.3"
+    coilVersion = "2.7.0"
+
     // Debugging
     customActivityOnCrashVersion = "2.4.0"
     strictModeCompatVersion = "30.1.1"
