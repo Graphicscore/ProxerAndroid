@@ -90,7 +90,7 @@ ext {
     easyHeaderFooterAdapterVersion = "3.0.0"
     kotterknifeVersion = "2.0"
     betterLinkMovementMethodVersion = "2.2.0"
-    jsoupVersion = "1.21.1"
+    jsoupVersion = "1.22.2"
     // Debugging
     customActivityOnCrashVersion = "2.4.0"
     strictModeCompatVersion = "30.1.1"
