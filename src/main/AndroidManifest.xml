@@ -351,6 +351,7 @@
 
         <activity
             android:name=".tv.TvMainActivity"
+            android:banner="@drawable/tv_banner"
             android:exported="true"
             android:screenOrientation="landscape"
             android:theme="@style/Theme.MaterialComponents.DayNight.NoActionBar">

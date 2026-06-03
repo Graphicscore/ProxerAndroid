@@ -102,8 +102,6 @@ class MediaListViewModel(
         super.onCleared()
     }
 
-    override fun areItemsTheSame(old: MediaListEntry, new: MediaListEntry) = old == new
-
     fun loadTags() {
         tagsDisposable?.dispose()
         tagsDisposable = Single

@@ -134,7 +134,7 @@ fun TvSearchScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(entries ?: emptyList(), key = { it.id }) { entry ->
+                items((entries ?: emptyList()).distinctBy { it.id }, key = { it.id }) { entry ->
                     TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
                 }
             }
