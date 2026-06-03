@@ -39,6 +39,7 @@ import org.koin.core.parameter.parametersOf
 fun TvEpisodeScreen(
     entryId: String,
     entryName: String,
+    onLoginClick: () -> Unit,
     onEpisodeClick: (episode: Int, language: AnimeLanguage) -> Unit,
     onBack: () -> Unit
 ) {
@@ -76,7 +77,11 @@ fun TvEpisodeScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
                         error = error!!,
-                        onRetryClick = { viewModel.reload() }
+                        onLoginClick = onLoginClick,
+                        onRetryClick = {
+                            if (episodes.isNullOrEmpty()) viewModel.reload()
+                            else viewModel.loadIfPossible()
+                        }
                     )
                 }
             }
