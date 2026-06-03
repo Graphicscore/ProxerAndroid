@@ -86,7 +86,7 @@ fun TvLoginScreen(onLoginSuccess: () -> Unit) {
                 OutlinedTextField(
                     value = secretKey,
                     onValueChange = { secretKey = it },
-                    label = { Text("2FA Secret Key") },
+                    label = { Text("OTP Code") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),

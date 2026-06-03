@@ -14,10 +14,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import me.proxer.app.media.MediaInfoViewModel
+import me.proxer.app.tv.TvErrorView
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -42,6 +43,10 @@ fun TvMediaDetailScreen(
     val entry by viewModel.data.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.load()
+    }
 
     Row(
         modifier = Modifier
@@ -71,8 +76,10 @@ fun TvMediaDetailScreen(
             when {
                 isLoading == true && entry == null -> CircularProgressIndicator(color = Color.White)
                 error != null -> {
-                    Text("Error loading details", color = MaterialTheme.colorScheme.error)
-                    Button(onClick = { viewModel.load() }) { Text("Retry") }
+                    TvErrorView(
+                        error = error!!,
+                        onRetryClick = { viewModel.load() }
+                    )
                 }
                 else -> entry?.let { e ->
                     Text(e.name, fontSize = 28.sp, color = Color.White)

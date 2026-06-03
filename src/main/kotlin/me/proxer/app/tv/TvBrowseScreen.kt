@@ -18,6 +18,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -68,6 +69,11 @@ fun TvBrowseScreen(
 
     val entries by viewModel.data.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val error by viewModel.error.observeAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.load()
+    }
 
     Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         Row(
@@ -84,20 +90,32 @@ fun TvBrowseScreen(
             }
         }
 
-        if (isLoading == true && entries.isNullOrEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+        when {
+            isLoading == true && entries.isNullOrEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Color.White)
+                }
             }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(5),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(entries ?: emptyList()) { entry ->
-                    TvMediaCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+            error != null -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    TvErrorView(
+                        error = error!!,
+                        onLoginClick = onLoginClick,
+                        onRetryClick = { viewModel.load() }
+                    )
+                }
+            }
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(5),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(entries ?: emptyList()) { entry ->
+                        TvMediaCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+                    }
                 }
             }
         }

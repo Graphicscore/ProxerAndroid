@@ -2,6 +2,7 @@ package me.proxer.app.tv.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import me.proxer.app.tv.TvErrorView
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -78,6 +80,7 @@ fun TvSearchScreen(
     var query by remember { mutableStateOf("") }
     val entries by viewModel.data.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val error by viewModel.error.observeAsState()
 
     LaunchedEffect(query) {
         delay(500)
@@ -116,15 +119,24 @@ fun TvSearchScreen(
             }
         }
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(5),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(entries ?: emptyList(), key = { it.id }) { entry ->
-                TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+        if (error != null) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                TvErrorView(
+                    error = error!!,
+                    onRetryClick = { viewModel.reload() }
+                )
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(5),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(entries ?: emptyList(), key = { it.id }) { entry ->
+                    TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+                }
             }
         }
     }
