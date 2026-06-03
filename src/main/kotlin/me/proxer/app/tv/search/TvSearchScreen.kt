@@ -61,6 +61,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun TvSearchScreen(
     onMediaClick: (id: String, name: String) -> Unit,
+    onLoginClick: () -> Unit,
     onBack: () -> Unit
 ) {
     val viewModel: MediaListViewModel = koinViewModel {
@@ -95,8 +96,9 @@ fun TvSearchScreen(
     }
 
     LaunchedEffect(query) {
+        if (query.isBlank()) return@LaunchedEffect
         delay(500)
-        viewModel.searchQuery = query.takeIf { it.isNotBlank() }
+        viewModel.searchQuery = query
         viewModel.reload()
     }
 
@@ -130,7 +132,7 @@ fun TvSearchScreen(
                     cursorColor = Color.White
                 )
             )
-            if (isLoading == true) {
+            if (isLoading == true && error == null) {
                 CircularProgressIndicator(modifier = Modifier.size(32.dp), color = Color.White)
             }
         }
@@ -139,6 +141,7 @@ fun TvSearchScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 TvErrorView(
                     error = error!!,
+                    onLoginClick = onLoginClick,
                     onRetryClick = { viewModel.reload() }
                 )
             }

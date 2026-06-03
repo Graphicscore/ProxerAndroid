@@ -4,7 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.tv.material3.MaterialTheme
+import me.proxer.app.tv.auth.TvLoginActivity
 import me.proxer.app.tv.detail.TvMediaDetailActivity
+import me.proxer.app.util.extension.startActivity
 
 class TvSearchActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -14,6 +16,7 @@ class TvSearchActivity : ComponentActivity() {
             MaterialTheme {
                 TvSearchScreen(
                     onMediaClick = { id, name -> TvMediaDetailActivity.navigateTo(activity, id, name) },
+                    onLoginClick = { activity.startActivity<TvLoginActivity>() },
                     onBack = { finish() }
                 )
             }
