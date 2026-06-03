@@ -21,7 +21,7 @@ import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.android.ViewScopeProvider
 import com.uber.autodispose.autoDisposable
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.ui.ImageDetailActivity
 import me.proxer.app.ui.view.bbcode.BBArgs
@@ -94,7 +94,7 @@ object ImagePrototype : AutoClosingPrototype {
     }
 
     private fun loadImage(
-        glide: GlideRequests,
+        glide: RequestManager,
         view: ImageView,
         url: HttpUrl?,
         heightMap: MutableMap<String, Int>?

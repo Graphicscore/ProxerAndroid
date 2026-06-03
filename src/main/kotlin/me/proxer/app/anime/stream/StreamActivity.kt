@@ -61,7 +61,7 @@ import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.AD_TAG_EXTRA
@@ -417,7 +417,7 @@ class StreamActivity : BaseActivity() {
         supportActionBar?.subtitle = Category.ANIME.toEpisodeAppString(this, episode)
 
         coverUri?.also {
-            GlideApp.with(playerView)
+            Glide.with(playerView)
                 .load(coverUri)
                 .logErrors()
                 .into(

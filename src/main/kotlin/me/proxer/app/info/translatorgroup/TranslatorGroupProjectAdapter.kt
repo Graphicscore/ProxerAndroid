@@ -14,7 +14,7 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -30,7 +30,7 @@ import me.proxer.library.util.ProxerUrls
  */
 class TranslatorGroupProjectAdapter : BaseAdapter<TranslatorGroupProject, ViewHolder>() {
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val clickSubject: PublishSubject<Pair<ImageView, TranslatorGroupProject>> = PublishSubject.create()
 
     init {

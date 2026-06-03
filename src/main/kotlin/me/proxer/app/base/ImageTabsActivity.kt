@@ -17,7 +17,7 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.ui.ImageDetailActivity
 import me.proxer.app.util.ActivityUtils
@@ -127,7 +127,7 @@ abstract class ImageTabsActivity : DrawerActivity() {
 
             supportStartPostponedEnterTransition()
         } else {
-            GlideApp.with(this)
+            Glide.with(this)
                 .load(headerImageUrl.toString())
                 .logErrors()
                 .into(

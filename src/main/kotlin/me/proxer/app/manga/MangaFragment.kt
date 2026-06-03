@@ -28,7 +28,7 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseAdapter.ContainerPositionResolver
 import me.proxer.app.base.BaseContentFragment
@@ -210,8 +210,8 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
 
         initHeaderAndFooter()
 
-        preloader.glide = GlideApp.with(this)
-        innerAdapter.glide = GlideApp.with(this)
+        preloader.glide = Glide.with(this)
+        innerAdapter.glide = Glide.with(this)
 
         bindLayoutManager()
 

@@ -8,7 +8,7 @@ import androidx.core.text.set
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.GifDrawable.LOOP_FOREVER
 import com.bumptech.glide.request.transition.Transition
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.ui.view.BetterLinkGifAwareEmojiTextView
 import me.proxer.app.util.extension.dip
@@ -74,7 +74,7 @@ object BBCodeEmoticons {
 
     private val emoticonRegex = Regex(emoticons.joinToString(separator = "|") { quote(it.pattern) })
 
-    fun replaceWithGifs(view: BetterLinkGifAwareEmojiTextView, glide: GlideRequests) {
+    fun replaceWithGifs(view: BetterLinkGifAwareEmojiTextView, glide: RequestManager) {
         val text = view.text.toSpannableStringBuilder()
         val foundEmoticons = emoticonRegex.findAll(text).toList()
 

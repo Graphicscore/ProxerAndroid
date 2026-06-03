@@ -3,7 +3,7 @@ package me.proxer.app.manga
 import android.graphics.drawable.Drawable
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.util.extension.decodedName
 import me.proxer.app.util.extension.logErrors
 import me.proxer.app.util.wrapper.OriginalSizeGlideTarget
@@ -17,7 +17,7 @@ import java.io.File
  */
 class MangaPreloader {
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
 
     private val preloadTargets = mutableListOf<Target<File>>()
 

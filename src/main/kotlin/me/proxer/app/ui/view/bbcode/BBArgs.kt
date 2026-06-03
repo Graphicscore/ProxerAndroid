@@ -2,7 +2,7 @@ package me.proxer.app.ui.view.bbcode
 
 import android.content.res.Resources
 import android.text.Spanned
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import java.lang.ref.WeakReference
 import java.util.LinkedHashMap
 
@@ -26,7 +26,7 @@ class BBArgs : LinkedHashMap<String, Any?> {
         }
 
     val resources get() = this[RESOURCES_ARGUMENT] as? Resources?
-    val glide get() = (this[GLIDE_ARGUMENT] as? WeakReference<*>)?.get() as? GlideRequests?
+    val glide get() = (this[GLIDE_ARGUMENT] as? WeakReference<*>)?.get() as? RequestManager?
     val userId get() = this[USER_ID_ARGUMENT] as? String?
     val enableEmoticons get() = this[ENABLE_EMOTICONS_ARGUMENT] as? Boolean? ?: false
 
@@ -37,7 +37,7 @@ class BBArgs : LinkedHashMap<String, Any?> {
     constructor(
         text: CharSequence? = null,
         resources: Resources? = null,
-        glide: GlideRequests? = null,
+        glide: RequestManager? = null,
         userId: String? = null,
         enableEmoticons: Boolean? = null,
         vararg custom: Pair<String, Any?>

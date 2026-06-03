@@ -10,7 +10,7 @@ import com.mikepenz.iconics.utils.backgroundColorInt
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
 import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.util.extension.resolveColor
 
@@ -20,14 +20,14 @@ import me.proxer.app.util.extension.resolveColor
 class GlideDrawerImageLoader : AbstractDrawerImageLoader() {
 
     override fun set(imageView: ImageView, uri: Uri, placeholder: Drawable, tag: String?) {
-        GlideApp.with(imageView)
+        Glide.with(imageView)
             .load(uri)
             .centerCrop()
             .placeholder(placeholder)
             .into(imageView)
     }
 
-    override fun cancel(imageView: ImageView) = GlideApp.with(imageView).clear(imageView)
+    override fun cancel(imageView: ImageView) = Glide.with(imageView).clear(imageView)
 
     override fun placeholder(ctx: Context, tag: String?): IconicsDrawable = IconicsDrawable(ctx).apply {
         icon = CommunityMaterial.Icon.cmd_account

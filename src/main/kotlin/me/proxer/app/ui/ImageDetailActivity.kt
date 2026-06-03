@@ -10,7 +10,7 @@ import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.util.ActivityUtils
@@ -50,7 +50,7 @@ class ImageDetailActivity : BaseActivity() {
 
         ViewCompat.setTransitionName(image, ActivityUtils.getTransitionName(this))
 
-        GlideApp.with(this)
+        Glide.with(this)
             .load(url)
             .logErrors()
             .into(

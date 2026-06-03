@@ -19,7 +19,7 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -49,7 +49,7 @@ class CommentsAdapter(
         private const val EXPANDED_STATE = "comments_expanded"
     }
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val editClickSubject: PublishSubject<ParsedComment> = PublishSubject.create()
     val deleteClickSubject: PublishSubject<ParsedComment> = PublishSubject.create()
     val profileClickSubject: PublishSubject<Pair<ImageView, ParsedComment>> = PublishSubject.create()

@@ -14,7 +14,7 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -34,7 +34,7 @@ class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdap
         private const val LIST_STATE = "create_chat_participant_list"
     }
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val removalSubject: PublishSubject<Participant> = PublishSubject.create()
 
     val participants: List<Participant>

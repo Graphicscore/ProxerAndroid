@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseContentFragment
 import me.proxer.app.media.MediaActivity
@@ -54,7 +54,7 @@ class ScheduleFragment : BaseContentFragment<Map<CalendarDay, List<CalendarEntry
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter.glide = GlideApp.with(this)
+        adapter.glide = Glide.with(this)
 
         recyclerView.setHasFixedSize(true)
         recyclerView.enableFastScroll()

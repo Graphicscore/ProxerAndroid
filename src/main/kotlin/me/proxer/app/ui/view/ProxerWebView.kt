@@ -12,7 +12,7 @@ import android.webkit.WebViewClient
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.target.Target
 import io.reactivex.subjects.PublishSubject
-import me.proxer.app.GlideApp
+import com.bumptech.glide.Glide
 import me.proxer.app.MainApplication.Companion.USER_AGENT
 import me.proxer.app.R
 import me.proxer.app.util.extension.proxyIfRequired
@@ -178,7 +178,7 @@ class ProxerWebView @JvmOverloads constructor(
             fileExtension: String
         ): WebResourceResponse? {
             return try {
-                val imageFile = GlideApp.with(view)
+                val imageFile = Glide.with(view)
                     .download(url.proxyIfRequired().toString())
                     .listener(
                         object : SimpleGlideRequestListener<File>() {

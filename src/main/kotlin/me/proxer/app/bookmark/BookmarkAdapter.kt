@@ -15,7 +15,7 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -34,7 +34,7 @@ import me.proxer.library.util.ProxerUrls
  */
 class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
 
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val clickSubject: PublishSubject<Bookmark> = PublishSubject.create()
     val longClickSubject: PublishSubject<Pair<ImageView, Bookmark>> = PublishSubject.create()
     val deleteClickSubject: PublishSubject<Bookmark> = PublishSubject.create()

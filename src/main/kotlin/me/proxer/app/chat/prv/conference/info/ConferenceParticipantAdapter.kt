@@ -21,7 +21,7 @@ import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -43,7 +43,7 @@ import okhttp3.HttpUrl
 class ConferenceParticipantAdapter : BaseAdapter<ConferenceParticipant, ViewHolder>() {
 
     var leaderId: String? = null
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     val participantClickSubject: PublishSubject<Pair<ImageView, ConferenceParticipant>> = PublishSubject.create()
     val statusLinkClickSubject: PublishSubject<HttpUrl> = PublishSubject.create()
 

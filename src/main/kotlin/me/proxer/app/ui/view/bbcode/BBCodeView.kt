@@ -21,7 +21,7 @@ import androidx.core.view.children
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.ios.IosEmojiProvider
 import io.reactivex.subjects.PublishSubject
-import me.proxer.app.GlideRequests
+import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.ui.view.BetterLinkGifAwareEmojiTextView
 import me.proxer.app.ui.view.bbcode.prototype.ImagePrototype.HEIGHT_MAP_ARGUMENT
@@ -64,7 +64,7 @@ class BBCodeView @JvmOverloads constructor(
     var maxHeight: Int = Int.MAX_VALUE
 
     var heightMap: ConcurrentHashMap<String, Int>? = null
-    var glide: GlideRequests? = null
+    var glide: RequestManager? = null
     var userId: String? = null
     var enableEmotions = false
 

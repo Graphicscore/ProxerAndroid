@@ -97,16 +97,17 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 
 ## Toolchain
 
-| Property | Value |
-|---|---|
-| AGP | 9.2.1 |
-| Kotlin | 2.2.0 |
-| Java | 17 (JBR at `/opt/android-studio/jbr`) |
-| Gradle | 9.5.1 |
-| NDK | r29 (29.0.14206865) |
-| KSP | 2.2.0-2.0.2 (Room + Moshi); Glide compiler stays on kapt — Glide 4.x has no KSP processor |
-| minSdk | 23 |
-| targetSdk / compileSdk | 36 |
+| Property | Value                                                                                     |
+|---|-------------------------------------------------------------------------------------------|
+| AGP | 9.2.1                                                                                     |
+| Kotlin | 2.4.0                                                                                     |
+| Java | 17 (JBR at `/opt/android-studio/jbr`) do not add it to the gradle.properties files        |
+| Gradle | 9.5.1                                                                                     |
+| NDK | r29 (29.0.14206865)                                                                       |
+| KSP | 2.3.9 (Room, Moshi, Glide — uses `com.github.bumptech.glide:ksp` artifact)               |
+| Glide | 5.0.7 (KSP; no generated API — use `Glide.with()`, `RequestManager`, `RequestBuilder`) |
+| minSdk | 23                                                                                        |
+| targetSdk / compileSdk | 36                                                                                        |
 
 ## Key Gotchas
 
@@ -115,9 +116,8 @@ Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory
 - `BUILD_CONFIG=true` is explicit in `build.gradle` — AGP 8.0+ disables it by default.
 - Detekt and ktlint are configured permissively; most checks disabled. Don't rely on them to catch correctness issues.
 - `gh` CLI is not installed on this machine — use `git push` + open PRs at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
-- `android.builtInKotlin=false` + `android.newDsl=false` in `gradle.properties` are intentional workarounds to allow kapt (Glide compiler) to coexist with KSP in AGP 9. Remove when Glide 5 ships KSP support.
+- `android.builtInKotlin=false` + `android.newDsl=false` in `gradle.properties` — both needed to use `org.jetbrains.kotlin.android` plugin (Kotlin 2.4.0) with AGP 9. Without them AGP enforces its bundled Kotlin (2.2.0) and rejects the external plugin. Remove when AGP bundles a compatible Kotlin version.
 - `coreLibraryDesugaringEnabled true` + `desugar_jdk_libs` dependency required by IMA (interactive media ads) 3.37+.
-- `RoomConverters.kt` `@TypeConverter` functions must have explicit return types — kapt stub generation fails on inferred lambda return types with `kapt.include.compile.classpath=false`.
 - `CommunityMaterial.Icon.cmd_discord` was removed in CommunityMaterial 7.x — Discord entry in `AboutFragment.kt` currently has no icon. Find an equivalent in CommunityMaterial 7.x or add a custom typeface before re-adding it.
 - `applicationVariants.all {}` was removed in AGP 9 — APK output now uses AGP defaults instead of `app-1.11.5.apk`. Re-implement with `androidComponents.onVariants {}` if custom naming is needed.
 - `lifecycle` 2.11 and `core-ktx` 1.19 require compileSdk 37 (not yet stable). Current ceiling: lifecycle 2.10.0, core-ktx 1.18.0.
