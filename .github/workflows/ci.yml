@@ -10,14 +10,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: 11
+          java-version: 17
           distribution: 'temurin'
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
@@ -25,9 +25,15 @@ jobs:
           KEYSTORE: ${{ secrets.KEYSTORE }}
           SECRETS: ${{ secrets.SECRETS }}
 
+      - name: Fallback secrets for fork PRs
+        run: |
+          if [ ! -f secrets.properties ]; then
+            echo "PROXER_API_KEY=dummy_build_key" > secrets.properties
+          fi
+
       - id: build
         name: Build with Gradle
-        run: ./gradlew ktlintCheck detekt build bundle
+        run: ./gradlew ktlintCheck detekt build bundle --no-daemon
 
       - name: Store reports
         uses: actions/upload-artifact@v4
