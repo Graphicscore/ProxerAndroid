@@ -25,7 +25,7 @@ ext {
     versionsPluginVersion = "0.54.0"
     detektPluginVersion = "1.23.8"
     ktlintPluginVersion = "14.2.0"
-    ktlintVersion = "1.6.0"
+    ktlintVersion = "1.8.0"
     // Frameworks and compatibility libraries
     koinVersion = "3.5.6"
     appcompatVersion = "1.7.1"
