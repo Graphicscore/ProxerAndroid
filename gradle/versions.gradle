@@ -61,7 +61,7 @@ ext {
     preferenceVersion = "1.2.1"
     supportPreferenceVersion = "v2.3.2"
     iconicsVersion = "5.4.0"
-    communityMaterialTypefaceVersion = "7.0.96.1-kotlin"
+    communityMaterialTypefaceVersion = "7.0.96.2-kotlin"
     materialDrawerVersion = "9.0.2"
     aboutLibrariesVersion = "11.2.3"
     crossfaderVersion = "1.6.0"
