@@ -96,7 +96,10 @@ fun TvSearchScreen(
     }
 
     LaunchedEffect(query) {
-        if (query.isBlank()) return@LaunchedEffect
+        if (query.isBlank()) {
+            viewModel.searchQuery = null
+            return@LaunchedEffect
+        }
         delay(500)
         viewModel.searchQuery = query
         viewModel.reload()
