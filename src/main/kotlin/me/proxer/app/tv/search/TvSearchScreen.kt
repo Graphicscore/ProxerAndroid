@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,6 +28,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -82,10 +85,23 @@ fun TvSearchScreen(
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
 
+    val gridState = rememberLazyGridState()
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()
+            val total = gridState.layoutInfo.totalItemsCount
+            lastVisible != null && total > 0 && lastVisible.index >= total - 6
+        }
+    }
+
     LaunchedEffect(query) {
         delay(500)
         viewModel.searchQuery = query.takeIf { it.isNotBlank() }
         viewModel.reload()
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) viewModel.loadIfPossible()
     }
 
     Column(
@@ -129,6 +145,7 @@ fun TvSearchScreen(
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(5),
+                state = gridState,
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -136,6 +153,18 @@ fun TvSearchScreen(
             ) {
                 items((entries ?: emptyList()).distinctBy { it.id }, key = { it.id }) { entry ->
                     TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+                }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    if (isLoading == true && entries?.isNotEmpty() == true) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp), color = Color.White)
+                        }
+                    }
                 }
             }
         }
