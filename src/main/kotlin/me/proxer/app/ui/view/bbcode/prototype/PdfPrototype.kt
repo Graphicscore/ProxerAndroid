@@ -66,7 +66,6 @@ object PdfPrototype : AutoClosingPrototype {
                     val url = (childViews.firstOrNull() as? TextView)?.text.toString().trim()
                     val parsedUrl = url.toPrefixedUrlOrNull()
 
-                    @Suppress("UNCHECKED_CAST")
                     val heightMap = args[ImagePrototype.HEIGHT_MAP_ARGUMENT] as MutableMap<String, Int>?
 
                     val width = args[WIDTH_ARGUMENT] as Int? ?: MATCH_PARENT

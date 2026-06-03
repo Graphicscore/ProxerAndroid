@@ -83,7 +83,6 @@ abstract class MessengerDao {
     @Query("SELECT * FROM conferences ORDER BY date DESC LIMIT :amount")
     abstract fun getMostRecentConferences(amount: Int): List<LocalConference>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query(
         """
             SELECT * FROM conferences

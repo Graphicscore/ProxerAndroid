@@ -13,7 +13,6 @@ import org.threeten.bp.Instant
 /**
  * @author Ruben Gees
  */
-@Suppress("UseDataClass")
 class PreferenceHelper(
     initializer: LocalDataInitializer,
     rxSharedPreferences: RxSharedPreferences,

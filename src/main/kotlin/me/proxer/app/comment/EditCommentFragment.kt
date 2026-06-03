@@ -200,7 +200,6 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
         commentBottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
     }
 
-    @SuppressLint("SetTextI18n")
     private fun initListeners() {
         rulesContainer.clicks().mergeWith(expandRules.clicks())
             .autoDisposable(viewLifecycleOwner.scope())

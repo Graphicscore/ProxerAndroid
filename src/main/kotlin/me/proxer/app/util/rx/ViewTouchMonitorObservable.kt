@@ -33,7 +33,6 @@ class ViewTouchMonitorObservable(
         private val observer: Observer<in MotionEvent>
     ) : MainThreadDisposable(), View.OnTouchListener {
 
-        @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             return if (!isDisposed) {
                 try {

@@ -30,7 +30,6 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-@Suppress("UnnecessaryAbstractClass")
 abstract class BaseActivity : AppCompatActivity(), CustomTabsAware {
 
     private companion object {

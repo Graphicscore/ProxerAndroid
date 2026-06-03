@@ -23,7 +23,6 @@ object DailymotionStreamResolver : StreamResolver() {
 
     override val name = "Dailymotion"
 
-    @Suppress("SwallowedException")
     override fun resolve(id: String): Single<StreamResolutionResult> {
         return api.anime.link(id)
             .buildSingle()

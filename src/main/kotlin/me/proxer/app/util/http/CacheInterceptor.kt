@@ -56,7 +56,6 @@ class CacheInterceptor : Interceptor {
         private val excludedFileTypes = listOf(".png", ".jpg", ".jpeg", ".gif", ".webm")
     }
 
-    @Suppress("OptionalWhenBraces")
     override fun intercept(chain: Interceptor.Chain): Response {
         val response = chain.proceed(chain.request())
         val applicableCacheInfo = cacheInfo.find { it.isApplicable(response) }

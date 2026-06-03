@@ -10,7 +10,6 @@ import me.proxer.app.util.extension.readStringSafely
 data class Participant(val username: String, val image: String = "") : Parcelable {
 
     companion object {
-        @Suppress("unused")
         @JvmField
         val CREATOR = object : Parcelable.Creator<Participant> {
             override fun createFromParcel(parcel: Parcel) = Participant(parcel)

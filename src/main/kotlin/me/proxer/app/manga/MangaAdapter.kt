@@ -159,7 +159,6 @@ class MangaAdapter(var isVertical: Boolean) : BaseAdapter<Page, MangaViewHolder>
             }
         }
 
-        @SuppressLint("ClickableViewAccessibility")
         private fun initListeners() {
             // Rebind on itemView clicks.
             // This only emits if the image is not visible, which is the case if an error occurred.

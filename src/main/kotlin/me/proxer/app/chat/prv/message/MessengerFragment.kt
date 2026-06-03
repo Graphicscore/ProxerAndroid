@@ -377,7 +377,6 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         updateIcons(!shouldEnabledInput)
     }
 
-    @SuppressLint("PrivateResource")
     private fun updateIcons(disabledColor: Boolean) {
         val emojiButtonIcon: IIcon = when (emojiPopup.isShowing) {
             true -> CommunityMaterial.Icon2.cmd_keyboard

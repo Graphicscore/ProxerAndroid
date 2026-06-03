@@ -10,7 +10,6 @@ import me.proxer.app.util.extension.readStringSafely
 class ParcelableStringBooleanMap : Parcelable {
 
     companion object {
-        @Suppress("unused")
         @JvmField
         val CREATOR = object : Parcelable.Creator<ParcelableStringBooleanMap> {
             override fun createFromParcel(source: Parcel) = ParcelableStringBooleanMap(source)

@@ -8,7 +8,6 @@ import com.bumptech.glide.request.target.Target
 /**
  * @author Ruben Gees
  */
-@Suppress("FunctionOnlyReturningConstant")
 abstract class SimpleGlideRequestListener<R> : RequestListener<R> {
 
     override fun onLoadFailed(

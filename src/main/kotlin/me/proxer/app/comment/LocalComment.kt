@@ -22,7 +22,6 @@ data class LocalComment(
 ) : Parcelable {
 
     companion object {
-        @Suppress("unused")
         @JvmField
         val CREATOR = object : Parcelable.Creator<LocalComment> {
             override fun createFromParcel(parcel: Parcel) = LocalComment(parcel)

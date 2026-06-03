@@ -16,7 +16,6 @@ class MenuPopupCompat(private val context: Context, private val menu: Menu, priv
 
     fun forceShowIcon() = this.apply { forceShowIcon = true }
 
-    @SuppressLint("RestrictedApi")
     fun show(x: Int = 0, y: Int = 0) = MenuPopupHelper(context, menu as MenuBuilder, anchorView)
         .apply { setForceShowIcon(forceShowIcon) }
         .show(x, y)

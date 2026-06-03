@@ -49,7 +49,6 @@ import org.koin.core.parameter.parametersOf
 /**
  * @author Ruben Gees
  */
-@Suppress("DEPRECATION") // TODO: Wait for androidx fullscreen support library.
 class MangaActivity : BaseActivity() {
 
     companion object {

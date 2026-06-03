@@ -26,10 +26,8 @@ import android.view.View
  */
 abstract class BindAwareViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    @Suppress("MemberVisibilityCanBePrivate")
     protected open fun onBind() = Unit
 
-    @Suppress("MemberVisibilityCanBePrivate")
     protected open fun onUnbind() = Unit
 
     override fun setFlags(flags: Int, mask: Int) {

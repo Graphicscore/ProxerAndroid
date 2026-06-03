@@ -20,7 +20,6 @@ data class SimpleCalendarEntry(
 ) : Parcelable {
 
     companion object {
-        @Suppress("unused")
         @JvmField
         val CREATOR = object : Parcelable.Creator<SimpleCalendarEntry> {
             override fun createFromParcel(parcel: Parcel) = SimpleCalendarEntry(parcel)

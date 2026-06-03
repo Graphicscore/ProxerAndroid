@@ -30,7 +30,6 @@ class BetterLinkGifAwareEmojiTextView @JvmOverloads constructor(
         removeCallbacks(runnable)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         super.onTouchEvent(event)
 

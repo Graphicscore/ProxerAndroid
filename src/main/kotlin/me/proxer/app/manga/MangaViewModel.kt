@@ -113,7 +113,6 @@ class MangaViewModel(
         .buildPartialErrorSingle(entry)
         .map { MangaChapterInfo(it, entry.name, entry.episodeAmount) }
 
-    @Suppress("ForbiddenVoid")
     private fun updateUserState(endpoint: Endpoint<Unit?>) {
         userStateDisposable?.dispose()
         userStateDisposable = Single.fromCallable { validators.validateLogin() }

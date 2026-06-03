@@ -14,11 +14,9 @@ object KotterKnifePreference {
 fun <V : Preference> PreferenceFragmentCompat.bindPreference(key: CharSequence):
     ReadOnlyProperty<PreferenceFragmentCompat, V> = required(key, preferenceFinder)
 
-@Suppress("unused")
 private val PreferenceFragmentCompat.preferenceFinder: PreferenceFragmentCompat.(CharSequence) -> Preference?
     get() = { findPreference(it) }
 
-@Suppress("UNCHECKED_CAST")
 private fun <T, V : Preference> required(key: CharSequence, finder: T.(CharSequence) -> Preference?) =
     Lazy { t: T, desc -> t.finder(key) as V? ?: error("Preference KEY $key for '${desc.name}' not found.") }
 
@@ -28,7 +26,6 @@ private class Lazy<in T, out V>(private val initializer: (T, KProperty<*>) -> V)
 
     private var value: Any? = EMPTY
 
-    @Suppress("UnsafeCallOnNullableType")
     override fun getValue(thisRef: T, property: KProperty<*>): V {
         LazyRegistry.register(thisRef!!, this)
 
@@ -36,7 +33,6 @@ private class Lazy<in T, out V>(private val initializer: (T, KProperty<*>) -> V)
             value = initializer(thisRef, property)
         }
 
-        @Suppress("UNCHECKED_CAST")
         return value as V
     }
 

@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit
  * @author Ruben Gees
  */
 @KeepName
-@Suppress("unused")
 class CastOptionsProvider : OptionsProvider {
 
     override fun getCastOptions(context: Context): CastOptions {

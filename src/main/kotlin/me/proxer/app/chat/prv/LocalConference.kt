@@ -32,7 +32,6 @@ data class LocalConference(
 ) : Parcelable {
 
     companion object {
-        @Suppress("unused")
         @JvmField
         val CREATOR = object : Parcelable.Creator<LocalConference> {
             override fun createFromParcel(parcel: Parcel) = LocalConference(parcel)
