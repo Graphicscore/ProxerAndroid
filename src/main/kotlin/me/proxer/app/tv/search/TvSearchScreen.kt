@@ -1,5 +1,6 @@
 package me.proxer.app.tv.search
 
+import android.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -176,7 +177,7 @@ private fun TvSearchResultCard(entry: MediaListEntry, onClick: () -> Unit) {
             .width(180.dp)
             .height(270.dp)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             AsyncImage(
                 model = ProxerUrls.entryImage(entry.id).toString(),
                 contentDescription = entry.name,
