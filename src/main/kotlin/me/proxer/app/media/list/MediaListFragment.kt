@@ -110,7 +110,7 @@ class MediaListFragment :
         get() =
             requireNotNull(
                 BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java),
-            )
+            ) { "CATEGORY_ARGUMENT missing from MediaListFragment bundle" }
 
     private var sortCriteria: MediaSearchSortCriteria
         get() =

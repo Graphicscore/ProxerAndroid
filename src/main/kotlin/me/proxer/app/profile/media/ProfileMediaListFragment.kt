@@ -72,7 +72,7 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         get() =
             requireNotNull(
                 BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java),
-            )
+            ) { "CATEGORY_ARGUMENT missing from ProfileMediaListFragment bundle" }
 
     private var filter: UserMediaListFilterType?
         get() = BundleCompat.getSerializable(requireArguments(), FILTER_ARGUMENT, UserMediaListFilterType::class.java)
