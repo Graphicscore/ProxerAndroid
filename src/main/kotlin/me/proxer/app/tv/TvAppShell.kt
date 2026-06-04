@@ -11,8 +11,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.NavigationDrawer
 import me.proxer.app.tv.auth.TvLoginActivity
 import me.proxer.app.util.extension.startActivity
@@ -38,7 +38,7 @@ fun TvAppShell(
     }
 
     NavigationDrawer(
-        modifier = Modifier.fillMaxSize().background(Color.Black),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
         drawerContent = { drawerValue ->
             TvNavigationDrawerContent(
                 currentSection = currentSection,

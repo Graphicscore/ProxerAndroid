@@ -27,12 +27,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import coil.compose.AsyncImage
 import me.proxer.app.media.LocalTag
@@ -96,7 +96,7 @@ fun TvBrowseScreen(
         if (shouldLoadMore) viewModel.loadIfPossible()
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -104,14 +104,14 @@ fun TvBrowseScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("ProxerTV", fontSize = 24.sp, color = Color.White)
+            Text("ProxerTV", fontSize = 24.sp, color = MaterialTheme.colorScheme.onBackground)
             OutlinedButton(onClick = onSearchClick) { Text("Search") }
         }
 
         when {
             isLoading == true && entries.isNullOrEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color.White)
+                    CircularProgressIndicator()
                 }
             }
             error != null -> {
@@ -143,7 +143,7 @@ fun TvBrowseScreen(
                                     .padding(16.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(color = Color.White)
+                                CircularProgressIndicator()
                             }
                         }
                     }
@@ -173,12 +173,12 @@ fun TvMediaCard(entry: MediaListEntry, onClick: () -> Unit) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(8.dp)
             ) {
                 Text(
                     text = entry.name,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.sp,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
