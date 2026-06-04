@@ -5,8 +5,8 @@ ext {
     appVersionPatch = 0
 
     minSdkVersion = 23
-    targetSdkVersion = 36
-    compileSdkVersion = 36
+    targetSdkVersion = 37
+    compileSdkVersion = 37
     ndkVersion = "29.0.14206865"
 
     // Java
@@ -33,7 +33,7 @@ ext {
     lifecycleVersion = "2.10.0"
     roomVersion = "2.8.4"
     workVersion = "2.11.2"
-    coreKtxVersion = "1.18.0"
+    coreKtxVersion = "1.19.0"
     fragmentKtxVersion = "1.8.9"
     shareTargetVersion = "1.2.0"
     securityCryptoVersion = "1.1.0"
@@ -61,10 +61,10 @@ ext {
     constaintLayoutVersion = "2.2.1"
     preferenceVersion = "1.2.1"
     supportPreferenceVersion = "2.3.2"
-    iconicsVersion = "5.4.0"
+    iconicsVersion = "5.5.0-compose01"
     communityMaterialTypefaceVersion = "7.0.96.2-kotlin"
     materialDrawerVersion = "9.0.2"
-    aboutLibrariesVersion = "11.6.3"
+    aboutLibrariesVersion = "14.2.1"
     crossfaderVersion = "1.6.0"
     materialAboutVersion = "3.2.0-rc01"
     subsamplingScaleImageViewVersion = "3.10.0"
@@ -92,9 +92,9 @@ ext {
     betterLinkMovementMethodVersion = "2.2.0"
     jsoupVersion = "1.22.2"
     // Compose
-    composeBomVersion = "2024.09.03"
-    tvMaterialVersion = "1.0.0"
-    activityComposeVersion = "1.9.3"
+    composeBomVersion = "2026.05.01"
+    tvMaterialVersion = "1.1.0"
+    activityComposeVersion = "1.13.0"
     coilVersion = "2.7.0"
 
     // Debugging
