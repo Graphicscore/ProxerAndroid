@@ -4,30 +4,30 @@
     {
       "id": 1,
       "subject": "Task 1: TvSection enum + TvShellViewModel + Koin registration",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Create the data model and ViewModel that power auth state and section routing.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvSection.kt`\n- Create: `src/main/kotlin/me/proxer/app/tv/TvShellViewModel.kt`\n- Modify: `src/main/kotlin/me/proxer/app/MainModules.kt`\n- Modify: `gradle/dependencies.gradle`\n\n**Acceptance Criteria:**\n- [ ] `TvSection` enum has six values: `ANIME, NEWS, BOOKMARKS, SCHEDULE, INFO, SETTINGS`\n- [ ] `TvShellViewModel.user` initializes with the current user and updates whenever login state changes\n- [ ] `TvShellViewModel.logout()` calls `api.user.logout().buildSingle()`\n- [ ] `TvShellViewModel` registered in Koin `viewModelModule`\n- [ ] `material-icons-extended` added to `gradle/dependencies.gradle`\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2` → BUILD SUCCESSFUL\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvSection.kt\", \"src/main/kotlin/me/proxer/app/tv/TvShellViewModel.kt\", \"src/main/kotlin/me/proxer/app/MainModules.kt\", \"gradle/dependencies.gradle\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2\", \"acceptanceCriteria\": [\"TvSection enum has ANIME, NEWS, BOOKMARKS, SCHEDULE, INFO, SETTINGS\", \"TvShellViewModel.user is MutableLiveData<LocalUser?> initialized with storageHelper.user\", \"TvShellViewModel.logout() calls api.user.logout().buildSingle()\", \"TvShellViewModel registered in Koin viewModelModule\", \"material-icons-extended added to gradle/dependencies.gradle\"]}\n```"
     },
     {
       "id": 2,
       "subject": "Task 2: TvPlaceholderScreen",
-      "status": "pending",
+      "status": "completed",
       "blockedBy": [1],
       "description": "**Goal:** Provide a simple stub screen for sections that don't have TV implementations yet.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvPlaceholderScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] `TvPlaceholderScreen(sectionName: String)` fills screen with black background\n- [ ] Shows sectionName centred at 28sp white text\n- [ ] Shows 'Coming soon' subtitle at 16sp gray text below\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2` → BUILD SUCCESSFUL\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvPlaceholderScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2\", \"acceptanceCriteria\": [\"TvPlaceholderScreen renders sectionName centred on black background\", \"Shows 'Coming soon' subtitle\"]}\n```"
     },
     {
       "id": 3,
       "subject": "Task 3: TvNavigationDrawer content composable",
-      "status": "pending",
+      "status": "completed",
       "blockedBy": [1, 2],
       "description": "**Goal:** Build the stateless drawer-content composable with profile header, nav items, and footer items.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvNavigationDrawer.kt`\n\n**Acceptance Criteria:**\n- [ ] `TvNavigationDrawerContent` is a NavigationDrawerScope extension function\n- [ ] Profile header toggles between Sign In (logged out) and user+Sign Out (logged in) states\n- [ ] Six nav items with correct Icons.Default.* icons and animated labels\n- [ ] Info and Settings pinned to bottom via Spacer(Modifier.weight(1f))\n- [ ] Active section has selected=true\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2` → BUILD SUCCESSFUL\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvNavigationDrawer.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2\", \"acceptanceCriteria\": [\"TvNavigationDrawerContent is NavigationDrawerScope extension\", \"Profile header toggles between Sign In and user+Sign Out states\", \"Six nav items with correct icons\", \"Info/Settings at bottom\", \"Active section selected=true\"]}\n```"
     },
     {
       "id": 4,
       "subject": "Task 4: TvAppShell + wire TvMainActivity + update TvBrowseScreen",
-      "status": "pending",
+      "status": "completed",
       "blockedBy": [1, 2, 3],
       "description": "**Goal:** Assemble the shell composable, update TvMainActivity to use it, remove onLoginClick from TvBrowseScreen.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvAppShell.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvMainActivity.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvBrowseScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvAppShell wraps NavigationDrawer with section routing\n- [ ] Sign In/Out wired correctly\n- [ ] TvBrowseScreen has no onLoginClick param\n- [ ] TvMainActivity uses TvAppShell\n- [ ] assembleDebug succeeds\n\n**Verify:** `./gradlew assembleDebug --no-daemon --max-workers 2` → BUILD SUCCESSFUL\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvAppShell.kt\", \"src/main/kotlin/me/proxer/app/tv/TvMainActivity.kt\", \"src/main/kotlin/me/proxer/app/tv/TvBrowseScreen.kt\"], \"verifyCommand\": \"./gradlew assembleDebug --no-daemon --max-workers 2\", \"acceptanceCriteria\": [\"TvAppShell wraps NavigationDrawer with section routing\", \"Sign In/Out wired correctly\", \"TvBrowseScreen has no onLoginClick param\", \"TvMainActivity uses TvAppShell\", \"assembleDebug succeeds\"]}\n```"
     }
   ],
-  "lastUpdated": "2026-06-04T00:00:00Z"
+  "lastUpdated": "2026-06-04T10:30:00Z"
 }
