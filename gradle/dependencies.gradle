@@ -98,7 +98,6 @@ dependencies {
     debugImplementation "com.squareup.leakcanary:leakcanary-android:$leakCanaryVersion"
 
     releaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"
-    logReleaseImplementation "cat.ereza:customactivityoncrash:$customActivityOnCrashVersion"
 
     ksp "androidx.room:room-compiler:$roomVersion"
     ksp "com.github.bumptech.glide:ksp:$glideVersion"

@@ -30,7 +30,7 @@ You then need to create a `secrets.properties` file in the root of the project w
 PROXER_API_KEY = YourApiKey
 ```
 
-This app offers three variants to build: `debug`, `release` and `logRelease`.<br>
+This app offers 2 variants to build: `debug`, `release`.<br>
 It is strongly recommended to use the `release` variant as it is faster and does not log sensitive data.
 
 Before building, [generate a key](https://developer.android.com/studio/publish/app-signing.html#generate-key)
