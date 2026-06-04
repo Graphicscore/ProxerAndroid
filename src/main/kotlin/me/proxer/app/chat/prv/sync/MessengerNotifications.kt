@@ -82,7 +82,7 @@ object MessengerNotifications {
             return null
         }
 
-        val messageAmount = filteredConferenceMap.values.sumBy { it.size }
+        val messageAmount = filteredConferenceMap.values.sumOf { it.size }
         val conferenceAmount = filteredConferenceMap.size
         val messageAmountText = context.getQuantityString(R.plurals.notification_chat_message_amount, messageAmount)
         val conferenceAmountText =
