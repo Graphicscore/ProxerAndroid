@@ -153,6 +153,7 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                 }
             },
             viewLifecycleOwner,
+            androidx.lifecycle.Lifecycle.State.RESUMED,
         )
 
         viewModel.itemDeletionError.observe(

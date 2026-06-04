@@ -107,7 +107,10 @@ class MediaListFragment :
     override var innerAdapter by Delegates.notNull<MediaAdapter>()
 
     private val category
-        get() = BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java) as Category
+        get() =
+            requireNotNull(
+                BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java),
+            )
 
     private var sortCriteria: MediaSearchSortCriteria
         get() =

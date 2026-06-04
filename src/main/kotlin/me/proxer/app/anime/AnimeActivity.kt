@@ -83,7 +83,11 @@ class AnimeActivity : DrawerActivity() {
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
                 true -> {
-                    IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)!!
+                    requireNotNull(
+                        IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java),
+                    ) {
+                        "LANGUAGE_EXTRA present but deserialized to null in AnimeActivity"
+                    }
                 }
 
                 false -> {

@@ -106,7 +106,9 @@ class MangaActivity : BaseActivity() {
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
                 true -> {
-                    IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, Language::class.java)!!
+                    requireNotNull(IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, Language::class.java)) {
+                        "LANGUAGE_EXTRA present but deserialized to null in MangaActivity"
+                    }
                 }
 
                 false -> {

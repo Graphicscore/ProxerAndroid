@@ -108,7 +108,10 @@ class StreamActivity : BaseActivity() {
         get() = intent.getIntExtra(EPISODE_EXTRA, -1).let { if (it <= 0) 1 else it }
 
     internal val language: AnimeLanguage
-        get() = IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)!!
+        get() =
+            requireNotNull(IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)) {
+                "LANGUAGE_EXTRA missing from StreamActivity intent. id=$id episode=$episode"
+            }
 
     internal val coverUri: Uri?
         get() = IntentCompat.getParcelableExtra(intent, COVER_EXTRA, Uri::class.java)
@@ -475,7 +478,7 @@ class StreamActivity : BaseActivity() {
 
         systemBarsVisibilitySubject
             .autoDisposable(this.scope())
-            .subscribe { handleUIChange() }
+            .subscribe { systemBarsVisible -> handleUIChange(systemBarsVisible) }
 
         toggleFullscreen(true)
     }
@@ -492,15 +495,14 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun handleUIChange() {
+    private fun handleUIChange(systemBarsVisible: Boolean = !isInFullscreenMode) {
         if (playerManager.isPlayingAd.not()) {
-            // When in fullscreen, system bars are hidden — keep player controls hidden too.
-            if (isInFullscreenMode) {
-                playerView.hideController()
-                toolbar.isVisible = false
-            } else {
+            if (systemBarsVisible) {
                 playerView.showController()
                 toolbar.isVisible = true
+            } else {
+                playerView.hideController()
+                toolbar.isVisible = false
             }
         } else {
             adFullscreenHandler.postDelayed(3_000) {

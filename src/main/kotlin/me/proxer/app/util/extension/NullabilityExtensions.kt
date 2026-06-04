@@ -31,9 +31,6 @@ inline fun <reified T : Parcelable> Intent.getSafeParcelableExtra(key: String) =
 inline fun <reified T : Parcelable> Bundle.getSafeParcelable(key: String) =
     requireNotNull(BundleCompat.getParcelable(this, key, T::class.java)) { "No value found for key $key" }
 
-inline fun <reified T : Parcelable> Bundle.getSafeParcelableArrayList(key: String) =
-    requireNotNull(BundleCompat.getParcelableArrayList(this, key, T::class.java)) { "No value found for key $key" }
-
 inline fun Bundle.getSafeCharSequence(key: String) =
     requireNotNull(getCharSequence(key)) { "No value found for key $key" }
 

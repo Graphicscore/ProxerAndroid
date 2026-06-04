@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.content.IntentCompat
 import me.proxer.app.tv.TvTheme
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
@@ -13,9 +14,9 @@ class TvStreamActivity : ComponentActivity() {
     private val entryId: String get() = intent.getSafeStringExtra(ID_EXTRA)
     private val episode: Int get() = intent.getIntExtra(EPISODE_EXTRA, 1)
 
-    @Suppress("DEPRECATION")
     private val language: AnimeLanguage get() =
-        (intent.getSerializableExtra(LANGUAGE_EXTRA) as? AnimeLanguage) ?: AnimeLanguage.ENGLISH_SUB
+        IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)
+            ?: AnimeLanguage.ENGLISH_SUB
     private val entryName: String get() = intent.getStringExtra(NAME_EXTRA) ?: ""
 
     override fun onCreate(savedInstanceState: Bundle?) {

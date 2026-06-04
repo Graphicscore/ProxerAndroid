@@ -175,6 +175,7 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
                 }
             },
             viewLifecycleOwner,
+            androidx.lifecycle.Lifecycle.State.RESUMED,
         )
 
         innerAdapter.glide = Glide.with(this)

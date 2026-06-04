@@ -69,7 +69,10 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         get() = hostingActivity.username
 
     private val category: Category
-        get() = BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java) as Category
+        get() =
+            requireNotNull(
+                BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java),
+            )
 
     private var filter: UserMediaListFilterType?
         get() = BundleCompat.getSerializable(requireArguments(), FILTER_ARGUMENT, UserMediaListFilterType::class.java)
@@ -142,6 +145,7 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
                 }
             },
             viewLifecycleOwner,
+            androidx.lifecycle.Lifecycle.State.RESUMED,
         )
 
         innerAdapter.glide = Glide.with(this)
