@@ -121,11 +121,11 @@ Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_
 | Property | Value                                                                                     |
 |---|-------------------------------------------------------------------------------------------|
 | AGP | 9.2.1                                                                                     |
-| Kotlin | 2.4.0                                                                                     |
+| Kotlin | 2.2.10 (AGP 9.2.1 built-in; no external `org.jetbrains.kotlin.android` plugin)     |
 | Java | 17 (JBR at `/opt/android-studio/jbr`) do not add it to the gradle.properties files        |
 | Gradle | 9.5.1                                                                                     |
 | NDK | r29 (29.0.14206865)                                                                       |
-| KSP | 2.3.9 (Room, Moshi, Glide — uses `com.github.bumptech.glide:ksp` artifact)               |
+| KSP | 2.2.10-2.0.2 (Room, Moshi, Glide — uses `com.github.bumptech.glide:ksp` artifact)        |
 | Glide | 5.0.7 (KSP; no generated API — use `Glide.with()`, `RequestManager`, `RequestBuilder`) |
 | minSdk | 23                                                                                        |
 | targetSdk / compileSdk | 36                                                                                        |
@@ -137,7 +137,7 @@ Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_
 - `BUILD_CONFIG=true` is explicit in `build.gradle` — AGP 8.0+ disables it by default.
 - Detekt and ktlint are configured permissively; most checks disabled. Don't rely on them to catch correctness issues.
 - `gh` CLI is not installed on this machine — use `git push` + open PRs at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
-- `android.builtInKotlin=false` + `android.newDsl=false` in `gradle.properties` — both needed to use `org.jetbrains.kotlin.android` plugin (Kotlin 2.4.0) with AGP 9. Without them AGP enforces its bundled Kotlin (2.2.0) and rejects the external plugin. Remove when AGP bundles a compatible Kotlin version.
+- `android.disallowKotlinSourceSets=false` in `gradle.properties` — KSP registers generated sources via `kotlin.sourceSets`, which AGP's built-in Kotlin normally forbids. This suppression is required until KSP resolves the incompatibility. `org.jetbrains.kotlin.plugin.compose` is still applied (required by AGP for Compose even with built-in Kotlin); only `org.jetbrains.kotlin.android` was removed.
 - `coreLibraryDesugaringEnabled true` + `desugar_jdk_libs` dependency required by IMA (interactive media ads) 3.37+.
 - `CommunityMaterial.Icon.cmd_discord` was removed in CommunityMaterial 7.x — Discord entry in `AboutFragment.kt` currently has no icon. Find an equivalent in CommunityMaterial 7.x or add a custom typeface before re-adding it.
 - `applicationVariants.all {}` was removed in AGP 9 — APK output now uses AGP defaults instead of `app-1.11.5.apk`. Re-implement with `androidComponents.onVariants {}` if custom naming is needed.
