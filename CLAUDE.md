@@ -31,12 +31,15 @@ Three build variants: **debug** (unobfuscated, logging on), **release** (obfusca
 
 TV implementation lives on the `tv-support` branch in `me.proxer.app.tv`. All screens are Compose (Compose for TV + Material3); activities are plain `ComponentActivity`. No Fragments.
 
-- `TvMainActivity` → `TvBrowseScreen` (browse/home)
+- `TvMainActivity` → `TvAppShell` (NavigationDrawer shell + section routing) → `TvBrowseScreen` (anime), `TvPlaceholderScreen` (other sections)
 - `TvLoginActivity` → `TvLoginScreen` (mirrors `LoginDialog` flow including 2FA)
 - `TvSearchActivity` → `TvSearchScreen`
 - `TvMediaDetailActivity` → `TvMediaDetailScreen`
 - `TvEpisodeActivity` → `TvEpisodeScreen`
 - Shared error composable: `TvErrorView` (`me.proxer.app.tv`)
+- `TvAppShell` owns `TvSection` routing state and `TvShellViewModel` (auth observation + logout)
+- `TvNavigationDrawerContent` — `NavigationDrawerScope` extension; `TvSection` enum: `ANIME, NEWS, BOOKMARKS, SCHEDULE, INFO, SETTINGS`
+- `TvErrorView.onLoginClick` is `(() -> Unit)?` (nullable, default null) — use `LocalContext.current` + `startActivity<TvLoginActivity>()` instead of passing it as a param
 
 ## Architecture
 
@@ -143,3 +146,6 @@ Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_
 - `koin-androidx-compose` 3.5.6 exposes `get<T>()` for singleton injection in composables, **not** `koinInject()`. Import: `org.koin.androidx.compose.get`.
 - `./gradlew compileDebugKotlin` (no `:app:` prefix) — fast type-check without a full build.
 - Source root is `src/` at the project root (no `app/` subdirectory). `.claude/worktrees/` dirs appear in `find` results — exclude with `-not -path "*/.claude/*"`.
+- `androidx.tv.material3.NavigationDrawerItem` is an extension function on `NavigationDrawerScope` — any composable that calls it must itself be declared as `fun NavigationDrawerScope.MyComposable(...)`.
+- `storageHelper.isLoggedInObservable` skips the current value (`.skip(1)`). Standalone ViewModels (not extending `BaseViewModel`) must seed `MutableLiveData` with `storageHelper.user` in the constructor, then subscribe for updates: `disposables += storageHelper.isLoggedInObservable.subscribe { user.value = storageHelper.user }`.
+- `.superpowers/` directory created by brainstorming tool — add to `.gitignore`.

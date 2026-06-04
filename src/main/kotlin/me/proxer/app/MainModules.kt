@@ -53,6 +53,7 @@ import me.proxer.app.profile.media.ProfileMediaListViewModel
 import me.proxer.app.profile.settings.ProfileSettingsViewModel
 import me.proxer.app.profile.topten.TopTenViewModel
 import me.proxer.app.settings.status.ServerStatusViewModel
+import me.proxer.app.tv.TvShellViewModel
 import me.proxer.app.ui.LinkCheckViewModel
 import me.proxer.app.util.Mp4UploadTrustManagerWorkaround
 import me.proxer.app.util.Validators
@@ -236,6 +237,7 @@ private val applicationModules = module {
 private val viewModelModule = module {
     viewModel { LoginViewModel() }
     viewModel { LogoutViewModel() }
+    viewModel { TvShellViewModel() }
 
     viewModel { NewsViewModel() }
     viewModel { NotificationViewModel() }

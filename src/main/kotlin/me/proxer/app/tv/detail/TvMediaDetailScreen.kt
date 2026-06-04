@@ -21,10 +21,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.MaterialTheme
 import coil.compose.AsyncImage
 import me.proxer.app.media.MediaInfoViewModel
 import me.proxer.app.tv.TvErrorView
@@ -51,7 +51,7 @@ fun TvMediaDetailScreen(
     Row(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0D0D))
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -71,10 +71,10 @@ fun TvMediaDetailScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(onClick = onBack) { Text("← Back", color = Color.White) }
+            OutlinedButton(onClick = onBack) { Text("← Back") }
 
             when {
-                isLoading == true && entry == null -> CircularProgressIndicator(color = Color.White)
+                isLoading == true && entry == null -> CircularProgressIndicator()
                 error != null -> {
                     TvErrorView(
                         error = error!!,
@@ -82,17 +82,26 @@ fun TvMediaDetailScreen(
                     )
                 }
                 else -> entry?.let { e ->
-                    Text(e.name, fontSize = 28.sp, color = Color.White)
+                    Text(e.name, fontSize = 28.sp, color = MaterialTheme.colorScheme.onBackground)
                     Text(
                         "Rating: ${"%.1f".format(e.rating.toDouble())}/10",
-                        color = Color.LightGray,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         fontSize = 14.sp
                     )
-                    Text("Episodes: ${e.episodeAmount}", color = Color.LightGray, fontSize = 14.sp)
+                    Text(
+                        "Episodes: ${e.episodeAmount}",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        fontSize = 14.sp
+                    )
                     if (e.description.isNotBlank()) {
                         Spacer(Modifier.height(8.dp))
-                        Text("Synopsis", color = Color.White, fontSize = 18.sp)
-                        Text(e.description, color = Color.LightGray, fontSize = 14.sp, lineHeight = 20.sp)
+                        Text("Synopsis", color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp)
+                        Text(
+                            e.description,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            fontSize = 14.sp,
+                            lineHeight = 20.sp
+                        )
                     }
                     Spacer(Modifier.height(8.dp))
                     Button(onClick = { onWatchEpisodes(e.episodeAmount) }) {

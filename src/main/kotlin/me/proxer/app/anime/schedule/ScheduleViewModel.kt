@@ -11,6 +11,8 @@ import me.proxer.library.enums.CalendarDay
  */
 class ScheduleViewModel : BaseViewModel<Map<CalendarDay, List<CalendarEntry>>>() {
 
+    override val isLoginRequired = false
+
     override val dataSingle: Single<Map<CalendarDay, List<CalendarEntry>>>
         get() = Single.fromCallable { validate() }
             .flatMap { api.media.calendar().buildSingle() }

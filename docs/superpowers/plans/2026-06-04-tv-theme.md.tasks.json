@@ -1,0 +1,40 @@
+{
+  "planPath": "docs/superpowers/plans/2026-06-04-tv-theme.md",
+  "tasks": [
+    {
+      "id": 9,
+      "subject": "Task 1: TvTheme composable + wire all TV activities",
+      "status": "pending",
+      "description": "**Goal:** Create `TvTheme.kt` and update all six TV activities to use it instead of the bare `MaterialTheme {}` wrapper.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvTheme.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvMainActivity.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/auth/TvLoginActivity.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/search/TvSearchActivity.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/detail/TvMediaDetailActivity.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/episode/TvEpisodeActivity.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/stream/TvStreamActivity.kt`\n\n**Acceptance Criteria:**\n- [ ] TvTheme.kt uses darkColorScheme with colorResource for primary/onPrimary/secondary\n- [ ] All six TV activities use TvTheme {} instead of MaterialTheme {}\n- [ ] compileDebugKotlin passes\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvTheme.kt\", \"src/main/kotlin/me/proxer/app/tv/TvMainActivity.kt\", \"src/main/kotlin/me/proxer/app/tv/auth/TvLoginActivity.kt\", \"src/main/kotlin/me/proxer/app/tv/search/TvSearchActivity.kt\", \"src/main/kotlin/me/proxer/app/tv/detail/TvMediaDetailActivity.kt\", \"src/main/kotlin/me/proxer/app/tv/episode/TvEpisodeActivity.kt\", \"src/main/kotlin/me/proxer/app/tv/stream/TvStreamActivity.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5\", \"acceptanceCriteria\": [\"TvTheme.kt uses darkColorScheme with colorResource for primary/onPrimary/secondary\", \"All six TV activities use TvTheme {} instead of MaterialTheme {}\", \"compileDebugKotlin passes\"]}\n```"
+    },
+    {
+      "id": 10,
+      "subject": "Task 2: Replace hardcoded colours in non-card screens",
+      "status": "pending",
+      "blockedBy": [9],
+      "description": "**Goal:** Remove all hardcoded colour literals in TvAppShell, TvBrowseScreen, TvPlaceholderScreen, and TvMediaDetailScreen, replacing with MaterialTheme.colorScheme.* tokens.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvAppShell.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvBrowseScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvPlaceholderScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/detail/TvMediaDetailScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] No Color.Black/White/Gray/LightGray/0xFF0D0D0D/0xFF1A1A1A literals remain\n- [ ] CircularProgressIndicator no longer passes color=Color.White\n- [ ] compileDebugKotlin passes\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvAppShell.kt\", \"src/main/kotlin/me/proxer/app/tv/TvBrowseScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/TvPlaceholderScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/detail/TvMediaDetailScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5\", \"acceptanceCriteria\": [\"No Color.Black/White/Gray/LightGray literals remain\", \"CircularProgressIndicator no longer passes color=Color.White\", \"compileDebugKotlin passes\"]}\n```"
+    },
+    {
+      "id": 11,
+      "subject": "Task 3: Migrate material3.Card → tv.material3.Surface in card screens",
+      "status": "pending",
+      "blockedBy": [9],
+      "description": "**Goal:** Replace material3.Card with tv.material3.Surface in TvSearchScreen, TvEpisodeScreen, and TvStreamScreen.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/search/TvSearchScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/episode/TvEpisodeScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/stream/TvStreamScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] No material3.Card or CardDefaults imports remain\n- [ ] tv.material3.Surface used for all clickable cards\n- [ ] M3Surface alias used for non-interactive badges\n- [ ] compileDebugKotlin passes\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/search/TvSearchScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/episode/TvEpisodeScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/stream/TvStreamScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5\", \"acceptanceCriteria\": [\"No material3.Card or CardDefaults imports remain\", \"tv.material3.Surface used for all clickable cards\", \"M3Surface alias used for non-interactive badges\", \"compileDebugKotlin passes\"]}\n```"
+    },
+    {
+      "id": 12,
+      "subject": "Task 4: TvBookmarksScreen + TvAppShell wiring",
+      "status": "pending",
+      "blockedBy": [9],
+      "description": "**Goal:** Create TvBookmarksScreen with anime-only paged grid and wire into TvAppShell.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvBookmarksScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvAppShell.kt`\n\n**Acceptance Criteria:**\n- [ ] BookmarkViewModel parametersOf(null, Category.ANIME, false)\n- [ ] 5-column grid with tv.material3.Surface cards 180x270dp\n- [ ] Click navigates to TvEpisodeActivity\n- [ ] Unauthenticated error shows login button\n- [ ] compileDebugKotlin passes\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvBookmarksScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/TvAppShell.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5\", \"acceptanceCriteria\": [\"BookmarkViewModel parametersOf(null, Category.ANIME, false)\", \"5-column grid with tv.material3.Surface cards 180x270dp\", \"Click navigates to TvEpisodeActivity\", \"Unauthenticated error shows login button\", \"compileDebugKotlin passes\"]}\n```"
+    },
+    {
+      "id": 13,
+      "subject": "Task 5: TvScheduleScreen + ScheduleViewModel fix + TvAppShell wiring",
+      "status": "pending",
+      "blockedBy": [9],
+      "description": "**Goal:** Fix ScheduleViewModel to load without login, create Netflix-style weekly schedule screen, wire into TvAppShell.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/anime/schedule/ScheduleViewModel.kt`\n- Create: `src/main/kotlin/me/proxer/app/tv/TvScheduleScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvAppShell.kt`\n\n**Acceptance Criteria:**\n- [ ] ScheduleViewModel.isLoginRequired = false\n- [ ] Day rows with horizontal LazyRow of tv.material3.Surface cards\n- [ ] Click navigates to TvMediaDetailActivity\n- [ ] compileDebugKotlin passes\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/anime/schedule/ScheduleViewModel.kt\", \"src/main/kotlin/me/proxer/app/tv/TvScheduleScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/TvAppShell.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | tail -5\", \"acceptanceCriteria\": [\"ScheduleViewModel.isLoginRequired = false\", \"Day rows with horizontal LazyRow of tv.material3.Surface cards\", \"Click navigates to TvMediaDetailActivity\", \"compileDebugKotlin passes\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-06-04T00:00:00Z"
+}
