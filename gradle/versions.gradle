@@ -93,7 +93,7 @@ ext {
     jsoupVersion = "1.22.2"
     // Compose
     composeBomVersion = "2026.05.01"
-    tvMaterialVersion = "1.0.0"
+    tvMaterialVersion = "1.1.0"
     activityComposeVersion = "1.9.3"
     coilVersion = "2.7.0"
 
