@@ -3,7 +3,7 @@ package me.proxer.app.tv.search
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.tv.material3.MaterialTheme
+import me.proxer.app.tv.TvTheme
 import me.proxer.app.tv.detail.TvMediaDetailActivity
 
 class TvSearchActivity : ComponentActivity() {
@@ -11,7 +11,7 @@ class TvSearchActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val activity = this
         setContent {
-            MaterialTheme {
+            TvTheme {
                 TvSearchScreen(
                     onMediaClick = { id, name -> TvMediaDetailActivity.navigateTo(activity, id, name) },
                     onBack = { finish() }

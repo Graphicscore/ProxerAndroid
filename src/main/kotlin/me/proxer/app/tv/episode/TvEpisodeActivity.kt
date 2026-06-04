@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.tv.material3.MaterialTheme
+import me.proxer.app.tv.TvTheme
 import me.proxer.app.tv.stream.TvStreamActivity
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
@@ -21,7 +21,7 @@ class TvEpisodeActivity : ComponentActivity() {
         val id = entryId
         val name = entryName
         setContent {
-            MaterialTheme {
+            TvTheme {
                 TvEpisodeScreen(
                     entryId = id,
                     entryName = name,
