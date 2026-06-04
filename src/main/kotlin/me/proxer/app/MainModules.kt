@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app
 
 import android.content.res.Resources
@@ -81,7 +83,7 @@ import okhttp3.brotli.BrotliInterceptor
 import okhttp3.internal.platform.Platform
 import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.android.ext.koin.androidContext
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import org.threeten.bp.Instant
@@ -109,199 +111,225 @@ private const val API_TOKEN_HEADER = "proxer-api-token"
 
 private val headersToRedact = listOf("proxer-api-key", "set-cookie")
 
-private val applicationModules = module {
-    single { androidContext().packageManager }
+private val applicationModules =
+    module {
+        single { androidContext().packageManager }
 
-    single(named(DEFAULT_PREFERENCES)) { PreferenceManager.getDefaultSharedPreferences(androidContext()) }
-    single(named(STORAGE_PREFERENCES)) {
-        val masterKey = MasterKey.Builder(androidContext())
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+        single(named(DEFAULT_PREFERENCES)) { PreferenceManager.getDefaultSharedPreferences(androidContext()) }
+        single(named(STORAGE_PREFERENCES)) {
+            val masterKey =
+                MasterKey
+                    .Builder(androidContext(), MasterKey.DEFAULT_MASTER_KEY_ALIAS)
+                    .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                    .build()
 
-        EncryptedSharedPreferences.create(
-            androidContext(),
-            STORAGE_PREFERENCES_NAME,
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-    }
-
-    single(named(DEFAULT_RX_PREFERENCES)) { RxSharedPreferences.create(get(named(DEFAULT_PREFERENCES))) }
-    single(named(STORAGE_RX_PREFERENCES)) { RxSharedPreferences.create(get(named(STORAGE_PREFERENCES))) }
-
-    single { PreferenceHelper(get(), get(named(DEFAULT_RX_PREFERENCES)), get(named(DEFAULT_PREFERENCES))) }
-    single { StorageHelper(get(), get(named(STORAGE_RX_PREFERENCES)), get(named(STORAGE_PREFERENCES)), get()) }
-
-    single { RxBus() }
-
-    single {
-        val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
-            init(null as KeyStore?)
+            EncryptedSharedPreferences.create(
+                androidContext(),
+                STORAGE_PREFERENCES_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
+            )
         }
 
-        trustManagerFactory.trustManagers.filterIsInstance(X509TrustManager::class.java).first()
-    }
+        single(named(DEFAULT_RX_PREFERENCES)) { RxSharedPreferences.create(get(named(DEFAULT_PREFERENCES))) }
+        single(named(STORAGE_RX_PREFERENCES)) { RxSharedPreferences.create(get(named(STORAGE_PREFERENCES))) }
 
-    single { WorkManager.getInstance(androidContext()) }
+        single { PreferenceHelper(get(), get(named(DEFAULT_RX_PREFERENCES)), get(named(DEFAULT_PREFERENCES))) }
+        single { StorageHelper(get(), get(named(STORAGE_RX_PREFERENCES)), get(named(STORAGE_PREFERENCES)), get()) }
 
-    single {
-        val preferenceHelper = get<PreferenceHelper>()
+        single { RxBus() }
 
-        val loggingInterceptor = when {
-            BuildConfig.LOG -> HttpLoggingInterceptor(HttpTimberLogger()).apply {
-                level = preferenceHelper.httpLogLevel
-
-                headersToRedact.forEach { redactHeader(it) }
-
-                if (preferenceHelper.shouldRedactToken) {
-                    redactHeader(API_TOKEN_HEADER)
+        single {
+            val trustManagerFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {
+                    init(null as KeyStore?)
                 }
-            }
-            else -> null
+
+            trustManagerFactory.trustManagers.filterIsInstance(X509TrustManager::class.java).first()
         }
 
-        val trustManager = Mp4UploadTrustManagerWorkaround.create()
+        single { WorkManager.getInstance(androidContext()) }
 
-        OkHttpClient.Builder()
-            .sslSocketFactory(Platform.get().newSslSocketFactory(trustManager), trustManager)
-            .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
-            .socketFactory(TaggedSocketFactory())
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .addNetworkInterceptor(CacheInterceptor())
-            .addInterceptor(ConnectivityInterceptor(get()))
-            .addInterceptor(HttpsUpgradeInterceptor())
-            .addInterceptor(UserAgentInterceptor())
-            .addInterceptor(ConnectionCloseInterceptor())
-            .addInterceptor(BrotliInterceptor)
-            .cache(Cache(File(androidContext().cacheDir, HTTP_CACHE_NAME), HTTP_CACHE_SIZE))
-            .apply {
-                if (loggingInterceptor != null) {
-                    if (preferenceHelper.shouldLogHttpVerbose) {
-                        addNetworkInterceptor(loggingInterceptor)
-                    } else {
-                        addInterceptor(loggingInterceptor)
+        single {
+            val preferenceHelper = get<PreferenceHelper>()
+
+            val loggingInterceptor =
+                when {
+                    BuildConfig.LOG -> {
+                        HttpLoggingInterceptor(HttpTimberLogger()).apply {
+                            level = preferenceHelper.httpLogLevel
+
+                            headersToRedact.forEach { redactHeader(it) }
+
+                            if (preferenceHelper.shouldRedactToken) {
+                                redactHeader(API_TOKEN_HEADER)
+                            }
+                        }
+                    }
+
+                    else -> {
+                        null
                     }
                 }
-            }
-            .build()
+
+            val trustManager = Mp4UploadTrustManagerWorkaround.create()
+
+            OkHttpClient
+                .Builder()
+                .sslSocketFactory(Platform.get().newSslSocketFactory(trustManager), trustManager)
+                .connectionSpecs(listOf(ConnectionSpec.MODERN_TLS, ConnectionSpec.CLEARTEXT))
+                .socketFactory(TaggedSocketFactory())
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(10, TimeUnit.SECONDS)
+                .addNetworkInterceptor(CacheInterceptor())
+                .addInterceptor(ConnectivityInterceptor(get()))
+                .addInterceptor(HttpsUpgradeInterceptor())
+                .addInterceptor(UserAgentInterceptor())
+                .addInterceptor(ConnectionCloseInterceptor())
+                .addInterceptor(BrotliInterceptor)
+                .cache(Cache(File(androidContext().cacheDir, HTTP_CACHE_NAME), HTTP_CACHE_SIZE))
+                .apply {
+                    if (loggingInterceptor != null) {
+                        if (preferenceHelper.shouldLogHttpVerbose) {
+                            addNetworkInterceptor(loggingInterceptor)
+                        } else {
+                            addInterceptor(loggingInterceptor)
+                        }
+                    }
+                }.build()
+        }
+
+        single {
+            Moshi
+                .Builder()
+                .add(Instant::class.java, InstantJsonAdapter())
+                .build()
+        }
+
+        single {
+            ProxerApi
+                .Builder(BuildConfig.PROXER_API_KEY)
+                .enableRateLimitProtection()
+                .loginTokenManager(get())
+                .userAgent(USER_AGENT)
+                .client(get())
+                .moshi(get())
+                .build()
+        }
+
+        single { Validators(get(), get()) }
+
+        single {
+            Room
+                .databaseBuilder(androidContext(), MessengerDatabase::class.java, CHAT_DATABASE_NAME)
+                .addMigrations(MessengerDatabase.MIGRATION_1_2)
+                .build()
+        }
+
+        single {
+            Room
+                .databaseBuilder(androidContext(), TagDatabase::class.java, TAG_DATABASE_NAME)
+                .addMigrations(TagDatabase.MIGRATION_1_2)
+                .build()
+        }
+
+        single { get<MessengerDatabase>().dao() }
+        single { get<TagDatabase>().dao() }
+
+        single {
+            LocalDataInitializer(
+                androidContext(),
+                get(named(DEFAULT_PREFERENCES)),
+                get(named(STORAGE_PREFERENCES)),
+            )
+        }
+
+        single<LoginTokenManager> { ProxerLoginTokenManager(get()) }
+        single { LoginHandler(get(), get(), get(), get()) }
     }
 
-    single {
-        Moshi.Builder()
-            .add(Instant::class.java, InstantJsonAdapter())
-            .build()
+private val viewModelModule =
+    module {
+        viewModel { LoginViewModel() }
+        viewModel { LogoutViewModel() }
+        viewModel { TvShellViewModel() }
+
+        viewModel { NewsViewModel() }
+        viewModel { NotificationViewModel() }
+
+        viewModel { CreateConferenceViewModel() }
+        viewModel { (searchQuery: String) -> ConferenceViewModel(searchQuery) }
+        viewModel { (conferenceId: String) -> ConferenceInfoViewModel(conferenceId) }
+        viewModel { (initialConference: LocalConference) -> MessengerViewModel(initialConference) }
+        viewModel { ChatRoomViewModel() }
+        viewModel { (chatRoomId: String) -> ChatViewModel(chatRoomId) }
+        viewModel { (chatRoomId: String) -> ChatRoomInfoViewModel(chatRoomId) }
+        viewModel { MessengerReportViewModel() }
+        viewModel { ChatReportViewModel() }
+
+        viewModel { (searchQuery: String?, category: Category, filterAvailable: Boolean) ->
+            BookmarkViewModel(searchQuery, category, filterAvailable)
+        }
+
+        viewModel { parameterList ->
+            MediaListViewModel(
+                parameterList[0],
+                parameterList[1],
+                parameterList[2],
+                parameterList[3],
+                parameterList[4],
+                parameterList[5],
+                parameterList[6],
+                parameterList[7],
+                parameterList[8],
+                parameterList[9],
+                parameterList[10],
+                parameterList[11],
+            )
+        }
+
+        viewModel { ScheduleViewModel() }
+
+        viewModel { (userId: String?, username: String?) -> ProfileAboutViewModel(userId, username) }
+        viewModel { (userId: String?, username: String?) -> ProfileViewModel(userId, username) }
+        viewModel { (userId: String?, username: String?) -> TopTenViewModel(userId, username) }
+        viewModel { (userId: String?, username: String?) -> HistoryViewModel(userId, username) }
+        viewModel { ProfileSettingsViewModel() }
+
+        viewModel { parameterList ->
+            ProfileMediaListViewModel(parameterList[0], parameterList[1], parameterList[2], parameterList[3])
+        }
+
+        viewModel { (userId: String?, username: String?, category: Category?) ->
+            ProfileCommentViewModel(userId, username, category)
+        }
+
+        viewModel { (id: String, resources: Resources) -> TopicViewModel(id, resources) }
+
+        viewModel { (entryId: String) -> MediaInfoViewModel(entryId) }
+        viewModel { (entryId: String) -> EpisodeViewModel(entryId) }
+        viewModel { (entryId: String, sortCriteria: CommentSortCriteria) -> CommentsViewModel(entryId, sortCriteria) }
+        viewModel { (entryId: String) -> RelationViewModel(entryId) }
+        viewModel { (entryId: String) -> RecommendationViewModel(entryId) }
+        viewModel { (entryId: String) -> DiscussionViewModel(entryId) }
+
+        viewModel { (industryId: String) -> IndustryInfoViewModel(industryId) }
+        viewModel { (industryId: String) -> IndustryProjectViewModel(industryId) }
+        viewModel { (translatorGroupId: String) -> TranslatorGroupInfoViewModel(translatorGroupId) }
+        viewModel { (translatorGroupId: String) -> TranslatorGroupProjectViewModel(translatorGroupId) }
+
+        viewModel { (entryId: String, language: Language, episode: Int) -> MangaViewModel(entryId, language, episode) }
+        viewModel { (entryId: String, language: AnimeLanguage, episode: Int) ->
+            AnimeViewModel(entryId, language, episode)
+        }
+
+        viewModel { (id: String?, entryId: String?) -> EditCommentViewModel(id, entryId) }
+
+        viewModel { ServerStatusViewModel() }
+
+        viewModel { LinkCheckViewModel() }
     }
-
-    single {
-        ProxerApi.Builder(BuildConfig.PROXER_API_KEY)
-            .enableRateLimitProtection()
-            .loginTokenManager(get())
-            .userAgent(USER_AGENT)
-            .client(get())
-            .moshi(get())
-            .build()
-    }
-
-    single { Validators(get(), get()) }
-
-    single {
-        Room.databaseBuilder(androidContext(), MessengerDatabase::class.java, CHAT_DATABASE_NAME)
-            .addMigrations(MessengerDatabase.MIGRATION_1_2)
-            .build()
-    }
-
-    single {
-        Room.databaseBuilder(androidContext(), TagDatabase::class.java, TAG_DATABASE_NAME)
-            .addMigrations(TagDatabase.MIGRATION_1_2)
-            .build()
-    }
-
-    single { get<MessengerDatabase>().dao() }
-    single { get<TagDatabase>().dao() }
-
-    single {
-        LocalDataInitializer(
-            androidContext(),
-            get(named(DEFAULT_PREFERENCES)),
-            get(named(STORAGE_PREFERENCES))
-        )
-    }
-
-    single<LoginTokenManager> { ProxerLoginTokenManager(get()) }
-    single { LoginHandler(get(), get(), get(), get()) }
-}
-
-private val viewModelModule = module {
-    viewModel { LoginViewModel() }
-    viewModel { LogoutViewModel() }
-    viewModel { TvShellViewModel() }
-
-    viewModel { NewsViewModel() }
-    viewModel { NotificationViewModel() }
-
-    viewModel { CreateConferenceViewModel() }
-    viewModel { (searchQuery: String) -> ConferenceViewModel(searchQuery) }
-    viewModel { (conferenceId: String) -> ConferenceInfoViewModel(conferenceId) }
-    viewModel { (initialConference: LocalConference) -> MessengerViewModel(initialConference) }
-    viewModel { ChatRoomViewModel() }
-    viewModel { (chatRoomId: String) -> ChatViewModel(chatRoomId) }
-    viewModel { (chatRoomId: String) -> ChatRoomInfoViewModel(chatRoomId) }
-    viewModel { MessengerReportViewModel() }
-    viewModel { ChatReportViewModel() }
-
-    viewModel { (searchQuery: String?, category: Category, filterAvailable: Boolean) ->
-        BookmarkViewModel(searchQuery, category, filterAvailable)
-    }
-
-    viewModel { parameterList ->
-        MediaListViewModel(
-            parameterList[0], parameterList[1], parameterList[2], parameterList[3], parameterList[4],
-            parameterList[5], parameterList[6], parameterList[7], parameterList[8], parameterList[9],
-            parameterList[10], parameterList[11]
-        )
-    }
-
-    viewModel { ScheduleViewModel() }
-
-    viewModel { (userId: String?, username: String?) -> ProfileAboutViewModel(userId, username) }
-    viewModel { (userId: String?, username: String?) -> ProfileViewModel(userId, username) }
-    viewModel { (userId: String?, username: String?) -> TopTenViewModel(userId, username) }
-    viewModel { (userId: String?, username: String?) -> HistoryViewModel(userId, username) }
-    viewModel { ProfileSettingsViewModel() }
-
-    viewModel { parameterList ->
-        ProfileMediaListViewModel(parameterList[0], parameterList[1], parameterList[2], parameterList[3])
-    }
-
-    viewModel { (userId: String?, username: String?, category: Category?) ->
-        ProfileCommentViewModel(userId, username, category)
-    }
-
-    viewModel { (id: String, resources: Resources) -> TopicViewModel(id, resources) }
-
-    viewModel { (entryId: String) -> MediaInfoViewModel(entryId) }
-    viewModel { (entryId: String) -> EpisodeViewModel(entryId) }
-    viewModel { (entryId: String, sortCriteria: CommentSortCriteria) -> CommentsViewModel(entryId, sortCriteria) }
-    viewModel { (entryId: String) -> RelationViewModel(entryId) }
-    viewModel { (entryId: String) -> RecommendationViewModel(entryId) }
-    viewModel { (entryId: String) -> DiscussionViewModel(entryId) }
-
-    viewModel { (industryId: String) -> IndustryInfoViewModel(industryId) }
-    viewModel { (industryId: String) -> IndustryProjectViewModel(industryId) }
-    viewModel { (translatorGroupId: String) -> TranslatorGroupInfoViewModel(translatorGroupId) }
-    viewModel { (translatorGroupId: String) -> TranslatorGroupProjectViewModel(translatorGroupId) }
-
-    viewModel { (entryId: String, language: Language, episode: Int) -> MangaViewModel(entryId, language, episode) }
-    viewModel { (entryId: String, language: AnimeLanguage, episode: Int) -> AnimeViewModel(entryId, language, episode) }
-
-    viewModel { (id: String?, entryId: String?) -> EditCommentViewModel(id, entryId) }
-
-    viewModel { ServerStatusViewModel() }
-
-    viewModel { LinkCheckViewModel() }
-}
 
 val koinModules = listOf(applicationModules, viewModelModule)

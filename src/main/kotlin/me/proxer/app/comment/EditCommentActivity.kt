@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar
@@ -22,7 +23,6 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class EditCommentActivity : BaseActivity() {
-
     companion object {
         const val COMMENT_EXTRA = "comment"
 
@@ -56,13 +56,14 @@ class EditCommentActivity : BaseActivity() {
         viewModel.isUpdate.observe(
             this,
             Observer {
-                title = getString(
-                    when (it) {
-                        true -> R.string.action_update_comment
-                        false -> R.string.action_create_comment
-                    }
-                )
-            }
+                title =
+                    getString(
+                        when (it) {
+                            true -> R.string.action_update_comment
+                            false -> R.string.action_create_comment
+                        },
+                    )
+            },
         )
 
         viewModel.publishResult.observe(
@@ -77,7 +78,7 @@ class EditCommentActivity : BaseActivity() {
 
                     finish()
                 }
-            }
+            },
         )
 
         viewModel.publishError.observe(
@@ -88,10 +89,10 @@ class EditCommentActivity : BaseActivity() {
                         getString(R.string.error_comment_publish, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(this)
+                        it.toClickListener(this),
                     )
                 }
-            }
+            },
         )
 
         if (savedInstanceState == null) {
@@ -123,21 +124,30 @@ class EditCommentActivity : BaseActivity() {
     }
 
     class Contract : ActivityResultContract<Contract.Input, LocalComment?>() {
-
-        override fun createIntent(context: Context, input: Input) = context.intentFor<EditCommentActivity>(
+        override fun createIntent(
+            context: Context,
+            input: Input,
+        ) = context.intentFor<EditCommentActivity>(
             ID_ARGUMENT to input.id,
             ENTRY_ID_ARGUMENT to input.entryId,
-            NAME_ARGUMENT to input.name
+            NAME_ARGUMENT to input.name,
         )
 
-        override fun parseResult(resultCode: Int, intent: Intent?): LocalComment? {
+        override fun parseResult(
+            resultCode: Int,
+            intent: Intent?,
+        ): LocalComment? {
             if (resultCode != Activity.RESULT_OK) {
                 return null
             }
 
-            return intent?.getParcelableExtra(COMMENT_EXTRA)
+            return intent?.let { IntentCompat.getParcelableExtra(it, COMMENT_EXTRA, LocalComment::class.java) }
         }
 
-        data class Input(val id: String? = null, val entryId: String? = null, val name: String? = null)
+        data class Input(
+            val id: String? = null,
+            val entryId: String? = null,
+            val name: String? = null,
+        )
     }
 }

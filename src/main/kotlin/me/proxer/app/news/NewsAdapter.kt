@@ -13,12 +13,12 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -35,8 +35,9 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAdapter.ViewHolder>() {
-
+class NewsAdapter(
+    savedInstanceState: Bundle?,
+) : BaseAdapter<NewsArticle, NewsAdapter.ViewHolder>() {
     private companion object {
         private const val EXPANDED_STATE = "news_expansion_map"
     }
@@ -49,19 +50,26 @@ class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAd
     private val expansionMap: ParcelableStringBooleanMap
 
     init {
-        expansionMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(EXPANDED_STATE)
-        }
+        expansionMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(EXPANDED_STATE)
+            }
 
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-        LayoutInflater.from(parent.context).inflate(R.layout.item_news, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) = ViewHolder(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_news, parent, false),
     )
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         layoutManager = recyclerView.layoutManager
@@ -76,7 +84,10 @@ class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAd
         glide = null
     }
 
-    override fun areContentsTheSame(old: NewsArticle, new: NewsArticle) = old.date == new.date &&
+    override fun areContentsTheSame(
+        old: NewsArticle,
+        new: NewsArticle,
+    ) = old.date == new.date &&
         old.category == new.category &&
         old.image == new.image &&
         old.subject == new.subject &&
@@ -84,8 +95,9 @@ class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAd
 
     override fun saveInstanceState(outState: Bundle) = outState.putParcelable(EXPANDED_STATE, expansionMap)
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val expand: ImageButton by bindView(R.id.expand)
         internal val description: AppCompatTextView by bindView(R.id.description)
@@ -114,17 +126,20 @@ class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAd
         }
 
         private fun initListeners() {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
 
-            image.clicks()
+            image
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(imageClickSubject)
 
-            expand.clicks()
+            expand
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it].id }
                 .autoDisposable(this)
                 .subscribe {
@@ -134,21 +149,24 @@ class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAd
                 }
         }
 
-        private fun handleExpansion(itemId: String, animate: Boolean = false) {
-            ViewCompat.animate(expand).cancel()
+        private fun handleExpansion(
+            itemId: String,
+            animate: Boolean = false,
+        ) {
+            expand.animate().cancel()
 
             if (expansionMap.containsKey(itemId)) {
                 description.maxLines = Int.MAX_VALUE
 
                 when (animate) {
-                    true -> ViewCompat.animate(expand).rotation(180f)
+                    true -> expand.animate().rotation(180f)
                     false -> expand.rotation = 180f
                 }
             } else {
                 description.maxLines = 3
 
                 when (animate) {
-                    true -> ViewCompat.animate(expand).rotation(0f)
+                    true -> expand.animate().rotation(0f)
                     false -> expand.rotation = 0f
                 }
             }

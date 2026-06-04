@@ -7,6 +7,7 @@ import android.widget.ImageView
 import androidx.core.view.ViewCompat
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.android.material.tabs.TabLayout
@@ -17,7 +18,6 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.ui.ImageDetailActivity
 import me.proxer.app.util.ActivityUtils
@@ -29,7 +29,6 @@ import okhttp3.HttpUrl
  * @author Ruben Gees
  */
 abstract class ImageTabsActivity : DrawerActivity() {
-
     override val contentView
         get() = R.layout.activity_image_tabs
 
@@ -71,16 +70,19 @@ abstract class ImageTabsActivity : DrawerActivity() {
         super.onDestroy()
     }
 
-    override fun onBackPressed() = when (isHeaderImageVisible && headerImage.drawable != null) {
-        true -> super.onBackPressed()
-        false -> finish()
-    }
+    override fun onBackPressed() =
+        when (isHeaderImageVisible && headerImage.drawable != null) {
+            true -> super.onBackPressed()
+            false -> finish()
+        }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> when (isHeaderImageVisible && headerImage.drawable != null) {
-                true -> supportFinishAfterTransition()
-                false -> finish()
+            android.R.id.home -> {
+                when (isHeaderImageVisible && headerImage.drawable != null) {
+                    true -> supportFinishAfterTransition()
+                    false -> finish()
+                }
             }
         }
 
@@ -91,22 +93,25 @@ abstract class ImageTabsActivity : DrawerActivity() {
         appbar.setExpanded(false)
     }
 
-    fun headerHeightChanges(): Observable<Float> = appbar.offsetChanges()
-        .map { verticalOffset ->
-            val overallHeight = collapsingToolbar.height
-            val toolbarHeight = toolbar.height
-            val toolbarTranslation = IntArray(2).apply { toolbar.getLocationOnScreen(this) }[1]
-            val tabLayoutHeight = tabs.height
+    fun headerHeightChanges(): Observable<Float> =
+        appbar
+            .offsetChanges()
+            .map { verticalOffset ->
+                val overallHeight = collapsingToolbar.height
+                val toolbarHeight = toolbar.height
+                val toolbarTranslation = IntArray(2).apply { toolbar.getLocationOnScreen(this) }[1]
+                val tabLayoutHeight = tabs.height
 
-            val collapsedHeight = overallHeight - toolbarHeight - toolbarTranslation - tabLayoutHeight
+                val collapsedHeight = overallHeight - toolbarHeight - toolbarTranslation - tabLayoutHeight
 
-            (-collapsedHeight - verticalOffset).toFloat()
-        }
+                (-collapsedHeight - verticalOffset).toFloat()
+            }
 
     protected open fun setupImage() {
         ViewCompat.setTransitionName(headerImage, ActivityUtils.getTransitionName(this))
 
-        headerImage.clicks()
+        headerImage
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe {
                 val safeHeaderImageUrl = headerImageUrl
@@ -127,7 +132,8 @@ abstract class ImageTabsActivity : DrawerActivity() {
 
             supportStartPostponedEnterTransition()
         } else {
-            Glide.with(this)
+            Glide
+                .with(this)
                 .load(headerImageUrl.toString())
                 .logErrors()
                 .into(
@@ -143,7 +149,7 @@ abstract class ImageTabsActivity : DrawerActivity() {
                         override fun onLoadFailed(errorDrawable: Drawable?) {
                             supportStartPostponedEnterTransition()
                         }
-                    }
+                    },
                 )
         }
     }
@@ -156,7 +162,8 @@ abstract class ImageTabsActivity : DrawerActivity() {
 
         collapsingToolbar.isTitleEnabled = false
 
-        appbar.offsetChanges()
+        appbar
+            .offsetChanges()
             .autoDisposable(this.scope())
             .subscribe {
                 isHeaderImageVisible = collapsingToolbar.height + it > collapsingToolbar.scrimVisibleHeightTrigger
@@ -176,7 +183,6 @@ abstract class ImageTabsActivity : DrawerActivity() {
 
     protected open fun loadEmptyImage() {}
 
-    private fun isTransitionPossible(savedInstanceState: Bundle?): Boolean {
-        return savedInstanceState == null && ActivityUtils.getTransitionName(this) != null
-    }
+    private fun isTransitionPossible(savedInstanceState: Bundle?): Boolean =
+        savedInstanceState == null && ActivityUtils.getTransitionName(this) != null
 }

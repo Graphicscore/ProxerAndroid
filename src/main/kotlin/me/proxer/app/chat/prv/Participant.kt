@@ -7,22 +7,29 @@ import me.proxer.app.util.extension.readStringSafely
 /**
  * @author Ruben Gees
  */
-data class Participant(val username: String, val image: String = "") : Parcelable {
-
+data class Participant(
+    val username: String,
+    val image: String = "",
+) : Parcelable {
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<Participant> {
-            override fun createFromParcel(parcel: Parcel) = Participant(parcel)
-            override fun newArray(size: Int): Array<Participant?> = arrayOfNulls(size)
-        }
+        val CREATOR =
+            object : Parcelable.Creator<Participant> {
+                override fun createFromParcel(parcel: Parcel) = Participant(parcel)
+
+                override fun newArray(size: Int): Array<Participant?> = arrayOfNulls(size)
+            }
     }
 
     constructor(parcel: Parcel) : this(
         parcel.readStringSafely(),
-        parcel.readStringSafely()
+        parcel.readStringSafely(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(username)
         parcel.writeString(image)
     }

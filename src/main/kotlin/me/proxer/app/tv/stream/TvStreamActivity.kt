@@ -4,18 +4,19 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.content.IntentCompat
 import me.proxer.app.tv.TvTheme
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
 import me.proxer.library.enums.AnimeLanguage
 
 class TvStreamActivity : ComponentActivity() {
-
     private val entryId: String get() = intent.getSafeStringExtra(ID_EXTRA)
     private val episode: Int get() = intent.getIntExtra(EPISODE_EXTRA, 1)
-    @Suppress("DEPRECATION")
+
     private val language: AnimeLanguage get() =
-        (intent.getSerializableExtra(LANGUAGE_EXTRA) as? AnimeLanguage) ?: AnimeLanguage.ENGLISH_SUB
+        IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)
+            ?: AnimeLanguage.ENGLISH_SUB
     private val entryName: String get() = intent.getStringExtra(NAME_EXTRA) ?: ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +32,7 @@ class TvStreamActivity : ComponentActivity() {
                     episode = ep,
                     language = lang,
                     entryName = name,
-                    onBack = { finish() }
+                    onBack = { finish() },
                 )
             }
         }
@@ -43,12 +44,18 @@ class TvStreamActivity : ComponentActivity() {
         private const val LANGUAGE_EXTRA = "language"
         private const val NAME_EXTRA = "name"
 
-        fun navigateTo(context: Context, id: String, episode: Int, language: AnimeLanguage, name: String) {
+        fun navigateTo(
+            context: Context,
+            id: String,
+            episode: Int,
+            language: AnimeLanguage,
+            name: String,
+        ) {
             context.startActivity<TvStreamActivity>(
                 ID_EXTRA to id,
                 EPISODE_EXTRA to episode,
                 LANGUAGE_EXTRA to language,
-                NAME_EXTRA to name
+                NAME_EXTRA to name,
             )
         }
     }

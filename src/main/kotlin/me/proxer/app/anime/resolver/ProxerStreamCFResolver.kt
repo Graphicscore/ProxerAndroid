@@ -14,31 +14,32 @@ import okhttp3.Request
  * @author Ruben Gees
  */
 object ProxerStreamCFResolver : StreamResolver() {
-
     private val regex = Regex("<stream.*?src=\"(.*?)\".*?>")
 
     override val name = "Proxer-Stream (CF)"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> {
-        return api.anime.vastLink(id)
+    override fun resolve(id: String): Single<StreamResolutionResult> =
+        api.anime
+            .vastLink(id)
             .buildSingle()
             .flatMap { (link, adTag) ->
                 client
                     .newCall(
-                        Request.Builder()
+                        Request
+                            .Builder()
                             .get()
                             .url(link.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
                             .header("User-Agent", MainApplication.USER_AGENT)
                             .header("Connection", "close")
-                            .build()
-                    )
-                    .toBodySingle()
+                            .build(),
+                    ).toBodySingle()
                     .map {
                         val regexResult = regex.find(it) ?: throw StreamResolutionException()
 
                         val streamId = regexResult.groupValues[1]
-                        val url = "https://videodelivery.net/$streamId/manifest/video.mpd".toHttpUrlOrNull()
-                            ?: throw StreamResolutionException()
+                        val url =
+                            "https://videodelivery.net/$streamId/manifest/video.mpd".toHttpUrlOrNull()
+                                ?: throw StreamResolutionException()
 
                         val adTagUri = if (adTag.isNotBlank()) Uri.parse(adTag) else null
 
@@ -47,9 +48,8 @@ object ProxerStreamCFResolver : StreamResolver() {
                             // Technically this should be application/dash+xml,
                             // but other applications do not seem to support that.
                             "application/x-mpegURL",
-                            adTag = adTagUri
+                            adTag = adTagUri,
                         )
                     }
             }
-    }
 }

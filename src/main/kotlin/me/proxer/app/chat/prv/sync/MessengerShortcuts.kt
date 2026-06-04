@@ -24,7 +24,6 @@ import kotlin.math.min
  * @author Ruben Gees
  */
 object MessengerShortcuts {
-
     private const val SHARE_TARGET_CATEGORY = "me.proxer.app.sharingshortcuts.category.TEXT_SHARE_TARGET"
 
     private val messengerDao by safeInject<MessengerDao>()
@@ -33,51 +32,63 @@ object MessengerShortcuts {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val componentName = ComponentName(context, MainActivity::class.java)
 
-            val shortcutsLeft = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                val shortcutManager = requireNotNull(context.getSystemService<ShortcutManager>())
-                val maxShortcuts = ShortcutManagerCompat.getMaxShortcutCountPerActivity(context)
-                val usedShortcuts = shortcutManager.dynamicShortcuts.plus(shortcutManager.manifestShortcuts)
-                    .filterNot { it.categories == setOf(SHARE_TARGET_CATEGORY) }
-                    .count { shortcutInfo -> shortcutInfo.activity == componentName }
+            val shortcutsLeft =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    val shortcutManager = requireNotNull(context.getSystemService<ShortcutManager>())
+                    val maxShortcuts = ShortcutManagerCompat.getMaxShortcutCountPerActivity(context)
+                    val usedShortcuts =
+                        shortcutManager.dynamicShortcuts
+                            .plus(shortcutManager.manifestShortcuts)
+                            .filterNot { it.categories == setOf(SHARE_TARGET_CATEGORY) }
+                            .count { shortcutInfo -> shortcutInfo.activity == componentName }
 
-                min(4, maxShortcuts - usedShortcuts)
-            } else {
-                2
-            }
+                    min(4, maxShortcuts - usedShortcuts)
+                } else {
+                    2
+                }
 
-            val newShortcuts = messengerDao.getMostRecentConferences(shortcutsLeft).map {
-                val icon = getConferenceIcon(context, it)
-                    ?.let { bitmap -> IconCompat.createWithBitmap(bitmap) }
-                    ?: IconCompat.createWithResource(context, R.drawable.ic_shortcut_messenger_person)
-                val intent = PrvMessengerActivity.getIntent(context, it.id.toString()).setAction(Intent.ACTION_DEFAULT)
+            val newShortcuts =
+                messengerDao.getMostRecentConferences(shortcutsLeft).map {
+                    val icon =
+                        getConferenceIcon(context, it)
+                            ?.let { bitmap -> IconCompat.createWithBitmap(bitmap) }
+                            ?: IconCompat.createWithResource(context, R.drawable.ic_shortcut_messenger_person)
+                    val intent =
+                        PrvMessengerActivity
+                            .getIntent(
+                                context,
+                                it.id.toString(),
+                            ).setAction(Intent.ACTION_DEFAULT)
 
-                ShortcutInfoCompat.Builder(context, it.id.toString())
-                    .setShortLabel(it.topic)
-                    .setIcon(icon)
-                    .setIntent(intent)
-                    .setCategories(setOf(SHARE_TARGET_CATEGORY))
-                    .apply {
-                        if (!it.isGroup) {
-                            setPerson(
-                                Person.Builder()
-                                    .setName(it.topic)
-                                    .setIcon(icon)
-                                    .setUri(ProxerUrls.webBase.newBuilder("/messages?id=${it.id}").toString())
-                                    .setKey(it.id.toString())
-                                    .build()
-                            )
-                        }
-                    }
-                    .build()
-            }
+                    ShortcutInfoCompat
+                        .Builder(context, it.id.toString())
+                        .setShortLabel(it.topic)
+                        .setIcon(icon)
+                        .setIntent(intent)
+                        .setCategories(setOf(SHARE_TARGET_CATEGORY))
+                        .apply {
+                            if (!it.isGroup) {
+                                setPerson(
+                                    Person
+                                        .Builder()
+                                        .setName(it.topic)
+                                        .setIcon(icon)
+                                        .setUri(ProxerUrls.webBase.newBuilder("/messages?id=${it.id}").toString())
+                                        .setKey(it.id.toString())
+                                        .build(),
+                                )
+                            }
+                        }.build()
+                }
 
-            val needsUpdate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                val shortcutManager = requireNotNull(context.getSystemService<ShortcutManager>())
+            val needsUpdate =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+                    val shortcutManager = requireNotNull(context.getSystemService<ShortcutManager>())
 
-                newShortcuts.map { it.id } != shortcutManager.dynamicShortcuts.map { it.id }
-            } else {
-                true
-            }
+                    newShortcuts.map { it.id } != shortcutManager.dynamicShortcuts.map { it.id }
+                } else {
+                    true
+                }
 
             if (needsUpdate) {
                 ShortcutManagerCompat.removeAllDynamicShortcuts(context)
@@ -86,12 +97,23 @@ object MessengerShortcuts {
         }
     }
 
-    private fun getConferenceIcon(context: Context, conference: LocalConference) = when {
-        conference.image.isNotBlank() -> Utils.getCircleBitmapFromUrl(
-            context,
-            ProxerUrls.userImage(conference.image)
-        )
-        conference.isGroup -> BitmapFactory.decodeResource(context.resources, R.drawable.ic_shortcut_messenger_group)
-        else -> BitmapFactory.decodeResource(context.resources, R.drawable.ic_shortcut_messenger_person)
+    private fun getConferenceIcon(
+        context: Context,
+        conference: LocalConference,
+    ) = when {
+        conference.image.isNotBlank() -> {
+            Utils.getCircleBitmapFromUrl(
+                context,
+                ProxerUrls.userImage(conference.image),
+            )
+        }
+
+        conference.isGroup -> {
+            BitmapFactory.decodeResource(context.resources, R.drawable.ic_shortcut_messenger_group)
+        }
+
+        else -> {
+            BitmapFactory.decodeResource(context.resources, R.drawable.ic_shortcut_messenger_person)
+        }
     }
 }

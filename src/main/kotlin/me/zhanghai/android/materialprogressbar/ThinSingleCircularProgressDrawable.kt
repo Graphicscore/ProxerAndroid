@@ -12,9 +12,13 @@ import android.graphics.Paint
  *
  * @author Ruben Gees
  */
-internal class ThinSingleCircularProgressDrawable(style: Int) : SingleCircularProgressDrawable(style) {
-
-    override fun onDrawRing(canvas: Canvas, paint: Paint) {
+internal class ThinSingleCircularProgressDrawable(
+    style: Int,
+) : SingleCircularProgressDrawable(style) {
+    override fun onDrawRing(
+        canvas: Canvas,
+        paint: Paint,
+    ) {
         super.onDrawRing(canvas, paint.apply { strokeWidth = 2f })
     }
 }

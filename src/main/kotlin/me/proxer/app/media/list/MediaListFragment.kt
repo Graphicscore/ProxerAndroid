@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.media.list
 
 import android.content.Intent
@@ -11,19 +13,21 @@ import android.widget.Button
 import android.widget.CheckBox
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL
 import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
 import com.jakewharton.rxbinding3.appcompat.queryTextChangeEvents
 import com.jakewharton.rxbinding3.view.actionViewEvents
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BackPressAware
 import me.proxer.app.base.PagedContentFragment
@@ -52,8 +56,9 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment_media_list), BackPressAware {
-
+class MediaListFragment :
+    PagedContentFragment<MediaListEntry>(R.layout.fragment_media_list),
+    BackPressAware {
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
         private const val SORT_CRITERIA_ARGUMENT = "sort_criteria"
@@ -69,9 +74,10 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         private const val TAG_SPOILER_FILTER_ARGUMENT = "tag_spoiler_filter"
         private const val HIDE_FINISHED_ARGUMENT = "hide_finished"
 
-        fun newInstance(category: Category) = MediaListFragment().apply {
-            arguments = bundleOf(CATEGORY_ARGUMENT to category)
-        }
+        fun newInstance(category: Category) =
+            MediaListFragment().apply {
+                arguments = bundleOf(CATEGORY_ARGUMENT to category)
+            }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -79,8 +85,18 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
 
     override val viewModel by viewModel<MediaListViewModel> {
         unsafeParametersOf(
-            sortCriteria, type, searchQuery, language, genres, excludedGenres, fskConstraints,
-            tags, excludedTags, tagRateFilter, tagSpoilerFilter, hideFinished
+            sortCriteria,
+            type,
+            searchQuery,
+            language,
+            genres,
+            excludedGenres,
+            fskConstraints,
+            tags,
+            excludedTags,
+            tagRateFilter,
+            tagSpoilerFilter,
+            hideFinished,
         )
     }
 
@@ -91,11 +107,18 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
     override var innerAdapter by Delegates.notNull<MediaAdapter>()
 
     private val category
-        get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as Category
+        get() =
+            requireNotNull(
+                BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java),
+            ) { "CATEGORY_ARGUMENT missing from MediaListFragment bundle" }
 
     private var sortCriteria: MediaSearchSortCriteria
-        get() = requireArguments().getSerializable(SORT_CRITERIA_ARGUMENT) as? MediaSearchSortCriteria
-            ?: MediaSearchSortCriteria.RATING
+        get() =
+            BundleCompat.getSerializable(
+                requireArguments(),
+                SORT_CRITERIA_ARGUMENT,
+                MediaSearchSortCriteria::class.java,
+            ) ?: MediaSearchSortCriteria.RATING
         set(value) {
             requireArguments().putSerializable(SORT_CRITERIA_ARGUMENT, value)
 
@@ -103,11 +126,12 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     private var type: MediaType
-        get() = requireArguments().getSerializable(TYPE_ARGUMENT) as? MediaType ?: when (category) {
-            Category.ANIME -> MediaType.ALL_ANIME
-            Category.MANGA -> MediaType.ALL_MANGA
-            else -> error("Unknown value for category")
-        }
+        get() =
+            BundleCompat.getSerializable(requireArguments(), TYPE_ARGUMENT, MediaType::class.java) ?: when (category) {
+                Category.ANIME -> MediaType.ALL_ANIME
+                Category.MANGA -> MediaType.ALL_MANGA
+                else -> error("Unknown value for category")
+            }
         set(value) {
             requireArguments().putSerializable(TYPE_ARGUMENT, value)
 
@@ -123,7 +147,7 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var language: Language?
-        get() = requireArguments().getSerializable(LANGUAGE_ARGUMENT) as? Language?
+        get() = BundleCompat.getSerializable(requireArguments(), LANGUAGE_ARGUMENT, Language::class.java)
         set(value) {
             requireArguments().putSerializable(LANGUAGE_ARGUMENT, language)
 
@@ -131,7 +155,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var genres: List<LocalTag>
-        get() = requireArguments().getParcelableArrayList(GENRES_ARGUMENT) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), GENRES_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(GENRES_ARGUMENT, ArrayList(value))
 
@@ -139,7 +165,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var excludedGenres: List<LocalTag>
-        get() = requireArguments().getParcelableArrayList(EXCLUDED_GENRES_ARGUMENT) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), EXCLUDED_GENRES_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(EXCLUDED_GENRES_ARGUMENT, ArrayList(value))
 
@@ -155,7 +183,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var tags: List<LocalTag>
-        get() = requireArguments().getParcelableArrayList(TAGS_ARGUMENT) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), TAGS_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(TAGS_ARGUMENT, ArrayList(value))
 
@@ -163,7 +193,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var excludedTags: List<LocalTag>
-        get() = requireArguments().getParcelableArrayList(EXCLUDED_TAGS_ARGUMENT) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), EXCLUDED_TAGS_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(EXCLUDED_TAGS_ARGUMENT, ArrayList(value))
 
@@ -171,8 +203,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var tagRateFilter: TagRateFilter
-        get() = requireArguments().getSerializable(TAG_RATE_FILTER_ARGUMENT) as? TagRateFilter
-            ?: TagRateFilter.RATED_ONLY
+        get() =
+            BundleCompat.getSerializable(requireArguments(), TAG_RATE_FILTER_ARGUMENT, TagRateFilter::class.java)
+                ?: TagRateFilter.RATED_ONLY
         set(value) {
             requireArguments().putSerializable(TAG_RATE_FILTER_ARGUMENT, value)
 
@@ -180,8 +213,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var tagSpoilerFilter: TagSpoilerFilter
-        get() = requireArguments().getSerializable(TAG_SPOILER_FILTER_ARGUMENT) as? TagSpoilerFilter
-            ?: TagSpoilerFilter.NO_SPOILERS
+        get() =
+            BundleCompat.getSerializable(requireArguments(), TAG_SPOILER_FILTER_ARGUMENT, TagSpoilerFilter::class.java)
+                ?: TagSpoilerFilter.NO_SPOILERS
         set(value) {
             requireArguments().putSerializable(TAG_SPOILER_FILTER_ARGUMENT, value)
 
@@ -230,113 +264,127 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
             .subscribe { (view, entry) ->
                 MediaActivity.navigateTo(requireActivity(), entry.id, entry.name, entry.medium.toCategory(), view)
             }
-
-        setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
 
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_media_list,
+                        menu,
+                        true,
+                    )
+
+                    when (sortCriteria) {
+                        MediaSearchSortCriteria.RATING -> menu.findItem(R.id.rating).isChecked = true
+                        MediaSearchSortCriteria.CLICKS -> menu.findItem(R.id.clicks).isChecked = true
+                        MediaSearchSortCriteria.EPISODE_AMOUNT -> menu.findItem(R.id.episodeAmount).isChecked = true
+                        MediaSearchSortCriteria.NAME -> menu.findItem(R.id.name).isChecked = true
+                        else -> error("Unsupported sort criteria: $sortCriteria")
+                    }
+
+                    val filterSubMenu = menu.findItem(R.id.filter).subMenu ?: return
+
+                    when (category) {
+                        Category.ANIME -> filterSubMenu.setGroupVisible(R.id.filterManga, false)
+                        Category.MANGA, Category.NOVEL -> filterSubMenu.setGroupVisible(R.id.filterAnime, false)
+                    }
+
+                    when (type) {
+                        MediaType.ALL_ANIME -> filterSubMenu.findItem(R.id.all_anime).isChecked = true
+                        MediaType.ANIMESERIES -> filterSubMenu.findItem(R.id.animeseries).isChecked = true
+                        MediaType.MOVIE -> filterSubMenu.findItem(R.id.movies).isChecked = true
+                        MediaType.OVA -> filterSubMenu.findItem(R.id.ova).isChecked = true
+                        MediaType.HENTAI -> filterSubMenu.findItem(R.id.hentai).isChecked = true
+                        MediaType.ALL_MANGA -> filterSubMenu.findItem(R.id.all_manga).isChecked = true
+                        MediaType.MANGASERIES -> filterSubMenu.findItem(R.id.mangaseries).isChecked = true
+                        MediaType.ONESHOT -> filterSubMenu.findItem(R.id.oneshot).isChecked = true
+                        MediaType.DOUJIN -> filterSubMenu.findItem(R.id.doujin).isChecked = true
+                        MediaType.HMANGA -> filterSubMenu.findItem(R.id.hmanga).isChecked = true
+                        else -> error("Unsupported type: $type")
+                    }
+
+                    menu.findItem(R.id.search).let { searchItem ->
+                        searchView = searchItem.actionView as SearchView
+
+                        searchItem
+                            .actionViewEvents()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe { event ->
+                                if (event.menuItem.isActionViewExpanded) {
+                                    searchQuery = null
+
+                                    viewModel.reload()
+                                }
+
+                                TransitionManager.endTransitions(toolbar)
+                                TransitionManager.beginDelayedTransition(toolbar)
+                            }
+
+                        searchView
+                            .queryTextChangeEvents()
+                            .skipInitialValue()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe { event ->
+                                searchQuery = event.queryText.toString().trim()
+
+                                if (event.isSubmitted) {
+                                    searchView.clearFocus()
+
+                                    viewModel.reload()
+                                }
+                            }
+
+                        searchQuery?.let {
+                            searchItem.expandActionView()
+                            searchView.setQuery(it, false)
+                            searchView.clearFocus()
+                        }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.rating -> sortCriteria = MediaSearchSortCriteria.RATING
+                        R.id.clicks -> sortCriteria = MediaSearchSortCriteria.CLICKS
+                        R.id.episodeAmount -> sortCriteria = MediaSearchSortCriteria.EPISODE_AMOUNT
+                        R.id.name -> sortCriteria = MediaSearchSortCriteria.NAME
+                        R.id.all_anime -> type = MediaType.ALL_ANIME
+                        R.id.animeseries -> type = MediaType.ANIMESERIES
+                        R.id.movies -> type = MediaType.MOVIE
+                        R.id.ova -> type = MediaType.OVA
+                        R.id.hentai -> type = MediaType.HENTAI
+                        R.id.all_manga -> type = MediaType.ALL_MANGA
+                        R.id.mangaseries -> type = MediaType.MANGASERIES
+                        R.id.oneshot -> type = MediaType.ONESHOT
+                        R.id.doujin -> type = MediaType.DOUJIN
+                        R.id.hmanga -> type = MediaType.HMANGA
+                        else -> return false
+                    }
+                    menuItem.isChecked = true
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
+
         searchBottomSheetManager = MediaListSearchBottomSheet.bindTo(this, viewModel)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_media_list, menu, true)
-
-        when (sortCriteria) {
-            MediaSearchSortCriteria.RATING -> menu.findItem(R.id.rating).isChecked = true
-            MediaSearchSortCriteria.CLICKS -> menu.findItem(R.id.clicks).isChecked = true
-            MediaSearchSortCriteria.EPISODE_AMOUNT -> menu.findItem(R.id.episodeAmount).isChecked = true
-            MediaSearchSortCriteria.NAME -> menu.findItem(R.id.name).isChecked = true
-            else -> error("Unsupported sort criteria: $sortCriteria")
-        }
-
-        val filterSubMenu = menu.findItem(R.id.filter).subMenu ?: return
-
-        when (category) {
-            Category.ANIME -> filterSubMenu.setGroupVisible(R.id.filterManga, false)
-            Category.MANGA, Category.NOVEL -> filterSubMenu.setGroupVisible(R.id.filterAnime, false)
-        }
-
-        when (type) {
-            MediaType.ALL_ANIME -> filterSubMenu.findItem(R.id.all_anime).isChecked = true
-            MediaType.ANIMESERIES -> filterSubMenu.findItem(R.id.animeseries).isChecked = true
-            MediaType.MOVIE -> filterSubMenu.findItem(R.id.movies).isChecked = true
-            MediaType.OVA -> filterSubMenu.findItem(R.id.ova).isChecked = true
-            MediaType.HENTAI -> filterSubMenu.findItem(R.id.hentai).isChecked = true
-            MediaType.ALL_MANGA -> filterSubMenu.findItem(R.id.all_manga).isChecked = true
-            MediaType.MANGASERIES -> filterSubMenu.findItem(R.id.mangaseries).isChecked = true
-            MediaType.ONESHOT -> filterSubMenu.findItem(R.id.oneshot).isChecked = true
-            MediaType.DOUJIN -> filterSubMenu.findItem(R.id.doujin).isChecked = true
-            MediaType.HMANGA -> filterSubMenu.findItem(R.id.hmanga).isChecked = true
-            else -> error("Unsupported type: $type")
-        }
-
-        menu.findItem(R.id.search).let { searchItem ->
-            searchView = searchItem.actionView as SearchView
-
-            searchItem.actionViewEvents()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe { event ->
-                    if (event.menuItem.isActionViewExpanded) {
-                        searchQuery = null
-
-                        viewModel.reload()
-                    }
-
-                    TransitionManager.endTransitions(toolbar)
-                    TransitionManager.beginDelayedTransition(toolbar)
-                }
-
-            searchView.queryTextChangeEvents()
-                .skipInitialValue()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe { event ->
-                    searchQuery = event.queryText.toString().trim()
-
-                    if (event.isSubmitted) {
-                        searchView.clearFocus()
-
-                        viewModel.reload()
-                    }
-                }
-
-            searchQuery?.let {
-                searchItem.expandActionView()
-                searchView.setQuery(it, false)
-                searchView.clearFocus()
-            }
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.rating -> sortCriteria = MediaSearchSortCriteria.RATING
-            R.id.clicks -> sortCriteria = MediaSearchSortCriteria.CLICKS
-            R.id.episodeAmount -> sortCriteria = MediaSearchSortCriteria.EPISODE_AMOUNT
-            R.id.name -> sortCriteria = MediaSearchSortCriteria.NAME
-            R.id.all_anime -> type = MediaType.ALL_ANIME
-            R.id.animeseries -> type = MediaType.ANIMESERIES
-            R.id.movies -> type = MediaType.MOVIE
-            R.id.ova -> type = MediaType.OVA
-            R.id.hentai -> type = MediaType.HENTAI
-            R.id.all_manga -> type = MediaType.ALL_MANGA
-            R.id.mangaseries -> type = MediaType.MANGASERIES
-            R.id.oneshot -> type = MediaType.ONESHOT
-            R.id.doujin -> type = MediaType.DOUJIN
-            R.id.hmanga -> type = MediaType.HMANGA
-        }
-
-        item.isChecked = true
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun onBackPressed(): Boolean {
-        return searchBottomSheetManager.onBackPressed()
-    }
+    override fun onBackPressed(): Boolean = searchBottomSheetManager.onBackPressed()
 
     override fun showData(data: List<MediaListEntry>) {
         super.showData(data)
@@ -365,14 +413,24 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
     private fun setInitialType() {
         if (requireActivity().intent.action == Intent.ACTION_VIEW) {
             if (category == Category.ANIME) {
-                when (requireActivity().intent.data?.pathSegments?.getOrNull(1) ?: 1) {
+                when (
+                    requireActivity()
+                        .intent.data
+                        ?.pathSegments
+                        ?.getOrNull(1) ?: 1
+                ) {
                     "animeseries" -> type = MediaType.ANIMESERIES
                     "movie" -> type = MediaType.MOVIE
                     "ova" -> type = MediaType.OVA
                     "hentai" -> type = MediaType.HENTAI
                 }
             } else if (category == Category.MANGA) {
-                when (requireActivity().intent.data?.pathSegments?.getOrNull(1) ?: 1) {
+                when (
+                    requireActivity()
+                        .intent.data
+                        ?.pathSegments
+                        ?.getOrNull(1) ?: 1
+                ) {
                     "mangaseries" -> type = MediaType.MANGASERIES
                     "oneshot" -> type = MediaType.ONESHOT
                     "doujin" -> type = MediaType.DOUJIN
@@ -384,7 +442,12 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
 
     private fun setInitialSortCriteria() {
         if (requireActivity().intent.action == Intent.ACTION_VIEW) {
-            when (requireActivity().intent.data?.pathSegments?.getOrNull(2) ?: 2) {
+            when (
+                requireActivity()
+                    .intent.data
+                    ?.pathSegments
+                    ?.getOrNull(2) ?: 2
+            ) {
                 "rating" -> sortCriteria = MediaSearchSortCriteria.RATING
                 "clicks" -> sortCriteria = MediaSearchSortCriteria.CLICKS
             }
@@ -393,12 +456,14 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
 
     private fun setContentFooterIfNeeded() {
         if (adapter.footer == null) {
-            adapter.footer = View(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    searchBottomSheetTitle.height
-                )
-            }
+            adapter.footer =
+                View(context).apply {
+                    layoutParams =
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            searchBottomSheetTitle.height,
+                        )
+                }
         }
     }
 }

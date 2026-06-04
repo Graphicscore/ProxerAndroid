@@ -6,12 +6,12 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
 import androidx.annotation.CheckResult
+import androidx.media3.ui.DefaultTimeBar
 import androidx.preference.Preference
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
-import androidx.media3.ui.DefaultTimeBar
 import com.jakewharton.rxbinding3.recyclerview.scrollEvents
 import io.reactivex.Observable
 import me.proxer.app.util.rx.PreferenceChangeObservable
@@ -23,61 +23,61 @@ import me.proxer.app.util.rx.TextViewLinkLongClickObservable
 import me.proxer.app.util.rx.ViewTouchMonitorObservable
 
 @CheckResult
-inline fun View.touchesMonitored(noinline handled: (MotionEvent) -> Boolean = { true }): Observable<MotionEvent> {
-    return ViewTouchMonitorObservable(this, handled)
-}
+inline fun View.touchesMonitored(noinline handled: (MotionEvent) -> Boolean = { true }): Observable<MotionEvent> =
+    ViewTouchMonitorObservable(this, handled)
 
 @CheckResult
-inline fun TextView.linkClicks(noinline handled: (String) -> Boolean = { true }): Observable<String> {
-    return TextViewLinkClickObservable(this, handled)
-}
+inline fun TextView.linkClicks(noinline handled: (String) -> Boolean = { true }): Observable<String> =
+    TextViewLinkClickObservable(this, handled)
 
 @CheckResult
-inline fun TextView.linkLongClicks(noinline handled: (String) -> Boolean = { true }): Observable<String> {
-    return TextViewLinkLongClickObservable(this, handled)
-}
+inline fun TextView.linkLongClicks(noinline handled: (String) -> Boolean = { true }): Observable<String> =
+    TextViewLinkLongClickObservable(this, handled)
 
 @CheckResult
-inline fun <T> Preference.changes(noinline handled: (T) -> Boolean = { true }): Observable<T> {
-    return PreferenceChangeObservable(this, handled)
-}
+inline fun <T> Preference.changes(noinline handled: (T) -> Boolean = { true }): Observable<T> =
+    PreferenceChangeObservable(this, handled)
 
 @CheckResult
-inline fun Preference.clicks(noinline handled: (Unit) -> Boolean = { true }): Observable<Unit> {
-    return PreferenceClickObservable(this, handled)
-}
+inline fun Preference.clicks(noinline handled: (Unit) -> Boolean = { true }): Observable<Unit> =
+    PreferenceClickObservable(this, handled)
 
 @CheckResult
-inline fun SubsamplingScaleImageView.events(): Observable<SubsamplingScaleImageViewEventObservable.Event> {
-    return SubsamplingScaleImageViewEventObservable(this)
-}
+inline fun SubsamplingScaleImageView.events(): Observable<SubsamplingScaleImageViewEventObservable.Event> =
+    SubsamplingScaleImageViewEventObservable(this)
 
 @CheckResult
-inline fun DefaultTimeBar.loadRequests(): Observable<Long> {
-    return PreviewTimeBarRequestObservable(this)
-}
+inline fun DefaultTimeBar.loadRequests(): Observable<Long> = PreviewTimeBarRequestObservable(this)
 
 @CheckResult
-inline fun RecyclerView.endScrolls(threshold: Int = 5): Observable<Unit> = scrollEvents()
-    .filter {
-        safeLayoutManager.let { safeLayoutManager ->
-            val pastVisibleItems = when (safeLayoutManager) {
-                is StaggeredGridLayoutManager -> {
-                    val visibleItemPositions = IntArray(safeLayoutManager.spanCount).apply {
-                        safeLayoutManager.findFirstVisibleItemPositions(this)
+inline fun RecyclerView.endScrolls(threshold: Int = 5): Observable<Unit> =
+    scrollEvents()
+        .filter {
+            safeLayoutManager.let { safeLayoutManager ->
+                val pastVisibleItems =
+                    when (safeLayoutManager) {
+                        is StaggeredGridLayoutManager -> {
+                            val visibleItemPositions =
+                                IntArray(safeLayoutManager.spanCount).apply {
+                                    safeLayoutManager.findFirstVisibleItemPositions(this)
+                                }
+
+                            when (visibleItemPositions.isNotEmpty()) {
+                                true -> visibleItemPositions[0]
+                                false -> 0
+                            }
+                        }
+
+                        is LinearLayoutManager -> {
+                            safeLayoutManager.findFirstVisibleItemPosition()
+                        }
+
+                        else -> {
+                            0
+                        }
                     }
 
-                    when (visibleItemPositions.isNotEmpty()) {
-                        true -> visibleItemPositions[0]
-                        false -> 0
-                    }
-                }
-                is LinearLayoutManager -> safeLayoutManager.findFirstVisibleItemPosition()
-                else -> 0
+                safeLayoutManager.itemCount > 0 &&
+                    safeLayoutManager.childCount + pastVisibleItems >= safeLayoutManager.itemCount - threshold
             }
-
-            safeLayoutManager.itemCount > 0 &&
-                safeLayoutManager.childCount + pastVisibleItems >= safeLayoutManager.itemCount - threshold
-        }
-    }
-    .map { Unit }
+        }.map { Unit }

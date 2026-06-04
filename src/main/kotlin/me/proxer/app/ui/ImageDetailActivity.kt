@@ -5,12 +5,12 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.core.view.ViewCompat
+import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.util.ActivityUtils
@@ -23,11 +23,14 @@ import okhttp3.HttpUrl
  * @author Ruben Gees
  */
 class ImageDetailActivity : BaseActivity() {
-
     companion object {
         private const val URL_EXTRA = "url"
 
-        fun navigateTo(context: Activity, url: HttpUrl, imageView: ImageView? = null) {
+        fun navigateTo(
+            context: Activity,
+            url: HttpUrl,
+            imageView: ImageView? = null,
+        ) {
             context.intentFor<ImageDetailActivity>(URL_EXTRA to url.toString()).let {
                 ActivityUtils.navigateToWithImageTransition(it, context, imageView)
             }
@@ -50,7 +53,8 @@ class ImageDetailActivity : BaseActivity() {
 
         ViewCompat.setTransitionName(image, ActivityUtils.getTransitionName(this))
 
-        Glide.with(this)
+        Glide
+            .with(this)
             .load(url)
             .logErrors()
             .into(
@@ -62,10 +66,11 @@ class ImageDetailActivity : BaseActivity() {
                             supportStartPostponedEnterTransition()
                         }
                     }
-                }
+                },
             )
 
-        root.clicks()
+        root
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe { supportFinishAfterTransition() }
     }

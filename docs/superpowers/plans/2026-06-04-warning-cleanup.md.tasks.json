@@ -1,0 +1,55 @@
+{
+  "planPath": "docs/superpowers/plans/2026-06-04-warning-cleanup.md",
+  "tasks": [
+    {
+      "id": 1,
+      "subject": "Task 1: Ktlint — vendor exclusions + auto-format",
+      "status": "pending",
+      "description": "**Goal:** Make `ktlintCheck` pass by excluding vendor-bundled files and auto-formatting all proxer-owned source files.\n\n**Files:**\n- Modify: `.editorconfig`\n- Run tool: `./gradlew ktlintFormat`\n\n**Acceptance Criteria:**\n- [ ] Five vendor file patterns excluded\n- [ ] `./gradlew ktlintCheck --no-daemon --max-workers 2` exits 0\n\n**Verify:** `./gradlew ktlintCheck --no-daemon --max-workers 2` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\".editorconfig\"], \"verifyCommand\": \"./gradlew ktlintCheck --no-daemon --max-workers 2\", \"acceptanceCriteria\": [\"ktlintCheck exits 0\", \"vendor files excluded from ktlint\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: Kotlin stdlib + Koin DSL + bundleOf imports",
+      "status": "pending",
+      "description": "**Goal:** Eliminate compiler warnings from deprecated Kotlin stdlib (sumBy), Koin ViewModel DSL import, and androidx.core.os.bundleOf.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/chat/prv/sync/MessengerNotifications.kt`\n- Modify: `src/main/kotlin/me/proxer/app/MainModules.kt`\n- Modify: `gradle/dependencies.gradle`\n- Modify: `gradle/versions.gradle`\n- Mass-replace: 48 files with `import androidx.core.os.bundleOf`\n\n**Acceptance Criteria:**\n- [ ] No `sumBy` calls remain\n- [ ] Koin DSL import updated\n- [ ] `core-bundle` dep added\n- [ ] All bundleOf imports migrated\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \"^w:\" | grep -E \"sumBy|viewModel.*Moved|bundleOf\"` → no output\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/MainModules.kt\", \"gradle/dependencies.gradle\", \"gradle/versions.gradle\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \\\"^w:\\\" | grep -E \\\"sumBy|viewModel.*Moved|bundleOf\\\"\", \"acceptanceCriteria\": [\"No sumBy calls\", \"Koin DSL import updated\", \"core-bundle dep added\", \"bundleOf import migrated in all 48 files\"]}\n```"
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: Parcelable and Serializable compat",
+      "status": "pending",
+      "description": "**Goal:** Replace all deprecated getParcelable* and getSerializable* calls with IntentCompat/BundleCompat.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/util/extension/NullabilityExtensions.kt`\n- Modify: ~16 activity/fragment files (see plan doc)\n\n**Acceptance Criteria:**\n- [ ] NullabilityExtensions uses IntentCompat/BundleCompat\n- [ ] No raw deprecated Parcelable/Serializable calls outside NullabilityExtensions.kt\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \"^w:\" | grep -iE \"parcelable|serializable\"` → no output\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/util/extension/NullabilityExtensions.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \\\"^w:\\\" | grep -iE \\\"parcelable|serializable\\\"\", \"acceptanceCriteria\": [\"NullabilityExtensions uses IntentCompat/BundleCompat\", \"No raw deprecated Parcelable/Serializable calls remain\"]}\n```"
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: Fragment options menu — MenuProvider migration",
+      "status": "pending",
+      "description": "**Goal:** Replace deprecated setHasOptionsMenu + onCreateOptionsMenu + onOptionsItemSelected in fragments with MenuProvider API.\n\n**Files:** ~24 fragment files (see plan doc)\n\n**Acceptance Criteria:**\n- [ ] No `setHasOptionsMenu()` in fragments\n- [ ] No deprecated `onCreateOptionsMenu`/`onOptionsItemSelected` overrides in fragments\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \"^w:\" | grep -iE \"onCreateOptionsMenu|setHasOptionsMenu\"` → no output\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/bookmark/BookmarkFragment.kt\", \"src/main/kotlin/me/proxer/app/media/list/MediaListFragment.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \\\"^w:\\\" | grep -iE \\\"onCreateOptionsMenu|setHasOptionsMenu\\\"\", \"acceptanceCriteria\": [\"No setHasOptionsMenu() in fragments\", \"No deprecated onCreateOptionsMenu overrides in fragments\"]}\n```"
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: Window and system bar APIs — WindowInsetsControllerCompat",
+      "status": "pending",
+      "description": "**Goal:** Replace systemUiVisibility, FLAG_TRANSLUCENT_*, statusBarColor, setOnSystemUiVisibilityChangeListener with WindowInsetsControllerCompat.\n\n**Files:**\n- `src/main/kotlin/me/proxer/app/base/DrawerActivity.kt`\n- `src/main/kotlin/me/proxer/app/anime/stream/StreamActivity.kt`\n- `src/main/kotlin/me/proxer/app/settings/theme/Theme.kt`\n- `src/main/kotlin/me/proxer/app/settings/theme/ThemeVariant.kt`\n\n**Acceptance Criteria:**\n- [ ] No FLAG_TRANSLUCENT_* usages\n- [ ] No systemUiVisibility assignments\n- [ ] No SYSTEM_UI_FLAG_* constants\n- [ ] No setOnSystemUiVisibilityChangeListener calls\n- [ ] No window.statusBarColor assignments\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \"^w:\" | grep -iE \"systemUi|translucent|statusBar\"` → no output\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/base/DrawerActivity.kt\", \"src/main/kotlin/me/proxer/app/anime/stream/StreamActivity.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \\\"^w:\\\" | grep -iE \\\"systemUi|translucent|statusBar\\\"\", \"acceptanceCriteria\": [\"No FLAG_TRANSLUCENT_* usage\", \"No systemUiVisibility assignments\", \"No SYSTEM_UI_FLAG_* constants\", \"No window.statusBarColor assignments\"]}\n```"
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: Miscellaneous compat fixes",
+      "status": "pending",
+      "description": "**Goal:** Fix scaledDensity, defaultDisplay.getMetrics(), ViewCompat.animate(), ViewCompat.isAttachedToWindow(), ShareCompat.IntentBuilder.from(), SHOW_IMPLICIT, MasterKey.Builder, Media3 C.TYPE_*.\n\n**Files:** 14 files (see plan doc)\n\n**Acceptance Criteria:**\n- [ ] No scaledDensity in AndroidExtensions.kt\n- [ ] No defaultDisplay.getMetrics() in DeviceUtils.kt\n- [ ] No ViewCompat.animate() calls\n- [ ] No ViewCompat.isAttachedToWindow() calls\n- [ ] MasterKey uses alias constructor\n- [ ] Media3 uses CONTENT_TYPE_* constants\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \"^w:\" | wc -l` → count near zero\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/util/extension/AndroidExtensions.kt\", \"src/main/kotlin/me/proxer/app/util/DeviceUtils.kt\", \"src/main/kotlin/me/proxer/app/MainModules.kt\", \"src/main/kotlin/me/proxer/app/anime/stream/StreamPlayerManager.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2 2>&1 | grep \\\"^w:\\\" | wc -l\", \"acceptanceCriteria\": [\"No scaledDensity\", \"No defaultDisplay.getMetrics()\", \"No ViewCompat.animate()\", \"No ViewCompat.isAttachedToWindow()\", \"MasterKey uses alias constructor\", \"Media3 uses CONTENT_TYPE_* constants\"]}\n```"
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: @Suppress for no-compat deprecated APIs",
+      "status": "pending",
+      "description": "**Goal:** Silence remaining compiler warnings for APIs with no compat replacement.\n\n**Files:**\n- `src/main/kotlin/me/proxer/app/anime/stream/StreamPlayerManager.kt`\n- `src/main/kotlin/me/proxer/app/anime/stream/TouchablePlayerView.kt`\n- `src/main/kotlin/me/proxer/app/util/InAppUpdateFlow.kt`\n- `src/main/kotlin/me/proxer/app/ui/view/RatingDialog.kt`\n- `src/main/kotlin/me/proxer/app/settings/AboutFragment.kt`\n- `src/main/kotlin/me/proxer/app/anime/schedule/widget/ScheduleWidgetUpdateWorker.kt`\n- `src/main/kotlin/me/proxer/app/news/widget/NewsWidgetUpdateWorker.kt`\n- `src/main/kotlin/me/proxer/app/MainModules.kt`\n\n**Acceptance Criteria:**\n- [ ] Zero w: lines from compiler with --rerun-tasks\n- [ ] @Suppress annotations are targeted\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --max-workers 2 --rerun-tasks 2>&1 | grep \"^w:\" | wc -l` → `0`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/anime/stream/StreamPlayerManager.kt\", \"src/main/kotlin/me/proxer/app/util/InAppUpdateFlow.kt\", \"src/main/kotlin/me/proxer/app/settings/AboutFragment.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --max-workers 2 --rerun-tasks 2>&1 | grep \\\"^w:\\\" | wc -l\", \"acceptanceCriteria\": [\"Zero w: lines from compiler with --rerun-tasks\", \"@Suppress annotations are targeted\"]}\n```"
+    },
+    {
+      "id": 8,
+      "subject": "Task 8: Final verification — all quality gates pass",
+      "status": "pending",
+      "blockedBy": [1, 2, 3, 4, 5, 6, 7],
+      "description": "**Goal:** Confirm all three quality gates pass with a clean build.\n\n**Files:** None\n\n**Acceptance Criteria:**\n- [ ] ktlintCheck exits 0\n- [ ] Zero compiler w: lines (with --rerun-tasks)\n- [ ] assembleDebug succeeds\n\n**Verify:** All three commands succeed.\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"./gradlew ktlintCheck --no-daemon --max-workers 2 && ./gradlew compileDebugKotlin --no-daemon --max-workers 2 --rerun-tasks 2>&1 | grep \\\"^w:\\\" | wc -l && ./gradlew assembleDebug --no-daemon --max-workers 2\", \"acceptanceCriteria\": [\"ktlintCheck passes\", \"Zero compiler w: lines\", \"assembleDebug succeeds\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-06-04T00:00:00Z"
+}

@@ -39,12 +39,13 @@ fun NavigationDrawerScope.TvNavigationDrawerContent(
     drawerValue: DrawerValue,
     onSectionSelected: (TvSection) -> Unit,
     onLoginClick: () -> Unit,
-    onLogoutClick: () -> Unit
+    onLogoutClick: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(vertical = 8.dp)
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .padding(vertical = 8.dp),
     ) {
         // Profile header as a NavigationDrawerItem
         if (user != null) {
@@ -56,14 +57,14 @@ fun NavigationDrawerScope.TvNavigationDrawerContent(
                         AsyncImage(
                             model = ProxerUrls.userImage(user.image).toString(),
                             contentDescription = user.name,
-                            modifier = Modifier.size(32.dp).clip(CircleShape)
+                            modifier = Modifier.size(32.dp).clip(CircleShape),
                         )
                     } else {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = null,
                             modifier = Modifier.size(32.dp),
-                            tint = Color(0xFF3B82F6)
+                            tint = Color(0xFF3B82F6),
                         )
                     }
                 },
@@ -71,7 +72,7 @@ fun NavigationDrawerScope.TvNavigationDrawerContent(
                     AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
                         Text("Sign Out", color = Color(0xFFEF4444), fontSize = 11.sp)
                     }
-                }
+                },
             ) {
                 AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
                     Text(user.name, fontSize = 13.sp)
@@ -86,9 +87,9 @@ fun NavigationDrawerScope.TvNavigationDrawerContent(
                         imageVector = Icons.Default.AccountCircle,
                         contentDescription = "Sign In",
                         modifier = Modifier.size(32.dp),
-                        tint = Color.Gray
+                        tint = Color.Gray,
                     )
-                }
+                },
             ) {
                 AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
                     Text("Sign In", color = Color(0xFF3B82F6), fontSize = 13.sp)
@@ -99,14 +100,35 @@ fun NavigationDrawerScope.TvNavigationDrawerContent(
         // Main nav items
         TvNavItem(TvSection.ANIME, "Anime", Icons.Default.Tv, currentSection, drawerValue, onSectionSelected)
         TvNavItem(TvSection.NEWS, "News", Icons.Default.Newspaper, currentSection, drawerValue, onSectionSelected)
-        TvNavItem(TvSection.BOOKMARKS, "Bookmarks", Icons.Default.Bookmarks, currentSection, drawerValue, onSectionSelected)
-        TvNavItem(TvSection.SCHEDULE, "Schedule", Icons.Default.DateRange, currentSection, drawerValue, onSectionSelected)
+        TvNavItem(
+            TvSection.BOOKMARKS,
+            "Bookmarks",
+            Icons.Default.Bookmarks,
+            currentSection,
+            drawerValue,
+            onSectionSelected,
+        )
+        TvNavItem(
+            TvSection.SCHEDULE,
+            "Schedule",
+            Icons.Default.DateRange,
+            currentSection,
+            drawerValue,
+            onSectionSelected,
+        )
 
         Spacer(Modifier.weight(1f))
 
         // Footer items
         TvNavItem(TvSection.INFO, "Info", Icons.Default.Info, currentSection, drawerValue, onSectionSelected)
-        TvNavItem(TvSection.SETTINGS, "Settings", Icons.Default.Settings, currentSection, drawerValue, onSectionSelected)
+        TvNavItem(
+            TvSection.SETTINGS,
+            "Settings",
+            Icons.Default.Settings,
+            currentSection,
+            drawerValue,
+            onSectionSelected,
+        )
     }
 }
 
@@ -117,20 +139,20 @@ private fun NavigationDrawerScope.TvNavItem(
     icon: ImageVector,
     currentSection: TvSection,
     drawerValue: DrawerValue,
-    onSectionSelected: (TvSection) -> Unit
+    onSectionSelected: (TvSection) -> Unit,
 ) {
-
-        NavigationDrawerItem(
-            selected = currentSection == section,
-            onClick = { onSectionSelected(section) },
-            leadingContent = {
-                Icon(imageVector = icon, contentDescription = label)
-            }
-        ) {
-            AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
-                Text(
-                    text = label,
-                    color = MaterialTheme.colorScheme.onPrimary)
-            }
+    NavigationDrawerItem(
+        selected = currentSection == section,
+        onClick = { onSectionSelected(section) },
+        leadingContent = {
+            Icon(imageVector = icon, contentDescription = label)
+        },
+    ) {
+        AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
+            Text(
+                text = label,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
         }
+    }
 }

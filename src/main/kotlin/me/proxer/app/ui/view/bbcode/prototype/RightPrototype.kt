@@ -19,26 +19,40 @@ import me.proxer.app.ui.view.bbcode.toSpannableStringBuilder
  * @author Ruben Gees
  */
 object RightPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototype {
-
     override val startRegex = Regex(" *right( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *right *", REGEX_OPTIONS)
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         return applyToAllViews(childViews) { view: View ->
             when (view) {
-                is TextView -> view.text = mutate(view.text.toSpannableStringBuilder(), args)
-                is LinearLayout -> view.gravity = END
-                else -> when (val layoutParams = view.layoutParams) {
-                    is LinearLayout.LayoutParams -> layoutParams.gravity = END
-                    else -> view.layoutParams = LinearLayout.LayoutParams(layoutParams).apply { gravity = END }
+                is TextView -> {
+                    view.text = mutate(view.text.toSpannableStringBuilder(), args)
+                }
+
+                is LinearLayout -> {
+                    view.gravity = END
+                }
+
+                else -> {
+                    when (val layoutParams = view.layoutParams) {
+                        is LinearLayout.LayoutParams -> layoutParams.gravity = END
+                        else -> view.layoutParams = LinearLayout.LayoutParams(layoutParams).apply { gravity = END }
+                    }
                 }
             }
         }
     }
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs) = text.apply {
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ) = text.apply {
         this[0..length] = AlignmentSpan.Standard(ALIGN_OPPOSITE)
     }
 }

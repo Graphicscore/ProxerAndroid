@@ -14,13 +14,13 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.rubengees.easyheaderfooteradapter.EasyHeaderFooterAdapter
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.auth.LoginDialog
@@ -51,11 +51,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_anime) {
-
     companion object {
-        fun newInstance() = AnimeFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            AnimeFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<AnimeViewModel> { parametersOf(id, language, episode) }
@@ -157,21 +157,30 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
             }
 
         setFragmentResultListener(NoWifiDialog.STREAM_ID_RESULT) { _, bundle ->
-            viewModel.data.value?.streams
+            viewModel.data.value
+                ?.streams
                 ?.find { it.id == bundle.getString(NoWifiDialog.STREAM_ID_RESULT) }
                 ?.let { viewModel.resolve(it) }
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
         header = inflater.inflate(R.layout.layout_media_control, container, false) as MediaControlView
 
-        header.textResolver = object : MediaControlView.TextResourceResolver {
-            override fun next() = requireContext().getString(R.string.fragment_anime_next_episode)
-            override fun previous() = requireContext().getString(R.string.fragment_anime_previous_episode)
-            override fun bookmarkThis() = requireContext().getString(R.string.fragment_anime_bookmark_this_episode)
-            override fun bookmarkNext() = requireContext().getString(R.string.fragment_anime_bookmark_next_episode)
-        }
+        header.textResolver =
+            object : MediaControlView.TextResourceResolver {
+                override fun next() = requireContext().getString(R.string.fragment_anime_next_episode)
+
+                override fun previous() = requireContext().getString(R.string.fragment_anime_previous_episode)
+
+                override fun bookmarkThis() = requireContext().getString(R.string.fragment_anime_bookmark_this_episode)
+
+                override fun bookmarkNext() = requireContext().getString(R.string.fragment_anime_bookmark_next_episode)
+            }
 
         header.episodeSwitchSubject
             .autoDisposable(viewLifecycleOwner.scope())
@@ -194,7 +203,10 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
@@ -209,23 +221,34 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
             Observer { result ->
                 result?.let {
                     when (result) {
-                        is StreamResolutionResult.Video -> result.play(
-                            requireContext(),
-                            id,
-                            name,
-                            episode,
-                            language,
-                            ProxerUrls.entryImage(id).androidUri(),
-                            true
-                        )
-                        is StreamResolutionResult.Link -> result.show(this)
-                        is StreamResolutionResult.App -> result.navigate(requireContext())
-                        is StreamResolutionResult.Message -> error(
-                            "ResolutionResult of type Message should be shown inline"
-                        )
+                        is StreamResolutionResult.Video -> {
+                            result.play(
+                                requireContext(),
+                                id,
+                                name,
+                                episode,
+                                language,
+                                ProxerUrls.entryImage(id).androidUri(),
+                                true,
+                            )
+                        }
+
+                        is StreamResolutionResult.Link -> {
+                            result.show(this)
+                        }
+
+                        is StreamResolutionResult.App -> {
+                            result.navigate(requireContext())
+                        }
+
+                        is StreamResolutionResult.Message -> {
+                            error(
+                                "ResolutionResult of type Message should be shown inline",
+                            )
+                        }
                     }
                 }
-            }
+            },
         )
 
         viewModel.resolutionError.observe(
@@ -233,16 +256,21 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
             Observer { errorAction ->
                 errorAction?.let {
                     when (it) {
-                        is AppRequiredErrorAction -> it.showDialog(hostingActivity)
-                        else -> hostingActivity.multilineSnackbar(
-                            it.message,
-                            Snackbar.LENGTH_LONG,
-                            it.buttonMessage,
-                            it.toClickListener(hostingActivity)
-                        )
+                        is AppRequiredErrorAction -> {
+                            it.showDialog(hostingActivity)
+                        }
+
+                        else -> {
+                            hostingActivity.multilineSnackbar(
+                                it.message,
+                                Snackbar.LENGTH_LONG,
+                                it.buttonMessage,
+                                it.toClickListener(hostingActivity),
+                            )
+                        }
                     }
                 }
-            }
+            },
         )
 
         viewModel.userStateData.observe(
@@ -251,7 +279,7 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
                 it?.let {
                     hostingActivity.snackbar(R.string.fragment_set_user_info_success)
                 }
-            }
+            },
         )
 
         viewModel.userStateError.observe(
@@ -262,10 +290,10 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
                         getString(R.string.error_set_user_info, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
@@ -301,7 +329,10 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
     override fun hideData() {
         innerAdapter.swapDataAndNotifyWithDiffing(emptyList())
 
-        if (viewModel.error.value?.data?.get(ErrorUtils.ENTRY_DATA_KEY) !is EntryCore) {
+        if (viewModel.error.value
+                ?.data
+                ?.get(ErrorUtils.ENTRY_DATA_KEY) !is EntryCore
+        ) {
             adapter.header = null
 
             super.hideData()

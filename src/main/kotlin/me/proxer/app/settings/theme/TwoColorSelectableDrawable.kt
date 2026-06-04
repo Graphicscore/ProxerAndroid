@@ -1,3 +1,5 @@
+@file:Suppress("ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD", "DEPRECATION", "OVERRIDE_DEPRECATION")
+
 package me.proxer.app.settings.theme
 
 import android.graphics.Canvas
@@ -13,22 +15,24 @@ import androidx.annotation.ColorInt
 class TwoColorSelectableDrawable(
     @ColorInt private val firstColor: Int,
     @ColorInt private val secondColor: Int,
-    @ColorInt private val selectedColor: Int?
+    @ColorInt private val selectedColor: Int?,
 ) : Drawable() {
-
-    private val topPaint = Paint().apply {
-        color = firstColor
-    }
-
-    private val bottomPaint = Paint().apply {
-        color = secondColor
-    }
-
-    private val selectedIndicatorPaint = selectedColor?.let {
+    private val topPaint =
         Paint().apply {
-            color = it
+            color = firstColor
         }
-    }
+
+    private val bottomPaint =
+        Paint().apply {
+            color = secondColor
+        }
+
+    private val selectedIndicatorPaint =
+        selectedColor?.let {
+            Paint().apply {
+                color = it
+            }
+        }
 
     override fun draw(canvas: Canvas) {
         val bounds = bounds
@@ -45,6 +49,8 @@ class TwoColorSelectableDrawable(
     }
 
     override fun setAlpha(alpha: Int) = Unit
+
     override fun getOpacity() = PixelFormat.OPAQUE
+
     override fun setColorFilter(colorFilter: ColorFilter?) = Unit
 }

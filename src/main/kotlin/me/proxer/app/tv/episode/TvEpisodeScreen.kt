@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface as M3Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,13 +33,14 @@ import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.library.enums.AnimeLanguage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.compose.material3.Surface as M3Surface
 
 @Composable
 fun TvEpisodeScreen(
     entryId: String,
     entryName: String,
     onEpisodeClick: (episode: Int, language: AnimeLanguage) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val viewModel: EpisodeViewModel = koinViewModel { parametersOf(entryId) }
     val episodes by viewModel.data.observeAsState(emptyList())
@@ -52,15 +52,16 @@ fun TvEpisodeScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(24.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
         ) {
             OutlinedButton(onClick = onBack) { Text("← Back") }
             Text(entryName, fontSize = 24.sp, color = MaterialTheme.colorScheme.onBackground)
@@ -72,28 +73,33 @@ fun TvEpisodeScreen(
                     CircularProgressIndicator()
                 }
             }
+
             error != null -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
                         error = error!!,
-                        onRetryClick = { viewModel.reload() }
+                        onRetryClick = { viewModel.reload() },
                     )
                 }
             }
+
             else -> {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     items(episodes ?: emptyList(), key = { it.number }) { episodeRow ->
                         TvEpisodeItem(
                             episodeRow = episodeRow,
                             onClick = {
-                                val lang = episodeRow.languageHosterList
-                                    .firstOrNull()?.first?.toAnimeLanguage()
-                                    ?: AnimeLanguage.ENGLISH_SUB
+                                val lang =
+                                    episodeRow.languageHosterList
+                                        .firstOrNull()
+                                        ?.first
+                                        ?.toAnimeLanguage()
+                                        ?: AnimeLanguage.ENGLISH_SUB
                                 onEpisodeClick(episodeRow.number, lang)
-                            }
+                            },
                         )
                     }
                 }
@@ -103,28 +109,34 @@ fun TvEpisodeScreen(
 }
 
 @Composable
-private fun TvEpisodeItem(episodeRow: EpisodeRow, onClick: () -> Unit) {
+private fun TvEpisodeItem(
+    episodeRow: EpisodeRow,
+    onClick: () -> Unit,
+) {
     val isWatched = episodeRow.userProgress != null && episodeRow.userProgress >= episodeRow.number
     Surface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(72.dp)
+        modifier = Modifier.fillMaxWidth().height(72.dp),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    if (isWatched)
-                        MaterialTheme.colorScheme.surface.copy(green = 0.18f)
-                    else
-                        MaterialTheme.colorScheme.surface
-                )
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        if (isWatched) {
+                            MaterialTheme.colorScheme.surface.copy(green = 0.18f)
+                        } else {
+                            MaterialTheme.colorScheme.surface
+                        },
+                    ),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column {
                     Text("Episode ${episodeRow.number}", color = MaterialTheme.colorScheme.onSurface, fontSize = 18.sp)
@@ -134,18 +146,18 @@ private fun TvEpisodeItem(episodeRow: EpisodeRow, onClick: () -> Unit) {
                 }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     episodeRow.languageHosterList.forEach { (lang, _) ->
                         M3Surface(
                             color = Color(0xFF333333),
-                            shape = RoundedCornerShape(4.dp)
+                            shape = RoundedCornerShape(4.dp),
                         ) {
                             Text(
                                 text = lang.name,
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                                 fontSize = 11.sp,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             )
                         }
                     }

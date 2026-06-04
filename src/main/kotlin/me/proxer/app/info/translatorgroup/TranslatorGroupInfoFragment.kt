@@ -33,11 +33,11 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class TranslatorGroupInfoFragment : BaseContentFragment<TranslatorGroup>(R.layout.fragment_translator_group) {
-
     companion object {
-        fun newInstance() = TranslatorGroupInfoFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            TranslatorGroupInfoFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<TranslatorGroupInfoViewModel> { parametersOf(id) }
@@ -61,22 +61,27 @@ class TranslatorGroupInfoFragment : BaseContentFragment<TranslatorGroup>(R.layou
     private val descriptionContainer: ViewGroup by bindView(R.id.descriptionContainer)
     private val description: TextView by bindView(R.id.description)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
-        link.linkClicks()
+        link
+            .linkClicks()
             .map { it.toPrefixedUrlOrNull().toOptional() }
             .filterSome()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { showPage(it, skipCheck = true) }
 
-        link.linkLongClicks()
+        link
+            .linkLongClicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 val title = getString(R.string.clipboard_title)
 
                 requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-                    ClipData.newPlainText(title, it.toString())
+                    ClipData.newPlainText(title, it.toString()),
                 )
 
                 requireContext().toast(R.string.clipboard_status)

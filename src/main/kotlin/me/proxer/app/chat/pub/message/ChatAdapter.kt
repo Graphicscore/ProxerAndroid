@@ -12,6 +12,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.view.longClicks
@@ -23,7 +24,6 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindOptionalView
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -46,9 +46,8 @@ import okhttp3.HttpUrl
  */
 class ChatAdapter(
     savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper
+    private val storageHelper: StorageHelper,
 ) : BaseAdapter<ParsedChatMessage, MessageViewHolder>() {
-
     private companion object {
         private const val IS_SELECTING_STATE = "chat_is_selecting"
         private const val TIME_DISPLAY_STATE = "chat_time_display"
@@ -63,11 +62,12 @@ class ChatAdapter(
     val mentionsClickSubject: PublishSubject<String> = PublishSubject.create()
 
     val selectedMessages: List<ParsedChatMessage>
-        get() = data
-            .asSequence()
-            .filter { messageSelectionMap[it.id] == true }
-            .sortedBy { it.date }
-            .toList()
+        get() =
+            data
+                .asSequence()
+                .filter { messageSelectionMap[it.id] == true }
+                .sortedBy { it.date }
+                .toList()
 
     val enqueuedMessageCount: Int
         get() = data.takeWhile { it.id.toLong() < 0 }.size
@@ -80,15 +80,17 @@ class ChatAdapter(
     private var isSelecting = false
 
     init {
-        messageSelectionMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(IS_SELECTING_STATE)
-        }
+        messageSelectionMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(IS_SELECTING_STATE)
+            }
 
-        timeDisplayMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(TIME_DISPLAY_STATE)
-        }
+        timeDisplayMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(TIME_DISPLAY_STATE)
+            }
 
         isSelecting = savedInstanceState?.getBoolean(MESSAGE_SELECTION_STATE) == true
 
@@ -100,47 +102,54 @@ class ChatAdapter(
         var result: Int
 
         when {
-            position - 1 < 0 ->
-                result = if (position + 1 >= itemCount) {
-                    MessageType.SINGLE.type // The item is the only one.
-                } else {
-                    val next = data[position + 1]
-
-                    if (next.userId == current.userId) {
-                        MessageType.BOTTOM.type /* The item is the bottommost item and has an item from the same
-                                                   user above. */
+            position - 1 < 0 -> {
+                result =
+                    if (position + 1 >= itemCount) {
+                        MessageType.SINGLE.type // The item is the only one.
                     } else {
-                        MessageType.SINGLE.type /* The item is the bottommost item and doesn't have an item from
-                                                   the same user above. */
+                        val next = data[position + 1]
+
+                        if (next.userId == current.userId) {
+                            // The item is the bottommost item and has an item from the same user above.
+                            MessageType.BOTTOM.type
+                        } else {
+                            // The item is the bottommost item and doesn't have an item from the same user above.
+                            MessageType.SINGLE.type
+                        }
                     }
-                }
+            }
+
             position + 1 >= itemCount -> {
                 val previous = data[position - 1]
 
-                result = if (previous.userId == current.userId) {
-                    MessageType.TOP.type // The item is the topmost item and has an item from the same user beneath.
-                } else {
-                    MessageType.SINGLE.type /* The item is the topmost item and doesn't have an item from the
-                                                   same user beneath. */
-                }
+                result =
+                    if (previous.userId == current.userId) {
+                        // The item is the topmost item and has an item from the same user beneath.
+                        MessageType.TOP.type
+                    } else {
+                        // The item is the topmost item and doesn't have an item from the same user beneath.
+                        MessageType.SINGLE.type
+                    }
             }
+
             else -> {
                 val previous = data[position - 1]
                 val next = data[position + 1]
 
-                result = if (previous.userId == current.userId) {
-                    if (next.userId == current.userId) {
-                        MessageType.INNER.type // The item is in between two other items from the same user.
+                result =
+                    if (previous.userId == current.userId) {
+                        if (next.userId == current.userId) {
+                            MessageType.INNER.type // The item is in between two other items from the same user.
+                        } else {
+                            MessageType.TOP.type // The item has an item from the same user beneath but not above.
+                        }
                     } else {
-                        MessageType.TOP.type // The item has an item from the same user beneath but not above.
+                        if (next.userId == current.userId) {
+                            MessageType.BOTTOM.type // The item has an item from the same user above but not beneath.
+                        } else {
+                            MessageType.SINGLE.type // The item stands alone.
+                        }
                     }
-                } else {
-                    if (next.userId == current.userId) {
-                        MessageType.BOTTOM.type // The item has an item from the same user above but not beneath.
-                    } else {
-                        MessageType.SINGLE.type // The item stands alone.
-                    }
-                }
             }
         }
 
@@ -151,23 +160,37 @@ class ChatAdapter(
         return result
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): MessageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
 
         return when (MessageType.from(viewType)) {
-            MessageType.TOP, MessageType.SINGLE -> MessageTitleViewHolder(
-                inflater.inflate(R.layout.item_message_single, parent, false)
-            )
-            MessageType.BOTTOM, MessageType.INNER -> MessageViewHolder(
-                inflater.inflate(R.layout.item_message, parent, false)
-            )
-            else -> MessageViewHolder(
-                inflater.inflate(R.layout.item_message_self, parent, false)
-            )
+            MessageType.TOP, MessageType.SINGLE -> {
+                MessageTitleViewHolder(
+                    inflater.inflate(R.layout.item_message_single, parent, false),
+                )
+            }
+
+            MessageType.BOTTOM, MessageType.INNER -> {
+                MessageViewHolder(
+                    inflater.inflate(R.layout.item_message, parent, false),
+                )
+            }
+
+            else -> {
+                MessageViewHolder(
+                    inflater.inflate(R.layout.item_message_self, parent, false),
+                )
+            }
         }
     }
 
-    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MessageViewHolder,
+        position: Int,
+    ) {
         val margins = getMarginsForPosition(position)
         val context = holder.itemView.context
 
@@ -234,14 +257,17 @@ class ChatAdapter(
                 marginTop = 0
                 marginBottom = 0
             }
+
             MessageType.SINGLE, MessageType.SELF_SINGLE -> {
                 marginTop = 6
                 marginBottom = 6
             }
+
             MessageType.TOP, MessageType.SELF_TOP -> {
                 marginTop = 6
                 marginBottom = 0
             }
+
             MessageType.BOTTOM, MessageType.SELF_BOTTOM -> {
                 marginTop = 0
                 marginBottom = 6
@@ -251,8 +277,9 @@ class ChatAdapter(
         return marginTop to if (position == 0) 0 else marginBottom
     }
 
-    open inner class MessageViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    open inner class MessageViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val root: ViewGroup by bindView(R.id.root)
         internal val container: CardView by bindView(R.id.container)
         internal val text: BBCodeView by bindView(R.id.text)
@@ -264,17 +291,23 @@ class ChatAdapter(
                 IconicsDrawable(text.context, CommunityMaterial.Icon.cmd_clock_outline).apply {
                     colorInt = text.context.resolveColor(R.attr.colorIcon)
                     sizeDp = 16
-                }
+                },
             )
         }
 
-        internal open fun bind(message: ParsedChatMessage, marginTop: Int, marginBottom: Int) {
-            container.clicks()
+        internal open fun bind(
+            message: ParsedChatMessage,
+            marginTop: Int,
+            marginBottom: Int,
+        ) {
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe { onContainerClick(root, it) }
 
-            container.longClicks { onContainerLongClickHandled(root) }
+            container
+                .longClicks { onContainerLongClickHandled(root) }
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe { onContainerLongClick(root, it) }
@@ -287,7 +320,10 @@ class ChatAdapter(
             applyMargins(marginTop, marginBottom)
         }
 
-        internal open fun onContainerClick(v: View, message: ParsedChatMessage) {
+        internal open fun onContainerClick(
+            v: View,
+            message: ParsedChatMessage,
+        ) {
             if (isSelecting) {
                 messageSelectionMap.putOrRemove(message.id)
 
@@ -306,7 +342,10 @@ class ChatAdapter(
             layoutManager?.requestSimpleAnimationsInNextLayout()
         }
 
-        internal open fun onContainerLongClick(v: View, message: ParsedChatMessage) {
+        internal open fun onContainerLongClick(
+            v: View,
+            message: ParsedChatMessage,
+        ) {
             if (!isSelecting) {
                 isSelecting = true
 
@@ -317,9 +356,7 @@ class ChatAdapter(
             }
         }
 
-        internal open fun onContainerLongClickHandled(v: View): Boolean {
-            return !isSelecting
-        }
+        internal open fun onContainerLongClickHandled(v: View): Boolean = !isSelecting
 
         internal open fun applyMessage(message: ParsedChatMessage) {
             text.tree = message.styledMessage
@@ -329,10 +366,11 @@ class ChatAdapter(
             time.text = message.date.distanceInWordsToNow(time.context)
         }
 
-        internal open fun applySendStatus(message: ParsedChatMessage) = when (message.id.toLong() < 0) {
-            true -> sendStatus?.isVisible = true
-            false -> sendStatus?.isGone = true
-        }
+        internal open fun applySendStatus(message: ParsedChatMessage) =
+            when (message.id.toLong() < 0) {
+                true -> sendStatus?.isVisible = true
+                false -> sendStatus?.isGone = true
+            }
 
         internal open fun applySelection(message: ParsedChatMessage) {
             container.setCardBackgroundColor(
@@ -340,8 +378,8 @@ class ChatAdapter(
                     when {
                         messageSelectionMap[message.id] == true -> R.attr.colorSelectedSurface
                         else -> R.attr.colorSurface
-                    }
-                )
+                    },
+                ),
             )
         }
 
@@ -349,7 +387,10 @@ class ChatAdapter(
             time.isVisible = timeDisplayMap[message.id] == true
         }
 
-        internal open fun applyMargins(marginTop: Int, marginBottom: Int) {
+        internal open fun applyMargins(
+            marginTop: Int,
+            marginBottom: Int,
+        ) {
             root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = marginTop
                 bottomMargin = marginBottom
@@ -357,16 +398,22 @@ class ChatAdapter(
         }
     }
 
-    internal inner class MessageTitleViewHolder(itemView: View) : MessageViewHolder(itemView) {
-
+    internal inner class MessageTitleViewHolder(
+        itemView: View,
+    ) : MessageViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
 
-        override fun bind(message: ParsedChatMessage, marginTop: Int, marginBottom: Int) {
+        override fun bind(
+            message: ParsedChatMessage,
+            marginTop: Int,
+            marginBottom: Int,
+        ) {
             super.bind(message, marginTop, marginBottom)
 
-            titleContainer.clicks()
+            titleContainer
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(titleClickSubject)
@@ -379,7 +426,8 @@ class ChatAdapter(
             if (message.image.isBlank()) {
                 image.setIconicsImage(CommunityMaterial.Icon.cmd_account, 32, 4, R.attr.colorSecondary)
             } else {
-                glide?.load(ProxerUrls.userImage(message.image).toString())
+                glide
+                    ?.load(ProxerUrls.userImage(message.image).toString())
                     ?.transition(DrawableTransitionOptions.withCrossFade())
                     ?.circleCrop()
                     ?.logErrors()
@@ -388,9 +436,18 @@ class ChatAdapter(
         }
     }
 
-    private enum class MessageType(val type: Int) {
-        INNER(0), SINGLE(1), TOP(2), BOTTOM(3),
-        SELF_INNER(4), SELF_SINGLE(5), SELF_TOP(6), SELF_BOTTOM(7);
+    private enum class MessageType(
+        val type: Int,
+    ) {
+        INNER(0),
+        SINGLE(1),
+        TOP(2),
+        BOTTOM(3),
+        SELF_INNER(4),
+        SELF_SINGLE(5),
+        SELF_TOP(6),
+        SELF_BOTTOM(7),
+        ;
 
         companion object {
             fun from(type: Int) = values().firstOrNull { it.type == type } ?: error("Unknown type: $type")

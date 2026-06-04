@@ -29,9 +29,8 @@ import java.util.concurrent.TimeUnit
  */
 class NotificationWorker(
     context: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : Worker(context, workerParams) {
-
     companion object {
         private const val NAME = "NotificationWorker"
 
@@ -40,8 +39,9 @@ class NotificationWorker(
         private val preferenceHelper by safeInject<PreferenceHelper>()
 
         fun enqueueIfPossible(delay: Boolean = false) {
-            val areNotificationsEnabled = preferenceHelper.areNewsNotificationsEnabled ||
-                preferenceHelper.areAccountNotificationsEnabled
+            val areNotificationsEnabled =
+                preferenceHelper.areNewsNotificationsEnabled ||
+                    preferenceHelper.areAccountNotificationsEnabled
 
             if (areNotificationsEnabled) {
                 enqueue(delay)
@@ -56,15 +56,16 @@ class NotificationWorker(
 
         private fun enqueue(delay: Boolean) {
             val interval = preferenceHelper.notificationsInterval * 1_000 * 60
-            val workRequest = PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MILLISECONDS)
-                .apply { if (delay) setInitialDelay(interval, TimeUnit.MILLISECONDS) }
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
-                )
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
-                .build()
+            val workRequest =
+                PeriodicWorkRequestBuilder<NotificationWorker>(interval, TimeUnit.MILLISECONDS)
+                    .apply { if (delay) setInitialDelay(interval, TimeUnit.MILLISECONDS) }
+                    .setConstraints(
+                        Constraints
+                            .Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build(),
+                    ).setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
+                    .build()
 
             workManager.enqueueUniquePeriodicWork(NAME, ExistingPeriodicWorkPolicy.KEEP, workRequest)
         }
@@ -79,54 +80,70 @@ class NotificationWorker(
         currentCall?.cancel()
     }
 
-    override fun doWork() = try {
-        val notificationInfo = when (storageHelper.isLoggedIn) {
-            true ->
-                api.notifications.notificationInfo()
-                    .build()
-                    .also { currentCall = it }
-                    .execute()
-            false -> null
+    override fun doWork() =
+        try {
+            val notificationInfo =
+                when (storageHelper.isLoggedIn) {
+                    true -> {
+                        api.notifications
+                            .notificationInfo()
+                            .build()
+                            .also { currentCall = it }
+                            .execute()
+                    }
+
+                    false -> {
+                        null
+                    }
+                }
+
+            val areNewsNotificationsEnabled = preferenceHelper.areNewsNotificationsEnabled
+            val areAccountNotificationsEnabled = preferenceHelper.areAccountNotificationsEnabled
+
+            if (!isStopped && areNewsNotificationsEnabled && notificationInfo != null) {
+                fetchNews(applicationContext, notificationInfo)
+            }
+
+            if (!isStopped && areAccountNotificationsEnabled && notificationInfo != null) {
+                fetchAccountNotifications(applicationContext, notificationInfo)
+            }
+
+            Result.success()
+        } catch (error: Throwable) {
+            Timber.e(error)
+
+            if (WorkerUtils.shouldRetryForError(error)) {
+                Result.retry()
+            } else {
+                Result.failure()
+            }
         }
 
-        val areNewsNotificationsEnabled = preferenceHelper.areNewsNotificationsEnabled
-        val areAccountNotificationsEnabled = preferenceHelper.areAccountNotificationsEnabled
-
-        if (!isStopped && areNewsNotificationsEnabled && notificationInfo != null) {
-            fetchNews(applicationContext, notificationInfo)
-        }
-
-        if (!isStopped && areAccountNotificationsEnabled && notificationInfo != null) {
-            fetchAccountNotifications(applicationContext, notificationInfo)
-        }
-
-        Result.success()
-    } catch (error: Throwable) {
-        Timber.e(error)
-
-        if (WorkerUtils.shouldRetryForError(error)) {
-            Result.retry()
-        } else {
-            Result.failure()
-        }
-    }
-
-    private fun fetchNews(context: Context, notificationInfo: NotificationInfo?) {
+    private fun fetchNews(
+        context: Context,
+        notificationInfo: NotificationInfo?,
+    ) {
         val lastNewsDate = preferenceHelper.lastNewsDate
-        val newNews = when (notificationInfo?.newsAmount) {
-            0 -> emptyList()
-            else ->
-                api.notifications.news()
-                    .page(0)
-                    .limit(notificationInfo?.newsAmount ?: 100)
-                    .build()
-                    .also { currentCall = it }
-                    .safeExecute()
-                    .asSequence()
-                    .filter { it.date.toInstantBP().isAfter(lastNewsDate) }
-                    .sortedByDescending { it.date }
-                    .toList()
-        }
+        val newNews =
+            when (notificationInfo?.newsAmount) {
+                0 -> {
+                    emptyList()
+                }
+
+                else -> {
+                    api.notifications
+                        .news()
+                        .page(0)
+                        .limit(notificationInfo?.newsAmount ?: 100)
+                        .build()
+                        .also { currentCall = it }
+                        .safeExecute()
+                        .asSequence()
+                        .filter { it.date.toInstantBP().isAfter(lastNewsDate) }
+                        .sortedByDescending { it.date }
+                        .toList()
+                }
+            }
 
         newNews.firstOrNull()?.date?.toInstantBP()?.let {
             if (!isStopped && it != lastNewsDate && !bus.post(NewsNotificationEvent())) {
@@ -137,19 +154,28 @@ class NotificationWorker(
         }
     }
 
-    private fun fetchAccountNotifications(context: Context, notificationInfo: NotificationInfo) {
+    private fun fetchAccountNotifications(
+        context: Context,
+        notificationInfo: NotificationInfo,
+    ) {
         val lastNotificationsDate = storageHelper.lastNotificationsDate
-        val newNotifications = when (notificationInfo.notificationAmount) {
-            0 -> emptyList()
-            else ->
-                api.notifications.notifications()
-                    .page(0)
-                    .limit(notificationInfo.notificationAmount)
-                    .filter(NotificationFilter.UNREAD)
-                    .build()
-                    .also { currentCall = it }
-                    .safeExecute()
-        }
+        val newNotifications =
+            when (notificationInfo.notificationAmount) {
+                0 -> {
+                    emptyList()
+                }
+
+                else -> {
+                    api.notifications
+                        .notifications()
+                        .page(0)
+                        .limit(notificationInfo.notificationAmount)
+                        .filter(NotificationFilter.UNREAD)
+                        .build()
+                        .also { currentCall = it }
+                        .safeExecute()
+                }
+            }
 
         newNotifications.firstOrNull()?.date?.toInstantBP()?.let {
             if (!isStopped && it != lastNotificationsDate && !bus.post(AccountNotificationEvent())) {

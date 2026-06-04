@@ -25,11 +25,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class DiscussionFragment : BaseContentFragment<List<ForumDiscussion>>(R.layout.fragment_discussion) {
-
     companion object {
-        fun newInstance() = DiscussionFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            DiscussionFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<DiscussionViewModel> { parametersOf(id) }
@@ -66,7 +66,10 @@ class DiscussionFragment : BaseContentFragment<List<ForumDiscussion>>(R.layout.f
         super.onDestroyView()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView.setHasFixedSize(true)

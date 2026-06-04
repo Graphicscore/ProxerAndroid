@@ -17,17 +17,20 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class ConferenceViewModel(searchQuery: String) : BaseViewModel<List<ConferenceWithMessage>>() {
-
+class ConferenceViewModel(
+    searchQuery: String,
+) : BaseViewModel<List<ConferenceWithMessage>>() {
     override val data = MediatorLiveData<List<ConferenceWithMessage>?>()
 
     override val dataSingle: Single<List<ConferenceWithMessage>>
-        get() = Single.fromCallable { validate() }
-            .flatMap {
-                if (!MessengerWorker.isRunning) MessengerWorker.enqueueSynchronization()
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap {
+                    if (!MessengerWorker.isRunning) MessengerWorker.enqueueSynchronization()
 
-                Single.never()
-            }
+                    Single.never()
+                }
 
     var searchQuery: String = searchQuery
         set(value) {
@@ -38,19 +41,20 @@ class ConferenceViewModel(searchQuery: String) : BaseViewModel<List<ConferenceWi
 
     private val messengerDao by safeInject<MessengerDao>()
 
-    private val sourceObserver = Observer<List<ConferenceWithMessage>?> {
-        if (it != null) {
-            val containsRelevantData = it.isNotEmpty() || storageHelper.areConferencesSynchronized
+    private val sourceObserver =
+        Observer<List<ConferenceWithMessage>?> {
+            if (it != null) {
+                val containsRelevantData = it.isNotEmpty() || storageHelper.areConferencesSynchronized
 
-            if (containsRelevantData && storageHelper.isLoggedIn && error.value == null) {
-                dataDisposable?.dispose()
+                if (containsRelevantData && storageHelper.isLoggedIn && error.value == null) {
+                    dataDisposable?.dispose()
 
-                isLoading.value = false
-                error.value = null
-                data.value = it
+                    isLoading.value = false
+                    error.value = null
+                    data.value = it
+                }
             }
         }
-    }
 
     private var source by Delegates.observable(messengerDao.getConferencesLiveData(searchQuery)) { _, old, new ->
         data.removeSource(old)
@@ -60,17 +64,19 @@ class ConferenceViewModel(searchQuery: String) : BaseViewModel<List<ConferenceWi
     init {
         data.addSource(source, sourceObserver)
 
-        disposables += bus.register(MessengerErrorEvent::class.java)
-            .map { ErrorUtils.handle(it.error) }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                if (isLoading.value == true) {
-                    dataDisposable?.dispose()
+        disposables +=
+            bus
+                .register(MessengerErrorEvent::class.java)
+                .map { ErrorUtils.handle(it.error) }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (isLoading.value == true) {
+                        dataDisposable?.dispose()
 
-                    isLoading.value = false
-                    data.value = null
-                    error.value = it
+                        isLoading.value = false
+                        data.value = null
+                        error.value = it
+                    }
                 }
-            }
     }
 }

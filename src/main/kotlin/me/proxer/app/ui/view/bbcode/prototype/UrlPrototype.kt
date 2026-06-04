@@ -22,7 +22,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
  * @author Ruben Gees
  */
 object UrlPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototype {
-
     private const val URL_ARGUMENT = "url"
 
     private val attributeRegex = Regex("url *= *(.+?)( |$)", REGEX_OPTIONS)
@@ -31,29 +30,44 @@ object UrlPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *url *= *.+?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *url *", REGEX_OPTIONS)
 
-    override fun construct(code: String, parent: BBTree): BBTree {
+    override fun construct(
+        code: String,
+        parent: BBTree,
+    ): BBTree {
         val url = BBUtils.cutAttribute(code, attributeRegex)?.trim() ?: ""
         val parsedUrl = url.toPrefixedUrlOrNull() ?: invalidUrl
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(URL_ARGUMENT to parsedUrl)))
     }
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
         val url = args[URL_ARGUMENT] as HttpUrl
 
         return applyToAllViews(childViews) { view: View ->
             when (view) {
-                is TextView -> view.text = mutate(view.text.toSpannableStringBuilder(), args)
-                else ->
-                    view.clicks()
+                is TextView -> {
+                    view.text = mutate(view.text.toSpannableStringBuilder(), args)
+                }
+
+                else -> {
+                    view
+                        .clicks()
                         .autoDisposable(ViewScopeProvider.from(parent))
                         .subscribe { BBUtils.findBaseActivity(view.context)?.showPage(url) }
+                }
             }
         }
     }
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ): SpannableStringBuilder {
         val url = args[URL_ARGUMENT] as HttpUrl
 
         return text.linkifyUrl(url)

@@ -1,3 +1,5 @@
+@file:Suppress("ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD")
+
 package me.proxer.app.auth
 
 import com.squareup.moshi.Json
@@ -11,7 +13,10 @@ data class LocalUser(
     @Json(name = "token") val token: String,
     @Json(name = "id") val id: String,
     @Json(name = "name") val name: String,
-    @Json(name = "image") val image: String
+    @Json(name = "image") val image: String,
 ) {
-    fun matches(userId: String?, username: String?) = this.id == userId || this.name.equals(username, ignoreCase = true)
+    fun matches(
+        userId: String?,
+        username: String?,
+    ) = this.id == userId || this.name.equals(username, ignoreCase = true)
 }

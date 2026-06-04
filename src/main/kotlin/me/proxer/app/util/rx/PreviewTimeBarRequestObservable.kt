@@ -7,8 +7,9 @@ import io.reactivex.Observer
 import io.reactivex.android.MainThreadDisposable
 import me.proxer.app.util.extension.checkMainThread
 
-class PreviewTimeBarRequestObservable(private val view: DefaultTimeBar) : Observable<Long>() {
-
+class PreviewTimeBarRequestObservable(
+    private val view: DefaultTimeBar,
+) : Observable<Long>() {
     override fun subscribeActual(observer: Observer<in Long>) {
         if (!observer.checkMainThread()) {
             return
@@ -23,18 +24,28 @@ class PreviewTimeBarRequestObservable(private val view: DefaultTimeBar) : Observ
 
     internal class Listener(
         private val view: DefaultTimeBar,
-        private val observer: Observer<in Long>
-    ) : MainThreadDisposable(), TimeBar.OnScrubListener {
-
-        override fun onScrubStart(timeBar: TimeBar, position: Long) {
+        private val observer: Observer<in Long>,
+    ) : MainThreadDisposable(),
+        TimeBar.OnScrubListener {
+        override fun onScrubStart(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             emit(position)
         }
 
-        override fun onScrubMove(timeBar: TimeBar, position: Long) {
+        override fun onScrubMove(
+            timeBar: TimeBar,
+            position: Long,
+        ) {
             emit(position)
         }
 
-        override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) = Unit
+        override fun onScrubStop(
+            timeBar: TimeBar,
+            position: Long,
+            canceled: Boolean,
+        ) = Unit
 
         private fun emit(position: Long) {
             if (!isDisposed) {

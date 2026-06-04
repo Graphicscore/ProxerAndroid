@@ -20,10 +20,10 @@ import org.threeten.bp.Instant
         ForeignKey(
             entity = LocalConference::class,
             parentColumns = ["id"],
-            childColumns = ["conferenceId"]
-        )
+            childColumns = ["conferenceId"],
+        ),
     ],
-    indices = [Index("conferenceId")]
+    indices = [Index("conferenceId")],
 )
 data class LocalMessage(
     @PrimaryKey(autoGenerate = true) val id: Long,
@@ -33,20 +33,20 @@ data class LocalMessage(
     val message: String,
     val action: MessageAction,
     val date: Instant,
-    val device: Device
+    val device: Device,
 ) {
-
     @Transient
     val styledMessage = message.toSimpleBBTree()
 
-    fun toNonLocalMessage() = Message(
-        id.toString(),
-        conferenceId.toString(),
-        userId,
-        username,
-        message,
-        action,
-        date.toDate(),
-        device
-    )
+    fun toNonLocalMessage() =
+        Message(
+            id.toString(),
+            conferenceId.toString(),
+            userId,
+            username,
+            message,
+            action,
+            date.toDate(),
+            device,
+        )
 }

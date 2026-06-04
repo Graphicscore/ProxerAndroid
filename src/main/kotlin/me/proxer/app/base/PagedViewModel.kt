@@ -11,7 +11,6 @@ import me.proxer.library.entity.ProxerIdItem
  * @author Ruben Gees
  */
 abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
-
     val refreshError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
 
     protected open var hasReachedEnd = false
@@ -26,33 +25,33 @@ abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
         val currentPage = page
 
         dataDisposable?.dispose()
-        dataDisposable = dataSingle
-            .doAfterSuccess { newData -> hasReachedEnd = newData.size < itemsOnPage }
-            .map { newData -> mergeNewDataWithExistingData(data.value ?: emptyList(), newData, currentPage) }
-            .subscribeOn(Schedulers.io())
-            .doAfterTerminate { isRefreshing = false }
-            .doAfterSuccess { if (!isRefreshing) page++ }
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                refreshError.value = null
-                error.value = null
-                isLoading.value = true
-            }
-            .doAfterTerminate { isLoading.value = false }
-            .subscribeAndLogErrors(
-                {
+        dataDisposable =
+            dataSingle
+                .doAfterSuccess { newData -> hasReachedEnd = newData.size < itemsOnPage }
+                .map { newData -> mergeNewDataWithExistingData(data.value ?: emptyList(), newData, currentPage) }
+                .subscribeOn(Schedulers.io())
+                .doAfterTerminate { isRefreshing = false }
+                .doAfterSuccess { if (!isRefreshing) page++ }
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
                     refreshError.value = null
                     error.value = null
-                    data.value = it
-                },
-                {
-                    if (currentPage == 0 && data.value?.size ?: 0 > 0) {
-                        refreshError.value = ErrorUtils.handle(it)
-                    } else {
-                        error.value = ErrorUtils.handle(it)
-                    }
-                }
-            )
+                    isLoading.value = true
+                }.doAfterTerminate { isLoading.value = false }
+                .subscribeAndLogErrors(
+                    {
+                        refreshError.value = null
+                        error.value = null
+                        data.value = it
+                    },
+                    {
+                        if (currentPage == 0 && data.value?.size ?: 0 > 0) {
+                            refreshError.value = ErrorUtils.handle(it)
+                        } else {
+                            error.value = ErrorUtils.handle(it)
+                        }
+                    },
+                )
     }
 
     override fun loadIfPossible() {
@@ -76,7 +75,10 @@ abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
         super.reload()
     }
 
-    protected open fun areItemsTheSame(old: T, new: T) = when {
+    protected open fun areItemsTheSame(
+        old: T,
+        new: T,
+    ) = when {
         old is ProxerIdItem && new is ProxerIdItem -> old.id == new.id
         else -> old == new
     }
@@ -84,13 +86,19 @@ abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
     protected open fun mergeNewDataWithExistingData(
         existingData: List<T>,
         newData: List<T>,
-        currentPage: Int
+        currentPage: Int,
     ) = when (currentPage) {
-        0 -> newData + existingData.filter { oldItem ->
-            newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
+        0 -> {
+            newData +
+                existingData.filter { oldItem ->
+                    newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
+                }
         }
-        else -> existingData.filter { oldItem ->
-            newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
-        } + newData
+
+        else -> {
+            existingData.filter { oldItem ->
+                newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
+            } + newData
+        }
     }
 }

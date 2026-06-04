@@ -24,18 +24,21 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class ChatViewModel(private val chatRoomId: String) : PagedViewModel<ParsedChatMessage>() {
-
+class ChatViewModel(
+    private val chatRoomId: String,
+) : PagedViewModel<ParsedChatMessage>() {
     override val itemsOnPage = 50
 
     override val dataSingle: Single<List<ParsedChatMessage>>
-        get() = Single.fromCallable { validate() }
-            .flatMap {
-                api.chat.messages(chatRoomId)
-                    .messageId(data.value?.lastOrNull()?.id ?: "0")
-                    .buildSingle()
-            }
-            .map { it.map { message -> message.toParsedMessage() } }
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap {
+                    api.chat
+                        .messages(chatRoomId)
+                        .messageId(data.value?.lastOrNull()?.id ?: "0")
+                        .buildSingle()
+                }.map { it.map { message -> message.toParsedMessage() } }
 
     val sendMessageError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
     val draft = ResettingMutableLiveData<String?>()
@@ -63,74 +66,81 @@ class ChatViewModel(private val chatRoomId: String) : PagedViewModel<ParsedChatM
 
     override fun load() {
         dataDisposable?.dispose()
-        dataDisposable = dataSingle
-            .doAfterSuccess { newData -> hasReachedEnd = newData.size < itemsOnPage }
-            .map { newData -> mergeNewDataWithExistingData(newData, data.value?.lastOrNull()?.id ?: "0") }
-            .subscribeOn(Schedulers.io())
-            .doAfterTerminate { isRefreshing = false }
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                refreshError.value = null
-                error.value = null
-                isLoading.value = true
-            }
-            .doOnSuccess { if (pollingDisposable == null) startPolling() }
-            .doAfterTerminate { isLoading.value = false }
-            .subscribeAndLogErrors(
-                {
-                    currentFirstId = findFirstRemoteId(it) ?: "0"
-
+        dataDisposable =
+            dataSingle
+                .doAfterSuccess { newData -> hasReachedEnd = newData.size < itemsOnPage }
+                .map { newData -> mergeNewDataWithExistingData(newData, data.value?.lastOrNull()?.id ?: "0") }
+                .subscribeOn(Schedulers.io())
+                .doAfterTerminate { isRefreshing = false }
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
                     refreshError.value = null
                     error.value = null
-                    data.value = it
-                },
-                {
-                    if (data.value?.size ?: 0 > 0) {
-                        refreshError.value = ErrorUtils.handle(it)
-                    } else {
-                        error.value = ErrorUtils.handle(it)
-                    }
-                }
-            )
+                    isLoading.value = true
+                }.doOnSuccess { if (pollingDisposable == null) startPolling() }
+                .doAfterTerminate { isLoading.value = false }
+                .subscribeAndLogErrors(
+                    {
+                        currentFirstId = findFirstRemoteId(it) ?: "0"
+
+                        refreshError.value = null
+                        error.value = null
+                        data.value = it
+                    },
+                    {
+                        if (data.value?.size ?: 0 > 0) {
+                            refreshError.value = ErrorUtils.handle(it)
+                        } else {
+                            error.value = ErrorUtils.handle(it)
+                        }
+                    },
+                )
     }
 
     fun loadDraft() {
         draftDisposable?.dispose()
-        draftDisposable = Single.fromCallable { storageHelper.getMessageDraft(chatRoomId).toOptional() }
-            .filterSome()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { draft.value = it }
+        draftDisposable =
+            Single
+                .fromCallable { storageHelper.getMessageDraft(chatRoomId).toOptional() }
+                .filterSome()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { draft.value = it }
     }
 
     fun updateDraft(draft: String) {
         draftDisposable?.dispose()
-        draftDisposable = Single
-            .fromCallable {
-                if (draft.isBlank()) {
-                    storageHelper.deleteMessageDraft(chatRoomId)
-                } else {
-                    storageHelper.putMessageDraft(chatRoomId, draft)
-                }
-            }
-            .subscribeOn(Schedulers.io())
-            .subscribe()
+        draftDisposable =
+            Single
+                .fromCallable {
+                    if (draft.isBlank()) {
+                        storageHelper.deleteMessageDraft(chatRoomId)
+                    } else {
+                        storageHelper.putMessageDraft(chatRoomId, draft)
+                    }
+                }.subscribeOn(Schedulers.io())
+                .subscribe()
     }
 
     fun sendMessage(text: String) {
         storageHelper.user?.let { user ->
-            val firstId = data.value?.firstOrNull()?.id?.toLong()
+            val firstId =
+                data.value
+                    ?.firstOrNull()
+                    ?.id
+                    ?.toLong()
             val nextId = if (firstId == null || firstId >= 0) -1 else firstId - 1
 
-            val message = ParsedChatMessage(
-                nextId.toString(),
-                user.id,
-                user.name,
-                user.image,
-                text,
-                ChatMessageAction.NONE,
-                Instant.now()
-            )
+            val message =
+                ParsedChatMessage(
+                    nextId.toString(),
+                    user.id,
+                    user.name,
+                    user.image,
+                    text,
+                    ChatMessageAction.NONE,
+                    Instant.now(),
+                )
 
             data.value = listOf(message).plus(data.value ?: emptyList())
             sendMessageQueue.offer(message)
@@ -153,36 +163,47 @@ class ChatViewModel(private val chatRoomId: String) : PagedViewModel<ParsedChatM
 
     private fun mergeNewDataWithExistingData(
         newData: List<ParsedChatMessage>,
-        currentId: String
+        currentId: String,
     ): List<ParsedChatMessage> {
-        val messageIdsToDelete = newData
-            .filter { it.action == ChatMessageAction.REMOVE_MESSAGE }
-            .flatMap { listOf(it.id, it.message) }
+        val messageIdsToDelete =
+            newData
+                .filter { it.action == ChatMessageAction.REMOVE_MESSAGE }
+                .flatMap { listOf(it.id, it.message) }
 
         val previousSentMessageIdAmount = sentMessageIds.size
         val existingUnsendMessages = data.value?.takeWhile { it.id.toLong() < 0 } ?: emptyList()
 
         sentMessageIds.removeAll(newData.map { it.id })
 
-        val result = data.value.let { existingData ->
-            when (existingData) {
-                null -> newData
-                else -> when (currentId) {
-                    "0" ->
-                        newData + existingData
-                            .asSequence()
-                            .dropWhile { it.id.toLong() < 0 }
-                            .filter { oldItem -> newData.none { newItem -> oldItem.id == newItem.id } }
-                            .toList()
-                    else ->
-                        existingData
-                            .asSequence()
-                            .dropWhile { it.id.toLong() < 0 }
-                            .filter { oldItem -> newData.none { newItem -> oldItem.id == newItem.id } }
-                            .toList() + newData
+        val result =
+            data.value.let { existingData ->
+                when (existingData) {
+                    null -> {
+                        newData
+                    }
+
+                    else -> {
+                        when (currentId) {
+                            "0" -> {
+                                newData +
+                                    existingData
+                                        .asSequence()
+                                        .dropWhile { it.id.toLong() < 0 }
+                                        .filter { oldItem -> newData.none { newItem -> oldItem.id == newItem.id } }
+                                        .toList()
+                            }
+
+                            else -> {
+                                existingData
+                                    .asSequence()
+                                    .dropWhile { it.id.toLong() < 0 }
+                                    .filter { oldItem -> newData.none { newItem -> oldItem.id == newItem.id } }
+                                    .toList() + newData
+                            }
+                        }
+                    }
                 }
             }
-        }
 
         val mergedResult = existingUnsendMessages.dropLast(previousSentMessageIdAmount - sentMessageIds.size) + result
 
@@ -194,53 +215,64 @@ class ChatViewModel(private val chatRoomId: String) : PagedViewModel<ParsedChatM
 
     private fun startPolling(immediate: Boolean = false) {
         pollingDisposable?.dispose()
-        pollingDisposable = Single.fromCallable { validators.validateLogin() }
-            .flatMap { api.chat.messages(chatRoomId).messageId("0").buildSingle() }
-            .map { it.map { message -> message.toParsedMessage() } }
-            .repeatWhen { it.concatMap { Flowable.timer(3, TimeUnit.SECONDS) } }
-            .retryWhen { it.concatMap { Flowable.timer(3, TimeUnit.SECONDS) } }
-            .map { newData -> mergeNewDataWithExistingData(newData, "0") }
-            .let { if (!immediate) it.delaySubscription(3, TimeUnit.SECONDS) else it }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeAndLogErrors {
-                val firstId = findFirstRemoteId(it)
+        pollingDisposable =
+            Single
+                .fromCallable { validators.validateLogin() }
+                .flatMap {
+                    api.chat
+                        .messages(chatRoomId)
+                        .messageId("0")
+                        .buildSingle()
+                }.map { it.map { message -> message.toParsedMessage() } }
+                .repeatWhen { it.concatMap { Flowable.timer(3, TimeUnit.SECONDS) } }
+                .retryWhen { it.concatMap { Flowable.timer(3, TimeUnit.SECONDS) } }
+                .map { newData -> mergeNewDataWithExistingData(newData, "0") }
+                .let { if (!immediate) it.delaySubscription(3, TimeUnit.SECONDS) else it }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeAndLogErrors {
+                    val firstId = findFirstRemoteId(it)
 
-                if (firstId != null && firstId != currentFirstId) {
-                    currentFirstId = firstId
+                    if (firstId != null && firstId != currentFirstId) {
+                        currentFirstId = firstId
 
-                    data.value = it
+                        data.value = it
+                    }
                 }
-            }
     }
 
     private fun doSendMessages() {
         sendMessageDisposable?.dispose()
 
         sendMessageQueue.poll()?.let { item ->
-            sendMessageDisposable = Single.fromCallable { validators.validateLogin() }
-                .flatMap { api.chat.sendMessage(chatRoomId, item.message).buildSingle() }
-                .retryWhen(RxRetryWithDelay(2, 3_000))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeAndLogErrors(
-                    { id ->
-                        sentMessageIds.add(id)
+            sendMessageDisposable =
+                Single
+                    .fromCallable { validators.validateLogin() }
+                    .flatMap { api.chat.sendMessage(chatRoomId, item.message).buildSingle() }
+                    .retryWhen(RxRetryWithDelay(2, 3_000))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeAndLogErrors(
+                        { id ->
+                            sentMessageIds.add(id)
 
-                        startPolling(true)
-                        doSendMessages()
-                    },
-                    {
-                        data.value = data.value?.dropWhile { message -> message.id.toLong() < 0 }
-                        sendMessageQueue.clear()
+                            startPolling(true)
+                            doSendMessages()
+                        },
+                        {
+                            data.value = data.value?.dropWhile { message -> message.id.toLong() < 0 }
+                            sendMessageQueue.clear()
 
-                        sendMessageError.value = ErrorUtils.handle(it)
-                    }
-                )
+                            sendMessageError.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 
-    private fun findFirstRemoteId(data: List<ParsedChatMessage>): String? {
-        return data.dropWhile { it.id.toLong() < 0 }.firstOrNull()?.id
-    }
+    private fun findFirstRemoteId(data: List<ParsedChatMessage>): String? =
+        data
+            .dropWhile {
+                it.id.toLong() < 0
+            }.firstOrNull()
+            ?.id
 }

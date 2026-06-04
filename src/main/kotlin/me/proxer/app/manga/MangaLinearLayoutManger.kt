@@ -10,21 +10,22 @@ import me.proxer.app.util.DeviceUtils
  */
 class MangaLinearLayoutManger(
     context: Context,
-    readerOrientation: MangaReaderOrientation
+    readerOrientation: MangaReaderOrientation,
 ) : LinearLayoutManager(
-    context,
-    if (readerOrientation == MangaReaderOrientation.VERTICAL) VERTICAL else HORIZONTAL,
-    readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT
-) {
-
-    private val extraLayoutSpace = when (readerOrientation) {
-        MangaReaderOrientation.VERTICAL -> DeviceUtils.getScreenHeight(context) / 2
-        else -> DeviceUtils.getScreenWidth(context) / 2
-    }
+        context,
+        if (readerOrientation == MangaReaderOrientation.VERTICAL) VERTICAL else HORIZONTAL,
+        readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT,
+    ) {
+    private val extraLayoutSpace =
+        when (readerOrientation) {
+            MangaReaderOrientation.VERTICAL -> DeviceUtils.getScreenHeight(context) / 2
+            else -> DeviceUtils.getScreenWidth(context) / 2
+        }
 
     init {
         isItemPrefetchEnabled = false
     }
 
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun getExtraLayoutSpace(state: RecyclerView.State) = extraLayoutSpace
 }

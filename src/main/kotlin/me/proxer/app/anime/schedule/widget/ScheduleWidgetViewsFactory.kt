@@ -16,21 +16,23 @@ import org.threeten.bp.format.DateTimeFormatter
 class ScheduleWidgetViewsFactory(
     private val context: Context,
     private val dark: Boolean,
-    private val calendarEntries: List<SimpleCalendarEntry>
+    private val calendarEntries: List<SimpleCalendarEntry>,
 ) : RemoteViewsService.RemoteViewsFactory {
-
     private companion object {
         private val hourMinuteDateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 
     override fun hasStableIds() = true
+
     override fun getLoadingView() = null
 
-    override fun getItemId(position: Int) = when {
-        // Workaround Android bug passing too large positions.
-        position <= calendarEntries.lastIndex -> calendarEntries[position].id.toLong()
-        else -> -1L
-    }
+    override fun getItemId(position: Int) =
+        when {
+            // Workaround Android bug passing too large positions.
+            position <= calendarEntries.lastIndex -> calendarEntries[position].id.toLong()
+
+            else -> -1L
+        }
 
     override fun getViewAt(position: Int): RemoteViews? {
         // Workaround Android bug passing too large positions.
@@ -54,9 +56,12 @@ class ScheduleWidgetViewsFactory(
     }
 
     override fun getCount() = calendarEntries.size
+
     override fun getViewTypeCount() = 1
 
     override fun onCreate() = Unit
+
     override fun onDestroy() = Unit
+
     override fun onDataSetChanged() = Unit
 }

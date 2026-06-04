@@ -13,7 +13,6 @@ import java.util.Date
  * @author Ruben Gees
  */
 class RoomConverters {
-
     @TypeConverter
     fun fromDate(date: Date?): Long? = date?.time
 

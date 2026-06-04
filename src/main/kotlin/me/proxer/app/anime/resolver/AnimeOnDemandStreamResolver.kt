@@ -9,10 +9,11 @@ import me.proxer.app.util.extension.toPrefixedUrlOrNull
  * @author Ruben Gees
  */
 object AnimeOnDemandStreamResolver : StreamResolver() {
-
     override val name = "Anime on demand"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime.link(id)
-        .buildSingle()
-        .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
+    override fun resolve(id: String): Single<StreamResolutionResult> =
+        api.anime
+            .link(id)
+            .buildSingle()
+            .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
 }

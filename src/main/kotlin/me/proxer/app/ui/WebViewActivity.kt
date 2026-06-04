@@ -20,11 +20,13 @@ import me.proxer.app.util.extension.startActivity
  * @author Ruben Gees
  */
 class WebViewActivity : AppCompatActivity() {
-
     companion object {
         private const val URL_EXTRA = "url"
 
-        fun navigateTo(context: Activity, url: String) = context.startActivity<WebViewActivity>(URL_EXTRA to url)
+        fun navigateTo(
+            context: Activity,
+            url: String,
+        ) = context.startActivity<WebViewActivity>(URL_EXTRA to url)
     }
 
     private val url: String

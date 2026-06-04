@@ -8,18 +8,15 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE
-import android.view.View.SYSTEM_UI_FLAG_VISIBLE
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
+import androidx.core.content.IntentCompat
 import androidx.core.os.postDelayed
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.commitNow
@@ -28,10 +25,10 @@ import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_
 import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
 import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
 import com.jakewharton.rxbinding3.view.clicks
-import com.jakewharton.rxbinding3.view.systemUiVisibilityChanges
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
+import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
@@ -50,7 +47,6 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class MangaActivity : BaseActivity() {
-
     companion object {
         private const val ID_EXTRA = "id"
         private const val EPISODE_EXTRA = "episode"
@@ -66,7 +62,7 @@ class MangaActivity : BaseActivity() {
             language: Language,
             chapterTitle: String?,
             name: String? = null,
-            episodeAmount: Int? = null
+            episodeAmount: Int? = null,
         ) {
             context.startActivity<MangaActivity>(
                 ID_EXTRA to id,
@@ -74,22 +70,32 @@ class MangaActivity : BaseActivity() {
                 LANGUAGE_EXTRA to language,
                 CHAPTER_TITLE_EXTRA to chapterTitle,
                 NAME_EXTRA to name,
-                EPISODE_AMOUNT_EXTRA to episodeAmount
+                EPISODE_AMOUNT_EXTRA to episodeAmount,
             )
         }
     }
 
     val id: String
-        get() = when (intent.hasExtra(ID_EXTRA)) {
-            true -> intent.getSafeStringExtra(ID_EXTRA)
-            false -> intent.data?.pathSegments?.getOrNull(1) ?: "-1"
-        }
+        get() =
+            when (intent.hasExtra(ID_EXTRA)) {
+                true -> intent.getSafeStringExtra(ID_EXTRA)
+                false -> intent.data?.pathSegments?.getOrNull(1) ?: "-1"
+            }
 
     var episode: Int
-        get() = when (intent.hasExtra(EPISODE_EXTRA)) {
-            true -> intent.getIntExtra(EPISODE_EXTRA, 1)
-            false -> intent.data?.pathSegments?.getOrNull(2)?.toIntOrNull() ?: 1
-        }
+        get() =
+            when (intent.hasExtra(EPISODE_EXTRA)) {
+                true -> {
+                    intent.getIntExtra(EPISODE_EXTRA, 1)
+                }
+
+                false -> {
+                    intent.data
+                        ?.pathSegments
+                        ?.getOrNull(2)
+                        ?.toIntOrNull() ?: 1
+                }
+            }
         set(value) {
             intent.putExtra(EPISODE_EXTRA, value)
 
@@ -97,12 +103,22 @@ class MangaActivity : BaseActivity() {
         }
 
     val language: Language
-        get() = when (intent.hasExtra(LANGUAGE_EXTRA)) {
-            true -> intent.getSerializableExtra(LANGUAGE_EXTRA) as Language
-            false ->
-                intent.data?.pathSegments?.getOrNull(3)?.let { ProxerUtils.toApiEnum<Language>(it) }
-                    ?: Language.ENGLISH
-        }
+        get() =
+            when (intent.hasExtra(LANGUAGE_EXTRA)) {
+                true -> {
+                    requireNotNull(IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, Language::class.java)) {
+                        "LANGUAGE_EXTRA present but deserialized to null in MangaActivity"
+                    }
+                }
+
+                false -> {
+                    intent.data
+                        ?.pathSegments
+                        ?.getOrNull(3)
+                        ?.let { ProxerUtils.toApiEnum<Language>(it) }
+                        ?: Language.ENGLISH
+                }
+            }
 
     var chapterTitle: String?
         get() = intent.getStringExtra(CHAPTER_TITLE_EXTRA)
@@ -121,10 +137,11 @@ class MangaActivity : BaseActivity() {
         }
 
     var episodeAmount: Int?
-        get() = when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
-            true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
-            else -> null
-        }
+        get() =
+            when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
+                true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
+                else -> null
+            }
         set(value) {
             when (value) {
                 null -> intent.removeExtra(EPISODE_AMOUNT_EXTRA)
@@ -138,6 +155,9 @@ class MangaActivity : BaseActivity() {
 
     private val fullscreenHandler = Handler(Looper.getMainLooper())
 
+    private var isInFullscreenMode = false
+    private val systemBarsVisibilitySubject = PublishSubject.create<Boolean>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -147,6 +167,14 @@ class MangaActivity : BaseActivity() {
 
         setContentView(R.layout.activity_manga)
         setSupportActionBar(toolbar)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { v, insets ->
+            val systemBarsVisible = insets.isVisible(WindowInsetsCompat.Type.systemBars())
+            systemBarsVisibilitySubject.onNext(systemBarsVisible)
+            ViewCompat.onApplyWindowInsets(v, insets)
+        }
 
         setupToolbar()
         updateTitle()
@@ -182,29 +210,35 @@ class MangaActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_share -> name?.let {
-                val link = ProxerUrls.mangaWeb(id, episode, language)
+            R.id.action_share -> {
+                name?.let {
+                    val link = ProxerUrls.mangaWeb(id, episode, language)
 
-                val text = chapterTitle.let { title ->
-                    when {
-                        title.isNullOrBlank() -> getString(R.string.share_manga, episode, it, link)
-                        else -> getString(R.string.share_manga_title, title, it, link)
-                    }
+                    val text =
+                        chapterTitle.let { title ->
+                            when {
+                                title.isNullOrBlank() -> getString(R.string.share_manga, episode, it, link)
+                                else -> getString(R.string.share_manga_title, title, it, link)
+                            }
+                        }
+
+                    ShareCompat
+                        .IntentBuilder(this)
+                        .setText(text)
+                        .setType("text/plain")
+                        .setChooserTitle(getString(R.string.share_title))
+                        .startChooser()
                 }
-
-                ShareCompat.IntentBuilder
-                    .from(this)
-                    .setText(text)
-                    .setType("text/plain")
-                    .setChooserTitle(getString(R.string.share_title))
-                    .startChooser()
             }
         }
 
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
+    override fun onMultiWindowModeChanged(
+        isInMultiWindowMode: Boolean,
+        newConfig: Configuration,
+    ) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
 
         if (!isInMultiWindowMode) {
@@ -221,10 +255,10 @@ class MangaActivity : BaseActivity() {
 
         setFullscreen(true)
 
-        window.decorView.systemUiVisibilityChanges()
+        systemBarsVisibilitySubject
             .autoDisposable(this.scope())
-            .subscribe {
-                if (it and SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+            .subscribe { systemBarsVisible ->
+                if (systemBarsVisible) {
                     setFullscreen(false)
 
                     fullscreenHandler.postDelayed(3000) {
@@ -238,7 +272,6 @@ class MangaActivity : BaseActivity() {
 
     fun onContentHide() {
         fullscreenHandler.removeCallbacksAndMessages(null)
-        window.decorView.setOnSystemUiVisibilityChangeListener(null)
 
         setFullscreen(false)
     }
@@ -246,28 +279,22 @@ class MangaActivity : BaseActivity() {
     fun toggleFullscreen() {
         fullscreenHandler.removeCallbacksAndMessages(null)
 
-        val isFullscreen = window.decorView.systemUiVisibility and SYSTEM_UI_FLAG_FULLSCREEN != 0
-
-        setFullscreen(!isFullscreen)
+        setFullscreen(!isInFullscreenMode)
     }
 
     private fun setFullscreen(fullscreen: Boolean) {
         val isInMultiWindowMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
 
         if (fullscreen && !isInMultiWindowMode) {
-            window.decorView.systemUiVisibility = SYSTEM_UI_FLAG_LOW_PROFILE or
-                SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                SYSTEM_UI_FLAG_FULLSCREEN or
-                SYSTEM_UI_FLAG_IMMERSIVE
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = true
 
             toolbar.isVisible = false
         } else {
-            window.decorView.systemUiVisibility = SYSTEM_UI_FLAG_VISIBLE or
-                SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                SYSTEM_UI_FLAG_IMMERSIVE
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = false
 
             toolbar.isVisible = true
         }
@@ -285,7 +312,8 @@ class MangaActivity : BaseActivity() {
 
     private fun setupToolbar() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.clicks()
+        toolbar
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe {
                 name?.let {

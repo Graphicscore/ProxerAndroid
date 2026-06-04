@@ -11,11 +11,13 @@ import me.proxer.app.ui.view.bbcode.prototype.BBPrototype.Companion.REGEX_OPTION
  * @author Ruben Gees
  */
 object BoldPrototype : TextMutatorPrototype {
-
     override val startRegex = Regex(" *b( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *b *", REGEX_OPTIONS)
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs) = text.apply {
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ) = text.apply {
         this[0..length] = StyleSpan(BOLD)
     }
 }

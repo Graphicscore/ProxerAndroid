@@ -11,7 +11,7 @@ inline fun BaseActivity.snackbar(
     message: Int,
     duration: Int = LENGTH_LONG,
     actionMessage: Int = ACTION_MESSAGE_DEFAULT,
-    actionCallback: View.OnClickListener? = null
+    actionCallback: View.OnClickListener? = null,
 ) = snackbar(getString(message), duration, actionMessage, actionCallback)
 
 inline fun BaseActivity.multilineSnackbar(
@@ -19,7 +19,7 @@ inline fun BaseActivity.multilineSnackbar(
     duration: Int = LENGTH_LONG,
     actionMessage: Int = ACTION_MESSAGE_DEFAULT,
     actionCallback: View.OnClickListener? = null,
-    maxLines: Int = 5
+    maxLines: Int = 5,
 ) = snackbar(message, duration, actionMessage, actionCallback, maxLines)
 
 inline fun BaseActivity.multilineSnackbar(
@@ -27,5 +27,5 @@ inline fun BaseActivity.multilineSnackbar(
     duration: Int = LENGTH_LONG,
     actionMessage: Int = ACTION_MESSAGE_DEFAULT,
     actionCallback: View.OnClickListener? = null,
-    maxLines: Int = 5
+    maxLines: Int = 5,
 ) = snackbar(getString(message), duration, actionMessage, actionCallback, maxLines)

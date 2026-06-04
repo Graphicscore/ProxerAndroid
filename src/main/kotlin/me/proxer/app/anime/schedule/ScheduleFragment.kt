@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseContentFragment
 import me.proxer.app.media.MediaActivity
@@ -23,11 +23,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ScheduleFragment : BaseContentFragment<Map<CalendarDay, List<CalendarEntry>>>(R.layout.fragment_schedule) {
-
     companion object {
-        fun newInstance() = ScheduleFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ScheduleFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<ScheduleViewModel>()
@@ -51,7 +51,10 @@ class ScheduleFragment : BaseContentFragment<Map<CalendarDay, List<CalendarEntry
             }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

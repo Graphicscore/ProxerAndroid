@@ -30,9 +30,8 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 abstract class PagedContentFragment<T>(
-    @LayoutRes contentLayoutId: Int = R.layout.fragment_paged
+    @LayoutRes contentLayoutId: Int = R.layout.fragment_paged,
 ) : BaseContentFragment<List<T>>(contentLayoutId) {
-
     abstract override val viewModel: PagedViewModel<T>
 
     override val isSwipeToRefreshEnabled = true
@@ -61,17 +60,24 @@ abstract class PagedContentFragment<T>(
     override val errorButton: Button
         get() = errorContainer.findViewById(R.id.errorButton)
 
-    private val adapterDataObserver = object : RecyclerView.AdapterDataObserver() {
-        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-            if (isAtTop() && positionStart == 0) {
-                recyclerView.doAfterAnimations {
-                    if (view != null) recyclerView.smoothScrollToPosition(0)
+    private val adapterDataObserver =
+        object : RecyclerView.AdapterDataObserver() {
+            override fun onItemRangeInserted(
+                positionStart: Int,
+                itemCount: Int,
+            ) {
+                if (isAtTop() && positionStart == 0) {
+                    recyclerView.doAfterAnimations {
+                        if (view != null) recyclerView.smoothScrollToPosition(0)
+                    }
                 }
             }
         }
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = EasyHeaderFooterAdapter(innerAdapter)
@@ -83,7 +89,8 @@ abstract class PagedContentFragment<T>(
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
-        recyclerView.endScrolls(pagingThreshold)
+        recyclerView
+            .endScrolls(pagingThreshold)
             .throttleFirst(300, TimeUnit.MILLISECONDS)
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.loadIfPossible() }
@@ -96,10 +103,10 @@ abstract class PagedContentFragment<T>(
                         getString(R.string.error_refresh, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
@@ -133,12 +140,14 @@ abstract class PagedContentFragment<T>(
     override fun showError(action: ErrorAction) {
         // Assign error footer if not existing or another footer.
         if (adapter.footer?.findViewById<View>(R.id.errorContainer) == null) {
-            adapter.footer = LayoutInflater.from(context).inflate(R.layout.layout_error, root, false).apply {
-                layoutParams.height = when (innerAdapter.itemCount <= 0) {
-                    true -> ViewGroup.LayoutParams.MATCH_PARENT
-                    false -> ViewGroup.LayoutParams.WRAP_CONTENT
+            adapter.footer =
+                LayoutInflater.from(context).inflate(R.layout.layout_error, root, false).apply {
+                    layoutParams.height =
+                        when (innerAdapter.itemCount <= 0) {
+                            true -> ViewGroup.LayoutParams.MATCH_PARENT
+                            false -> ViewGroup.LayoutParams.WRAP_CONTENT
+                        }
                 }
-            }
         }
 
         super.showError(action)

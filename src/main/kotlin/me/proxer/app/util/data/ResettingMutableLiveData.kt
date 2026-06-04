@@ -9,11 +9,13 @@ import java.util.concurrent.atomic.AtomicInteger
  * @author Ruben Gees
  */
 class ResettingMutableLiveData<T> : MutableLiveData<T>() {
-
     private val observerAmount = AtomicInteger()
     private val deliveredAmount = AtomicInteger()
 
-    override fun observe(owner: LifecycleOwner, observer: Observer<in T>) {
+    override fun observe(
+        owner: LifecycleOwner,
+        observer: Observer<in T>,
+    ) {
         super.observe(
             owner,
             Observer {
@@ -25,7 +27,7 @@ class ResettingMutableLiveData<T> : MutableLiveData<T>() {
                         value = null
                     }
                 }
-            }
+            },
         )
 
         observerAmount.incrementAndGet()

@@ -11,7 +11,6 @@ import androidx.room.Transaction
  */
 @Dao
 abstract class TagDao {
-
     @Transaction
     open fun replaceTags(tags: List<LocalTag>): List<Long> {
         clear()

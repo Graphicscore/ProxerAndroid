@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.IntentCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.fragment.app.commitNow
 import com.uber.autodispose.android.lifecycle.scope
@@ -24,30 +25,39 @@ import timber.log.Timber
  * @author Ruben Gees
  */
 class PrvMessengerActivity : DrawerActivity() {
-
     companion object {
         private const val CONFERENCE_EXTRA = "conference"
 
-        fun navigateTo(context: Activity, conference: LocalConference, initialMessage: String? = null) {
+        fun navigateTo(
+            context: Activity,
+            conference: LocalConference,
+            initialMessage: String? = null,
+        ) {
             context.startActivity<PrvMessengerActivity>(
                 CONFERENCE_EXTRA to conference,
-                Intent.EXTRA_TEXT to initialMessage
+                Intent.EXTRA_TEXT to initialMessage,
             )
         }
 
-        fun getIntent(context: Context, conference: LocalConference, initialMessage: String? = null): Intent {
-            return context.intentFor<PrvMessengerActivity>(
+        fun getIntent(
+            context: Context,
+            conference: LocalConference,
+            initialMessage: String? = null,
+        ): Intent =
+            context.intentFor<PrvMessengerActivity>(
                 CONFERENCE_EXTRA to conference,
-                Intent.EXTRA_TEXT to initialMessage
+                Intent.EXTRA_TEXT to initialMessage,
             )
-        }
 
-        fun getIntent(context: Context, conferenceId: String, initialMessage: String? = null): Intent {
-            return context.intentFor<PrvMessengerActivity>(
+        fun getIntent(
+            context: Context,
+            conferenceId: String,
+            initialMessage: String? = null,
+        ): Intent =
+            context.intentFor<PrvMessengerActivity>(
                 ShortcutManagerCompat.EXTRA_SHORTCUT_ID to conferenceId,
-                Intent.EXTRA_TEXT to initialMessage
+                Intent.EXTRA_TEXT to initialMessage,
             )
-        }
     }
 
     private val messengerDao by safeInject<MessengerDao>()
@@ -56,7 +66,7 @@ class PrvMessengerActivity : DrawerActivity() {
         super.onCreate(savedInstanceState)
 
         if (supportFragmentManager.fragments.isEmpty()) {
-            val conference = intent.getParcelableExtra<LocalConference>(CONFERENCE_EXTRA)
+            val conference = IntentCompat.getParcelableExtra(intent, CONFERENCE_EXTRA, LocalConference::class.java)
             val initialMessage = intent.getStringExtra(Intent.EXTRA_TEXT)
 
             if (conference != null) {
@@ -69,7 +79,8 @@ class PrvMessengerActivity : DrawerActivity() {
                 if (conferenceId != null) {
                     title = getString(R.string.fragment_chat_loading_message)
 
-                    messengerDao.getConferenceMaybe(conferenceId)
+                    messengerDao
+                        .getConferenceMaybe(conferenceId)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDisposable(this.scope())
@@ -87,7 +98,7 @@ class PrvMessengerActivity : DrawerActivity() {
                                 Timber.e(it)
 
                                 finish()
-                            }
+                            },
                         )
                 } else {
                     title = getString(R.string.activity_prv_messenger_send_to)

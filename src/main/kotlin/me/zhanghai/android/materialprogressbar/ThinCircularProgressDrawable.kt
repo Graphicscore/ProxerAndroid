@@ -14,12 +14,12 @@ import me.zhanghai.android.materialprogressbar.MaterialProgressBar.DETERMINATE_C
  * @author Ruben Gees
  */
 internal class ThinCircularProgressDrawable(
-    context: Context
+    context: Context,
 ) : BaseProgressLayerDrawable<SingleCircularProgressDrawable, CircularProgressBackgroundDrawable>(
-    arrayOf<Drawable>(
-        CircularProgressBackgroundDrawable(),
-        ThinSingleCircularProgressDrawable(DETERMINATE_CIRCULAR_PROGRESS_STYLE_NORMAL),
-        ThinSingleCircularProgressDrawable(DETERMINATE_CIRCULAR_PROGRESS_STYLE_NORMAL)
-    ),
-    context
-)
+        arrayOf<Drawable>(
+            CircularProgressBackgroundDrawable(),
+            ThinSingleCircularProgressDrawable(DETERMINATE_CIRCULAR_PROGRESS_STYLE_NORMAL),
+            ThinSingleCircularProgressDrawable(DETERMINATE_CIRCULAR_PROGRESS_STYLE_NORMAL),
+        ),
+        context,
+    )

@@ -42,23 +42,23 @@ import java.util.concurrent.TimeUnit
  */
 class NewsWidgetUpdateWorker(
     context: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : Worker(context, workerParams) {
-
     companion object {
         private const val NAME = "NewsWidgetUpdateWorker"
 
         private val workManager by safeInject<WorkManager>()
 
         fun enqueueWork() {
-            val workRequest = OneTimeWorkRequestBuilder<NewsWidgetUpdateWorker>()
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
-                )
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
-                .build()
+            val workRequest =
+                OneTimeWorkRequestBuilder<NewsWidgetUpdateWorker>()
+                    .setConstraints(
+                        Constraints
+                            .Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build(),
+                    ).setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
+                    .build()
 
             workManager.beginUniqueWork(NAME, ExistingWorkPolicy.KEEP, workRequest).enqueue()
         }
@@ -84,17 +84,26 @@ class NewsWidgetUpdateWorker(
         darkWidgetIds.forEach { id -> bindLoadingLayout(appWidgetManager, id, true) }
 
         return try {
-            val news = if (!isStopped) {
-                api.notifications.news()
-                    .build()
-                    .also { currentCall = it }
-                    .safeExecute()
-                    .map {
-                        SimpleNews(it.id, it.threadId, it.categoryId, it.subject, it.category, it.date.toInstantBP())
-                    }
-            } else {
-                emptyList()
-            }
+            val news =
+                if (!isStopped) {
+                    api.notifications
+                        .news()
+                        .build()
+                        .also { currentCall = it }
+                        .safeExecute()
+                        .map {
+                            SimpleNews(
+                                it.id,
+                                it.threadId,
+                                it.categoryId,
+                                it.subject,
+                                it.category,
+                                it.date.toInstantBP(),
+                            )
+                        }
+                } else {
+                    emptyList()
+                }
 
             if (!isStopped) {
                 if (news.isEmpty()) {
@@ -128,27 +137,40 @@ class NewsWidgetUpdateWorker(
         currentCall = null
     }
 
-    private fun bindListLayout(appWidgetManager: AppWidgetManager, id: Int, news: List<SimpleNews>, dark: Boolean) {
-        val views = RemoteViews(
-            BuildConfig.APPLICATION_ID,
+    private fun bindListLayout(
+        appWidgetManager: AppWidgetManager,
+        id: Int,
+        news: List<SimpleNews>,
+        dark: Boolean,
+    ) {
+        val views =
+            RemoteViews(
+                BuildConfig.APPLICATION_ID,
+                when (dark) {
+                    true -> R.layout.layout_widget_news_dark_list
+                    false -> R.layout.layout_widget_news_list
+                },
+            )
+
+        val serializedNews =
+            news
+                .map { moshi.adapter(SimpleNews::class.java).toJson(it) }
+                .toTypedArray()
+
+        val intent =
             when (dark) {
-                true -> R.layout.layout_widget_news_dark_list
-                false -> R.layout.layout_widget_news_list
+                true -> {
+                    applicationContext.intentFor<NewsWidgetDarkService>(
+                        NewsWidgetDarkService.ARGUMENT_NEWS to serializedNews,
+                    )
+                }
+
+                false -> {
+                    applicationContext.intentFor<NewsWidgetService>(
+                        NewsWidgetService.ARGUMENT_NEWS to serializedNews,
+                    )
+                }
             }
-        )
-
-        val serializedNews = news
-            .map { moshi.adapter(SimpleNews::class.java).toJson(it) }
-            .toTypedArray()
-
-        val intent = when (dark) {
-            true -> applicationContext.intentFor<NewsWidgetDarkService>(
-                NewsWidgetDarkService.ARGUMENT_NEWS to serializedNews
-            )
-            false -> applicationContext.intentFor<NewsWidgetService>(
-                NewsWidgetService.ARGUMENT_NEWS to serializedNews
-            )
-        }
 
         val detailIntent = applicationContext.intentFor<TopicActivity>()
         val detailPendingIntent = PendingIntent.getActivity(applicationContext, 0, detailIntent, FLAG_UPDATE_CURRENT)
@@ -156,19 +178,26 @@ class NewsWidgetUpdateWorker(
         bindBaseLayout(id, views)
 
         views.setPendingIntentTemplate(R.id.list, detailPendingIntent)
+        @Suppress("DEPRECATION")
         views.setRemoteAdapter(R.id.list, intent)
 
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindErrorLayout(appWidgetManager: AppWidgetManager, id: Int, errorAction: ErrorAction, dark: Boolean) {
-        val views = RemoteViews(
-            BuildConfig.APPLICATION_ID,
-            when (dark) {
-                true -> R.layout.layout_widget_news_dark_error
-                false -> R.layout.layout_widget_news_error
-            }
-        )
+    private fun bindErrorLayout(
+        appWidgetManager: AppWidgetManager,
+        id: Int,
+        errorAction: ErrorAction,
+        dark: Boolean,
+    ) {
+        val views =
+            RemoteViews(
+                BuildConfig.APPLICATION_ID,
+                when (dark) {
+                    true -> R.layout.layout_widget_news_dark_error
+                    false -> R.layout.layout_widget_news_error
+                },
+            )
 
         val errorIntent = errorAction.toIntent()
 
@@ -188,27 +217,37 @@ class NewsWidgetUpdateWorker(
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindLoadingLayout(appWidgetManager: AppWidgetManager, id: Int, dark: Boolean) {
-        val views = RemoteViews(
-            BuildConfig.APPLICATION_ID,
-            when (dark) {
-                true -> R.layout.layout_widget_news_dark_loading
-                false -> R.layout.layout_widget_news_loading
-            }
-        )
+    private fun bindLoadingLayout(
+        appWidgetManager: AppWidgetManager,
+        id: Int,
+        dark: Boolean,
+    ) {
+        val views =
+            RemoteViews(
+                BuildConfig.APPLICATION_ID,
+                when (dark) {
+                    true -> R.layout.layout_widget_news_dark_loading
+                    false -> R.layout.layout_widget_news_loading
+                },
+            )
 
         bindBaseLayout(id, views)
 
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindBaseLayout(id: Int, views: RemoteViews) {
+    private fun bindBaseLayout(
+        id: Int,
+        views: RemoteViews,
+    ) {
         val intent = MainActivity.getSectionIntent(applicationContext, MaterialDrawerWrapper.DrawerItem.NEWS)
         val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, FLAG_UPDATE_CURRENT)
 
-        val updateIntent = applicationContext.intentFor<NewsWidgetProvider>()
-            .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(id))
+        val updateIntent =
+            applicationContext
+                .intentFor<NewsWidgetProvider>()
+                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(id))
 
         val updatePendingIntent = PendingIntent.getBroadcast(applicationContext, 0, updateIntent, FLAG_UPDATE_CURRENT)
 
@@ -217,11 +256,12 @@ class NewsWidgetUpdateWorker(
 
         views.setImageViewBitmap(
             R.id.refresh,
-            IconicsDrawable(applicationContext, CommunityMaterial.Icon3.cmd_refresh).apply {
-                colorRes = android.R.color.white
-                paddingDp = 8
-                sizeDp = 32
-            }.toBitmap()
+            IconicsDrawable(applicationContext, CommunityMaterial.Icon3.cmd_refresh)
+                .apply {
+                    colorRes = android.R.color.white
+                    paddingDp = 8
+                    sizeDp = 32
+                }.toBitmap(),
         )
     }
 }

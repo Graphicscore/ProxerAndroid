@@ -40,24 +40,27 @@ import me.proxer.library.util.ProxerUrls
  * @author Ruben Gees
  */
 object MessengerNotifications {
-
     private const val GROUP = "chat"
     private const val ID = 782_373_275
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    fun showOrUpdate(context: Context, conferenceMap: LocalConferenceMap) {
-        val notifications = conferenceMap.entries
-            .asSequence()
-            .sortedBy { it.key.date }
-            .map { (conference, messages) ->
-                conference.id.toInt() to when {
-                    messages.isEmpty() -> null
-                    else -> buildIndividualChatNotification(context, conference, messages)
-                }
-            }
-            .plus(ID to buildChatSummaryNotification(context, conferenceMap))
-            .toList()
+    fun showOrUpdate(
+        context: Context,
+        conferenceMap: LocalConferenceMap,
+    ) {
+        val notifications =
+            conferenceMap.entries
+                .asSequence()
+                .sortedBy { it.key.date }
+                .map { (conference, messages) ->
+                    conference.id.toInt() to
+                        when {
+                            messages.isEmpty() -> null
+                            else -> buildIndividualChatNotification(context, conference, messages)
+                        }
+                }.plus(ID to buildChatSummaryNotification(context, conferenceMap))
+                .toList()
 
         notifications.forEach { (id, notification) ->
             when (notification) {
@@ -69,42 +72,48 @@ object MessengerNotifications {
 
     fun cancel(context: Context) = NotificationManagerCompat.from(context).cancel(ID)
 
-    private fun buildChatSummaryNotification(context: Context, conferenceMap: LocalConferenceMap): Notification? {
+    private fun buildChatSummaryNotification(
+        context: Context,
+        conferenceMap: LocalConferenceMap,
+    ): Notification? {
         val filteredConferenceMap = conferenceMap.filter { (_, messages) -> messages.isNotEmpty() }
 
         if (filteredConferenceMap.isEmpty()) {
             return null
         }
 
-        val messageAmount = filteredConferenceMap.values.sumBy { it.size }
+        val messageAmount = filteredConferenceMap.values.sumOf { it.size }
         val conferenceAmount = filteredConferenceMap.size
         val messageAmountText = context.getQuantityString(R.plurals.notification_chat_message_amount, messageAmount)
-        val conferenceAmountText = context.getQuantityString(
-            R.plurals.notification_chat_conference_amount,
-            conferenceAmount
-        )
+        val conferenceAmountText =
+            context.getQuantityString(
+                R.plurals.notification_chat_conference_amount,
+                conferenceAmount,
+            )
 
         val title = context.getString(R.string.app_name)
         val content = "$messageAmountText $conferenceAmountText"
         val style = buildSummaryStyle(title, content, filteredConferenceMap)
 
-        val shouldAlert = conferenceMap.keys
-            .map { it.date }
-            .maxByOrNull { it }
-            ?.isAfter(storageHelper.lastChatMessageDate)
-            ?: true
+        val shouldAlert =
+            conferenceMap.keys
+                .map { it.date }
+                .maxByOrNull { it }
+                ?.isAfter(storageHelper.lastChatMessageDate)
+                ?: true
 
-        return NotificationCompat.Builder(context, CHAT_CHANNEL)
+        return NotificationCompat
+            .Builder(context, CHAT_CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_proxer)
             .setContentTitle(title)
             .setContentText(content)
             .setStyle(style)
             .setContentIntent(
-                TaskStackBuilder.create(context)
+                TaskStackBuilder
+                    .create(context)
                     .addNextIntent(MainActivity.getSectionIntent(context, DrawerItem.MESSENGER))
-                    .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-            )
-            .setDefaults(Notification.DEFAULT_ALL)
+                    .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT),
+            ).setDefaults(Notification.DEFAULT_ALL)
             .setColor(ContextCompat.getColor(context, R.color.primary))
             .setCategory(NotificationCompat.CATEGORY_MESSAGE)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -120,22 +129,24 @@ object MessengerNotifications {
     private fun buildSummaryStyle(
         title: String,
         content: String,
-        filteredConferenceMap: LocalConferenceMap
-    ) = NotificationCompat.InboxStyle()
+        filteredConferenceMap: LocalConferenceMap,
+    ) = NotificationCompat
+        .InboxStyle()
         .setBigContentTitle(title)
         .setSummaryText(content)
         .also {
             filteredConferenceMap.forEach { (conference, messages) ->
                 messages.firstOrNull()?.also { message ->
-                    val sender = when {
-                        conference.isGroup -> "${conference.topic}: ${message.username} "
-                        else -> "${conference.topic} "
-                    }
+                    val sender =
+                        when {
+                            conference.isGroup -> "${conference.topic}: ${message.username} "
+                            else -> "${conference.topic} "
+                        }
 
                     it.addLine(
                         SpannableString(sender + message.message).apply {
                             this[0..sender.length] = StyleSpan(Typeface.BOLD)
-                        }
+                        },
                     )
                 }
             }
@@ -144,7 +155,7 @@ object MessengerNotifications {
     private fun buildIndividualChatNotification(
         context: Context,
         conference: LocalConference,
-        messages: List<LocalMessage>
+        messages: List<LocalMessage>,
     ): Notification? {
         val user = storageHelper.user
 
@@ -152,19 +163,23 @@ object MessengerNotifications {
             return null
         }
 
-        val content = when (messages.size) {
-            1 -> messages.first().message
-            else -> context.getQuantityString(R.plurals.notification_chat_message_amount, messages.size)
-        }
+        val content =
+            when (messages.size) {
+                1 -> messages.first().message
+                else -> context.getQuantityString(R.plurals.notification_chat_message_amount, messages.size)
+            }
 
         val conferenceIcon = buildConferenceIcon(context, conference)
         val style = buildIndividualStyle(context, messages, conference, user, conferenceIcon)
-        val intent = TaskStackBuilder.create(context)
-            .addNextIntent(MainActivity.getSectionIntent(context, DrawerItem.MESSENGER))
-            .addNextIntent(PrvMessengerActivity.getIntent(context, conference))
-            .getPendingIntent(conference.id.toInt(), PendingIntent.FLAG_UPDATE_CURRENT)
+        val intent =
+            TaskStackBuilder
+                .create(context)
+                .addNextIntent(MainActivity.getSectionIntent(context, DrawerItem.MESSENGER))
+                .addNextIntent(PrvMessengerActivity.getIntent(context, conference))
+                .getPendingIntent(conference.id.toInt(), PendingIntent.FLAG_UPDATE_CURRENT)
 
-        return NotificationCompat.Builder(context, CHAT_CHANNEL)
+        return NotificationCompat
+            .Builder(context, CHAT_CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_proxer)
             .setContentTitle(if (conference.isGroup) conference.topic else "")
             .setContentText(content)
@@ -179,33 +194,37 @@ object MessengerNotifications {
             .setAutoCancel(true)
             .apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    val remoteInput = RemoteInput.Builder(DirectReplyReceiver.REMOTE_REPLY_EXTRA)
-                        .setLabel(context.getString(R.string.action_answer))
-                        .build()
+                    val remoteInput =
+                        RemoteInput
+                            .Builder(DirectReplyReceiver.REMOTE_REPLY_EXTRA)
+                            .setLabel(context.getString(R.string.action_answer))
+                            .build()
 
                     val replyIntent = DirectReplyReceiver.getPendingIntent(context, conference.id)
 
-                    val actionReplyByRemoteInput = NotificationCompat.Action.Builder(
-                        R.mipmap.ic_launcher,
-                        context.getString(R.string.action_answer),
-                        replyIntent
-                    )
-                        .addRemoteInput(remoteInput)
-                        .setAllowGeneratedReplies(true)
-                        .build()
+                    val actionReplyByRemoteInput =
+                        NotificationCompat.Action
+                            .Builder(
+                                R.mipmap.ic_launcher,
+                                context.getString(R.string.action_answer),
+                                replyIntent,
+                            ).addRemoteInput(remoteInput)
+                            .setAllowGeneratedReplies(true)
+                            .build()
 
                     addAction(actionReplyByRemoteInput)
                 }
-            }
-            .addAction(
+            }.addAction(
                 R.drawable.ic_stat_check,
                 context.getString(R.string.notification_chat_read_action),
-                MessengerNotificationReadReceiver.getPendingIntent(context, conference.id)
-            )
-            .build()
+                MessengerNotificationReadReceiver.getPendingIntent(context, conference.id),
+            ).build()
     }
 
-    private fun buildConferenceIcon(context: Context, conference: LocalConference) = when {
+    private fun buildConferenceIcon(
+        context: Context,
+        conference: LocalConference,
+    ) = when {
         conference.image.isNotBlank() -> Utils.getCircleBitmapFromUrl(context, ProxerUrls.userImage(conference.image))
         else -> buildGenericIcon(context, conference.isGroup)
     }
@@ -215,50 +234,62 @@ object MessengerNotifications {
         messages: List<LocalMessage>,
         conference: LocalConference,
         user: LocalUser,
-        conferenceIcon: Bitmap?
+        conferenceIcon: Bitmap?,
     ): NotificationCompat.MessagingStyle {
-        val personImage = when {
-            user.image.isNotBlank() -> Utils.getCircleBitmapFromUrl(context, ProxerUrls.userImage(user.image))
-            else -> buildGenericIcon(context, false)
-        }
+        val personImage =
+            when {
+                user.image.isNotBlank() -> Utils.getCircleBitmapFromUrl(context, ProxerUrls.userImage(user.image))
+                else -> buildGenericIcon(context, false)
+            }
 
-        val person = Person.Builder()
-            .setKey(user.id)
-            .setName(user.name)
-            .setIcon(personImage?.toIconCompat())
-            .build()
+        val person =
+            Person
+                .Builder()
+                .setKey(user.id)
+                .setName(user.name)
+                .setIcon(personImage?.toIconCompat())
+                .build()
 
-        return NotificationCompat.MessagingStyle(person)
+        return NotificationCompat
+            .MessagingStyle(person)
             .setGroupConversation(conference.isGroup)
             .setConversationTitle(if (conference.isGroup) conference.topic else "")
             .also {
                 messages.forEach { message ->
-                    val messagePersonIcon = when (message.userId) {
-                        user.id -> personImage
-                        else -> conferenceIcon
-                    }
+                    val messagePersonIcon =
+                        when (message.userId) {
+                            user.id -> personImage
+                            else -> conferenceIcon
+                        }
 
-                    val messagePerson = Person.Builder()
-                        .setKey(message.userId)
-                        .setName(message.username)
-                        .setIcon(messagePersonIcon?.toIconCompat())
-                        .setUri(ProxerUrls.userWeb(message.userId, Device.MOBILE).toString())
-                        .build()
+                    val messagePerson =
+                        Person
+                            .Builder()
+                            .setKey(message.userId)
+                            .setName(message.username)
+                            .setIcon(messagePersonIcon?.toIconCompat())
+                            .setUri(ProxerUrls.userWeb(message.userId, Device.MOBILE).toString())
+                            .build()
 
                     it.addMessage(message.message, message.date.toEpochMilli(), messagePerson)
                 }
             }
     }
 
-    private fun buildGenericIcon(context: Context, isGroup: Boolean) = IconicsDrawable(context).apply {
-        icon = when (isGroup) {
-            true -> CommunityMaterial.Icon.cmd_account_multiple
-            false -> CommunityMaterial.Icon.cmd_account
-        }
+    private fun buildGenericIcon(
+        context: Context,
+        isGroup: Boolean,
+    ) = IconicsDrawable(context)
+        .apply {
+            icon =
+                when (isGroup) {
+                    true -> CommunityMaterial.Icon.cmd_account_multiple
+                    false -> CommunityMaterial.Icon.cmd_account
+                }
 
-        colorRes = R.color.primary
-        sizeDp = 96
-    }.toBitmap()
+            colorRes = R.color.primary
+            sizeDp = 96
+        }.toBitmap()
 
     private fun Bitmap.toIconCompat() = IconCompat.createWithBitmap(this)
 }

@@ -35,9 +35,9 @@ import me.proxer.app.base.AutoDisposeViewHolder.ViewHolderEvent.UNBIND
  * disposed upon unbinding or otherwise aren't overwritten in future binds.
  */
 abstract class AutoDisposeViewHolder(
-    itemView: View
-) : BindAwareViewHolder(itemView), LifecycleScopeProvider<ViewHolderEvent> {
-
+    itemView: View,
+) : BindAwareViewHolder(itemView),
+    LifecycleScopeProvider<ViewHolderEvent> {
     private val lifecycleEvents by lazy { BehaviorSubject.create<ViewHolderEvent>() }
 
     override fun onBind() = lifecycleEvents.onNext(BIND)
@@ -50,21 +50,20 @@ abstract class AutoDisposeViewHolder(
 
     override fun peekLifecycle(): ViewHolderEvent? = lifecycleEvents.value
 
-    override fun requestScope(): CompletableSource {
-        return LifecycleScopes.resolveScopeFromLifecycle(this)
-    }
+    override fun requestScope(): CompletableSource = LifecycleScopes.resolveScopeFromLifecycle(this)
 
     enum class ViewHolderEvent {
-        BIND, UNBIND
+        BIND,
+        UNBIND,
     }
 
     companion object {
-
-        private val correspondingEvents = CorrespondingEventsFunction<ViewHolderEvent> { viewHolderEvent ->
-            when (viewHolderEvent) {
-                BIND -> UNBIND
-                else -> throw LifecycleEndedException("Cannot use ViewHolder lifecycle after unbind.")
+        private val correspondingEvents =
+            CorrespondingEventsFunction<ViewHolderEvent> { viewHolderEvent ->
+                when (viewHolderEvent) {
+                    BIND -> UNBIND
+                    else -> throw LifecycleEndedException("Cannot use ViewHolder lifecycle after unbind.")
+                }
             }
-        }
     }
 }

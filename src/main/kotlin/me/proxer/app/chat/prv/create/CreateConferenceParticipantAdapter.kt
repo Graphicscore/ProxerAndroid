@@ -7,14 +7,15 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.os.BundleCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -28,8 +29,9 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdapter<Participant, ViewHolder>() {
-
+class CreateConferenceParticipantAdapter(
+    savedInstanceState: Bundle?,
+) : BaseAdapter<Participant, ViewHolder>() {
     private companion object {
         private const val LIST_STATE = "create_chat_participant_list"
     }
@@ -41,14 +43,20 @@ class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdap
         get() = ArrayList(data)
 
     init {
-        data = savedInstanceState?.getParcelableArrayList(LIST_STATE) ?: emptyList()
+        data = savedInstanceState
+            ?.let { BundleCompat.getParcelableArrayList(it, LIST_STATE, Participant::class.java) }
+            ?: emptyList()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_participant, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_participant, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -68,8 +76,9 @@ class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdap
 
     operator fun contains(username: String) = data.find { it.username.equals(username, ignoreCase = true) } != null
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val image: ImageView by bindView(R.id.image)
         internal val username: TextView by bindView(R.id.username)
         internal val delete: ImageButton by bindView(R.id.delete)
@@ -79,7 +88,8 @@ class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdap
         }
 
         fun bind(item: Participant) {
-            delete.clicks()
+            delete
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] to it }
                 .autoDisposable(this)
                 .subscribe { (removedParticipant, position) ->
@@ -95,7 +105,8 @@ class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdap
             if (item.image.isBlank()) {
                 image.setIconicsImage(CommunityMaterial.Icon.cmd_account, 96, 16, R.attr.colorSecondary)
             } else {
-                glide?.load(ProxerUrls.userImage(item.image).toString())
+                glide
+                    ?.load(ProxerUrls.userImage(item.image).toString())
                     ?.transition(DrawableTransitionOptions.withCrossFade())
                     ?.circleCrop()
                     ?.logErrors()

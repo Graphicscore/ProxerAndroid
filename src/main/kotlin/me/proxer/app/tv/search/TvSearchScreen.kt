@@ -59,25 +59,24 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun TvSearchScreen(
-    onMediaClick: (id: String, name: String) -> Unit
-) {
-    val viewModel: MediaListViewModel = koinViewModel {
-        parametersOf(
-            MediaSearchSortCriteria.RATING,
-            MediaType.ANIMESERIES,
-            null as String?,
-            null as Language?,
-            emptyList<LocalTag>(),
-            emptyList<LocalTag>(),
-            enumSetOf<FskConstraint>(),
-            emptyList<LocalTag>(),
-            emptyList<LocalTag>(),
-            null as TagRateFilter?,
-            null as TagSpoilerFilter?,
-            null as Boolean?
-        )
-    }
+fun TvSearchScreen(onMediaClick: (id: String, name: String) -> Unit) {
+    val viewModel: MediaListViewModel =
+        koinViewModel {
+            parametersOf(
+                MediaSearchSortCriteria.RATING,
+                MediaType.ANIMESERIES,
+                null as String?,
+                null as Language?,
+                emptyList<LocalTag>(),
+                emptyList<LocalTag>(),
+                enumSetOf<FskConstraint>(),
+                emptyList<LocalTag>(),
+                emptyList<LocalTag>(),
+                null as TagRateFilter?,
+                null as TagSpoilerFilter?,
+                null as Boolean?,
+            )
+        }
 
     var query by remember { mutableStateOf("") }
     val entries by viewModel.data.observeAsState(emptyList())
@@ -104,16 +103,18 @@ fun TvSearchScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OutlinedTextField(
                 value = query,
@@ -122,11 +123,12 @@ fun TvSearchScreen(
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                    cursorColor = MaterialTheme.colorScheme.primary
-                )
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                    ),
             )
             if (isLoading == true) {
                 CircularProgressIndicator(modifier = Modifier.size(32.dp))
@@ -137,7 +139,7 @@ fun TvSearchScreen(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 TvErrorView(
                     error = error!!,
-                    onRetryClick = { viewModel.reload() }
+                    onRetryClick = { viewModel.reload() },
                 )
             }
         } else {
@@ -147,7 +149,7 @@ fun TvSearchScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) {
                 items((entries ?: emptyList()).distinctBy { it.id }, key = { it.id }) { entry ->
                     TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
@@ -155,10 +157,11 @@ fun TvSearchScreen(
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     if (isLoading == true && entries?.isNotEmpty() == true) {
                         Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                            contentAlignment = Alignment.Center,
                         ) {
                             CircularProgressIndicator(modifier = Modifier.size(32.dp))
                         }
@@ -170,21 +173,26 @@ fun TvSearchScreen(
 }
 
 @Composable
-private fun TvSearchResultCard(entry: MediaListEntry, onClick: () -> Unit) {
+private fun TvSearchResultCard(
+    entry: MediaListEntry,
+    onClick: () -> Unit,
+) {
     Surface(
         onClick = onClick,
-        modifier = Modifier
-            .width(180.dp)
-            .height(270.dp)
+        modifier =
+            Modifier
+                .width(180.dp)
+                .height(270.dp),
     ) {
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             AsyncImage(
                 model = ProxerUrls.entryImage(entry.id).toString(),
                 contentDescription = entry.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
             )
             Text(
                 text = entry.name,
@@ -192,9 +200,10 @@ private fun TvSearchResultCard(entry: MediaListEntry, onClick: () -> Unit) {
                 fontSize = 12.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(8.dp),
             )
         }
     }

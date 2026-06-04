@@ -18,7 +18,6 @@ import me.proxer.library.ProxerApi
  * @author Ruben Gees
  */
 class ProfileSettingsViewModel : ViewModel() {
-
     val data = MutableLiveData<LocalProfileSettings>()
     val error = ResettingMutableLiveData<ErrorUtils.ErrorAction>()
     val updateError = ResettingMutableLiveData<ErrorUtils.ErrorAction>()
@@ -43,45 +42,47 @@ class ProfileSettingsViewModel : ViewModel() {
 
     fun refresh() {
         disposable?.dispose()
-        disposable = api.ucp.settings()
-            .buildSingle()
-            .map { it.toLocalSettings() }
-            .doOnSuccess { storageHelper.profileSettings = it }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                error.value = null
-                updateError.value = null
-            }
-            .subscribeAndLogErrors(
-                {
-                    data.value = it
-                },
-                {
-                    error.value = ErrorUtils.handle(it)
-                }
-            )
+        disposable =
+            api.ucp
+                .settings()
+                .buildSingle()
+                .map { it.toLocalSettings() }
+                .doOnSuccess { storageHelper.profileSettings = it }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    error.value = null
+                    updateError.value = null
+                }.subscribeAndLogErrors(
+                    {
+                        data.value = it
+                    },
+                    {
+                        error.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 
     fun update(newData: LocalProfileSettings) {
         data.value = newData
 
         disposable?.dispose()
-        disposable = api.ucp.setSettings(newData.toNonLocalSettings())
-            .buildSingle()
-            .doOnSuccess { storageHelper.profileSettings = newData }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                error.value = null
-                updateError.value = null
-            }
-            .subscribeAndLogErrors(
-                {},
-                {
-                    updateError.value = ErrorUtils.handle(it)
-                }
-            )
+        disposable =
+            api.ucp
+                .setSettings(newData.toNonLocalSettings())
+                .buildSingle()
+                .doOnSuccess { storageHelper.profileSettings = newData }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    error.value = null
+                    updateError.value = null
+                }.subscribeAndLogErrors(
+                    {},
+                    {
+                        updateError.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 
     fun retryUpdate() {

@@ -21,16 +21,17 @@ import kotlin.properties.Delegates
 class BookmarkViewModel(
     searchQuery: String?,
     category: Category?,
-    filterAvailable: Boolean
+    filterAvailable: Boolean,
 ) : PagedContentViewModel<Bookmark>() {
-
     override val itemsOnPage = 30
 
     override val endpoint: PagingLimitEndpoint<List<Bookmark>>
-        get() = api.ucp.bookmarks()
-            .name(searchQuery)
-            .category(category)
-            .filterAvailable(if (filterAvailable) true else null)
+        get() =
+            api.ucp
+                .bookmarks()
+                .name(searchQuery)
+                .category(category)
+                .filterAvailable(if (filterAvailable) true else null)
 
     val itemDeletionError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
 
@@ -83,25 +84,27 @@ class BookmarkViewModel(
             deletionDisposable?.dispose()
             undoDisposable?.dispose()
 
-            undoDisposable = Single.fromCallable { validators.validateLogin() }
-                .flatMap { bookmarkSingle(safeUndoItem) }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { undoError.value = null }
-                .doOnEvent { _, _ -> undoData.value = null }
-                .subscribeAndLogErrors(
-                    {
-                        data.value = listOf(safeUndoItem) + (data.value ?: emptyList())
+            undoDisposable =
+                Single
+                    .fromCallable { validators.validateLogin() }
+                    .flatMap { bookmarkSingle(safeUndoItem) }
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe { undoError.value = null }
+                    .doOnEvent { _, _ -> undoData.value = null }
+                    .subscribeAndLogErrors(
+                        {
+                            data.value = listOf(safeUndoItem) + (data.value ?: emptyList())
 
-                        // Explicitly hide error (if no other, real error was present) to remove no data message
-                        if (error.value == null) {
-                            error.value = null
-                        }
-                    },
-                    {
-                        undoError.value = ErrorUtils.handle(it)
-                    }
-                )
+                            // Explicitly hide error (if no other, real error was present) to remove no data message
+                            if (error.value == null) {
+                                error.value = null
+                            }
+                        },
+                        {
+                            undoError.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 
@@ -112,30 +115,33 @@ class BookmarkViewModel(
 
             undoItem = null
 
-            deletionDisposable = api.ucp.deleteBookmark(item.id)
-                .buildSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe { undoData.value = null }
-                .subscribeAndLogErrors(
-                    {
-                        undoItem = item
+            deletionDisposable =
+                api.ucp
+                    .deleteBookmark(item.id)
+                    .buildSingle()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe { undoData.value = null }
+                    .subscribeAndLogErrors(
+                        {
+                            undoItem = item
 
-                        undoData.value = Unit
-                        data.value = data.value?.filterNot { newItem -> newItem == item }
+                            undoData.value = Unit
+                            data.value = data.value?.filterNot { newItem -> newItem == item }
 
-                        doItemDeletion()
-                    },
-                    {
-                        deletionQueue.clear()
+                            doItemDeletion()
+                        },
+                        {
+                            deletionQueue.clear()
 
-                        itemDeletionError.value = ErrorUtils.handle(it)
-                    }
-                )
+                            itemDeletionError.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 
-    private fun bookmarkSingle(bookmark: Bookmark) = api.ucp
-        .setBookmark(bookmark.entryId, bookmark.episode, bookmark.language, bookmark.category)
-        .buildSingle()
+    private fun bookmarkSingle(bookmark: Bookmark) =
+        api.ucp
+            .setBookmark(bookmark.entryId, bookmark.episode, bookmark.language, bookmark.category)
+            .buildSingle()
 }

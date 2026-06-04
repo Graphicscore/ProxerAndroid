@@ -15,10 +15,11 @@ import java.util.Date
 
 private val zeroDate = Date(0)
 
-fun Date.distanceInWordsToNow(context: Context): String = when (zeroDate) {
-    this -> context.getString(R.string.time_unknown)
-    else -> toLocalDateTimeBP().distanceInWordsToNow(context)
-}
+fun Date.distanceInWordsToNow(context: Context): String =
+    when (zeroDate) {
+        this -> context.getString(R.string.time_unknown)
+        else -> toLocalDateTimeBP().distanceInWordsToNow(context)
+    }
 
 fun LocalDateTime.formattedDistanceTo(other: LocalDateTime): String {
     val duration = Duration.between(this, other)
@@ -26,7 +27,12 @@ fun LocalDateTime.formattedDistanceTo(other: LocalDateTime): String {
     val days = duration.toDays()
     val hours = duration.minusDays(days).toHours()
     val minutes = duration.minusDays(days).minusHours(hours).toMinutes()
-    val seconds = duration.minusDays(days).minusHours(hours).minusMinutes(minutes).seconds
+    val seconds =
+        duration
+            .minusDays(days)
+            .minusHours(hours)
+            .minusMinutes(minutes)
+            .seconds
 
     return "%02d:%02d:%02d:%02d".format(days, hours, minutes, seconds)
 }
@@ -63,8 +69,11 @@ fun LocalDateTime.distanceInWordsToNow(context: Context): String {
 }
 
 inline fun Instant.toLocalDateTime(): LocalDateTime = atZone(ZoneId.systemDefault()).toLocalDateTime()
+
 inline fun Instant.toLocalDate(): LocalDate = atZone(ZoneId.systemDefault()).toLocalDate()
+
 inline fun Instant.toDate() = Date(toEpochMilli())
 
 inline fun Date.toLocalDateTimeBP(): LocalDateTime = toInstantBP().toLocalDateTime()
+
 inline fun Date.toInstantBP(): Instant = Instant.ofEpochMilli(time)

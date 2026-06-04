@@ -39,13 +39,13 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_about) {
-
     companion object {
         private const val ZERO_DATE = "0000-00-00"
 
-        fun newInstance() = ProfileAboutFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ProfileAboutFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val hostingActivity: ProfileActivity
@@ -66,7 +66,10 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
     private val aboutContainer by bindView<ViewGroup>(R.id.aboutContainer)
     private val about by bindView<ProxerWebView>(R.id.about)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         about.showPageSubject
@@ -102,29 +105,40 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
     }
 
     private fun addTableRows(data: UserAbout) {
-        val normalizedGender = when (data.gender) {
-            Gender.UNKNOWN -> ""
-            else -> data.gender.toAppString(requireContext())
-        }
+        val normalizedGender =
+            when (data.gender) {
+                Gender.UNKNOWN -> ""
+                else -> data.gender.toAppString(requireContext())
+            }
 
-        val normalizedRelationshipStatus = when (data.relationshipStatus) {
-            RelationshipStatus.UNKNOWN -> ""
-            else -> data.relationshipStatus.toAppString(requireContext())
-        }
+        val normalizedRelationshipStatus =
+            when (data.relationshipStatus) {
+                RelationshipStatus.UNKNOWN -> ""
+                else -> data.relationshipStatus.toAppString(requireContext())
+            }
 
-        val normalizedBirthday = when (data.birthday) {
-            ZERO_DATE -> ""
-            else -> data.birthday.split("-").let {
-                when (it.size) {
-                    3 -> {
-                        val (year, month, day) = it
+        val normalizedBirthday =
+            when (data.birthday) {
+                ZERO_DATE -> {
+                    ""
+                }
 
-                        "$day.$month.$year"
+                else -> {
+                    data.birthday.split("-").let {
+                        when (it.size) {
+                            3 -> {
+                                val (year, month, day) = it
+
+                                "$day.$month.$year"
+                            }
+
+                            else -> {
+                                ""
+                            }
+                        }
                     }
-                    else -> ""
                 }
             }
-        }
 
         addTableRowIfNotBlank(getString(R.string.fragment_about_occupation), data.occupation)
         addTableRowIfNotBlank(getString(R.string.fragment_about_interests), data.interests)
@@ -142,13 +156,19 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
         addTableRowIfNotBlank(getString(R.string.fragment_about_deviantart), data.deviantart)
     }
 
-    private fun addTableRowIfNotBlank(title: String, content: String) {
+    private fun addTableRowIfNotBlank(
+        title: String,
+        content: String,
+    ) {
         val view = if (content.isNotBlank()) constructTableRow(title, content) else null
 
         if (view != null) generalTable.addView(view)
     }
 
-    private fun constructTableRow(title: String, content: String): View {
+    private fun constructTableRow(
+        title: String,
+        content: String,
+    ): View {
         val tableRow = LayoutInflater.from(context).inflate(R.layout.layout_about_row, generalTable, false)
         val titleView = tableRow.findViewById<TextView>(R.id.title)
         val contentView = tableRow.findViewById<TextView>(R.id.content)
@@ -159,19 +179,21 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
         titleView.text = title
         contentView.text = content.linkify(mentions = false)
 
-        contentView.linkClicks()
+        contentView
+            .linkClicks()
             .map { it.toPrefixedUrlOrNull().toOptional() }
             .filterSome()
             .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
             .subscribe { showPage(it) }
 
-        contentView.linkLongClicks()
+        contentView
+            .linkLongClicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 val clipboardTitle = getString(R.string.clipboard_title)
 
                 requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-                    ClipData.newPlainText(clipboardTitle, it.toString())
+                    ClipData.newPlainText(clipboardTitle, it.toString()),
                 )
 
                 requireContext().toast(R.string.clipboard_status)

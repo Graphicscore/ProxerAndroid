@@ -17,8 +17,9 @@ inline fun <T : Any> Endpoint<T>.buildSingle() = ProxerCallSingle(build())
 @JvmName("buildNullableSingle")
 inline fun <T : Any> Endpoint<T?>.buildSingle() = ProxerCallNullableSingle(build())
 
-inline fun <I, T : Any> Endpoint<T>.buildPartialErrorSingle(input: I): Single<T> = buildSingle()
-    .onErrorResumeNext { Single.error(PartialException(it, input)) }
+inline fun <I, T : Any> Endpoint<T>.buildPartialErrorSingle(input: I): Single<T> =
+    buildSingle()
+        .onErrorResumeNext { Single.error(PartialException(it, input)) }
 
 inline fun Call.toSingle(): Single<Response> = CallResponseSingle(this)
 

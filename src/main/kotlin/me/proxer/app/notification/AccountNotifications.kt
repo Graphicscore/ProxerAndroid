@@ -21,12 +21,14 @@ import me.proxer.app.util.extension.toInstantBP
  * @author Ruben Gees
  */
 object AccountNotifications {
-
     private const val ID = 759_234_852
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    fun showOrUpdate(context: Context, notifications: Collection<ProxerNotification>) {
+    fun showOrUpdate(
+        context: Context,
+        notifications: Collection<ProxerNotification>,
+    ) {
         when (val notification = buildNotification(context, notifications)) {
             null -> NotificationManagerCompat.from(context).cancel(ID)
             else -> NotificationManagerCompat.from(context).notify(ID, notification)
@@ -35,7 +37,10 @@ object AccountNotifications {
 
     fun cancel(context: Context) = NotificationManagerCompat.from(context).cancel(ID)
 
-    private fun buildNotification(context: Context, notifications: Collection<ProxerNotification>): Notification? {
+    private fun buildNotification(
+        context: Context,
+        notifications: Collection<ProxerNotification>,
+    ): Notification? {
         if (notifications.isEmpty()) {
             return null
         }
@@ -51,46 +56,55 @@ object AccountNotifications {
             1 -> {
                 content = notifications.first().text.parseAsHtml()
 
-                intent = PendingIntent.getActivity(
-                    context,
-                    ID,
-                    Intent(Intent.ACTION_VIEW, notifications.first().contentLink.androidUri()),
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
+                intent =
+                    PendingIntent.getActivity(
+                        context,
+                        ID,
+                        Intent(Intent.ACTION_VIEW, notifications.first().contentLink.androidUri()),
+                        PendingIntent.FLAG_UPDATE_CURRENT,
+                    )
 
-                style = NotificationCompat.BigTextStyle(builder)
-                    .bigText(content)
-                    .setBigContentTitle(title)
-                    .setSummaryText(notificationAmount)
+                style =
+                    NotificationCompat
+                        .BigTextStyle(builder)
+                        .bigText(content)
+                        .setBigContentTitle(title)
+                        .setSummaryText(notificationAmount)
             }
+
             else -> {
                 content = notificationAmount
 
-                intent = PendingIntent.getActivity(
-                    context,
-                    ID,
-                    NotificationActivity.getIntent(context),
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
+                intent =
+                    PendingIntent.getActivity(
+                        context,
+                        ID,
+                        NotificationActivity.getIntent(context),
+                        PendingIntent.FLAG_UPDATE_CURRENT,
+                    )
 
-                style = NotificationCompat.InboxStyle().also {
-                    notifications.forEach { notification ->
-                        it.addLine(notification.text.parseAsHtml())
+                style =
+                    NotificationCompat.InboxStyle().also {
+                        notifications.forEach { notification ->
+                            it.addLine(notification.text.parseAsHtml())
+                        }
+
+                        it.setBigContentTitle(title)
+                        it.setSummaryText(notificationAmount)
                     }
-
-                    it.setBigContentTitle(title)
-                    it.setSummaryText(notificationAmount)
-                }
             }
         }
 
-        val shouldAlert = notifications
-            .maxByOrNull { it.date }
-            ?.date?.toInstantBP()
-            ?.isAfter(storageHelper.lastNotificationsDate)
-            ?: true
+        val shouldAlert =
+            notifications
+                .maxByOrNull { it.date }
+                ?.date
+                ?.toInstantBP()
+                ?.isAfter(storageHelper.lastNotificationsDate)
+                ?: true
 
-        return builder.setAutoCancel(true)
+        return builder
+            .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_stat_proxer)
             .setContentTitle(title)
             .setContentText(content)
@@ -98,9 +112,8 @@ object AccountNotifications {
             .addAction(
                 R.drawable.ic_stat_check,
                 context.getString(R.string.notification_account_read_action),
-                AccountNotificationReadReceiver.getPendingIntent(context)
-            )
-            .setDefaults(if (shouldAlert) Notification.DEFAULT_ALL else 0)
+                AccountNotificationReadReceiver.getPendingIntent(context),
+            ).setDefaults(if (shouldAlert) Notification.DEFAULT_ALL else 0)
             .setColor(ContextCompat.getColor(context, R.color.primary))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setCategory(NotificationCompat.CATEGORY_SOCIAL)

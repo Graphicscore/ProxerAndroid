@@ -9,7 +9,6 @@ import kotlin.math.max
  * Taken from: https://github.com/inorichi/tachiyomi/blob/master/app/src/main/java/eu/kanade/tachiyomi/util/GLUtil.java
  */
 object GLUtil {
-
     private const val DEFAULT_MAX_BITMAP_DIMENSION = 2_048
 
     val maxTextureSize by lazy {
@@ -20,24 +19,26 @@ object GLUtil {
             egl.eglInitialize(display, it)
         }
 
-        val totalConfigurations = IntArray(1).also {
-            egl.eglGetConfigs(display, null, 0, it)
-        }
-
-        val configurationsList = arrayOfNulls<EGLConfig>(totalConfigurations.first()).also {
-            egl.eglGetConfigs(display, it, totalConfigurations.first(), totalConfigurations)
-        }
-
-        val maximumTextureSize = (0 until totalConfigurations.first())
-            .map { configurationPosition ->
-                val configuration = configurationsList[configurationPosition]
-
-                IntArray(1).also {
-                    egl.eglGetConfigAttrib(display, configuration, EGL10.EGL_MAX_PBUFFER_WIDTH, it)
-                }
+        val totalConfigurations =
+            IntArray(1).also {
+                egl.eglGetConfigs(display, null, 0, it)
             }
-            .map { it.first() }
-            .maxOrNull()
+
+        val configurationsList =
+            arrayOfNulls<EGLConfig>(totalConfigurations.first()).also {
+                egl.eglGetConfigs(display, it, totalConfigurations.first(), totalConfigurations)
+            }
+
+        val maximumTextureSize =
+            (0 until totalConfigurations.first())
+                .map { configurationPosition ->
+                    val configuration = configurationsList[configurationPosition]
+
+                    IntArray(1).also {
+                        egl.eglGetConfigAttrib(display, configuration, EGL10.EGL_MAX_PBUFFER_WIDTH, it)
+                    }
+                }.map { it.first() }
+                .maxOrNull()
 
         egl.eglTerminate(display)
 

@@ -11,28 +11,38 @@ object KotterKnifePreference {
     fun reset(target: Any) = LazyRegistry.reset(target)
 }
 
-fun <V : Preference> PreferenceFragmentCompat.bindPreference(key: CharSequence):
-    ReadOnlyProperty<PreferenceFragmentCompat, V> = required(key, preferenceFinder)
+fun <V : Preference> PreferenceFragmentCompat.bindPreference(
+    key: CharSequence,
+): ReadOnlyProperty<PreferenceFragmentCompat, V> = required(key, preferenceFinder)
 
 private val PreferenceFragmentCompat.preferenceFinder: PreferenceFragmentCompat.(CharSequence) -> Preference?
     get() = { findPreference(it) }
 
-private fun <T, V : Preference> required(key: CharSequence, finder: T.(CharSequence) -> Preference?) =
-    Lazy { t: T, desc -> t.finder(key) as V? ?: error("Preference KEY $key for '${desc.name}' not found.") }
+@Suppress("UNCHECKED_CAST")
+private fun <T, V : Preference> required(
+    key: CharSequence,
+    finder: T.(CharSequence) -> Preference?,
+) = Lazy { t: T, desc -> t.finder(key) as V? ?: error("Preference KEY $key for '${desc.name}' not found.") }
 
 // Like Kotlin's lazy delegate but the initializer gets the target and metadata passed to it
-private class Lazy<in T, out V>(private val initializer: (T, KProperty<*>) -> V) : ReadOnlyProperty<T, V> {
+private class Lazy<in T, out V>(
+    private val initializer: (T, KProperty<*>) -> V,
+) : ReadOnlyProperty<T, V> {
     private object EMPTY
 
     private var value: Any? = EMPTY
 
-    override fun getValue(thisRef: T, property: KProperty<*>): V {
+    override fun getValue(
+        thisRef: T,
+        property: KProperty<*>,
+    ): V {
         LazyRegistry.register(thisRef!!, this)
 
         if (value == EMPTY) {
             value = initializer(thisRef, property)
         }
 
+        @Suppress("UNCHECKED_CAST")
         return value as V
     }
 
@@ -44,7 +54,10 @@ private class Lazy<in T, out V>(private val initializer: (T, KProperty<*>) -> V)
 private object LazyRegistry {
     private val lazyMap = WeakHashMap<Any, MutableCollection<Lazy<*, *>>>()
 
-    fun register(target: Any, lazy: Lazy<*, *>) {
+    fun register(
+        target: Any,
+        lazy: Lazy<*, *>,
+    ) {
         lazyMap.getOrPut(target) { Collections.newSetFromMap(WeakHashMap()) }.add(lazy)
     }
 

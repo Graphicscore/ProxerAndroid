@@ -20,7 +20,6 @@ import me.proxer.library.ProxerException.ServerErrorType
  * @author Ruben Gees
  */
 class LoginViewModel : ViewModel() {
-
     val success = MutableLiveData<Unit?>()
     val error = MutableLiveData<ErrorUtils.ErrorAction?>()
     val isLoading = MutableLiveData<Boolean?>()
@@ -43,42 +42,51 @@ class LoginViewModel : ViewModel() {
         super.onCleared()
     }
 
-    fun login(username: String, password: String, secretKey: String?) {
+    fun login(
+        username: String,
+        password: String,
+        secretKey: String?,
+    ) {
         if (isLoading.value != true) {
             dataDisposable?.dispose()
-            dataDisposable = api.user.login(username, password)
-                .secretKey(secretKey)
-                .buildSingle().doOnSuccess { user ->
-                    storageHelper.temporaryToken = user.loginToken
-                }
-                .flatMap { user -> api.ucp.settings().buildSingle().map { settings -> user to settings } }
-                .doOnSuccess { (user, settings) ->
-                    storageHelper.user = LocalUser(user.loginToken, user.id, username, user.image)
-                    storageHelper.profileSettings = settings.toLocalSettings()
-                }
-                .doFinally {
-                    storageHelper.temporaryToken = null
-                }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-                    error.value = null
-                    isLoading.value = true
-                }
-                .doAfterTerminate { isLoading.value = false }
-                .subscribeAndLogErrors(
-                    {
-                        success.value = Unit
-                    },
-                    {
-                        if (it is ProxerException && it.serverErrorType == ServerErrorType.USER_2FA_SECRET_REQUIRED) {
-                            preferenceHelper.isTwoFactorAuthenticationEnabled = true
-                            isTwoFactorAuthenticationEnabled.value = true
-                        }
+            dataDisposable =
+                api.user
+                    .login(username, password)
+                    .secretKey(secretKey)
+                    .buildSingle()
+                    .doOnSuccess { user ->
+                        storageHelper.temporaryToken = user.loginToken
+                    }.flatMap { user ->
+                        api.ucp
+                            .settings()
+                            .buildSingle()
+                            .map { settings -> user to settings }
+                    }.doOnSuccess { (user, settings) ->
+                        storageHelper.user = LocalUser(user.loginToken, user.id, username, user.image)
+                        storageHelper.profileSettings = settings.toLocalSettings()
+                    }.doFinally {
+                        storageHelper.temporaryToken = null
+                    }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe {
+                        error.value = null
+                        isLoading.value = true
+                    }.doAfterTerminate { isLoading.value = false }
+                    .subscribeAndLogErrors(
+                        {
+                            success.value = Unit
+                        },
+                        {
+                            if (it is ProxerException &&
+                                it.serverErrorType == ServerErrorType.USER_2FA_SECRET_REQUIRED
+                            ) {
+                                preferenceHelper.isTwoFactorAuthenticationEnabled = true
+                                isTwoFactorAuthenticationEnabled.value = true
+                            }
 
-                        error.value = ErrorUtils.handle(it)
-                    }
-                )
+                            error.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 }

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.profile.media
 
 import android.os.Bundle
@@ -5,14 +7,16 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.PagedContentFragment
 import me.proxer.app.media.MediaActivity
@@ -31,14 +35,14 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>() {
-
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
         private const val FILTER_ARGUMENT = "filter"
 
-        fun newInstance(category: Category) = ProfileMediaListFragment().apply {
-            arguments = bundleOf(CATEGORY_ARGUMENT to category)
-        }
+        fun newInstance(category: Category) =
+            ProfileMediaListFragment().apply {
+                arguments = bundleOf(CATEGORY_ARGUMENT to category)
+            }
     }
 
     override val emptyDataMessage = R.string.error_no_data_user_media_list
@@ -51,7 +55,7 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
     override val layoutManager by unsafeLazy {
         StaggeredGridLayoutManager(
             DeviceUtils.calculateSpanAmount(requireActivity()) + 1,
-            StaggeredGridLayoutManager.VERTICAL
+            StaggeredGridLayoutManager.VERTICAL,
         )
     }
 
@@ -65,10 +69,13 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         get() = hostingActivity.username
 
     private val category: Category
-        get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as Category
+        get() =
+            requireNotNull(
+                BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java),
+            ) { "CATEGORY_ARGUMENT missing from ProfileMediaListFragment bundle" }
 
     private var filter: UserMediaListFilterType?
-        get() = requireArguments().getSerializable(FILTER_ARGUMENT) as? UserMediaListFilterType
+        get() = BundleCompat.getSerializable(requireArguments(), FILTER_ARGUMENT, UserMediaListFilterType::class.java)
         set(value) {
             requireArguments().putSerializable(FILTER_ARGUMENT, value)
 
@@ -93,12 +100,53 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
             .subscribe {
                 viewModel.addItemToDelete(it)
             }
-
-        setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    val menuResource =
+                        when (category) {
+                            Category.ANIME -> R.menu.fragment_user_media_list_anime
+                            Category.MANGA, Category.NOVEL -> R.menu.fragment_user_media_list_manga
+                        }
+
+                    IconicsMenuInflaterUtil.inflate(menuInflater, requireContext(), menuResource, menu, true)
+
+                    when (filter) {
+                        UserMediaListFilterType.WATCHING -> menu.findItem(R.id.watching).isChecked = true
+                        UserMediaListFilterType.WATCHED -> menu.findItem(R.id.watched).isChecked = true
+                        UserMediaListFilterType.WILL_WATCH -> menu.findItem(R.id.will_watch).isChecked = true
+                        UserMediaListFilterType.CANCELLED -> menu.findItem(R.id.cancelled).isChecked = true
+                        null -> menu.findItem(R.id.all).isChecked = true
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.watching -> filter = UserMediaListFilterType.WATCHING
+                        R.id.watched -> filter = UserMediaListFilterType.WATCHED
+                        R.id.will_watch -> filter = UserMediaListFilterType.WILL_WATCH
+                        R.id.cancelled -> filter = UserMediaListFilterType.CANCELLED
+                        R.id.all -> filter = null
+                        else -> return false
+                    }
+                    menuItem.isChecked = true
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+            androidx.lifecycle.Lifecycle.State.RESUMED,
+        )
 
         innerAdapter.glide = Glide.with(this)
 
@@ -110,43 +158,10 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
                         getString(R.string.error_media_entry_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        val menuResource = when (category) {
-            Category.ANIME -> R.menu.fragment_user_media_list_anime
-            Category.MANGA, Category.NOVEL -> R.menu.fragment_user_media_list_manga
-        }
-
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), menuResource, menu, true)
-
-        when (filter) {
-            UserMediaListFilterType.WATCHING -> menu.findItem(R.id.watching).isChecked = true
-            UserMediaListFilterType.WATCHED -> menu.findItem(R.id.watched).isChecked = true
-            UserMediaListFilterType.WILL_WATCH -> menu.findItem(R.id.will_watch).isChecked = true
-            UserMediaListFilterType.CANCELLED -> menu.findItem(R.id.cancelled).isChecked = true
-            null -> menu.findItem(R.id.all).isChecked = true
-        }
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.watching -> filter = UserMediaListFilterType.WATCHING
-            R.id.watched -> filter = UserMediaListFilterType.WATCHED
-            R.id.will_watch -> filter = UserMediaListFilterType.WILL_WATCH
-            R.id.cancelled -> filter = UserMediaListFilterType.CANCELLED
-            R.id.all -> filter = null
-        }
-
-        item.isChecked = true
-
-        return true
     }
 }

@@ -18,9 +18,8 @@ open class LocalUserMediaListEntry(
     open val commentContent: String,
     open val mediaProgress: UserMediaProgress,
     open val episode: Int,
-    open val rating: Int
+    open val rating: Int,
 ) : ProxerIdItem {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is LocalUserMediaListEntry) return false
@@ -53,11 +52,10 @@ open class LocalUserMediaListEntry(
         return result
     }
 
-    override fun toString(): String {
-        return "LocalUserMediaListEntry(id='$id', name='$name', episodeAmount=$episodeAmount, medium=$medium, " +
+    override fun toString(): String =
+        "LocalUserMediaListEntry(id='$id', name='$name', episodeAmount=$episodeAmount, medium=$medium, " +
             "state=$state, commentId='$commentId', commentContent='$commentContent', mediaProgress=$mediaProgress, " +
             "episode=$episode, rating=$rating)"
-    }
 
     data class Ucp(
         override val id: String,
@@ -69,8 +67,17 @@ open class LocalUserMediaListEntry(
         override val commentContent: String,
         override val mediaProgress: UserMediaProgress,
         override val episode: Int,
-        override val rating: Int
+        override val rating: Int,
     ) : LocalUserMediaListEntry(
-        id, name, episodeAmount, medium, state, commentId, commentContent, mediaProgress, episode, rating
-    )
+            id,
+            name,
+            episodeAmount,
+            medium,
+            state,
+            commentId,
+            commentContent,
+            mediaProgress,
+            episode,
+            rating,
+        )
 }

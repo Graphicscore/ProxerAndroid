@@ -1,3 +1,5 @@
+@file:Suppress("ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD")
+
 package me.proxer.app.profile.settings
 
 import com.squareup.moshi.Json
@@ -27,19 +29,49 @@ data class LocalProfileSettings(
     @Json(name = "articleVisibility") val articleVisibility: UcpSettingConstraint,
     @Json(name = "hide_tags") val shouldHideTags: Boolean,
     @Json(name = "voluntary_banner_ads_enabled") val shouldShowAds: Boolean,
-    @Json(name = "voluntary_video_ads_interval") val adInterval: Int
+    @Json(name = "voluntary_video_ads_interval") val adInterval: Int,
 ) {
-
     companion object {
-        fun default() = LocalProfileSettings(
-            DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT, DEFAULT,
-            DEFAULT, DEFAULT, shouldHideTags = false, shouldShowAds = false, adInterval = 3
-        )
+        fun default() =
+            LocalProfileSettings(
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                DEFAULT,
+                shouldHideTags = false,
+                shouldShowAds = false,
+                adInterval = 3,
+            )
     }
 
-    fun toNonLocalSettings() = UcpSettings(
-        profileVisibility, topTenVisibility, animeVisibility, mangaVisibility, commentVisibility, forumVisibility,
-        friendVisibility, friendRequestConstraint, aboutVisibility, historyVisibility, guestBookVisibility,
-        guestBookEntryConstraint, galleryVisibility, articleVisibility, shouldHideTags, shouldShowAds, adInterval
-    )
+    fun toNonLocalSettings() =
+        UcpSettings(
+            profileVisibility,
+            topTenVisibility,
+            animeVisibility,
+            mangaVisibility,
+            commentVisibility,
+            forumVisibility,
+            friendVisibility,
+            friendRequestConstraint,
+            aboutVisibility,
+            historyVisibility,
+            guestBookVisibility,
+            guestBookEntryConstraint,
+            galleryVisibility,
+            articleVisibility,
+            shouldHideTags,
+            shouldShowAds,
+            adInterval,
+        )
 }

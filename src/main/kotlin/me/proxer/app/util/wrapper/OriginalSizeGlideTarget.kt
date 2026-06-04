@@ -9,15 +9,18 @@ import com.bumptech.glide.request.target.Target
  * @author Ruben Gees
  */
 abstract class OriginalSizeGlideTarget<R> : Target<R> {
-
     private var request: Request? = null
 
     override fun onLoadStarted(placeholder: Drawable?) = Unit
+
     override fun onLoadFailed(errorDrawable: Drawable?) = Unit
+
     override fun onLoadCleared(placeholder: Drawable?) = Unit
 
     override fun onStart() = Unit
+
     override fun onStop() = Unit
+
     override fun onDestroy() = Unit
 
     override fun removeCallback(cb: SizeReadyCallback) = Unit
@@ -26,9 +29,7 @@ abstract class OriginalSizeGlideTarget<R> : Target<R> {
         cb.onSizeReady(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
     }
 
-    override fun getRequest(): Request? {
-        return request
-    }
+    override fun getRequest(): Request? = request
 
     override fun setRequest(request: Request?) {
         this.request = request

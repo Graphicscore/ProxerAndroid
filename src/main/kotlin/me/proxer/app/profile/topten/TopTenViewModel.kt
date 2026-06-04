@@ -22,35 +22,40 @@ import me.proxer.library.enums.Category
  */
 class TopTenViewModel(
     private val userId: String?,
-    private val username: String?
+    private val username: String?,
 ) : BaseViewModel<ZippedTopTenResult>() {
-
     override val dataSingle: Single<ZippedTopTenResult>
-        get() = Single.fromCallable { validate() }
-            .flatMap {
-                when (storageHelper.user?.matches(userId, username) == true) {
-                    true ->
-                        api.ucp.topTen().buildSingle()
-                            .map { entries -> entries.map { it.toLocalEntryUcp() } }
-                            .map {
-                                val animeList = it.filter { entry -> entry.category == Category.ANIME }
-                                val mangaList = it.filter { entry -> entry.category == Category.MANGA }
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap {
+                    when (storageHelper.user?.matches(userId, username) == true) {
+                        true -> {
+                            api.ucp
+                                .topTen()
+                                .buildSingle()
+                                .map { entries -> entries.map { it.toLocalEntryUcp() } }
+                                .map {
+                                    val animeList = it.filter { entry -> entry.category == Category.ANIME }
+                                    val mangaList = it.filter { entry -> entry.category == Category.MANGA }
 
-                                ZippedTopTenResult(animeList, mangaList)
-                            }
-                    false -> {
-                        val includeHentai = preferenceHelper.isAgeRestrictedMediaAllowed && storageHelper.isLoggedIn
+                                    ZippedTopTenResult(animeList, mangaList)
+                                }
+                        }
 
-                        Singles.zip(
-                            partialSingle(includeHentai, Category.ANIME),
-                            partialSingle(includeHentai, Category.MANGA),
-                            zipper = { animeEntries, mangaEntries ->
-                                ZippedTopTenResult(animeEntries, mangaEntries)
-                            }
-                        )
+                        false -> {
+                            val includeHentai = preferenceHelper.isAgeRestrictedMediaAllowed && storageHelper.isLoggedIn
+
+                            Singles.zip(
+                                partialSingle(includeHentai, Category.ANIME),
+                                partialSingle(includeHentai, Category.MANGA),
+                                zipper = { animeEntries, mangaEntries ->
+                                    ZippedTopTenResult(animeEntries, mangaEntries)
+                                },
+                            )
+                        }
                     }
                 }
-            }
 
     val itemDeletionError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
 
@@ -76,7 +81,11 @@ class TopTenViewModel(
         }
     }
 
-    private fun partialSingle(includeHentai: Boolean, category: Category) = api.user.topTen(userId, username)
+    private fun partialSingle(
+        includeHentai: Boolean,
+        category: Category,
+    ) = api.user
+        .topTen(userId, username)
         .includeHentai(includeHentai)
         .category(category)
         .buildSingle()
@@ -86,36 +95,48 @@ class TopTenViewModel(
         deletionDisposable?.dispose()
 
         deletionQueue.poll()?.let { item ->
-            deletionDisposable = api.ucp.deleteFavorite(item.id)
-                .buildSingle()
-                .map {
-                    data.value.let { currentData ->
-                        if (currentData != null) {
-                            val filteredAnimeEntries = currentData.animeEntries.filterNot { newItem -> newItem == item }
-                            val filteredMangaEntries = currentData.mangaEntries.filterNot { newItem -> newItem == item }
+            deletionDisposable =
+                api.ucp
+                    .deleteFavorite(item.id)
+                    .buildSingle()
+                    .map {
+                        data.value.let { currentData ->
+                            if (currentData != null) {
+                                val filteredAnimeEntries =
+                                    currentData.animeEntries.filterNot { newItem ->
+                                        newItem ==
+                                            item
+                                    }
+                                val filteredMangaEntries =
+                                    currentData.mangaEntries.filterNot { newItem ->
+                                        newItem ==
+                                            item
+                                    }
 
-                            ZippedTopTenResult(filteredAnimeEntries, filteredMangaEntries)
-                        } else {
-                            null
+                                ZippedTopTenResult(filteredAnimeEntries, filteredMangaEntries)
+                            } else {
+                                null
+                            }
                         }
-                    }
-                }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeAndLogErrors(
-                    {
-                        data.value = it
+                    }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeAndLogErrors(
+                        {
+                            data.value = it
 
-                        doItemDeletion()
-                    },
-                    {
-                        deletionQueue.clear()
+                            doItemDeletion()
+                        },
+                        {
+                            deletionQueue.clear()
 
-                        itemDeletionError.value = ErrorUtils.handle(it)
-                    }
-                )
+                            itemDeletionError.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 
-    data class ZippedTopTenResult(val animeEntries: List<LocalTopTenEntry>, val mangaEntries: List<LocalTopTenEntry>)
+    data class ZippedTopTenResult(
+        val animeEntries: List<LocalTopTenEntry>,
+        val mangaEntries: List<LocalTopTenEntry>,
+    )
 }

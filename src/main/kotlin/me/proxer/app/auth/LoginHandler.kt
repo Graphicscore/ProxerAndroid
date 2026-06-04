@@ -22,9 +22,8 @@ class LoginHandler(
     private val api: ProxerApi,
     private val storageHelper: StorageHelper,
     private val preferenceHelper: PreferenceHelper,
-    private val messengerDao: MessengerDao
+    private val messengerDao: MessengerDao,
 ) {
-
     fun listen(context: Context) {
         storageHelper.isLoggedInObservable
             .subscribe { isLoggedIn ->
@@ -57,8 +56,7 @@ class LoginHandler(
             .fromAction {
                 storageHelper.reset()
                 messengerDao.clear()
-            }
-            .subscribeOn(Schedulers.io())
+            }.subscribeOn(Schedulers.io())
             .subscribeAndLogErrors()
     }
 }

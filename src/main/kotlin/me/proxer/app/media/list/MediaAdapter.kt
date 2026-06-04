@@ -12,11 +12,11 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -34,8 +34,9 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class MediaAdapter(private val category: Category) : BaseAdapter<MediaListEntry, MediaAdapter.ViewHolder>() {
-
+class MediaAdapter(
+    private val category: Category,
+) : BaseAdapter<MediaListEntry, MediaAdapter.ViewHolder>() {
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<Pair<ImageView, MediaListEntry>> = PublishSubject.create()
 
@@ -43,11 +44,17 @@ class MediaAdapter(private val category: Category) : BaseAdapter<MediaListEntry,
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-        LayoutInflater.from(parent.context).inflate(R.layout.item_media_entry, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) = ViewHolder(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_media_entry, parent, false),
     )
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -61,8 +68,9 @@ class MediaAdapter(private val category: Category) : BaseAdapter<MediaListEntry,
         super.swapDataAndNotifyWithDiffing(newData.distinctBy { it.id })
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val title: TextView by bindView(R.id.title)
         internal val medium: TextView by bindView(R.id.medium)
@@ -75,7 +83,8 @@ class MediaAdapter(private val category: Category) : BaseAdapter<MediaListEntry,
         internal val german: ImageView by bindView(R.id.german)
 
         fun bind(item: MediaListEntry) {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
@@ -84,13 +93,14 @@ class MediaAdapter(private val category: Category) : BaseAdapter<MediaListEntry,
 
             title.text = item.name
             medium.text = item.medium.toAppString(medium.context)
-            episodes.text = episodes.context.getQuantityString(
-                when (category) {
-                    Category.ANIME -> R.plurals.media_episode_count
-                    Category.MANGA, Category.NOVEL -> R.plurals.media_chapter_count
-                },
-                item.episodeAmount
-            )
+            episodes.text =
+                episodes.context.getQuantityString(
+                    when (category) {
+                        Category.ANIME -> R.plurals.media_episode_count
+                        Category.MANGA, Category.NOVEL -> R.plurals.media_chapter_count
+                    },
+                    item.episodeAmount,
+                )
 
             item.languages
                 .asSequence()

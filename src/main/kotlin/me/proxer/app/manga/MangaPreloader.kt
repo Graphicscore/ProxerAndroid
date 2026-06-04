@@ -1,9 +1,9 @@
 package me.proxer.app.manga
 
 import android.graphics.drawable.Drawable
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
-import com.bumptech.glide.RequestManager
 import me.proxer.app.util.extension.decodedName
 import me.proxer.app.util.extension.logErrors
 import me.proxer.app.util.wrapper.OriginalSizeGlideTarget
@@ -16,7 +16,6 @@ import java.io.File
  * @author Ruben Gees
  */
 class MangaPreloader {
-
     var glide: RequestManager? = null
 
     private val preloadTargets = mutableListOf<Target<File>>()
@@ -25,15 +24,25 @@ class MangaPreloader {
         preloadTargets.forEach { glide?.clear(it) }
         preloadTargets.clear()
 
-        val preloadList = chapter.pages
-            ?.map { ProxerUrls.mangaPageImage(chapter.server, chapter.entryId, chapter.id, it.decodedName).toString() }
-            ?: emptyList()
+        val preloadList =
+            chapter.pages
+                ?.map {
+                    ProxerUrls
+                        .mangaPageImage(
+                            chapter.server,
+                            chapter.entryId,
+                            chapter.id,
+                            it.decodedName,
+                        ).toString()
+                }
+                ?: emptyList()
 
         if (preloadList.isNotEmpty()) {
-            val preloadMap = preloadList
-                .asSequence()
-                .mapIndexed { index, url -> url to preloadList.getOrNull(index + 1) }
-                .associate { it }
+            val preloadMap =
+                preloadList
+                    .asSequence()
+                    .mapIndexed { index, url -> url to preloadList.getOrNull(index + 1) }
+                    .associate { it }
 
             recursivePreload(preloadMap, preloadList.first())
         }
@@ -44,7 +53,11 @@ class MangaPreloader {
         preloadTargets.clear()
     }
 
-    private fun recursivePreload(links: Map<String, String?>, next: String, failures: Int = 0) {
+    private fun recursivePreload(
+        links: Map<String, String?>,
+        next: String,
+        failures: Int = 0,
+    ) {
         Timber.d("Preloading $next")
 
         val target = GlidePreloadTarget(links, next, failures)
@@ -61,10 +74,12 @@ class MangaPreloader {
     internal inner class GlidePreloadTarget(
         private val links: Map<String, String?>,
         private val next: String,
-        private val failures: Int
+        private val failures: Int,
     ) : OriginalSizeGlideTarget<File>() {
-
-        override fun onResourceReady(resource: File, transition: Transition<in File>?) {
+        override fun onResourceReady(
+            resource: File,
+            transition: Transition<in File>?,
+        ) {
             val afterNext = links[next]
 
             if (afterNext != null) {

@@ -28,15 +28,16 @@ data class LocalConference(
     val date: Instant,
     val unreadMessageAmount: Int,
     val lastReadMessageId: String,
-    val isFullyLoaded: Boolean
+    val isFullyLoaded: Boolean,
 ) : Parcelable {
-
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LocalConference> {
-            override fun createFromParcel(parcel: Parcel) = LocalConference(parcel)
-            override fun newArray(size: Int): Array<LocalConference?> = arrayOfNulls(size)
-        }
+        val CREATOR =
+            object : Parcelable.Creator<LocalConference> {
+                override fun createFromParcel(parcel: Parcel) = LocalConference(parcel)
+
+                override fun newArray(size: Int): Array<LocalConference?> = arrayOfNulls(size)
+            }
     }
 
     constructor(parcel: Parcel) : this(
@@ -52,10 +53,13 @@ data class LocalConference(
         Instant.ofEpochMilli(parcel.readLong()),
         parcel.readInt(),
         parcel.readStringSafely(),
-        parcel.readByte() != 0.toByte()
+        parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeLong(id)
         parcel.writeString(topic)
         parcel.writeString(customTopic)
@@ -73,8 +77,18 @@ data class LocalConference(
 
     override fun describeContents() = 0
 
-    fun toNonLocalConference() = Conference(
-        id.toString(), topic, customTopic, participantAmount, image, imageType,
-        isGroup, isRead, date.toDate(), unreadMessageAmount, lastReadMessageId
-    )
+    fun toNonLocalConference() =
+        Conference(
+            id.toString(),
+            topic,
+            customTopic,
+            participantAmount,
+            image,
+            imageType,
+            isGroup,
+            isRead,
+            date.toDate(),
+            unreadMessageAmount,
+            lastReadMessageId,
+        )
 }

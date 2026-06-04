@@ -34,16 +34,14 @@ import me.proxer.app.util.extension.toast
  * @author Ruben Gees
  */
 object TextPrototype : BBPrototype, ContentPrototype {
-
     const val TEXT_COLOR_ARGUMENT = "text_color"
     const val TEXT_SIZE_ARGUMENT = "text_size"
     const val TEXT_APPEARANCE_ARGUMENT = "text_appearance"
 
-    private val spannableFactory = object : Spannable.Factory() {
-        override fun newSpannable(source: CharSequence): Spannable {
-            return source as Spannable
+    private val spannableFactory =
+        object : Spannable.Factory() {
+            override fun newSpannable(source: CharSequence): Spannable = source as Spannable
         }
-    }
 
     private val webUrlRegex = PatternsCompat.AUTOLINK_WEB_URL.toRegex()
     private val validLinkPredicate = { link: String -> link.startsWith("@") || webUrlRegex.matches(link) }
@@ -52,26 +50,28 @@ object TextPrototype : BBPrototype, ContentPrototype {
 
     override val endRegex = Regex("x^")
 
-    override fun construct(code: String, parent: BBTree): BBTree {
-        return BBTree(this, parent, args = BBArgs(text = code.toSpannableStringBuilder().linkify()))
-    }
+    override fun construct(
+        code: String,
+        parent: BBTree,
+    ): BBTree = BBTree(this, parent, args = BBArgs(text = code.toSpannableStringBuilder().linkify()))
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
-        return listOf(makeView(parent, args))
-    }
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> = listOf(makeView(parent, args))
 
-    override fun isBlank(args: BBArgs): Boolean {
-        return args.text?.isBlank() != false
-    }
+    override fun isBlank(args: BBArgs): Boolean = args.text?.isBlank() != false
 
-    fun makeView(parent: BBCodeView, args: BBArgs): TextView {
-        return applyOnView(parent, BetterLinkGifAwareEmojiTextView(parent.context), args)
-    }
+    fun makeView(
+        parent: BBCodeView,
+        args: BBArgs,
+    ): TextView = applyOnView(parent, BetterLinkGifAwareEmojiTextView(parent.context), args)
 
     fun applyOnView(
         parent: BBCodeView,
         view: BetterLinkGifAwareEmojiTextView,
-        args: BBArgs
+        args: BBArgs,
     ): BetterLinkGifAwareEmojiTextView {
         view.layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
 
@@ -88,7 +88,10 @@ object TextPrototype : BBPrototype, ContentPrototype {
         return view
     }
 
-    private fun applyStyle(args: BBArgs, view: BetterLinkGifAwareEmojiTextView) {
+    private fun applyStyle(
+        args: BBArgs,
+        view: BetterLinkGifAwareEmojiTextView,
+    ) {
         (args[TEXT_APPEARANCE_ARGUMENT] as? Int).let {
             if (it == null) {
                 TextViewCompat.setTextAppearance(view, R.style.TextAppearance_AppCompat_Small)
@@ -101,8 +104,12 @@ object TextPrototype : BBPrototype, ContentPrototype {
         (args[TEXT_SIZE_ARGUMENT] as? Float)?.let { view.setTextSize(COMPLEX_UNIT_PX, it) }
     }
 
-    private fun setListeners(parent: BBCodeView, view: BetterLinkGifAwareEmojiTextView) {
-        view.linkClicks(validLinkPredicate)
+    private fun setListeners(
+        parent: BBCodeView,
+        view: BetterLinkGifAwareEmojiTextView,
+    ) {
+        view
+            .linkClicks(validLinkPredicate)
             .autoDisposable(ViewScopeProvider.from(parent))
             .subscribe {
                 val baseActivity = BBUtils.findBaseActivity(parent.context) ?: return@subscribe
@@ -113,13 +120,14 @@ object TextPrototype : BBPrototype, ContentPrototype {
                 }
             }
 
-        view.linkLongClicks { webUrlRegex.matches(it) }
+        view
+            .linkLongClicks { webUrlRegex.matches(it) }
             .autoDisposable(ViewScopeProvider.from(parent))
             .subscribe {
                 val title = view.context.getString(R.string.clipboard_title)
 
                 parent.context.getSystemService<ClipboardManager>()?.setPrimaryClip(
-                    ClipData.newPlainText(title, it.toString())
+                    ClipData.newPlainText(title, it.toString()),
                 )
 
                 parent.context.toast(R.string.clipboard_status)

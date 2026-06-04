@@ -13,7 +13,6 @@ import me.proxer.app.ui.view.bbcode.prototype.BBPrototype.Companion.REGEX_OPTION
  * @author Ruben Gees
  */
 object ColorPrototype : TextMutatorPrototype {
-
     private const val COLOR_ARGUMENT = "color"
 
     private val attributeRegex = Regex("color *= *(.+?)( |$)", REGEX_OPTIONS)
@@ -21,22 +20,35 @@ object ColorPrototype : TextMutatorPrototype {
     override val startRegex = Regex(" *color *= *\"?.*?\"?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *color *", REGEX_OPTIONS)
 
-    override fun construct(code: String, parent: BBTree): BBTree {
+    override fun construct(
+        code: String,
+        parent: BBTree,
+    ): BBTree {
         val value = BBUtils.cutAttribute(code, attributeRegex) ?: ""
 
-        val color = "<font color='$value'>dummy</font>".parseAsHtml()
-            .let { it.getSpans(0, it.length, ForegroundColorSpan::class.java) }
-            .firstOrNull()?.foregroundColor
+        val color =
+            "<font color='$value'>dummy</font>"
+                .parseAsHtml()
+                .let { it.getSpans(0, it.length, ForegroundColorSpan::class.java) }
+                .firstOrNull()
+                ?.foregroundColor
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(COLOR_ARGUMENT to color)))
     }
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
-        return when (val color = args[COLOR_ARGUMENT] as Int?) {
-            null -> text
-            else -> text.apply {
-                this[0..length] = ForegroundColorSpan(color)
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ): SpannableStringBuilder =
+        when (val color = args[COLOR_ARGUMENT] as Int?) {
+            null -> {
+                text
+            }
+
+            else -> {
+                text.apply {
+                    this[0..length] = ForegroundColorSpan(color)
+                }
             }
         }
-    }
 }

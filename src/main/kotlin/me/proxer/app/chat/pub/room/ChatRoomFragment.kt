@@ -21,11 +21,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ChatRoomFragment : BaseContentFragment<List<ChatRoom>>(R.layout.fragment_chat_room) {
-
     companion object {
-        fun newInstance() = ChatRoomFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ChatRoomFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<ChatRoomViewModel>()
@@ -51,7 +51,10 @@ class ChatRoomFragment : BaseContentFragment<List<ChatRoom>>(R.layout.fragment_c
             .subscribe { showPage(it) }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView.setHasFixedSize(true)

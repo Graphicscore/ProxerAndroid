@@ -8,10 +8,10 @@ import me.proxer.app.util.extension.safeInject
 import me.proxer.library.ProxerApi
 
 class ChatReportViewModel : ReportViewModel() {
-
     private val api by safeInject<ProxerApi>()
 
-    override fun reportSingle(id: String, message: String): Single<Optional<Unit>> {
-        return api.chat.reportMessage(id, message).buildSingle()
-    }
+    override fun reportSingle(
+        id: String,
+        message: String,
+    ): Single<Optional<Unit>> = api.chat.reportMessage(id, message).buildSingle()
 }

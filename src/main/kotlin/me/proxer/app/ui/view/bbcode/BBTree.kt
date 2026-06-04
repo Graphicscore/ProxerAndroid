@@ -14,12 +14,14 @@ class BBTree(
     val prototype: BBPrototype,
     val parent: BBTree?,
     val children: MutableList<BBTree> = mutableListOf(),
-    val args: BBArgs = BBArgs()
+    val args: BBArgs = BBArgs(),
 ) {
-
     fun endsWith(code: String) = prototype.endRegex.matches(code)
 
-    fun makeViews(parent: BBCodeView, args: BBArgs) = prototype.makeViews(parent, children, args + this.args)
+    fun makeViews(
+        parent: BBCodeView,
+        args: BBArgs,
+    ) = prototype.makeViews(parent, children, args + this.args)
 
     fun optimize(args: BBArgs = BBArgs()) = recursiveOptimize(args).first()
 
@@ -48,9 +50,12 @@ class BBTree(
         val newChildren = mergeChildren(children.flatMap { it.recursiveOptimize(args) })
 
         return when {
-            canOptimize && prototype is TextMutatorPrototype -> newChildren.map {
-                BBTree(it.prototype, parent, it.children, it.args)
+            canOptimize && prototype is TextMutatorPrototype -> {
+                newChildren.map {
+                    BBTree(it.prototype, parent, it.children, it.args)
+                }
             }
+
             else -> {
                 children.clear()
                 children.addAll(newChildren)
@@ -68,7 +73,10 @@ class BBTree(
 
             newChildren.drop(1).forEach { next ->
                 if (current.prototype == TextPrototype && next.prototype == TextPrototype) {
-                    current.args.text = current.args.safeText.toSpannableStringBuilder().append(next.args.safeText)
+                    current.args.text =
+                        current.args.safeText
+                            .toSpannableStringBuilder()
+                            .append(next.args.safeText)
                 } else {
                     result += current
                     current = next
@@ -81,8 +89,9 @@ class BBTree(
         return result
     }
 
-    private fun getRecursiveChildren(current: List<BBTree>): List<BBTree> = current
-        .plus(current.flatMap { getRecursiveChildren(it.children) })
+    private fun getRecursiveChildren(current: List<BBTree>): List<BBTree> =
+        current
+            .plus(current.flatMap { getRecursiveChildren(it.children) })
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

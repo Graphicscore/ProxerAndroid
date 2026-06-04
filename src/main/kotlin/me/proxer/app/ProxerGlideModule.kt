@@ -25,7 +25,6 @@ import java.io.InputStream
 @GlideModule
 @Excludes(OkHttpLibraryGlideModule::class)
 class ProxerGlideModule : AppGlideModule() {
-
     private companion object {
         private const val CACHE_SIZE = 1_024L * 1_024L * 250L
         private const val CACHE_DIR = "glide"
@@ -34,24 +33,32 @@ class ProxerGlideModule : AppGlideModule() {
     private val client by safeInject<OkHttpClient>()
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    override fun applyOptions(context: Context, builder: GlideBuilder) {
-        val cacheDir = when (!Environment.isExternalStorageEmulated() && preferenceHelper.shouldCacheExternally) {
-            true -> context.externalCacheDir ?: context.cacheDir
-            false -> context.cacheDir
-        }
+    override fun applyOptions(
+        context: Context,
+        builder: GlideBuilder,
+    ) {
+        val cacheDir =
+            when (!Environment.isExternalStorageEmulated() && preferenceHelper.shouldCacheExternally) {
+                true -> context.externalCacheDir ?: context.cacheDir
+                false -> context.cacheDir
+            }
 
         builder
             .setLogRequestOrigins(BuildConfig.DEBUG)
             .setDefaultRequestOptions(
                 RequestOptions()
                     .disallowHardwareConfig()
-                    .format(DecodeFormat.PREFER_RGB_565)
+                    .format(DecodeFormat.PREFER_RGB_565),
             )
 
         builder.setDiskCache(DiskLruCacheFactory(cacheDir.path, CACHE_DIR, CACHE_SIZE))
     }
 
-    override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
+    override fun registerComponents(
+        context: Context,
+        glide: Glide,
+        registry: Registry,
+    ) {
         registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
     }
 

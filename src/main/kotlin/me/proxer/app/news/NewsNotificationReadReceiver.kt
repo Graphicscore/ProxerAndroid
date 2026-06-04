@@ -16,34 +16,37 @@ import org.threeten.bp.Instant
  * @author Ruben Gees
  */
 class NewsNotificationReadReceiver : BroadcastReceiver() {
-
     companion object {
-        fun getPendingIntent(context: Context): PendingIntent = PendingIntent.getBroadcast(
-            context,
-            0,
-            Intent(context, NewsNotificationReadReceiver::class.java)
-                .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES),
-            PendingIntent.FLAG_UPDATE_CURRENT
-        )
+        fun getPendingIntent(context: Context): PendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                0,
+                Intent(context, NewsNotificationReadReceiver::class.java)
+                    .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES),
+                PendingIntent.FLAG_UPDATE_CURRENT,
+            )
     }
 
     private val api by safeInject<ProxerApi>()
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    override fun onReceive(context: Context, intent: Intent?) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent?,
+    ) {
         Completable
             .fromAction {
                 NewsNotifications.cancel(context)
 
                 preferenceHelper.lastNewsDate = Instant.now()
 
-                api.notifications.news()
+                api.notifications
+                    .news()
                     .markAsRead(true)
                     .limit(0)
                     .build()
                     .execute()
-            }
-            .subscribeOn(Schedulers.io())
+            }.subscribeOn(Schedulers.io())
             .subscribeAndLogErrors()
     }
 }

@@ -20,15 +20,18 @@ import okhttp3.HttpUrl
  * @author Ruben Gees
  */
 class IndustryActivity : ImageTabsActivity() {
-
     companion object {
         private const val ID_EXTRA = "id"
         private const val NAME_EXTRA = "name"
 
-        fun navigateTo(context: Activity, id: String, name: String? = null) {
+        fun navigateTo(
+            context: Activity,
+            id: String,
+            name: String? = null,
+        ) {
             context.startActivity<IndustryActivity>(
                 ID_EXTRA to id,
-                NAME_EXTRA to name
+                NAME_EXTRA to name,
             )
         }
     }
@@ -56,12 +59,15 @@ class IndustryActivity : ImageTabsActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_share -> name?.let {
-                ShareCompat.IntentBuilder(this)
-                    .setText(getString(R.string.share_industry, it, ProxerUrls.industryWeb(id)))
-                    .setType("text/plain")
-                    .setChooserTitle(getString(R.string.share_title))
-                    .startChooser()
+            R.id.action_share -> {
+                name?.let {
+                    ShareCompat
+                        .IntentBuilder(this)
+                        .setText(getString(R.string.share_industry, it, ProxerUrls.industryWeb(id)))
+                        .setType("text/plain")
+                        .setChooserTitle(getString(R.string.share_title))
+                        .startChooser()
+                }
             }
         }
 
@@ -75,24 +81,27 @@ class IndustryActivity : ImageTabsActivity() {
     }
 
     private inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
-
         override fun getItemCount() = 2
 
-        override fun createFragment(position: Int) = when (position) {
-            0 -> IndustryInfoFragment.newInstance()
-            1 -> IndustryProjectFragment.newInstance()
-            else -> error("Unknown index passed: $position")
-        }
+        override fun createFragment(position: Int) =
+            when (position) {
+                0 -> IndustryInfoFragment.newInstance()
+                1 -> IndustryProjectFragment.newInstance()
+                else -> error("Unknown index passed: $position")
+            }
     }
 
     private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
-
-        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
-            tab.text = when (position) {
-                0 -> getString(R.string.section_industry_info)
-                1 -> getString(R.string.section_industry_projects)
-                else -> error("Unknown index passed: $position")
-            }
+        override fun onConfigureTab(
+            tab: TabLayout.Tab,
+            position: Int,
+        ) {
+            tab.text =
+                when (position) {
+                    0 -> getString(R.string.section_industry_info)
+                    1 -> getString(R.string.section_industry_projects)
+                    else -> error("Unknown index passed: $position")
+                }
         }
     }
 }

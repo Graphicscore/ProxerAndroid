@@ -48,7 +48,6 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class ProfileActivity : ImageTabsActivity() {
-
     companion object {
         private const val USER_ID_EXTRA = "user_id"
         private const val USERNAME_EXTRA = "username"
@@ -64,25 +63,27 @@ class ProfileActivity : ImageTabsActivity() {
             userId: String? = null,
             username: String? = null,
             image: String? = null,
-            imageView: ImageView? = null
+            imageView: ImageView? = null,
         ) {
             if (userId.isNullOrBlank() && username.isNullOrBlank()) {
                 return
             }
 
-            context.intentFor<ProfileActivity>(
-                USER_ID_EXTRA to userId,
-                USERNAME_EXTRA to username,
-                IMAGE_ID_EXTRA to image
-            ).let { ActivityUtils.navigateToWithImageTransition(it, context, imageView) }
+            context
+                .intentFor<ProfileActivity>(
+                    USER_ID_EXTRA to userId,
+                    USERNAME_EXTRA to username,
+                    IMAGE_ID_EXTRA to image,
+                ).let { ActivityUtils.navigateToWithImageTransition(it, context, imageView) }
         }
     }
 
     var userId: String?
-        get() = when (intent.hasExtra(USER_ID_EXTRA)) {
-            true -> intent.getStringExtra(USER_ID_EXTRA)
-            false -> intent.data?.pathSegments?.getOrNull(1)
-        }
+        get() =
+            when (intent.hasExtra(USER_ID_EXTRA)) {
+                true -> intent.getStringExtra(USER_ID_EXTRA)
+                false -> intent.data?.pathSegments?.getOrNull(1)
+            }
         set(value) {
             intent.putExtra(USER_ID_EXTRA, value)
         }
@@ -114,21 +115,28 @@ class ProfileActivity : ImageTabsActivity() {
     private var newGroupMenuItem: MenuItem? = null
 
     override val headerImageUrl: HttpUrl?
-        get() = image.let { image ->
-            if (image == null || image.isBlank()) null else ProxerUrls.userImage(image)
-        }
+        get() =
+            image.let { image ->
+                if (image == null || image.isBlank()) null else ProxerUrls.userImage(image)
+            }
 
     private val customItemToDisplay: Int
-        get() = when (intent.action) {
-            Intent.ACTION_VIEW -> when (intent.data?.pathSegments?.getOrNull(2)) {
-                ABOUT_SUB_SECTION -> 1
-                ANIME_SUB_SECTION -> 3
-                MANGA_SUB_SECTION -> 4
-                HISTORY_SUB_SECTION -> 5
-                else -> 0
+        get() =
+            when (intent.action) {
+                Intent.ACTION_VIEW -> {
+                    when (intent.data?.pathSegments?.getOrNull(2)) {
+                        ABOUT_SUB_SECTION -> 1
+                        ANIME_SUB_SECTION -> 3
+                        MANGA_SUB_SECTION -> 4
+                        HISTORY_SUB_SECTION -> 5
+                        else -> 0
+                    }
+                }
+
+                else -> {
+                    0
+                }
             }
-            else -> 0
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -149,7 +157,7 @@ class ProfileActivity : ImageTabsActivity() {
                         sectionsPagerAdapter.notifyDataSetChanged()
                     }
                 }
-            }
+            },
         )
     }
 
@@ -166,28 +174,37 @@ class ProfileActivity : ImageTabsActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.create_chat -> username?.let { safeUsername ->
-                image?.let { safeImage ->
-                    Completable
-                        .fromAction {
-                            messengerDao.findConferenceForUser(safeUsername).let { existingChat ->
-                                when (existingChat) {
-                                    null -> CreateConferenceActivity.navigateTo(
-                                        this,
-                                        false,
-                                        Participant(safeUsername, safeImage)
-                                    )
-                                    else -> PrvMessengerActivity.navigateTo(this, existingChat)
+            R.id.create_chat -> {
+                username?.let { safeUsername ->
+                    image?.let { safeImage ->
+                        Completable
+                            .fromAction {
+                                messengerDao.findConferenceForUser(safeUsername).let { existingChat ->
+                                    when (existingChat) {
+                                        null -> {
+                                            CreateConferenceActivity.navigateTo(
+                                                this,
+                                                false,
+                                                Participant(safeUsername, safeImage),
+                                            )
+                                        }
+
+                                        else -> {
+                                            PrvMessengerActivity.navigateTo(this, existingChat)
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                        .subscribeOn(Schedulers.io())
-                        .subscribeAndLogErrors()
+                            }.subscribeOn(Schedulers.io())
+                            .subscribeAndLogErrors()
+                    }
                 }
             }
-            R.id.new_group -> username?.let { safeUsername ->
-                image?.let { safeImage ->
-                    CreateConferenceActivity.navigateTo(this, true, Participant(safeUsername, safeImage))
+
+            R.id.new_group -> {
+                username?.let { safeUsername ->
+                    image?.let { safeImage ->
+                        CreateConferenceActivity.navigateTo(this, true, Participant(safeUsername, safeImage))
+                    }
                 }
             }
         }
@@ -212,14 +229,14 @@ class ProfileActivity : ImageTabsActivity() {
 
                     sizeDp = (DeviceUtils.getScreenWidth(headerImage.context) * 0.75).toInt()
                     paddingDp = 32
-                }
+                },
             )
         }
     }
 
     private fun updateMenuItems() {
         storageHelper.user.let {
-            if (it == null || it.id != userId && !it.name.equals(username, true)) {
+            if (it == null || (it.id != userId && !it.name.equals(username, true))) {
                 this.createChatMenuItem?.isVisible = true
                 this.newGroupMenuItem?.isVisible = true
             } else {
@@ -230,34 +247,37 @@ class ProfileActivity : ImageTabsActivity() {
     }
 
     private inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
-
         override fun getItemCount() = 7
 
-        override fun createFragment(position: Int) = when (position) {
-            0 -> ProfileInfoFragment.newInstance()
-            1 -> ProfileAboutFragment.newInstance()
-            2 -> TopTenFragment.newInstance()
-            3 -> ProfileMediaListFragment.newInstance(Category.ANIME)
-            4 -> ProfileMediaListFragment.newInstance(Category.MANGA)
-            5 -> ProfileCommentFragment.newInstance()
-            6 -> HistoryFragment.newInstance()
-            else -> error("Unknown index passed: $position")
-        }
+        override fun createFragment(position: Int) =
+            when (position) {
+                0 -> ProfileInfoFragment.newInstance()
+                1 -> ProfileAboutFragment.newInstance()
+                2 -> TopTenFragment.newInstance()
+                3 -> ProfileMediaListFragment.newInstance(Category.ANIME)
+                4 -> ProfileMediaListFragment.newInstance(Category.MANGA)
+                5 -> ProfileCommentFragment.newInstance()
+                6 -> HistoryFragment.newInstance()
+                else -> error("Unknown index passed: $position")
+            }
     }
 
     private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
-
-        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
-            tab.text = when (position) {
-                0 -> getString(R.string.section_profile_info)
-                1 -> getString(R.string.section_profile_about)
-                2 -> getString(R.string.section_top_ten)
-                3 -> getString(R.string.section_user_media_list_anime)
-                4 -> getString(R.string.section_user_media_list_manga)
-                5 -> getString(R.string.section_user_comments)
-                6 -> getString(R.string.section_user_history)
-                else -> error("Unknown index passed: $position")
-            }
+        override fun onConfigureTab(
+            tab: TabLayout.Tab,
+            position: Int,
+        ) {
+            tab.text =
+                when (position) {
+                    0 -> getString(R.string.section_profile_info)
+                    1 -> getString(R.string.section_profile_about)
+                    2 -> getString(R.string.section_top_ten)
+                    3 -> getString(R.string.section_user_media_list_anime)
+                    4 -> getString(R.string.section_user_media_list_manga)
+                    5 -> getString(R.string.section_user_comments)
+                    6 -> getString(R.string.section_user_history)
+                    else -> error("Unknown index passed: $position")
+                }
         }
     }
 }

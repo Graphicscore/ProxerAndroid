@@ -10,11 +10,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -29,7 +29,6 @@ import me.proxer.library.util.ProxerUrls
  * @author Ruben Gees
  */
 class IndustryProjectAdapter : BaseAdapter<IndustryProject, ViewHolder>() {
-
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<Pair<ImageView, IndustryProject>> = PublishSubject.create()
 
@@ -37,11 +36,15 @@ class IndustryProjectAdapter : BaseAdapter<IndustryProject, ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_project, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_project, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -51,8 +54,9 @@ class IndustryProjectAdapter : BaseAdapter<IndustryProject, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val title: TextView by bindView(R.id.title)
         internal val medium: TextView by bindView(R.id.medium)
@@ -62,7 +66,8 @@ class IndustryProjectAdapter : BaseAdapter<IndustryProject, ViewHolder>() {
         internal val status: TextView by bindView(R.id.status)
 
         fun bind(item: IndustryProject) {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)

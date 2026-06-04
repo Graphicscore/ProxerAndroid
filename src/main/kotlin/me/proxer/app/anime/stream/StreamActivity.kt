@@ -15,13 +15,6 @@ import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE
-import android.view.View.SYSTEM_UI_FLAG_VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -30,18 +23,22 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.IntentCompat
 import androidx.core.os.postDelayed
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.media3.cast.CastPlayer
+import androidx.media3.ui.DefaultTimeBar
+import androidx.media3.ui.PlayerView
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.callbacks.onCancel
+import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
-import androidx.media3.ui.DefaultTimeBar
-import androidx.media3.cast.CastPlayer
-import androidx.media3.ui.PlayerView
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.CastState
@@ -50,7 +47,6 @@ import com.google.android.gms.cast.framework.IntroductoryOverlay
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.jakewharton.rxbinding3.view.clicks
-import com.jakewharton.rxbinding3.view.systemUiVisibilityChanges
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
@@ -60,8 +56,8 @@ import com.mikepenz.iconics.utils.paddingDp
 import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
+import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.AD_TAG_EXTRA
@@ -97,7 +93,6 @@ import timber.log.Timber
  * @author Ruben Gees
  */
 class StreamActivity : BaseActivity() {
-
     companion object {
         private const val PREVIEW_MIME_TYPE = "video/mp4"
         private const val CLOUDFLARE_HOST = "videodelivery.net"
@@ -113,10 +108,13 @@ class StreamActivity : BaseActivity() {
         get() = intent.getIntExtra(EPISODE_EXTRA, -1).let { if (it <= 0) 1 else it }
 
     internal val language: AnimeLanguage
-        get() = intent.getSerializableExtra(LANGUAGE_EXTRA) as AnimeLanguage
+        get() =
+            requireNotNull(IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)) {
+                "LANGUAGE_EXTRA missing from StreamActivity intent. id=$id episode=$episode"
+            }
 
     internal val coverUri: Uri?
-        get() = intent.getParcelableExtra(COVER_EXTRA)
+        get() = IntentCompat.getParcelableExtra(intent, COVER_EXTRA, Uri::class.java)
 
     internal val referer: String?
         get() = intent.getStringExtra(REFERER_EXTRA)
@@ -138,7 +136,7 @@ class StreamActivity : BaseActivity() {
         get() = intent.getBooleanExtra(INTERNAL_PLAYER_ONLY_EXTRA, false)
 
     private val adTag: Uri?
-        get() = intent.getParcelableExtra(AD_TAG_EXTRA)
+        get() = IntentCompat.getParcelableExtra(intent, AD_TAG_EXTRA, Uri::class.java)
 
     private val client by safeInject<OkHttpClient>()
     private val playerManager by unsafeLazy { StreamPlayerManager(this, client, adTag) }
@@ -161,13 +159,17 @@ class StreamActivity : BaseActivity() {
     private var mediaRouteButton: MenuItem? = null
     private var introductoryOverlay: IntroductoryOverlay? = null
 
-    private val castStateListener = CastStateListener { newState ->
-        if (newState != CastState.NO_DEVICES_AVAILABLE && !preferenceHelper.wasCastIntroductoryOverlayShown) {
-            showIntroductoryOverlay()
+    private val castStateListener =
+        CastStateListener { newState ->
+            if (newState != CastState.NO_DEVICES_AVAILABLE && !preferenceHelper.wasCastIntroductoryOverlayShown) {
+                showIntroductoryOverlay()
+            }
         }
-    }
 
     private val animationTime by unsafeLazy { resources.getInteger(android.R.integer.config_shortAnimTime).toLong() }
+
+    private var isInFullscreenMode = false
+    private val systemBarsVisibilitySubject = PublishSubject.create<Boolean>()
 
     private val hideIndicatorHandler = Handler(Looper.getMainLooper())
     private val adFullscreenHandler = Handler(Looper.getMainLooper())
@@ -193,14 +195,14 @@ class StreamActivity : BaseActivity() {
             null,
             generateIndicatorIcon(CommunityMaterial.Icon3.cmd_rewind),
             null,
-            null
+            null,
         )
 
         fastForwardIndicator.setCompoundDrawables(
             null,
             generateIndicatorIcon(CommunityMaterial.Icon2.cmd_fast_forward),
             null,
-            null
+            null,
         )
 
         playerManager.playerReadySubject
@@ -245,12 +247,13 @@ class StreamActivity : BaseActivity() {
         playerView.volumeChangeSubject
             .autoDisposable(this.scope())
             .subscribe {
-                val icon = when {
-                    it <= 0 -> CommunityMaterial.Icon3.cmd_volume_mute
-                    it <= 33 -> CommunityMaterial.Icon3.cmd_volume_low
-                    it <= 66 -> CommunityMaterial.Icon3.cmd_volume_medium
-                    else -> CommunityMaterial.Icon3.cmd_volume_high
-                }
+                val icon =
+                    when {
+                        it <= 0 -> CommunityMaterial.Icon3.cmd_volume_mute
+                        it <= 33 -> CommunityMaterial.Icon3.cmd_volume_low
+                        it <= 66 -> CommunityMaterial.Icon3.cmd_volume_medium
+                        else -> CommunityMaterial.Icon3.cmd_volume_high
+                    }
 
                 updateControl(it, icon)
             }
@@ -258,20 +261,23 @@ class StreamActivity : BaseActivity() {
         playerView.brightnessChangeSubject
             .autoDisposable(this.scope())
             .subscribe {
-                val icon = when {
-                    it <= 33 -> CommunityMaterial.Icon.cmd_brightness_5
-                    it <= 66 -> CommunityMaterial.Icon.cmd_brightness_6
-                    else -> CommunityMaterial.Icon.cmd_brightness_7
-                }
+                val icon =
+                    when {
+                        it <= 33 -> CommunityMaterial.Icon.cmd_brightness_5
+                        it <= 66 -> CommunityMaterial.Icon.cmd_brightness_6
+                        else -> CommunityMaterial.Icon.cmd_brightness_7
+                    }
 
                 updateControl(it, icon)
             }
 
-        play.clicks()
+        play
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe { playerManager.toggle() }
 
-        rewindIndicator.clicks()
+        rewindIndicator
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe {
                 playerView.rewind()
@@ -279,7 +285,8 @@ class StreamActivity : BaseActivity() {
                 updateIndicator(rewindIndicator, animate = false)
             }
 
-        fastForwardIndicator.clicks()
+        fastForwardIndicator
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe {
                 playerView.fastForward()
@@ -287,7 +294,8 @@ class StreamActivity : BaseActivity() {
                 updateIndicator(fastForwardIndicator, animate = false)
             }
 
-        fullscreen.clicks()
+        fullscreen
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe { toggleOrientation() }
 
@@ -296,9 +304,8 @@ class StreamActivity : BaseActivity() {
                 .loadFrames(
                     progress.loadRequests(),
                     { Size(preview.width, preview.height) },
-                    PreviewLoader.PreviewMetaData(uri, referer, isProxerStream)
-                )
-                .autoDisposable(this.scope())
+                    PreviewLoader.PreviewMetaData(uri, referer, isProxerStream),
+                ).autoDisposable(this.scope())
                 .subscribeAndLogErrors { preview.setImageBitmap(it) }
         }
 
@@ -332,12 +339,11 @@ class StreamActivity : BaseActivity() {
         fastForwardIndicator.updateLayoutParams<ViewGroup.MarginLayoutParams> { marginEnd = indicatorMargin }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
             R.id.action_open_in_other_app -> openInOtherApp()
             else -> super.onOptionsItemSelected(item)
         }
-    }
 
     override fun onStart() {
         super.onStart()
@@ -387,7 +393,10 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
+    override fun onMultiWindowModeChanged(
+        isInMultiWindowMode: Boolean,
+        newConfig: Configuration,
+    ) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
 
         handleUIChange()
@@ -415,7 +424,8 @@ class StreamActivity : BaseActivity() {
         supportActionBar?.subtitle = Category.ANIME.toEpisodeAppString(this, episode)
 
         coverUri?.also {
-            Glide.with(playerView)
+            Glide
+                .with(playerView)
                 .load(coverUri)
                 .logErrors()
                 .into(
@@ -426,18 +436,25 @@ class StreamActivity : BaseActivity() {
                             playerView.defaultArtwork = null
                         }
 
-                        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                        override fun onResourceReady(
+                            resource: Drawable,
+                            transition: Transition<in Drawable>?,
+                        ) {
                             playerView.defaultArtwork = resource
                         }
-                    }
+                    },
                 )
         }
 
-        playerView.setControllerVisibilityListener(PlayerView.ControllerVisibilityListener { visibility ->
-            toggleFullscreen(visibility == View.GONE)
+        playerView.setControllerVisibilityListener(
+            PlayerView.ControllerVisibilityListener { visibility ->
+                toggleFullscreen(visibility == View.GONE)
 
-            toolbar.isVisible = visibility == View.VISIBLE
-        })
+                toolbar.isVisible = visibility == View.VISIBLE
+            },
+        )
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         // Nobody understands fitsSystemWindows so this can probably be done better, but seems to work for now.
         ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
@@ -453,12 +470,15 @@ class StreamActivity : BaseActivity() {
             insets
         }
 
-        window.decorView.systemUiVisibilityChanges()
-            .autoDisposable(this.scope())
-            .subscribe { handleUIChange() }
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { v, insets ->
+            val systemBarsVisible = insets.isVisible(WindowInsetsCompat.Type.systemBars())
+            systemBarsVisibilitySubject.onNext(systemBarsVisible)
+            ViewCompat.onApplyWindowInsets(v, insets)
+        }
 
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+        systemBarsVisibilitySubject
+            .autoDisposable(this.scope())
+            .subscribe { systemBarsVisible -> handleUIChange(systemBarsVisible) }
 
         toggleFullscreen(true)
     }
@@ -475,17 +495,14 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun handleUIChange() {
-        val isInFullscreenMode = window.decorView.systemUiVisibility and SYSTEM_UI_FLAG_FULLSCREEN != 0
-
+    private fun handleUIChange(systemBarsVisible: Boolean = !isInFullscreenMode) {
         if (playerManager.isPlayingAd.not()) {
-            // If true, no flags for hiding system UI are set. Show the controls.
-            if (isInFullscreenMode) {
-                playerView.hideController()
-                toolbar.isVisible = false
-            } else {
+            if (systemBarsVisible) {
                 playerView.showController()
                 toolbar.isVisible = true
+            } else {
+                playerView.hideController()
+                toolbar.isVisible = false
             }
         } else {
             adFullscreenHandler.postDelayed(3_000) {
@@ -494,18 +511,17 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun toggleFullscreen(fullscreen: Boolean) {
+    private fun toggleFullscreen(wantFullscreen: Boolean) {
         val isInMultiWindowMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
 
-        window.decorView.systemUiVisibility = when {
-            fullscreen && !isInMultiWindowMode ->
-                SYSTEM_UI_FLAG_LOW_PROFILE or
-                    SYSTEM_UI_FLAG_FULLSCREEN or
-                    SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                    SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                    SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                    SYSTEM_UI_FLAG_IMMERSIVE
-            else -> SYSTEM_UI_FLAG_VISIBLE
+        if (wantFullscreen && !isInMultiWindowMode) {
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = true
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = false
         }
     }
 
@@ -530,6 +546,7 @@ class StreamActivity : BaseActivity() {
                 loading.isVisible = false
                 play.isVisible = true
             }
+
             PlayerState.PAUSING -> {
                 playerView.keepScreenOn = false
                 play.contentDescription = getString(R.string.exoplayer_play_description)
@@ -538,6 +555,7 @@ class StreamActivity : BaseActivity() {
                 loading.isVisible = false
                 play.isVisible = true
             }
+
             PlayerState.LOADING -> {
                 playerView.keepScreenOn = true
                 loading.isVisible = true
@@ -560,15 +578,16 @@ class StreamActivity : BaseActivity() {
             Handler(Looper.getMainLooper()).postDelayed(50) {
                 preferenceHelper.wasCastIntroductoryOverlayShown = true
 
-                introductoryOverlay = IntroductoryOverlay.Builder(this, safeMediaRouteButton)
-                    .setTitleText(R.string.activity_stream_cast_introduction)
-                    .setOnOverlayDismissedListener {
-                        toggleStableControls(playerManager.currentPlayer is CastPlayer)
+                introductoryOverlay =
+                    IntroductoryOverlay
+                        .Builder(this, safeMediaRouteButton)
+                        .setTitleText(R.string.activity_stream_cast_introduction)
+                        .setOnOverlayDismissedListener {
+                            toggleStableControls(playerManager.currentPlayer is CastPlayer)
 
-                        introductoryOverlay = null
-                    }
-                    .build()
-                    .apply { show() }
+                            introductoryOverlay = null
+                        }.build()
+                        .apply { show() }
             }
         }
     }
@@ -584,7 +603,10 @@ class StreamActivity : BaseActivity() {
         animationHandler.removeCallbacksAndMessages(null)
     }
 
-    private fun updateIndicator(view: TextView, animate: Boolean = true) {
+    private fun updateIndicator(
+        view: TextView,
+        animate: Boolean = true,
+    ) {
         val previousDuration = view.text.toString().toIntOrNull()
         val wasVisible = view.isVisible
 
@@ -592,10 +614,11 @@ class StreamActivity : BaseActivity() {
         view.text = ((previousDuration ?: 0) + 10).toString()
 
         if (animate) {
-            view.background.state = intArrayOf(
-                android.R.attr.state_pressed,
-                android.R.attr.state_enabled
-            )
+            view.background.state =
+                intArrayOf(
+                    android.R.attr.state_pressed,
+                    android.R.attr.state_enabled,
+                )
 
             animationHandler.postDelayed(animationTime) {
                 view.background.state = intArrayOf()
@@ -611,7 +634,10 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun updateControl(value: Int, icon: IIcon) {
+    private fun updateControl(
+        value: Int,
+        icon: IIcon,
+    ) {
         hideControlHandler.removeCallbacksAndMessages(null)
 
         controlProgress.isVisible = true
@@ -623,7 +649,7 @@ class StreamActivity : BaseActivity() {
                 colorRes = android.R.color.white
                 sizeDp = 64
                 paddingDp = 12
-            }
+            },
         )
 
         hideControlHandler.postDelayed(1_000) {
@@ -632,17 +658,20 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun generateIndicatorIcon(icon: IIcon) = IconicsDrawable(this, icon).apply {
-        colorRes = android.R.color.white
-        paddingDp = 4
-        sizeDp = 36
-    }
+    private fun generateIndicatorIcon(icon: IIcon) =
+        IconicsDrawable(this, icon).apply {
+            colorRes = android.R.color.white
+            paddingDp = 4
+            sizeDp = 36
+        }
 
-    private fun openInOtherApp(): Boolean {
-        return try {
-            val intent = StreamResolutionResult.Video(uri.toString().toHttpUrl(), mimeType, referer)
-                .makeIntent(this)
-                .newTask()
+    private fun openInOtherApp(): Boolean =
+        try {
+            val intent =
+                StreamResolutionResult
+                    .Video(uri.toString().toHttpUrl(), mimeType, referer)
+                    .makeIntent(this)
+                    .newTask()
 
             startActivity(intent)
             finish()
@@ -653,11 +682,11 @@ class StreamActivity : BaseActivity() {
 
             false
         }
-    }
 
-    private fun generateControllerIcon(icon: IIcon) = IconicsDrawable(this, icon).apply {
-        colorRes = android.R.color.white
-        paddingDp = 8
-        sizeDp = 44
-    }
+    private fun generateControllerIcon(icon: IIcon) =
+        IconicsDrawable(this, icon).apply {
+            colorRes = android.R.color.white
+            paddingDp = 8
+            sizeDp = 44
+        }
 }

@@ -11,7 +11,6 @@ import me.proxer.app.R
  * @author Ruben Gees
  */
 object NotificationUtils {
-
     const val NEWS_CHANNEL = "proxer_news"
     const val PROFILE_CHANNEL = "proxer_profile"
     const val CHAT_CHANNEL = "proxer_chat"
@@ -32,8 +31,8 @@ object NotificationUtils {
                     },
                     NotificationChannel(CHAT_CHANNEL, chatTitle, NotificationManager.IMPORTANCE_HIGH).apply {
                         description = context.getString(R.string.notification_channel_chat_description)
-                    }
-                )
+                    },
+                ),
             )
         }
     }

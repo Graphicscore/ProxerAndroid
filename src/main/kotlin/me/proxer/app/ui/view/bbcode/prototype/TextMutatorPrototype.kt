@@ -13,8 +13,11 @@ import me.proxer.app.ui.view.bbcode.toSpannableStringBuilder
  * @author Ruben Gees
  */
 interface TextMutatorPrototype : BBPrototype {
-
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         return applyToViews(childViews) { view: TextView ->
@@ -22,5 +25,8 @@ interface TextMutatorPrototype : BBPrototype {
         }
     }
 
-    fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder
+    fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ): SpannableStringBuilder
 }

@@ -14,15 +14,17 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class ChatRoomInfoViewModel(private val chatRoomId: String) : BaseContentViewModel<List<ChatRoomUser>>() {
-
+class ChatRoomInfoViewModel(
+    private val chatRoomId: String,
+) : BaseContentViewModel<List<ChatRoomUser>>() {
     override val endpoint: Endpoint<List<ChatRoomUser>>
         get() = api.chat.roomUsers(chatRoomId)
 
     override val dataSingle: Single<List<ChatRoomUser>>
-        get() = super.dataSingle
-            .map { it.sortedWith(compareByDescending(ChatRoomUser::isModerator).thenBy(ChatRoomUser::name)) }
-            .doOnSuccess { if (pollingDisposable == null) startPolling() }
+        get() =
+            super.dataSingle
+                .map { it.sortedWith(compareByDescending(ChatRoomUser::isModerator).thenBy(ChatRoomUser::name)) }
+                .doOnSuccess { if (pollingDisposable == null) startPolling() }
 
     private var pollingDisposable: Disposable? = null
 
@@ -44,15 +46,16 @@ class ChatRoomInfoViewModel(private val chatRoomId: String) : BaseContentViewMod
     }
 
     private fun startPolling() {
-        pollingDisposable = dataSingle
-            .repeatWhen { it.concatMap { Flowable.timer(10, TimeUnit.SECONDS) } }
-            .retryWhen { it.concatMap { Flowable.timer(10, TimeUnit.SECONDS) } }
-            .delaySubscription(10, TimeUnit.SECONDS)
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeAndLogErrors {
-                error.value = null
-                data.value = it
-            }
+        pollingDisposable =
+            dataSingle
+                .repeatWhen { it.concatMap { Flowable.timer(10, TimeUnit.SECONDS) } }
+                .retryWhen { it.concatMap { Flowable.timer(10, TimeUnit.SECONDS) } }
+                .delaySubscription(10, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeAndLogErrors {
+                    error.value = null
+                    data.value = it
+                }
     }
 }

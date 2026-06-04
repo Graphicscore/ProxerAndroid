@@ -6,10 +6,10 @@ import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseContentFragment
 import me.proxer.app.profile.ProfileActivity
@@ -24,11 +24,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ConferenceInfoFragment : BaseContentFragment<ConferenceInfo>(R.layout.fragment_conference_info) {
-
     companion object {
-        fun newInstance() = ConferenceInfoFragment().apply {
-            this.arguments = bundleOf()
-        }
+        fun newInstance() =
+            ConferenceInfoFragment().apply {
+                this.arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<ConferenceInfoViewModel> { parametersOf(id.toString()) }
@@ -57,7 +57,7 @@ class ConferenceInfoFragment : BaseContentFragment<ConferenceInfo>(R.layout.frag
                     item.id,
                     item.username,
                     item.image,
-                    if (view.drawable != null && item.image.isNotBlank()) view else null
+                    if (view.drawable != null && item.image.isNotBlank()) view else null,
                 )
             }
 
@@ -66,7 +66,10 @@ class ConferenceInfoFragment : BaseContentFragment<ConferenceInfo>(R.layout.frag
             .subscribe { showPage(it) }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

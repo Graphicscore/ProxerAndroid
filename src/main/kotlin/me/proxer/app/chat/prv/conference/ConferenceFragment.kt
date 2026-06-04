@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.chat.prv.conference
 
 import android.os.Bundle
@@ -9,10 +11,12 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
 import com.jakewharton.rxbinding3.appcompat.queryTextChangeEvents
 import com.jakewharton.rxbinding3.view.actionViewEvents
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
@@ -20,7 +24,6 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseContentFragment
 import me.proxer.app.chat.prv.ConferenceWithMessage
@@ -44,14 +47,14 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.layout.fragment_conferences) {
-
     companion object {
         private const val SEARCH_QUERY_ARGUMENT = "search_query"
         private const val INITIAL_MESSAGE_ARGUMENT = "initial_message"
 
-        fun newInstance(initialMessage: String? = null) = ConferenceFragment().apply {
-            arguments = bundleOf(INITIAL_MESSAGE_ARGUMENT to initialMessage)
-        }
+        fun newInstance(initialMessage: String? = null) =
+            ConferenceFragment().apply {
+                arguments = bundleOf(INITIAL_MESSAGE_ARGUMENT to initialMessage)
+            }
     }
 
     override val viewModel by viewModel<ConferenceViewModel> { parametersOf(searchQuery ?: "") }
@@ -59,7 +62,7 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
     private val layoutManager by unsafeLazy {
         StaggeredGridLayoutManager(
             DeviceUtils.calculateSpanAmount(requireActivity()),
-            StaggeredGridLayoutManager.VERTICAL
+            StaggeredGridLayoutManager.VERTICAL,
         )
     }
 
@@ -71,38 +74,59 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
     private val toolbar by unsafeLazy { requireActivity().findViewById<Toolbar>(R.id.toolbar) }
     private val recyclerView: RecyclerView by bindView(R.id.recyclerView)
 
-    private val adapterDataObserver = object : RecyclerView.AdapterDataObserver() {
-        override fun onChanged() = scrollToTopIfRequested()
-        override fun onItemRangeChanged(positionStart: Int, itemCount: Int) = scrollToTopIfRequested()
-        override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) = scrollToTopIfRequested()
-        override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) = scrollToTopIfRequested()
+    private val adapterDataObserver =
+        object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() = scrollToTopIfRequested()
 
-        override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
-            if (shouldScrollToTop) {
-                scrollToTopIfRequested()
-            } else if (recyclerView.isAtTop() && toPosition == 0) {
-                recyclerView.smoothScrollToPosition(0)
-            }
-        }
+            override fun onItemRangeChanged(
+                positionStart: Int,
+                itemCount: Int,
+            ) = scrollToTopIfRequested()
 
-        override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-            if (shouldScrollToTop) {
-                scrollToTopIfRequested()
-            } else if (recyclerView.isAtTop() && positionStart == 0) {
-                recyclerView.smoothScrollToPosition(0)
-            }
-        }
+            override fun onItemRangeChanged(
+                positionStart: Int,
+                itemCount: Int,
+                payload: Any?,
+            ) = scrollToTopIfRequested()
 
-        private fun scrollToTopIfRequested() {
-            if (shouldScrollToTop) {
-                recyclerView.doAfterAnimations {
-                    recyclerView.scrollToTop()
+            override fun onItemRangeRemoved(
+                positionStart: Int,
+                itemCount: Int,
+            ) = scrollToTopIfRequested()
+
+            override fun onItemRangeMoved(
+                fromPosition: Int,
+                toPosition: Int,
+                itemCount: Int,
+            ) {
+                if (shouldScrollToTop) {
+                    scrollToTopIfRequested()
+                } else if (recyclerView.isAtTop() && toPosition == 0) {
+                    recyclerView.smoothScrollToPosition(0)
                 }
+            }
 
-                shouldScrollToTop = false
+            override fun onItemRangeInserted(
+                positionStart: Int,
+                itemCount: Int,
+            ) {
+                if (shouldScrollToTop) {
+                    scrollToTopIfRequested()
+                } else if (recyclerView.isAtTop() && positionStart == 0) {
+                    recyclerView.smoothScrollToPosition(0)
+                }
+            }
+
+            private fun scrollToTopIfRequested() {
+                if (shouldScrollToTop) {
+                    recyclerView.doAfterAnimations {
+                        recyclerView.scrollToTop()
+                    }
+
+                    shouldScrollToTop = false
+                }
             }
         }
-    }
 
     private val initialMessage: String?
         get() = requireArguments().getString(INITIAL_MESSAGE_ARGUMENT, null)
@@ -129,12 +153,86 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
             .subscribe { (conference) ->
                 PrvMessengerActivity.navigateTo(requireActivity(), conference, initialMessage)
             }
-
-        setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    if (initialMessage == null) {
+                        IconicsMenuInflaterUtil.inflate(
+                            menuInflater,
+                            requireContext(),
+                            R.menu.fragment_conferences,
+                            menu,
+                            true,
+                        )
+                    } else {
+                        IconicsMenuInflaterUtil.inflate(
+                            menuInflater,
+                            requireContext(),
+                            R.menu.fragment_share_receiver,
+                            menu,
+                            true,
+                        )
+                    }
+
+                    menu.findItem(R.id.search).let { searchItem ->
+                        val searchView = searchItem.actionView as SearchView
+
+                        searchItem
+                            .actionViewEvents()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe {
+                                if (it.menuItem.isActionViewExpanded) {
+                                    searchQuery = null
+                                }
+
+                                TransitionManager.endTransitions(toolbar)
+                                TransitionManager.beginDelayedTransition(toolbar)
+                            }
+
+                        searchView
+                            .queryTextChangeEvents()
+                            .skipInitialValue()
+                            .debounce(200, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe {
+                                searchQuery = it.queryText.toString().trim()
+
+                                if (it.isSubmitted) {
+                                    searchView.clearFocus()
+                                }
+                            }
+
+                        if (searchQuery.isNullOrBlank().not()) {
+                            searchItem.expandActionView()
+                            searchView.setQuery(searchQuery, false)
+                            searchView.clearFocus()
+                        }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.create_chat -> CreateConferenceActivity.navigateTo(requireActivity(), false)
+                        R.id.new_group -> CreateConferenceActivity.navigateTo(requireActivity(), true)
+                        else -> return false
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         adapter.glide = Glide.with(this)
         adapter.registerAdapterDataObserver(adapterDataObserver)
@@ -150,7 +248,8 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
 
         MessengerNotifications.cancel(requireContext())
 
-        bus.register(ConferenceFragmentPingEvent::class.java)
+        bus
+            .register(ConferenceFragmentPingEvent::class.java)
             .autoDisposable(this.scope())
             .subscribe()
     }
@@ -162,59 +261,6 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
         recyclerView.adapter = null
 
         super.onDestroyView()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        if (initialMessage == null) {
-            IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_conferences, menu, true)
-        } else {
-            IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_share_receiver, menu, true)
-        }
-
-        menu.findItem(R.id.search).let { searchItem ->
-            val searchView = searchItem.actionView as SearchView
-
-            searchItem.actionViewEvents()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe {
-                    if (it.menuItem.isActionViewExpanded) {
-                        searchQuery = null
-                    }
-
-                    TransitionManager.endTransitions(toolbar)
-                    TransitionManager.beginDelayedTransition(toolbar)
-                }
-
-            searchView.queryTextChangeEvents()
-                .skipInitialValue()
-                .debounce(200, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe {
-                    searchQuery = it.queryText.toString().trim()
-
-                    if (it.isSubmitted) {
-                        searchView.clearFocus()
-                    }
-                }
-
-            if (searchQuery.isNullOrBlank().not()) {
-                searchItem.expandActionView()
-                searchView.setQuery(searchQuery, false)
-                searchView.clearFocus()
-            }
-        }
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.create_chat -> CreateConferenceActivity.navigateTo(requireActivity(), false)
-            R.id.new_group -> CreateConferenceActivity.navigateTo(requireActivity(), true)
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun showData(data: List<ConferenceWithMessage>) {

@@ -18,7 +18,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  * @author Ruben Gees
  */
 class ProfileSettingsActivity : DrawerActivity() {
-
     companion object {
         fun navigateTo(context: Activity) = context.startActivity<ProfileSettingsActivity>()
     }
@@ -41,10 +40,10 @@ class ProfileSettingsActivity : DrawerActivity() {
                         getString(R.string.error_refresh, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(this) ?: View.OnClickListener { viewModel.refresh() }
+                        it.toClickListener(this) ?: View.OnClickListener { viewModel.refresh() },
                     )
                 }
-            }
+            },
         )
 
         viewModel.updateError.observe(
@@ -55,10 +54,10 @@ class ProfileSettingsActivity : DrawerActivity() {
                         getString(R.string.error_set_user_info, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(this) ?: View.OnClickListener { viewModel.retryUpdate() }
+                        it.toClickListener(this) ?: View.OnClickListener { viewModel.retryUpdate() },
                     )
                 }
-            }
+            },
         )
 
         storageHelper.isLoggedInObservable

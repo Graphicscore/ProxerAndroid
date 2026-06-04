@@ -3,7 +3,6 @@ pluginManagement { scriptHandler ->
     apply from: "gradle/repositories.gradle", to: scriptHandler
 
     plugins {
-        id "org.jetbrains.kotlin.android" version "${kotlinVersion}"
         id "org.jetbrains.kotlin.plugin.compose" version "${kotlinVersion}"
         id "com.google.devtools.ksp" version "${kspVersion}"
 

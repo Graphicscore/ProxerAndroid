@@ -15,15 +15,13 @@ import okhttp3.HttpUrl
  * @author Ruben Gees
  */
 sealed class StreamResolutionResult {
-
     class Video(
         url: HttpUrl,
         mimeType: String,
         referer: String? = null,
         adTag: Uri? = null,
-        internalPlayerOnly: Boolean = false
+        internalPlayerOnly: Boolean = false,
     ) : StreamResolutionResult() {
-
         companion object {
             const val ID_EXTRA = "id"
             const val NAME_EXTRA = "name"
@@ -35,12 +33,13 @@ sealed class StreamResolutionResult {
             const val INTERNAL_PLAYER_ONLY_EXTRA = "internal_player_only"
         }
 
-        private val intent = Intent(Intent.ACTION_VIEW)
-            .setDataAndType(url.androidUri(), mimeType)
-            .apply { if (referer != null) putExtra(REFERER_EXTRA, referer) }
-            .putExtra(AD_TAG_EXTRA, adTag)
-            .putExtra(INTERNAL_PLAYER_ONLY_EXTRA, internalPlayerOnly)
-            .addReferer()
+        private val intent =
+            Intent(Intent.ACTION_VIEW)
+                .setDataAndType(url.androidUri(), mimeType)
+                .apply { if (referer != null) putExtra(REFERER_EXTRA, referer) }
+                .putExtra(AD_TAG_EXTRA, adTag)
+                .putExtra(INTERNAL_PLAYER_ONLY_EXTRA, internalPlayerOnly)
+                .addReferer()
 
         fun makeIntent(
             context: Context,
@@ -49,16 +48,15 @@ sealed class StreamResolutionResult {
             episode: Int? = null,
             language: AnimeLanguage? = null,
             coverUri: Uri? = null,
-            forceInternal: Boolean = false
-        ): Intent {
-            return intent
+            forceInternal: Boolean = false,
+        ): Intent =
+            intent
                 .apply { if (forceInternal) component = ComponentName(context, StreamActivity::class.java) }
                 .apply { if (id != null) putExtra(ID_EXTRA, id) }
                 .apply { if (name != null) putExtra(NAME_EXTRA, name) }
                 .apply { if (episode != null) putExtra(EPISODE_EXTRA, episode) }
                 .apply { if (language != null) putExtra(LANGUAGE_EXTRA, language) }
                 .apply { if (coverUri != null) putExtra(COVER_EXTRA, coverUri) }
-        }
 
         fun play(
             context: Context,
@@ -67,14 +65,15 @@ sealed class StreamResolutionResult {
             episode: Int?,
             language: AnimeLanguage? = null,
             coverUri: Uri? = null,
-            forceInternal: Boolean = false
+            forceInternal: Boolean = false,
         ) {
             context.startActivity(makeIntent(context, id, name, episode, language, coverUri, forceInternal))
         }
     }
 
-    class Link(private val url: HttpUrl) : StreamResolutionResult() {
-
+    class Link(
+        private val url: HttpUrl,
+    ) : StreamResolutionResult() {
         fun show(customTabsAware: CustomTabsAware) {
             customTabsAware.showPage(url, skipCheck = true)
         }
@@ -82,16 +81,20 @@ sealed class StreamResolutionResult {
         fun makeIntent(): Intent = Intent(Intent.ACTION_VIEW, url.androidUri())
     }
 
-    class App(uri: Uri) : StreamResolutionResult() {
-
-        private val intent = Intent(Intent.ACTION_VIEW)
-            .setData(uri)
-            .addReferer()
+    class App(
+        uri: Uri,
+    ) : StreamResolutionResult() {
+        private val intent =
+            Intent(Intent.ACTION_VIEW)
+                .setData(uri)
+                .addReferer()
 
         fun navigate(context: Context) {
             context.startActivity(intent)
         }
     }
 
-    class Message(val message: CharSequence) : StreamResolutionResult()
+    class Message(
+        val message: CharSequence,
+    ) : StreamResolutionResult()
 }

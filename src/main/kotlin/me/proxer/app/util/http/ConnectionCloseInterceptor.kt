@@ -8,14 +8,15 @@ import okhttp3.Response
  * @author Ruben Gees
  */
 class ConnectionCloseInterceptor : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val oldRequest = chain.request()
 
         return if (oldRequest.url.hasProxerProxyHost) {
-            val newRequest = oldRequest.newBuilder()
-                .header("Connection", "close")
-                .build()
+            val newRequest =
+                oldRequest
+                    .newBuilder()
+                    .header("Connection", "close")
+                    .build()
 
             chain.proceed(newRequest)
         } else {

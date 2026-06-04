@@ -12,8 +12,9 @@ import okhttp3.Response
 /**
  * @author Ruben Gees
  */
-class CallResponseSingle(private val originalCall: Call) : Single<Response>() {
-
+class CallResponseSingle(
+    private val originalCall: Call,
+) : Single<Response>() {
     override fun subscribeActual(observer: SingleObserver<in Response>) {
         val call = originalCall.clone()
         val disposable = CallDisposable(call)
@@ -50,8 +51,9 @@ class CallResponseSingle(private val originalCall: Call) : Single<Response>() {
         }
     }
 
-    private class CallDisposable(private val call: Call) : Disposable {
-
+    private class CallDisposable(
+        private val call: Call,
+    ) : Disposable {
         @Volatile
         private var isDisposed: Boolean = false
 
@@ -61,8 +63,6 @@ class CallResponseSingle(private val originalCall: Call) : Single<Response>() {
             call.cancel()
         }
 
-        override fun isDisposed(): Boolean {
-            return isDisposed
-        }
+        override fun isDisposed(): Boolean = isDisposed
     }
 }

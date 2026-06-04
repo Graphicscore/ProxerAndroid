@@ -15,19 +15,21 @@ import me.proxer.app.util.extension.resolveColor
  * @author Ruben Gees
  */
 object DividerPrototype : BBPrototype {
-
     override val startRegex = Regex(" *hr *", REGEX_OPTIONS)
     override val endRegex = Regex("/ *hr *", REGEX_OPTIONS)
 
     override val canHaveChildren get() = false
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
-        return listOf(
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> =
+        listOf(
             View(parent.context).apply {
                 layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, dip(2))
 
                 setBackgroundColor(parent.context.resolveColor(R.attr.colorDivider))
-            }
+            },
         )
-    }
 }

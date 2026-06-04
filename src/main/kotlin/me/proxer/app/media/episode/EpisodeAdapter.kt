@@ -11,12 +11,12 @@ import androidx.core.view.isGone
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -38,8 +38,9 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, ViewHolder>() {
-
+class EpisodeAdapter(
+    savedInstanceState: Bundle?,
+) : BaseAdapter<EpisodeRow, ViewHolder>() {
     private companion object {
         private const val EXPANDED_STATE = "episode_expanded"
     }
@@ -50,19 +51,25 @@ class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, View
     private val expansionMap: ParcelableStringBooleanMap
 
     init {
-        expansionMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(EXPANDED_STATE)
-        }
+        expansionMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(EXPANDED_STATE)
+            }
 
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
+
     override fun getItemId(position: Int) = data[position].number.toLong()
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
@@ -75,11 +82,16 @@ class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, View
             .forEach { glide?.clear(it) }
     }
 
-    override fun areItemsTheSame(old: EpisodeRow, new: EpisodeRow) = old.number == new.number
+    override fun areItemsTheSame(
+        old: EpisodeRow,
+        new: EpisodeRow,
+    ) = old.number == new.number
+
     override fun saveInstanceState(outState: Bundle) = outState.putParcelable(EXPANDED_STATE, expansionMap)
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val title: TextView by bindView(R.id.title)
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val watched: ImageView by bindView(R.id.watched)
@@ -90,7 +102,8 @@ class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, View
         }
 
         fun bind(item: EpisodeRow) {
-            titleContainer.clicks()
+            titleContainer
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it].number.toString() to it }
                 .autoDisposable(this)
                 .subscribe { (number, position) ->
@@ -135,10 +148,11 @@ class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, View
                     language.toGeneralLanguage().toAppDrawable(languageView.context),
                     null,
                     null,
-                    null
+                    null,
                 )
 
-                languageContainer.clicks()
+                languageContainer
+                    .clicks()
                     .mapBindingAdapterPosition({ bindingAdapterPosition }) { language to data[it] }
                     .autoDisposable(this)
                     .subscribe(languageClickSubject)
@@ -147,7 +161,10 @@ class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, View
             }
         }
 
-        private fun bindHosterImages(hosterImages: List<String>?, hostersView: ViewGroup) {
+        private fun bindHosterImages(
+            hosterImages: List<String>?,
+            hostersView: ViewGroup,
+        ) {
             if (hosterImages == null || hosterImages.isEmpty()) {
                 hostersView.removeAllViews()
 
@@ -160,10 +177,11 @@ class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, View
 
                     repeat(hosterImages.size) {
                         val inflater = LayoutInflater.from(hostersView.context)
-                        val imageView = inflater.inflate(R.layout.layout_image, hostersView, false).apply {
-                            layoutParams.width = dip(28)
-                            layoutParams.height = dip(28)
-                        }
+                        val imageView =
+                            inflater.inflate(R.layout.layout_image, hostersView, false).apply {
+                                layoutParams.width = dip(28)
+                                layoutParams.height = dip(28)
+                            }
 
                         hostersView.addView(imageView)
                     }

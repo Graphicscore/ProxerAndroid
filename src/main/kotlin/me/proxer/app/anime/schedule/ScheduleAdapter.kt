@@ -10,10 +10,10 @@ import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.github.rubensousa.gravitysnaphelper.GravitySnapHelper
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.anime.schedule.ScheduleAdapter.ViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -28,7 +28,6 @@ import kotlin.math.max
  * @author Ruben Gees
  */
 class ScheduleAdapter : BaseAdapter<Pair<CalendarDay, List<CalendarEntry>>, ViewHolder>() {
-
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<Pair<ImageView, CalendarEntry>> = PublishSubject.create()
 
@@ -40,11 +39,15 @@ class ScheduleAdapter : BaseAdapter<Pair<CalendarDay, List<CalendarEntry>>, View
 
     override fun getItemId(position: Int) = data[position].let { (day, _) -> day.ordinal.toLong() }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_day, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_day, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) {
         holder.bind(data[position])
     }
 
@@ -61,8 +64,9 @@ class ScheduleAdapter : BaseAdapter<Pair<CalendarDay, List<CalendarEntry>>, View
         glide = null
     }
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : RecyclerView.ViewHolder(itemView) {
         internal val weekDay by bindView<TextView>(R.id.weekDay)
         internal val childRecyclerView by bindView<RecyclerView>(R.id.childRecyclerView)
 
@@ -83,12 +87,14 @@ class ScheduleAdapter : BaseAdapter<Pair<CalendarDay, List<CalendarEntry>>, View
 
             weekDay.text = day.toAppString(weekDay.context)
 
-            childRecyclerView.layoutManager = LinearLayoutManager(childRecyclerView.context, HORIZONTAL, false).apply {
-                initialPrefetchItemCount = when (DeviceUtils.isLandscape(itemView.resources)) {
-                    true -> max(5, calendarEntries.size)
-                    false -> max(3, calendarEntries.size)
+            childRecyclerView.layoutManager =
+                LinearLayoutManager(childRecyclerView.context, HORIZONTAL, false).apply {
+                    initialPrefetchItemCount =
+                        when (DeviceUtils.isLandscape(itemView.resources)) {
+                            true -> max(5, calendarEntries.size)
+                            false -> max(3, calendarEntries.size)
+                        }
                 }
-            }
 
             childRecyclerView.swapAdapter(adapter, false)
 

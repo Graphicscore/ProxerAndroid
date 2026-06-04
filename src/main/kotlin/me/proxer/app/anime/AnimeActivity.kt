@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.core.app.ShareCompat
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.commitNow
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
@@ -25,7 +26,6 @@ import me.proxer.library.util.ProxerUtils
  * @author Ruben Gees
  */
 class AnimeActivity : DrawerActivity() {
-
     companion object {
         private const val ID_EXTRA = "id"
         private const val EPISODE_EXTRA = "episode"
@@ -39,29 +39,40 @@ class AnimeActivity : DrawerActivity() {
             episode: Int,
             language: AnimeLanguage,
             name: String? = null,
-            episodeAmount: Int? = null
+            episodeAmount: Int? = null,
         ) {
             context.startActivity<AnimeActivity>(
                 ID_EXTRA to id,
                 EPISODE_EXTRA to episode,
                 LANGUAGE_EXTRA to language,
                 NAME_EXTRA to name,
-                EPISODE_AMOUNT_EXTRA to episodeAmount
+                EPISODE_AMOUNT_EXTRA to episodeAmount,
             )
         }
     }
 
     val id: String
-        get() = when (intent.hasExtra(ID_EXTRA)) {
-            true -> intent.getSafeStringExtra(ID_EXTRA)
-            false -> intent?.data?.pathSegments?.getOrNull(1) ?: "-1"
-        }
+        get() =
+            when (intent.hasExtra(ID_EXTRA)) {
+                true -> intent.getSafeStringExtra(ID_EXTRA)
+                false -> intent?.data?.pathSegments?.getOrNull(1) ?: "-1"
+            }
 
     var episode: Int
-        get() = when (intent.hasExtra(EPISODE_EXTRA)) {
-            true -> intent.getIntExtra(EPISODE_EXTRA, 1)
-            false -> intent?.data?.pathSegments?.getOrNull(2)?.toIntOrNull() ?: 1
-        }
+        get() =
+            when (intent.hasExtra(EPISODE_EXTRA)) {
+                true -> {
+                    intent.getIntExtra(EPISODE_EXTRA, 1)
+                }
+
+                false -> {
+                    intent
+                        ?.data
+                        ?.pathSegments
+                        ?.getOrNull(2)
+                        ?.toIntOrNull() ?: 1
+                }
+            }
         set(value) {
             intent.putExtra(EPISODE_EXTRA, value)
 
@@ -69,12 +80,25 @@ class AnimeActivity : DrawerActivity() {
         }
 
     val language: AnimeLanguage
-        get() = when (intent.hasExtra(LANGUAGE_EXTRA)) {
-            true -> intent.getSerializableExtra(LANGUAGE_EXTRA) as AnimeLanguage
-            false ->
-                intent?.data?.pathSegments?.getOrNull(3)?.let { ProxerUtils.toApiEnum<AnimeLanguage>(it) }
-                    ?: AnimeLanguage.ENGLISH_SUB
-        }
+        get() =
+            when (intent.hasExtra(LANGUAGE_EXTRA)) {
+                true -> {
+                    requireNotNull(
+                        IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java),
+                    ) {
+                        "LANGUAGE_EXTRA present but deserialized to null in AnimeActivity"
+                    }
+                }
+
+                false -> {
+                    intent
+                        ?.data
+                        ?.pathSegments
+                        ?.getOrNull(3)
+                        ?.let { ProxerUtils.toApiEnum<AnimeLanguage>(it) }
+                        ?: AnimeLanguage.ENGLISH_SUB
+                }
+            }
 
     var name: String?
         get() = intent.getStringExtra(NAME_EXTRA)
@@ -85,10 +109,11 @@ class AnimeActivity : DrawerActivity() {
         }
 
     var episodeAmount: Int?
-        get() = when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
-            true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
-            false -> null
-        }
+        get() =
+            when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
+                true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
+                false -> null
+            }
         set(value) {
             if (value == null) {
                 intent.removeExtra(EPISODE_AMOUNT_EXTRA)
@@ -118,12 +143,16 @@ class AnimeActivity : DrawerActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_share -> name?.let {
-                ShareCompat.IntentBuilder(this)
-                    .setText(getString(R.string.share_anime, episode, it, ProxerUrls.animeWeb(id, episode, language)))
-                    .setType("text/plain")
-                    .setChooserTitle(getString(R.string.share_title))
-                    .startChooser()
+            R.id.action_share -> {
+                name?.let {
+                    ShareCompat
+                        .IntentBuilder(this)
+                        .setText(
+                            getString(R.string.share_anime, episode, it, ProxerUrls.animeWeb(id, episode, language)),
+                        ).setType("text/plain")
+                        .setChooserTitle(getString(R.string.share_title))
+                        .startChooser()
+                }
             }
         }
 
@@ -131,7 +160,8 @@ class AnimeActivity : DrawerActivity() {
     }
 
     private fun setupToolbar() {
-        toolbar.clicks()
+        toolbar
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe {
                 name?.let {

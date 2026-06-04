@@ -1,12 +1,11 @@
 package me.proxer.app.base
 
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.WindowManager
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.appbar.AppBarLayout
 import com.uber.autodispose.android.lifecycle.scope
@@ -27,7 +26,6 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 abstract class DrawerActivity : BaseActivity() {
-
     protected open val contentView
         get() = R.layout.activity_default
 
@@ -49,20 +47,20 @@ abstract class DrawerActivity : BaseActivity() {
         setContentView(contentView)
         setSupportActionBar(toolbar)
 
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.statusBarColor = Color.TRANSPARENT
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        actionBarDrawerToggle = ActionBarDrawerToggle(
-            this,
-            drawerLayout,
-            toolbar,
-            com.mikepenz.materialdrawer.R.string.material_drawer_open,
-            com.mikepenz.materialdrawer.R.string.material_drawer_close
-        ).apply {
-            setToolbarNavigationClickListener { onBackPressed() }
-            drawerLayout.addDrawerListener(this)
-            syncState()
-        }
+        actionBarDrawerToggle =
+            ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                toolbar,
+                com.mikepenz.materialdrawer.R.string.material_drawer_open,
+                com.mikepenz.materialdrawer.R.string.material_drawer_close,
+            ).apply {
+                setToolbarNavigationClickListener { onBackPressed() }
+                drawerLayout.addDrawerListener(this)
+                syncState()
+            }
 
         if (!isRootActivity) {
             actionBarDrawerToggle.isDrawerIndicatorEnabled = false
@@ -70,15 +68,16 @@ abstract class DrawerActivity : BaseActivity() {
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
 
-        drawer = MaterialDrawerWrapper(this, toolbar, savedInstanceState, isMainActivity).also {
-            it.itemClickSubject
-                .autoDisposable(this.scope())
-                .subscribe { item -> handleDrawerItemClick(item) }
+        drawer =
+            MaterialDrawerWrapper(this, toolbar, savedInstanceState, isMainActivity).also {
+                it.itemClickSubject
+                    .autoDisposable(this.scope())
+                    .subscribe { item -> handleDrawerItemClick(item) }
 
-            it.profileClickSubject
-                .autoDisposable(this.scope())
-                .subscribe { item -> handleAccountItemClick(item) }
-        }
+                it.profileClickSubject
+                    .autoDisposable(this.scope())
+                    .subscribe { item -> handleAccountItemClick(item) }
+            }
 
         storageHelper.isLoggedInObservable
             .autoDisposable(this.scope())
@@ -109,26 +108,27 @@ abstract class DrawerActivity : BaseActivity() {
         actionBarDrawerToggle.syncState()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when {
             actionBarDrawerToggle.onOptionsItemSelected(item) -> true
             else -> super.onOptionsItemSelected(item)
         }
-    }
 
     protected open fun handleDrawerItemClick(item: MaterialDrawerWrapper.DrawerItem) {
         MainActivity.navigateToSection(this, item)
     }
 
-    protected open fun handleAccountItemClick(item: ProfileItem) = when (item) {
-        ProfileItem.GUEST, ProfileItem.LOGIN -> LoginDialog.show(this)
-        ProfileItem.LOGOUT -> LogoutDialog.show(this)
-        ProfileItem.USER -> showProfilePage()
-        ProfileItem.NOTIFICATIONS -> NotificationActivity.navigateTo(this)
-        ProfileItem.PROFILE_SETTINGS -> ProfileSettingsActivity.navigateTo(this)
-    }
+    protected open fun handleAccountItemClick(item: ProfileItem) =
+        when (item) {
+            ProfileItem.GUEST, ProfileItem.LOGIN -> LoginDialog.show(this)
+            ProfileItem.LOGOUT -> LogoutDialog.show(this)
+            ProfileItem.USER -> showProfilePage()
+            ProfileItem.NOTIFICATIONS -> NotificationActivity.navigateTo(this)
+            ProfileItem.PROFILE_SETTINGS -> ProfileSettingsActivity.navigateTo(this)
+        }
 
-    private fun showProfilePage() = storageHelper.user?.let { (_, id, name, image) ->
-        ProfileActivity.navigateTo(this, id, name, image, null)
-    }
+    private fun showProfilePage() =
+        storageHelper.user?.let { (_, id, name, image) ->
+            ProfileActivity.navigateTo(this, id, name, image, null)
+        }
 }

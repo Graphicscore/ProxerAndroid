@@ -3,6 +3,7 @@ package me.proxer.app.chat.prv.create
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.commitNow
 import me.proxer.app.R
 import me.proxer.app.base.DrawerActivity
@@ -14,39 +15,46 @@ import me.proxer.app.util.extension.startActivity
  * @author Ruben Gees
  */
 class CreateConferenceActivity : DrawerActivity() {
-
     companion object {
         private const val IS_GROUP_EXTRA = "is_group"
         private const val INITIAL_PARTICIPANT_EXTRA = "initial_participant"
 
-        fun navigateTo(context: Activity, isGroup: Boolean = false, initialParticipant: Participant? = null) {
+        fun navigateTo(
+            context: Activity,
+            isGroup: Boolean = false,
+            initialParticipant: Participant? = null,
+        ) {
             context.startActivity<CreateConferenceActivity>(
                 IS_GROUP_EXTRA to isGroup,
-                INITIAL_PARTICIPANT_EXTRA to initialParticipant
+                INITIAL_PARTICIPANT_EXTRA to initialParticipant,
             )
         }
 
-        fun getIntent(context: Activity, isGroup: Boolean = false, initialParticipant: Participant? = null): Intent {
-            return context.intentFor<CreateConferenceActivity>(
+        fun getIntent(
+            context: Activity,
+            isGroup: Boolean = false,
+            initialParticipant: Participant? = null,
+        ): Intent =
+            context.intentFor<CreateConferenceActivity>(
                 IS_GROUP_EXTRA to isGroup,
-                INITIAL_PARTICIPANT_EXTRA to initialParticipant
+                INITIAL_PARTICIPANT_EXTRA to initialParticipant,
             )
-        }
     }
 
     val isGroup: Boolean
         get() = intent.getBooleanExtra(IS_GROUP_EXTRA, false)
 
     val initialParticipant: Participant?
-        get() = intent.getParcelableExtra(INITIAL_PARTICIPANT_EXTRA)
+        get() = IntentCompat.getParcelableExtra(intent, INITIAL_PARTICIPANT_EXTRA, Participant::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        title = when (isGroup) {
-            true -> getString(R.string.action_create_group)
-            false -> getString(R.string.action_create_chat)
-        }
+        title =
+            when (isGroup) {
+                true -> getString(R.string.action_create_group)
+                false -> getString(R.string.action_create_chat)
+            }
 
         if (savedInstanceState == null) {
             supportFragmentManager.commitNow {

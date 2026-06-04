@@ -31,37 +31,36 @@ import kotlin.properties.Delegates
 class MangaViewModel(
     private val entryId: String,
     private val language: Language,
-    episode: Int
+    episode: Int,
 ) : BaseViewModel<MangaChapterInfo>() {
-
     override val dataSingle: Single<MangaChapterInfo>
-        get() = Single.fromCallable { validate() }
-            .flatMap { entrySingle() }
-            .doOnSuccess {
-                if (it.isAgeRestricted && !preferenceHelper.isAgeRestrictedMediaAllowed) {
-                    throw AgeConfirmationRequiredException()
-                }
-            }
-            .flatMap { entry ->
-                chapterSingle(entry)
-                    .doOnSuccess {
-                        if (!it.chapter.isOfficial && !storageHelper.isLoggedIn) {
-                            throw NotLoggedInException()
-                        }
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap { entrySingle() }
+                .doOnSuccess {
+                    if (it.isAgeRestricted && !preferenceHelper.isAgeRestrictedMediaAllowed) {
+                        throw AgeConfirmationRequiredException()
                     }
-                    .map { data ->
-                        if (data.chapter.isOfficial) {
-                            throw PartialException(
-                                MangaLinkException(data.chapter.title, data.chapter.server.toPrefixedHttpUrl()),
-                                entry
-                            )
-                        } else if (data.chapter.pages == null) {
-                            throw PartialException(MangaNotAvailableException(), entry)
-                        }
+                }.flatMap { entry ->
+                    chapterSingle(entry)
+                        .doOnSuccess {
+                            if (!it.chapter.isOfficial && !storageHelper.isLoggedIn) {
+                                throw NotLoggedInException()
+                            }
+                        }.map { data ->
+                            if (data.chapter.isOfficial) {
+                                throw PartialException(
+                                    MangaLinkException(data.chapter.title, data.chapter.server.toPrefixedHttpUrl()),
+                                    entry,
+                                )
+                            } else if (data.chapter.pages == null) {
+                                throw PartialException(MangaNotAvailableException(), entry)
+                            }
 
-                        data
-                    }
-            }
+                            data
+                        }
+                }
 
     val userStateData = ResettingMutableLiveData<Unit?>()
     val userStateError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
@@ -75,12 +74,13 @@ class MangaViewModel(
     private var userStateDisposable: Disposable? = null
 
     init {
-        disposables += preferenceHelper.isAgeRestrictedMediaAllowedObservable
-            .subscribe {
-                if (error.value?.buttonAction == ButtonAction.AGE_CONFIRMATION) {
-                    reload()
+        disposables +=
+            preferenceHelper.isAgeRestrictedMediaAllowedObservable
+                .subscribe {
+                    if (error.value?.buttonAction == ButtonAction.AGE_CONFIRMATION) {
+                        reload()
+                    }
                 }
-            }
     }
 
     override fun onCleared() {
@@ -90,7 +90,10 @@ class MangaViewModel(
         super.onCleared()
     }
 
-    fun setEpisode(value: Int, trigger: Boolean = true) {
+    fun setEpisode(
+        value: Int,
+        trigger: Boolean = true,
+    ) {
         if (episode != value) {
             episode = value
 
@@ -100,34 +103,40 @@ class MangaViewModel(
 
     fun markAsFinished() = updateUserState(api.info.markAsFinished(entryId))
 
-    fun bookmark(episode: Int) = updateUserState(
-        api.ucp.setBookmark(entryId, episode, language.toMediaLanguage(), Category.MANGA)
-    )
+    fun bookmark(episode: Int) =
+        updateUserState(
+            api.ucp.setBookmark(entryId, episode, language.toMediaLanguage(), Category.MANGA),
+        )
 
-    private fun entrySingle(): Single<EntryCore> = when (cachedEntryCore != null) {
-        true -> Single.just(cachedEntryCore)
-        false -> api.info.entryCore(entryId).buildSingle()
-    }
+    private fun entrySingle(): Single<EntryCore> =
+        when (cachedEntryCore != null) {
+            true -> Single.just(cachedEntryCore)
+            false -> api.info.entryCore(entryId).buildSingle()
+        }
 
-    private fun chapterSingle(entry: EntryCore) = api.manga.chapter(entryId, episode, language)
-        .buildPartialErrorSingle(entry)
-        .map { MangaChapterInfo(it, entry.name, entry.episodeAmount) }
+    private fun chapterSingle(entry: EntryCore) =
+        api.manga
+            .chapter(entryId, episode, language)
+            .buildPartialErrorSingle(entry)
+            .map { MangaChapterInfo(it, entry.name, entry.episodeAmount) }
 
     private fun updateUserState(endpoint: Endpoint<Unit?>) {
         userStateDisposable?.dispose()
-        userStateDisposable = Single.fromCallable { validators.validateLogin() }
-            .flatMap { endpoint.buildSingle() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeAndLogErrors(
-                {
-                    userStateError.value = null
-                    userStateData.value = Unit
-                },
-                {
-                    userStateData.value = null
-                    userStateError.value = ErrorUtils.handle(it)
-                }
-            )
+        userStateDisposable =
+            Single
+                .fromCallable { validators.validateLogin() }
+                .flatMap { endpoint.buildSingle() }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeAndLogErrors(
+                    {
+                        userStateError.value = null
+                        userStateData.value = Unit
+                    },
+                    {
+                        userStateData.value = null
+                        userStateError.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 }

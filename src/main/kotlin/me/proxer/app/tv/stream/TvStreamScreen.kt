@@ -18,7 +18,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface as M3Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +43,7 @@ import me.proxer.library.enums.AnimeLanguage
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import androidx.compose.material3.Surface as M3Surface
 
 @Composable
 fun TvStreamScreen(
@@ -51,7 +51,7 @@ fun TvStreamScreen(
     episode: Int,
     language: AnimeLanguage,
     entryName: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val viewModel: AnimeViewModel = koinViewModel { parametersOf(entryId, language, episode) }
     val streamInfo by viewModel.data.observeAsState()
@@ -76,10 +76,18 @@ fun TvStreamScreen(
 
     LaunchedEffect(resolutionResult) {
         when (val result = resolutionResult) {
-            is StreamResolutionResult.Video -> result.play(
-                context, entryId, entryName, episode, language,
-                ProxerUrls.entryImage(entryId).androidUri(), true
-            )
+            is StreamResolutionResult.Video -> {
+                result.play(
+                    context,
+                    entryId,
+                    entryName,
+                    episode,
+                    language,
+                    ProxerUrls.entryImage(entryId).androidUri(),
+                    true,
+                )
+            }
+
             is StreamResolutionResult.Link -> {
                 try {
                     context.startActivity(result.makeIntent())
@@ -87,6 +95,7 @@ fun TvStreamScreen(
                     context.toast("No app found to open this link", Toast.LENGTH_SHORT)
                 }
             }
+
             is StreamResolutionResult.App -> {
                 try {
                     result.navigate(context)
@@ -94,10 +103,19 @@ fun TvStreamScreen(
                     context.toast("No app found to handle this stream", Toast.LENGTH_SHORT)
                 }
             }
-            is StreamResolutionResult.Message -> Toast.makeText(
-                context, result.message, Toast.LENGTH_LONG
-            ).show()
-            null -> Unit
+
+            is StreamResolutionResult.Message -> {
+                Toast
+                    .makeText(
+                        context,
+                        result.message,
+                        Toast.LENGTH_LONG,
+                    ).show()
+            }
+
+            null -> {
+                Unit
+            }
         }
         if (resolutionResult != null) {
             showResolutionError = false
@@ -106,15 +124,16 @@ fun TvStreamScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(24.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(bottom = 16.dp),
         ) {
             OutlinedButton(onClick = onBack) {
                 Text("← Back")
@@ -124,7 +143,7 @@ fun TvStreamScreen(
                 Text(
                     "Episode $episode • ${language.name}",
                     fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                 )
             }
         }
@@ -133,7 +152,7 @@ fun TvStreamScreen(
             Text(
                 "Resolution error",
                 color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 8.dp),
             )
         }
 
@@ -143,6 +162,7 @@ fun TvStreamScreen(
                     CircularProgressIndicator()
                 }
             }
+
             error != null -> {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Failed to load streams", color = MaterialTheme.colorScheme.error)
@@ -150,6 +170,7 @@ fun TvStreamScreen(
                     Button(onClick = { viewModel.reload() }) { Text("Retry") }
                 }
             }
+
             else -> {
                 val streams = streamInfo?.streams ?: emptyList()
                 if (streams.isEmpty() && isLoading != true) {
@@ -157,13 +178,13 @@ fun TvStreamScreen(
                         Text(
                             "No streams available",
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            fontSize = 18.sp
+                            fontSize = 18.sp,
                         )
                     }
                 } else {
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     ) {
                         items(streams, key = { it.id }) { stream ->
                             TvStreamItem(
@@ -172,7 +193,7 @@ fun TvStreamScreen(
                                 onClick = {
                                     resolvingStreamId = stream.id
                                     viewModel.resolve(stream)
-                                }
+                                },
                             )
                         }
                     }
@@ -183,13 +204,16 @@ fun TvStreamScreen(
 }
 
 @Composable
-private fun TvBadge(label: String, background: Color) {
+private fun TvBadge(
+    label: String,
+    background: Color,
+) {
     M3Surface(color = background, shape = RoundedCornerShape(4.dp)) {
         Text(
             label,
             color = Color.White,
             fontSize = 11.sp,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
         )
     }
 }
@@ -198,33 +222,35 @@ private fun TvBadge(label: String, background: Color) {
 private fun TvStreamItem(
     stream: AnimeStream,
     isResolving: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(80.dp)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(80.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
                 Text(stream.hosterName, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
                 Text(
                     "by ${stream.uploaderName}",
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                    fontSize = 13.sp
+                    fontSize = 13.sp,
                 )
             }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (stream.isOfficial) TvBadge(label = "Official", background = Color(0xFF1B5E20))
                 if (!stream.isSupported) TvBadge(label = "External", background = Color(0xFF5D1A1A))

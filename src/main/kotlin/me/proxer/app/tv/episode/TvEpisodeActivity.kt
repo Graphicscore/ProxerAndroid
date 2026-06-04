@@ -11,7 +11,6 @@ import me.proxer.app.util.extension.startActivity
 import me.proxer.library.enums.AnimeLanguage
 
 class TvEpisodeActivity : ComponentActivity() {
-
     private val entryId: String get() = intent.getSafeStringExtra(ID_EXTRA)
     private val entryName: String get() = intent.getStringExtra(NAME_EXTRA) ?: ""
 
@@ -28,7 +27,7 @@ class TvEpisodeActivity : ComponentActivity() {
                     onEpisodeClick = { episode, language ->
                         TvStreamActivity.navigateTo(activity, id, episode, language, name)
                     },
-                    onBack = { finish() }
+                    onBack = { finish() },
                 )
             }
         }
@@ -39,9 +38,16 @@ class TvEpisodeActivity : ComponentActivity() {
         private const val NAME_EXTRA = "name"
         private const val EPISODE_AMOUNT_EXTRA = "episode_amount"
 
-        fun navigateTo(context: Context, id: String, name: String, episodeAmount: Int) {
+        fun navigateTo(
+            context: Context,
+            id: String,
+            name: String,
+            episodeAmount: Int,
+        ) {
             context.startActivity<TvEpisodeActivity>(
-                ID_EXTRA to id, NAME_EXTRA to name, EPISODE_AMOUNT_EXTRA to episodeAmount
+                ID_EXTRA to id,
+                NAME_EXTRA to name,
+                EPISODE_AMOUNT_EXTRA to episodeAmount,
             )
         }
     }

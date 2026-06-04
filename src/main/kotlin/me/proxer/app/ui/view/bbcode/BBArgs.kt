@@ -10,7 +10,6 @@ import java.util.LinkedHashMap
  * @author Ruben Gees
  */
 class BBArgs : LinkedHashMap<String, Any?> {
-
     companion object {
         private const val TEXT_ARGUMENT = "text"
         private const val GLIDE_ARGUMENT = "glide"
@@ -40,7 +39,7 @@ class BBArgs : LinkedHashMap<String, Any?> {
         glide: RequestManager? = null,
         userId: String? = null,
         enableEmoticons: Boolean? = null,
-        vararg custom: Pair<String, Any?>
+        vararg custom: Pair<String, Any?>,
     ) {
         if (text != null) this[TEXT_ARGUMENT] = text
         if (resources != null) this[RESOURCES_ARGUMENT] = resources
@@ -55,10 +54,11 @@ class BBArgs : LinkedHashMap<String, Any?> {
         putAll(args)
     }
 
-    operator fun plus(other: BBArgs) = BBArgs().also {
-        it.putAll(this)
-        it.putAll(other)
-    }
+    operator fun plus(other: BBArgs) =
+        BBArgs().also {
+            it.putAll(this)
+            it.putAll(other)
+        }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

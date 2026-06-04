@@ -23,29 +23,33 @@ import me.proxer.library.entity.info.MediaUserInfo
 /**
  * @author Ruben Gees
  */
-class MediaInfoViewModel(private val entryId: String) : BaseViewModel<Entry>() {
-
+class MediaInfoViewModel(
+    private val entryId: String,
+) : BaseViewModel<Entry>() {
     override val dataSingle: Single<Entry>
-        get() = Single.fromCallable { validate() }
-            .flatMap { api.info.entry(entryId).buildSingle() }
-            .doOnSuccess {
-                if (it.isTrulyAgeRestricted) {
-                    if (!storageHelper.isLoggedIn) {
-                        throw NotLoggedInException()
-                    } else if (!preferenceHelper.isAgeRestrictedMediaAllowed) {
-                        throw AgeConfirmationRequiredException()
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap { api.info.entry(entryId).buildSingle() }
+                .doOnSuccess {
+                    if (it.isTrulyAgeRestricted) {
+                        if (!storageHelper.isLoggedIn) {
+                            throw NotLoggedInException()
+                        } else if (!preferenceHelper.isAgeRestrictedMediaAllowed) {
+                            throw AgeConfirmationRequiredException()
+                        }
+                    }
+                }.doAfterSuccess {
+                    if (storageHelper.isLoggedIn) {
+                        userInfoDisposable =
+                            api.info
+                                .userInfo(entryId)
+                                .buildSingle()
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribeAndLogErrors { userInfoData.value = it }
                     }
                 }
-            }
-            .doAfterSuccess {
-                if (storageHelper.isLoggedIn) {
-                    userInfoDisposable = api.info.userInfo(entryId)
-                        .buildSingle()
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribeAndLogErrors { userInfoData.value = it }
-                }
-            }
 
     val userInfoData = MutableLiveData<MediaUserInfo?>()
 
@@ -56,19 +60,21 @@ class MediaInfoViewModel(private val entryId: String) : BaseViewModel<Entry>() {
     private var userInfoUpdateDisposable: Disposable? = null
 
     init {
-        disposables += storageHelper.isLoggedInObservable
-            .subscribe {
-                if (it && error.value?.buttonAction == ButtonAction.LOGIN) {
-                    reload()
+        disposables +=
+            storageHelper.isLoggedInObservable
+                .subscribe {
+                    if (it && error.value?.buttonAction == ButtonAction.LOGIN) {
+                        reload()
+                    }
                 }
-            }
 
-        disposables += preferenceHelper.isAgeRestrictedMediaAllowedObservable
-            .subscribe {
-                if (error.value?.buttonAction == ButtonAction.AGE_CONFIRMATION) {
-                    reload()
+        disposables +=
+            preferenceHelper.isAgeRestrictedMediaAllowedObservable
+                .subscribe {
+                    if (error.value?.buttonAction == ButtonAction.AGE_CONFIRMATION) {
+                        reload()
+                    }
                 }
-            }
     }
 
     override fun onCleared() {
@@ -82,6 +88,7 @@ class MediaInfoViewModel(private val entryId: String) : BaseViewModel<Entry>() {
     }
 
     fun note() = updateUserInfo(UserInfoUpdateType.NOTE)
+
     fun markAsFinished() = updateUserInfo(UserInfoUpdateType.FINISHED)
 
     fun toggleFavorite() {
@@ -101,73 +108,105 @@ class MediaInfoViewModel(private val entryId: String) : BaseViewModel<Entry>() {
     }
 
     private fun updateUserInfo(updateType: UserInfoUpdateType) {
-        val endpoint = when (updateType) {
-            UserInfoUpdateType.NOTE -> api.info.note(entryId).buildSingle()
-            UserInfoUpdateType.FAVORITE -> api.info.markAsFavorite(entryId).buildSingle()
-            UserInfoUpdateType.FINISHED -> api.info.markAsFinished(entryId).buildSingle()
-            UserInfoUpdateType.SUBSCRIBE -> api.info.subscribe(entryId).buildSingle()
-            UserInfoUpdateType.UNSUBSCRIBE -> api.ucp.deleteSubscription(entryId).buildSingle()
-            UserInfoUpdateType.UNFAVORITE -> api.ucp.topTen().buildSingle().flatMap { topTenEntries ->
-                val topTenId = topTenEntries.find { topTenEntry -> topTenEntry.entryId == entryId }?.id
+        val endpoint =
+            when (updateType) {
+                UserInfoUpdateType.NOTE -> {
+                    api.info.note(entryId).buildSingle()
+                }
 
-                if (topTenId != null) {
-                    api.ucp.deleteFavorite(topTenId).buildSingle()
-                } else {
-                    Single.just(Some(Unit))
+                UserInfoUpdateType.FAVORITE -> {
+                    api.info.markAsFavorite(entryId).buildSingle()
+                }
+
+                UserInfoUpdateType.FINISHED -> {
+                    api.info.markAsFinished(entryId).buildSingle()
+                }
+
+                UserInfoUpdateType.SUBSCRIBE -> {
+                    api.info.subscribe(entryId).buildSingle()
+                }
+
+                UserInfoUpdateType.UNSUBSCRIBE -> {
+                    api.ucp.deleteSubscription(entryId).buildSingle()
+                }
+
+                UserInfoUpdateType.UNFAVORITE -> {
+                    api.ucp.topTen().buildSingle().flatMap { topTenEntries ->
+                        val topTenId = topTenEntries.find { topTenEntry -> topTenEntry.entryId == entryId }?.id
+
+                        if (topTenId != null) {
+                            api.ucp.deleteFavorite(topTenId).buildSingle()
+                        } else {
+                            Single.just(Some(Unit))
+                        }
+                    }
                 }
             }
-        }
 
         userInfoDisposable?.dispose()
         userInfoUpdateDisposable?.dispose()
-        userInfoUpdateDisposable = Single.fromCallable { validators.validateLogin() }
-            .flatMap { endpoint }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeAndLogErrors(
-                {
-                    userInfoUpdateError.value = null
-                    userInfoUpdateData.value = Unit
+        userInfoUpdateDisposable =
+            Single
+                .fromCallable { validators.validateLogin() }
+                .flatMap { endpoint }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeAndLogErrors(
+                    {
+                        userInfoUpdateError.value = null
+                        userInfoUpdateData.value = Unit
 
-                    userInfoData.value?.also {
-                        userInfoData.value = applyMediaUserInfoChanges(it, updateType)
-                    }
-                },
-                {
-                    userInfoUpdateData.value = null
-                    userInfoUpdateError.value = ErrorUtils.handle(it)
-                }
-            )
+                        userInfoData.value?.also {
+                            userInfoData.value = applyMediaUserInfoChanges(it, updateType)
+                        }
+                    },
+                    {
+                        userInfoUpdateData.value = null
+                        userInfoUpdateError.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 
-    private fun applyMediaUserInfoChanges(data: MediaUserInfo, updateType: UserInfoUpdateType) = data.let {
-        val isNoted = when (updateType) {
-            UserInfoUpdateType.FINISHED -> false
-            UserInfoUpdateType.NOTE -> true
-            else -> data.isNoted
-        }
+    private fun applyMediaUserInfoChanges(
+        data: MediaUserInfo,
+        updateType: UserInfoUpdateType,
+    ) = data.let {
+        val isNoted =
+            when (updateType) {
+                UserInfoUpdateType.FINISHED -> false
+                UserInfoUpdateType.NOTE -> true
+                else -> data.isNoted
+            }
 
-        val isFinished = when (updateType) {
-            UserInfoUpdateType.FINISHED -> true
-            else -> data.isFinished
-        }
+        val isFinished =
+            when (updateType) {
+                UserInfoUpdateType.FINISHED -> true
+                else -> data.isFinished
+            }
 
-        val isTopTen = when (updateType) {
-            UserInfoUpdateType.FAVORITE -> true
-            UserInfoUpdateType.UNFAVORITE -> false
-            else -> data.isTopTen
-        }
+        val isTopTen =
+            when (updateType) {
+                UserInfoUpdateType.FAVORITE -> true
+                UserInfoUpdateType.UNFAVORITE -> false
+                else -> data.isTopTen
+            }
 
-        val isSubscribed = when (updateType) {
-            UserInfoUpdateType.SUBSCRIBE -> true
-            UserInfoUpdateType.UNSUBSCRIBE -> false
-            else -> data.isSubscribed
-        }
+        val isSubscribed =
+            when (updateType) {
+                UserInfoUpdateType.SUBSCRIBE -> true
+                UserInfoUpdateType.UNSUBSCRIBE -> false
+                else -> data.isSubscribed
+            }
 
         MediaUserInfo(isNoted, isFinished, data.isCanceled, isTopTen, isSubscribed)
     }
 
     private enum class UserInfoUpdateType {
-        NOTE, FAVORITE, UNFAVORITE, FINISHED, SUBSCRIBE, UNSUBSCRIBE
+        NOTE,
+        FAVORITE,
+        UNFAVORITE,
+        FINISHED,
+        SUBSCRIBE,
+        UNSUBSCRIBE,
     }
 }

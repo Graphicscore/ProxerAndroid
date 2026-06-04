@@ -6,6 +6,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.setFragmentResultListener
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,11 +25,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class NotificationFragment : PagedContentFragment<ProxerNotification>() {
-
     companion object {
-        fun newInstance() = NotificationFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            NotificationFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val isSwipeToRefreshEnabled = true
@@ -58,12 +59,46 @@ class NotificationFragment : PagedContentFragment<ProxerNotification>() {
         setFragmentResultListener(NotificationDeletionConfirmationDialog.DELETE_ALL_RESULT) { _, _ ->
             viewModel.deleteAll()
         }
-
-        setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_notifications,
+                        menu,
+                        true,
+                    )
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.delete_all -> {
+                            if (!innerAdapter.isEmpty()) {
+                                NotificationDeletionConfirmationDialog.show(hostingActivity)
+                            }
+                        }
+
+                        else -> {
+                            return false
+                        }
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         viewModel.deletionError.observe(
             viewLifecycleOwner,
@@ -73,27 +108,11 @@ class NotificationFragment : PagedContentFragment<ProxerNotification>() {
                         getString(R.string.error_notification_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_notifications, menu, true)
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.delete_all -> if (!innerAdapter.isEmpty()) {
-                NotificationDeletionConfirmationDialog.show(hostingActivity)
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {

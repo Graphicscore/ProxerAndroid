@@ -51,38 +51,44 @@ fun TvScheduleScreen() {
     when {
         isLoading == true && schedule.isNullOrEmpty() -> {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
             }
         }
+
         error != null -> {
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center,
             ) {
                 TvErrorView(
                     error = error!!,
-                    onRetryClick = { viewModel.load() }
+                    onRetryClick = { viewModel.load() },
                 )
             }
         }
+
         else -> {
-            val sortedDays = (schedule ?: emptyMap())
-                .entries
-                .sortedBy { (day, _) -> day.ordinal }
+            val sortedDays =
+                (schedule ?: emptyMap())
+                    .entries
+                    .sortedBy { (day, _) -> day.ordinal }
 
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 sortedDays.forEach { (day, dayEntries) ->
                     item(key = day.ordinal) {
@@ -91,7 +97,7 @@ fun TvScheduleScreen() {
                             entries = dayEntries,
                             onEntryClick = { entry ->
                                 TvMediaDetailActivity.navigateTo(context, entry.entryId, entry.name)
-                            }
+                            },
                         )
                     }
                 }
@@ -104,7 +110,7 @@ fun TvScheduleScreen() {
 private fun TvScheduleDayRow(
     day: CalendarDay,
     entries: List<CalendarEntry>,
-    onEntryClick: (CalendarEntry) -> Unit
+    onEntryClick: (CalendarEntry) -> Unit,
 ) {
     val context = LocalContext.current
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -112,11 +118,11 @@ private fun TvScheduleDayRow(
             text = day.toAppString(context),
             fontSize = 20.sp,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         )
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             items(entries, key = { it.id }) { entry ->
                 TvScheduleCard(entry = entry, onClick = { onEntryClick(entry) })
@@ -126,37 +132,42 @@ private fun TvScheduleDayRow(
 }
 
 @Composable
-private fun TvScheduleCard(entry: CalendarEntry, onClick: () -> Unit) {
+private fun TvScheduleCard(
+    entry: CalendarEntry,
+    onClick: () -> Unit,
+) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.width(160.dp).height(220.dp)
+        modifier = Modifier.width(160.dp).height(220.dp),
     ) {
         Column {
             AsyncImage(
                 model = ProxerUrls.entryImage(entry.entryId).toString(),
                 contentDescription = entry.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
             )
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(8.dp),
             ) {
                 Text(
                     text = entry.name,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 11.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = DateFormat.getTimeInstance(DateFormat.SHORT).format(entry.date),
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    fontSize = 10.sp
+                    fontSize = 10.sp,
                 )
             }
         }

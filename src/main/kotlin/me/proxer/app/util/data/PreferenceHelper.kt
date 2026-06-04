@@ -16,9 +16,8 @@ import org.threeten.bp.Instant
 class PreferenceHelper(
     initializer: LocalDataInitializer,
     rxSharedPreferences: RxSharedPreferences,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
 ) {
-
     companion object {
         const val CAST_INTRODUCTORY_OVERLAY_SHOWN = "cast_introductory_overlay_shown"
         const val LAUNCHES = "launches"
@@ -97,12 +96,14 @@ class PreferenceHelper(
             sharedPreferences.edit { putBoolean(LINK_CHECK, value) }
         }
 
-    val isAgeRestrictedMediaAllowedObservable = rxSharedPreferences.getBoolean(AGE_CONFIRMATION, false)
-        .asObservable()
-        .skip(1)
-        .distinctUntilChanged()
-        .publish()
-        .autoConnect()
+    val isAgeRestrictedMediaAllowedObservable =
+        rxSharedPreferences
+            .getBoolean(AGE_CONFIRMATION, false)
+            .asObservable()
+            .skip(1)
+            .distinctUntilChanged()
+            .publish()
+            .autoConnect()
 
     val areBookmarksAutomatic
         get() = sharedPreferences.getBoolean(AUTO_BOOKMARK, false)
@@ -114,9 +115,10 @@ class PreferenceHelper(
         }
 
     val startPage
-        get() = DrawerItem.fromIdOrDefault(
-            sharedPreferences.getSafeString(START_PAGE, "0").toLongOrNull()
-        )
+        get() =
+            DrawerItem.fromIdOrDefault(
+                sharedPreferences.getSafeString(START_PAGE, "0").toLongOrNull(),
+            )
 
     var areNewsNotificationsEnabled
         get() = sharedPreferences.getBoolean(NOTIFICATIONS_NEWS, false)
@@ -137,9 +139,10 @@ class PreferenceHelper(
         get() = sharedPreferences.getSafeString(NOTIFICATIONS_INTERVAL, "30").toLong()
 
     var mangaReaderOrientation
-        get() = MangaReaderOrientation.values()[
-            sharedPreferences.getInt(MANGA_READER_ORIENTATION, MangaReaderOrientation.VERTICAL.ordinal)
-        ]
+        get() =
+            MangaReaderOrientation.values()[
+                sharedPreferences.getInt(MANGA_READER_ORIENTATION, MangaReaderOrientation.VERTICAL.ordinal),
+            ]
         set(value) {
             sharedPreferences.edit { putInt(MANGA_READER_ORIENTATION, value.ordinal) }
         }
@@ -159,21 +162,24 @@ class PreferenceHelper(
             sharedPreferences.edit { putString(THEME, value.toPreferenceString()) }
         }
 
-    val themeObservable = rxSharedPreferences.getString(THEME, "0_2")
-        .asObservable()
-        .skip(1)
-        .map { ThemeContainer.fromPreferenceString(it) }
-        .distinctUntilChanged()
-        .publish()
-        .autoConnect()
+    val themeObservable =
+        rxSharedPreferences
+            .getString(THEME, "0_2")
+            .asObservable()
+            .skip(1)
+            .map { ThemeContainer.fromPreferenceString(it) }
+            .distinctUntilChanged()
+            .publish()
+            .autoConnect()
 
     val httpLogLevel
-        get() = when (sharedPreferences.getString(HTTP_LOG_LEVEL, "0")) {
-            "0" -> HttpLoggingInterceptor.Level.BASIC
-            "1" -> HttpLoggingInterceptor.Level.HEADERS
-            "2" -> HttpLoggingInterceptor.Level.BODY
-            else -> error("Unknown http log level saved in shared preferences")
-        }
+        get() =
+            when (sharedPreferences.getString(HTTP_LOG_LEVEL, "0")) {
+                "0" -> HttpLoggingInterceptor.Level.BASIC
+                "1" -> HttpLoggingInterceptor.Level.HEADERS
+                "2" -> HttpLoggingInterceptor.Level.BODY
+                else -> error("Unknown http log level saved in shared preferences")
+            }
 
     val shouldLogHttpVerbose
         get() = sharedPreferences.getBoolean(HTTP_VERBOSE, false)

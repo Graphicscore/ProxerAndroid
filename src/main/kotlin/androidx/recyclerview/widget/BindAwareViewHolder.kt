@@ -24,13 +24,17 @@ import android.view.View
  *
  * Disclaimer: This is in no way supported and THIS COULD BREAK AT ANY TIME. Left for research.
  */
-abstract class BindAwareViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-
+abstract class BindAwareViewHolder(
+    itemView: View,
+) : RecyclerView.ViewHolder(itemView) {
     protected open fun onBind() = Unit
 
     protected open fun onUnbind() = Unit
 
-    override fun setFlags(flags: Int, mask: Int) {
+    override fun setFlags(
+        flags: Int,
+        mask: Int,
+    ) {
         val wasBound = isBound
 
         super.setFlags(flags, mask)
@@ -62,7 +66,10 @@ abstract class BindAwareViewHolder(itemView: View) : RecyclerView.ViewHolder(ite
         notifyBinding(wasBound, isBound)
     }
 
-    private fun notifyBinding(previousBound: Boolean, currentBound: Boolean) {
+    private fun notifyBinding(
+        previousBound: Boolean,
+        currentBound: Boolean,
+    ) {
         if (previousBound && !currentBound) {
             onUnbind()
         } else if (!previousBound && currentBound) {

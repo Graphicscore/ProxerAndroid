@@ -28,7 +28,6 @@ import me.proxer.app.util.extension.toast
  * @author Ruben Gees
  */
 abstract class ReportDialog : BaseDialog() {
-
     companion object {
         const val ID_ARGUMENT = "id"
     }
@@ -43,12 +42,13 @@ abstract class ReportDialog : BaseDialog() {
     private val id: String
         get() = requireArguments().getSafeString(ID_ARGUMENT)
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .noAutoDismiss()
-        .title(R.string.dialog_chat_report_title)
-        .positiveButton(R.string.dialog_chat_report_positive) { validateAndSendReport() }
-        .negativeButton(R.string.cancel) { dismiss() }
-        .customView(R.layout.dialog_chat_report, scrollable = true)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .noAutoDismiss()
+            .title(R.string.dialog_chat_report_title)
+            .positiveButton(R.string.dialog_chat_report_positive) { validateAndSendReport() }
+            .negativeButton(R.string.cancel) { dismiss() }
+            .customView(R.layout.dialog_chat_report, scrollable = true)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -59,12 +59,14 @@ abstract class ReportDialog : BaseDialog() {
             dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
         }
 
-        messageInput.editorActionEvents { event -> event.actionId == EditorInfo.IME_ACTION_GO }
+        messageInput
+            .editorActionEvents { event -> event.actionId == EditorInfo.IME_ACTION_GO }
             .filter { event -> event.actionId == EditorInfo.IME_ACTION_GO }
             .autoDisposable(dialogLifecycleOwner.scope())
             .subscribe { validateAndSendReport() }
 
-        messageInput.textChanges()
+        messageInput
+            .textChanges()
             .skipInitialValue()
             .autoDisposable(dialogLifecycleOwner.scope())
             .subscribe { setError(messageContainer, null) }
@@ -73,7 +75,7 @@ abstract class ReportDialog : BaseDialog() {
             dialogLifecycleOwner,
             Observer {
                 it?.let { dismiss() }
-            }
+            },
         )
 
         viewModel.error.observe(
@@ -84,7 +86,7 @@ abstract class ReportDialog : BaseDialog() {
 
                     requireContext().toast(it.message)
                 }
-            }
+            },
         )
 
         viewModel.isLoading.observe(
@@ -92,7 +94,7 @@ abstract class ReportDialog : BaseDialog() {
             Observer {
                 inputContainer.isGone = it == true
                 progress.isVisible = it == true
-            }
+            },
         )
     }
 
@@ -104,16 +106,23 @@ abstract class ReportDialog : BaseDialog() {
         }
     }
 
-    private fun validateInput(message: String) = when {
-        message.isBlank() -> {
-            setError(messageContainer, getString(R.string.dialog_chat_error_message))
+    private fun validateInput(message: String) =
+        when {
+            message.isBlank() -> {
+                setError(messageContainer, getString(R.string.dialog_chat_error_message))
 
-            false
+                false
+            }
+
+            else -> {
+                true
+            }
         }
-        else -> true
-    }
 
-    private fun setError(container: TextInputLayout, errorText: String?) {
+    private fun setError(
+        container: TextInputLayout,
+        errorText: String?,
+    ) {
         container.isErrorEnabled = errorText != null
         container.error = errorText
     }

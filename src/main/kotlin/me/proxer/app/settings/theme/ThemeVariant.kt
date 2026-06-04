@@ -1,3 +1,5 @@
+@file:Suppress("ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD")
+
 package me.proxer.app.settings.theme
 
 import android.os.Build
@@ -11,7 +13,7 @@ import me.proxer.app.R
 enum class ThemeVariant(
     val preferenceId: String,
     @StringRes val variantName: Int?,
-    @AppCompatDelegate.NightMode val value: Int
+    @AppCompatDelegate.NightMode val value: Int,
 ) {
     LIGHT("0", R.string.theme_variant_light, AppCompatDelegate.MODE_NIGHT_NO),
     DARK("1", R.string.theme_variant_dark, AppCompatDelegate.MODE_NIGHT_YES),
@@ -22,6 +24,6 @@ enum class ThemeVariant(
             AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         } else {
             AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY
-        }
-    )
+        },
+    ),
 }

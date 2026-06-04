@@ -10,7 +10,6 @@ import me.proxer.app.util.extension.safeInject
  * @author Ruben Gees
  */
 class ScheduleWidgetService : RemoteViewsService() {
-
     companion object {
         const val ARGUMENT_CALENDAR_ENTRIES = "calendar_entries"
     }
@@ -18,8 +17,10 @@ class ScheduleWidgetService : RemoteViewsService() {
     private val moshi by safeInject<Moshi>()
 
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
-        val calendarEntries = intent.getSafeStringArrayExtra(ARGUMENT_CALENDAR_ENTRIES)
-            .mapNotNull { moshi.adapter(SimpleCalendarEntry::class.java).fromJson(it) }
+        val calendarEntries =
+            intent
+                .getSafeStringArrayExtra(ARGUMENT_CALENDAR_ENTRIES)
+                .mapNotNull { moshi.adapter(SimpleCalendarEntry::class.java).fromJson(it) }
 
         return ScheduleWidgetViewsFactory(applicationContext, false, calendarEntries)
     }

@@ -5,8 +5,10 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -34,13 +36,13 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
-
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
 
-        fun newInstance() = ProfileCommentFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ProfileCommentFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val emptyDataMessage = R.string.error_no_data_comments
@@ -61,7 +63,7 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
         get() = hostingActivity.username
 
     private var category: Category?
-        get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as? Category
+        get() = BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java)
         set(value) {
             requireArguments().putSerializable(CATEGORY_ARGUMENT, value)
 
@@ -71,15 +73,17 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
     override val layoutManager by unsafeLazy { LinearLayoutManager(context) }
     override var innerAdapter by Delegates.notNull<ProfileCommentAdapter>()
 
-    private val editComment = registerForActivityResult(EditCommentActivity.Contract()) { comment ->
-        if (comment != null) {
-            Single.fromCallable { comment }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(this.scope())
-                .subscribeAndLogErrors { viewModel.updateComment(it) }
+    private val editComment =
+        registerForActivityResult(EditCommentActivity.Contract()) { comment ->
+            if (comment != null) {
+                Single
+                    .fromCallable { comment }
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDisposable(this.scope())
+                    .subscribeAndLogErrors { viewModel.updateComment(it) }
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +99,6 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
         innerAdapter.editClickSubject
             .autoDisposable(this.scope())
             .subscribe {
-
                 editComment.launch(EditCommentActivity.Contract.Input(it.id, it.entryId, it.entryName))
             }
 
@@ -107,15 +110,51 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                     .negativeButton(res = R.string.cancel)
                     .positiveButton(res = R.string.dialog_comment_delete_positive) {
                         viewModel.deleteComment(comment)
-                    }
-                    .show()
+                    }.show()
             }
-
-        setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_user_comments,
+                        menu,
+                        true,
+                    )
+
+                    when (category) {
+                        Category.ANIME -> menu.findItem(R.id.anime).isChecked = true
+                        Category.MANGA -> menu.findItem(R.id.manga).isChecked = true
+                        else -> menu.findItem(R.id.all).isChecked = true
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.anime -> category = Category.ANIME
+                        R.id.manga -> category = Category.MANGA
+                        R.id.all -> category = null
+                        else -> return false
+                    }
+                    menuItem.isChecked = true
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+            androidx.lifecycle.Lifecycle.State.RESUMED,
+        )
 
         viewModel.itemDeletionError.observe(
             viewLifecycleOwner,
@@ -125,35 +164,11 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                         getString(R.string.error_comment_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_user_comments, menu, true)
-
-        when (category) {
-            Category.ANIME -> menu.findItem(R.id.anime).isChecked = true
-            Category.MANGA -> menu.findItem(R.id.manga).isChecked = true
-            else -> menu.findItem(R.id.all).isChecked = true
-        }
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.anime -> category = Category.ANIME
-            R.id.manga -> category = Category.MANGA
-            R.id.all -> category = null
-        }
-
-        item.isChecked = true
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

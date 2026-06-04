@@ -7,11 +7,14 @@ import me.proxer.library.entity.list.IndustryProject
 /**
  * @author Ruben Gees
  */
-class IndustryProjectViewModel(private val industryId: String) : PagedContentViewModel<IndustryProject>() {
-
+class IndustryProjectViewModel(
+    private val industryId: String,
+) : PagedContentViewModel<IndustryProject>() {
     override val itemsOnPage = 30
 
     override val endpoint: PagingLimitEndpoint<List<IndustryProject>>
-        get() = api.list.industryProjectList(industryId)
-            .includeHentai(preferenceHelper.isAgeRestrictedMediaAllowed && storageHelper.isLoggedIn)
+        get() =
+            api.list
+                .industryProjectList(industryId)
+                .includeHentai(preferenceHelper.isAgeRestrictedMediaAllowed && storageHelper.isLoggedIn)
 }
