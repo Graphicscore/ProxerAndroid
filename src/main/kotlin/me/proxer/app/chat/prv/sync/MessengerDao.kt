@@ -6,6 +6,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import io.reactivex.Maybe
@@ -83,6 +84,7 @@ abstract class MessengerDao {
     @Query("SELECT * FROM conferences ORDER BY date DESC LIMIT :amount")
     abstract fun getMostRecentConferences(amount: Int): List<LocalConference>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
             SELECT * FROM conferences
@@ -98,7 +100,7 @@ abstract class MessengerDao {
             ORDER BY date DESC
             """
     )
-    abstract fun getConferencesLiveData(searchQuery: String): LiveData<List<ConferenceWithMessage>?>
+    abstract fun getConferencesLiveData(searchQuery: String): LiveData<List<ConferenceWithMessage>>
 
     @Query("SELECT * FROM conferences WHERE id = :id LIMIT 1")
     abstract fun getConferenceLiveData(id: Long): LiveData<LocalConference?>

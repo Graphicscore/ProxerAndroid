@@ -128,7 +128,7 @@ Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_
 | KSP | 2.2.10-2.0.2 (Room, Moshi, Glide — uses `com.github.bumptech.glide:ksp` artifact)        |
 | Glide | 5.0.7 (KSP; no generated API — use `Glide.with()`, `RequestManager`, `RequestBuilder`) |
 | minSdk | 23                                                                                        |
-| targetSdk / compileSdk | 36                                                                                        |
+| targetSdk / compileSdk | 37                                                                                        |
 
 ## Key Gotchas
 
