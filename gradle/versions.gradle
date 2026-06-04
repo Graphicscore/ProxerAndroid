@@ -83,7 +83,7 @@ ext {
     proxerLibVersion = "5.4.0"
     threetenVersion = "1.4.9"
     glideVersion = "5.0.7"
-    retrofitVersion = "2.12.0"
+    retrofitVersion = "3.0.0"
     okHttpVersion = "4.12.0"
     okioVersion = "3.17.0"
     moshiVersion = "1.15.2"
