@@ -39,7 +39,7 @@ import me.proxer.app.util.extension.toGeneralLanguage
 import me.proxer.library.enums.Category
 import me.proxer.library.enums.MediaLanguage
 import me.proxer.library.util.ProxerUtils
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 import java.util.concurrent.TimeUnit
@@ -61,7 +61,7 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
     override val isSwipeToRefreshEnabled = false
 
     override val viewModel by viewModel<EpisodeViewModel> { parametersOf(id) }
-    private val mediaInfoViewModel by sharedViewModel<MediaInfoViewModel>()
+    private val mediaInfoViewModel by activityViewModel<MediaInfoViewModel>()
 
     override val hostingActivity: MediaActivity
         get() = activity as MediaActivity

@@ -27,7 +27,7 @@ ext {
     ktlintPluginVersion = "14.2.0"
     ktlintVersion = "1.8.0"
     // Frameworks and compatibility libraries
-    koinVersion = "3.5.6"
+    koinVersion = "4.2.1"
     appcompatVersion = "1.7.1"
     browserVersion = "1.10.0"
     lifecycleVersion = "2.10.0"
