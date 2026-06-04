@@ -56,7 +56,7 @@ fun TvAppShell(
                 onSearchClick = onSearchClick
             )
             TvSection.NEWS -> TvPlaceholderScreen("News")
-            TvSection.BOOKMARKS -> TvPlaceholderScreen("Bookmarks")
+            TvSection.BOOKMARKS -> TvBookmarksScreen()
             TvSection.SCHEDULE -> TvPlaceholderScreen("Schedule")
             TvSection.INFO -> TvPlaceholderScreen("Info")
             TvSection.SETTINGS -> TvPlaceholderScreen("Settings")
