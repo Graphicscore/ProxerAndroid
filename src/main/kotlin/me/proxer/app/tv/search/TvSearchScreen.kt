@@ -18,9 +18,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import me.proxer.app.tv.TvErrorView
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -36,16 +33,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Surface
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
+import me.proxer.app.tv.TvErrorView
 import me.proxer.app.util.extension.enumSetOf
 import me.proxer.library.entity.list.MediaListEntry
 import me.proxer.library.enums.FskConstraint
@@ -107,7 +106,7 @@ fun TvSearchScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0D0D))
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Row(
             modifier = Modifier
@@ -116,22 +115,22 @@ fun TvSearchScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(onClick = onBack) { Text("← Back", color = Color.White) }
+            OutlinedButton(onClick = onBack) { Text("← Back") }
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                label = { Text("Search anime...", color = Color.Gray) },
+                label = { Text("Search anime...") },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White,
-                    cursorColor = Color.White
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    cursorColor = MaterialTheme.colorScheme.primary
                 )
             )
             if (isLoading == true) {
-                CircularProgressIndicator(modifier = Modifier.size(32.dp), color = Color.White)
+                CircularProgressIndicator(modifier = Modifier.size(32.dp))
             }
         }
 
@@ -162,7 +161,7 @@ fun TvSearchScreen(
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(32.dp), color = Color.White)
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
                         }
                     }
                 }
@@ -173,12 +172,11 @@ fun TvSearchScreen(
 
 @Composable
 private fun TvSearchResultCard(entry: MediaListEntry, onClick: () -> Unit) {
-    Card(
+    Surface(
         onClick = onClick,
         modifier = Modifier
             .width(180.dp)
-            .height(270.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A))
+            .height(270.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -191,12 +189,12 @@ private fun TvSearchResultCard(entry: MediaListEntry, onClick: () -> Unit) {
             )
             Text(
                 text = entry.name,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 12.sp,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
-                    .background(Color(0xFF1A1A1A))
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(8.dp)
             )
         }

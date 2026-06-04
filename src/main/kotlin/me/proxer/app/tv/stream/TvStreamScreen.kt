@@ -14,13 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Surface as M3Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +33,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Surface
 import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.anime.resolver.StreamResolutionResult
@@ -108,7 +108,7 @@ fun TvStreamScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0D0D))
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp)
     ) {
         Row(
@@ -117,11 +117,15 @@ fun TvStreamScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         ) {
             OutlinedButton(onClick = onBack) {
-                Text("← Back", color = Color.White)
+                Text("← Back")
             }
             Column {
-                Text(entryName, fontSize = 20.sp, color = Color.White)
-                Text("Episode $episode • ${language.name}", fontSize = 14.sp, color = Color.Gray)
+                Text(entryName, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+                Text(
+                    "Episode $episode • ${language.name}",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                )
             }
         }
 
@@ -136,7 +140,7 @@ fun TvStreamScreen(
         when {
             isLoading == true && streamInfo == null -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = Color.White)
+                    CircularProgressIndicator()
                 }
             }
             error != null -> {
@@ -150,7 +154,11 @@ fun TvStreamScreen(
                 val streams = streamInfo?.streams ?: emptyList()
                 if (streams.isEmpty() && isLoading != true) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("No streams available", color = Color.Gray, fontSize = 18.sp)
+                        Text(
+                            "No streams available",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            fontSize = 18.sp
+                        )
                     }
                 } else {
                     LazyColumn(
@@ -176,7 +184,7 @@ fun TvStreamScreen(
 
 @Composable
 private fun TvBadge(label: String, background: Color) {
-    Surface(color = background, shape = MaterialTheme.shapes.small) {
+    M3Surface(color = background, shape = RoundedCornerShape(4.dp)) {
         Text(
             label,
             color = Color.White,
@@ -192,23 +200,27 @@ private fun TvStreamItem(
     isResolving: Boolean,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(80.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A))
+            .height(80.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
                 .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(stream.hosterName, color = Color.White, fontSize = 16.sp)
-                Text("by ${stream.uploaderName}", color = Color.Gray, fontSize = 13.sp)
+                Text(stream.hosterName, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
+                Text(
+                    "by ${stream.uploaderName}",
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    fontSize = 13.sp
+                )
             }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -217,7 +229,7 @@ private fun TvStreamItem(
                 if (stream.isOfficial) TvBadge(label = "Official", background = Color(0xFF1B5E20))
                 if (!stream.isSupported) TvBadge(label = "External", background = Color(0xFF5D1A1A))
                 if (isResolving) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White)
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
                 }
             }
         }
