@@ -185,6 +185,11 @@ ktlint {
     reporters {
         reporter ReporterType.CHECKSTYLE
     }
+    filter {
+        exclude("**/me/zhanghai/**")
+        exclude("**/com/gojuno/**")
+        exclude("**/androidx/recyclerview/widget/BindAwareViewHolder.kt")
+    }
 }
 
 tasks.named("dependencyUpdates").configure {
