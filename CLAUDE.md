@@ -145,6 +145,8 @@ Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_
 - `concealVersion` was deleted — Hawk/Conceal removed for 16KB page size compatibility.
 - `koin-androidx-compose` 4.2.1: use `koinInject<T>()` for singleton injection in composables. Import: `org.koin.compose.koinInject`. (`get()` and `sharedViewModel` were removed in 4.x — both are unresolved references, not deprecation warnings.)
 - `./gradlew compileDebugKotlin` (no `:app:` prefix) — fast type-check without a full build.
+- `--enable-native-access=ALL-UNNAMED` must be set in both `org.gradle.jvmargs` (`gradle.properties`) AND `DEFAULT_JVM_OPTS` (`gradlew` script) — daemon and wrapper launcher are separate JVM processes; one fix alone leaves the other warning.
+- `./gradlew compileDebugKotlin --rerun-tasks` reveals pre-existing Kotlin compiler `w:` lines (~200+) from deprecated Android API usage in app source — hidden by Kotlin compile cache in normal incremental builds; unrelated to build-config warnings.
 - Source root is `src/` at the project root (no `app/` subdirectory). `.claude/worktrees/` dirs appear in `find` results — exclude with `-not -path "*/.claude/*"`.
 - `androidx.tv.material3.NavigationDrawerItem` is an extension function on `NavigationDrawerScope` — any composable that calls it must itself be declared as `fun NavigationDrawerScope.MyComposable(...)`.
 - `storageHelper.isLoggedInObservable` skips the current value (`.skip(1)`). Standalone ViewModels (not extending `BaseViewModel`) must seed `MutableLiveData` with `storageHelper.user` in the constructor, then subscribe for updates: `disposables += storageHelper.isLoggedInObservable.subscribe { user.value = storageHelper.user }`.
