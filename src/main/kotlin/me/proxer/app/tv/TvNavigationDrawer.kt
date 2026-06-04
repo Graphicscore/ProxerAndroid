@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Newspaper
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.DrawerValue
 import androidx.tv.material3.Icon
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.NavigationDrawerItem
 import androidx.tv.material3.NavigationDrawerScope
+import androidx.tv.material3.Text
 import coil.compose.AsyncImage
 import me.proxer.app.auth.LocalUser
 import me.proxer.library.util.ProxerUrls
@@ -118,15 +119,18 @@ private fun NavigationDrawerScope.TvNavItem(
     drawerValue: DrawerValue,
     onSectionSelected: (TvSection) -> Unit
 ) {
-    NavigationDrawerItem(
-        selected = currentSection == section,
-        onClick = { onSectionSelected(section) },
-        leadingContent = {
-            Icon(imageVector = icon, contentDescription = label)
+
+        NavigationDrawerItem(
+            selected = currentSection == section,
+            onClick = { onSectionSelected(section) },
+            leadingContent = {
+                Icon(imageVector = icon, contentDescription = label)
+            }
+        ) {
+            AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
+                Text(
+                    text = label,
+                    color = MaterialTheme.colorScheme.onPrimary)
+            }
         }
-    ) {
-        AnimatedVisibility(visible = drawerValue == DrawerValue.Open) {
-            Text(label)
-        }
-    }
 }

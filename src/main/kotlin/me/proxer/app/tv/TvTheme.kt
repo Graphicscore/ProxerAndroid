@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.Typography
 import androidx.tv.material3.darkColorScheme
 import me.proxer.app.R
 
@@ -19,6 +20,7 @@ fun TvTheme(content: @Composable () -> Unit) {
             surface      = Color(0xFF1E1E1E),
             onSurface    = Color(0xFFE8E8E8),
             error        = Color(0xFFCF6679),
+
         ),
         content = content
     )

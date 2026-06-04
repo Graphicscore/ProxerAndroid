@@ -12,10 +12,7 @@ class TvSearchActivity : ComponentActivity() {
         val activity = this
         setContent {
             TvTheme {
-                TvSearchScreen(
-                    onMediaClick = { id, name -> TvMediaDetailActivity.navigateTo(activity, id, name) },
-                    onBack = { finish() }
-                )
+                TvSearchScreen { id, name -> TvMediaDetailActivity.navigateTo(activity, id, name) }
             }
         }
     }

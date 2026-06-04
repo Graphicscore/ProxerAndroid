@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.NavigationDrawer
 import me.proxer.app.tv.auth.TvLoginActivity
+import me.proxer.app.tv.search.TvSearchScreen
 import me.proxer.app.util.extension.startActivity
 import org.koin.androidx.compose.koinViewModel
 
@@ -38,7 +39,7 @@ fun TvAppShell(
     }
 
     NavigationDrawer(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
         drawerContent = { drawerValue ->
             TvNavigationDrawerContent(
                 currentSection = currentSection,
@@ -51,9 +52,8 @@ fun TvAppShell(
         }
     ) {
         when (currentSection) {
-            TvSection.ANIME -> TvBrowseScreen(
-                onMediaClick = onMediaClick,
-                onSearchClick = onSearchClick
+            TvSection.ANIME -> TvSearchScreen(
+                onMediaClick = onMediaClick
             )
             TvSection.NEWS -> TvPlaceholderScreen("News")
             TvSection.BOOKMARKS -> TvBookmarksScreen()

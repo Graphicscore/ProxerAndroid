@@ -59,8 +59,7 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun TvSearchScreen(
-    onMediaClick: (id: String, name: String) -> Unit,
-    onBack: () -> Unit
+    onMediaClick: (id: String, name: String) -> Unit
 ) {
     val viewModel: MediaListViewModel = koinViewModel {
         parametersOf(
@@ -115,7 +114,6 @@ fun TvSearchScreen(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedButton(onClick = onBack) { Text("← Back") }
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
