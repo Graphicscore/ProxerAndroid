@@ -70,7 +70,7 @@ Key base classes:
 
 ## Dependency Injection
 
-Koin 3.5.6. All modules in `MainModules.kt`. Singletons created at app startup (OkHttpClient, ProxerApi, Moshi, Room databases, PreferenceHelper, StorageHelper). ViewModels registered with `viewModel { }`.
+Koin 4.2.1. All modules in `MainModules.kt`. Singletons created at app startup (OkHttpClient, ProxerApi, Moshi, Room databases, PreferenceHelper, StorageHelper). ViewModels registered with `viewModel { }`.
 
 Inject via `safeInject<Type>()` (delegates to Koin's `inject()`).
 
@@ -143,7 +143,7 @@ Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_
 - `applicationVariants.all {}` was removed in AGP 9 — APK output now uses AGP defaults instead of `app-1.11.5.apk`. Re-implement with `androidComponents.onVariants {}` if custom naming is needed.
 - `lifecycle` 2.11 and `core-ktx` 1.19 require compileSdk 37 (not yet stable). Current ceiling: lifecycle 2.10.0, core-ktx 1.18.0.
 - `concealVersion` was deleted — Hawk/Conceal removed for 16KB page size compatibility.
-- `koin-androidx-compose` 3.5.6 exposes `get<T>()` for singleton injection in composables, **not** `koinInject()`. Import: `org.koin.androidx.compose.get`.
+- `koin-androidx-compose` 4.2.1: use `koinInject<T>()` for singleton injection in composables. Import: `org.koin.compose.koinInject`. (`get()` and `sharedViewModel` were removed in 4.x — both are unresolved references, not deprecation warnings.)
 - `./gradlew compileDebugKotlin` (no `:app:` prefix) — fast type-check without a full build.
 - Source root is `src/` at the project root (no `app/` subdirectory). `.claude/worktrees/` dirs appear in `find` results — exclude with `-not -path "*/.claude/*"`.
 - `androidx.tv.material3.NavigationDrawerItem` is an extension function on `NavigationDrawerScope` — any composable that calls it must itself be declared as `fun NavigationDrawerScope.MyComposable(...)`.
