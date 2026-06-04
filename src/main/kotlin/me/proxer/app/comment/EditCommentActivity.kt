@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.IntentCompat
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.commitNow
@@ -140,7 +141,7 @@ class EditCommentActivity : BaseActivity() {
                 return null
             }
 
-            return intent?.getParcelableExtra(COMMENT_EXTRA)
+            return intent?.let { IntentCompat.getParcelableExtra(it, COMMENT_EXTRA, LocalComment::class.java) }
         }
 
         data class Input(

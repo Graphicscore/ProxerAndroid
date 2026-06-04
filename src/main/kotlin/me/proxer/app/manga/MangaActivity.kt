@@ -109,6 +109,7 @@ class MangaActivity : BaseActivity() {
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
                 true -> {
+                    @Suppress("DEPRECATION")
                     intent.getSerializableExtra(LANGUAGE_EXTRA) as Language
                 }
 

@@ -30,6 +30,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.IntentCompat
 import androidx.core.os.postDelayed
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -111,11 +112,12 @@ class StreamActivity : BaseActivity() {
     internal val episode: Int
         get() = intent.getIntExtra(EPISODE_EXTRA, -1).let { if (it <= 0) 1 else it }
 
+    @Suppress("DEPRECATION")
     internal val language: AnimeLanguage
         get() = intent.getSerializableExtra(LANGUAGE_EXTRA) as AnimeLanguage
 
     internal val coverUri: Uri?
-        get() = intent.getParcelableExtra(COVER_EXTRA)
+        get() = IntentCompat.getParcelableExtra(intent, COVER_EXTRA, Uri::class.java)
 
     internal val referer: String?
         get() = intent.getStringExtra(REFERER_EXTRA)
@@ -137,7 +139,7 @@ class StreamActivity : BaseActivity() {
         get() = intent.getBooleanExtra(INTERNAL_PLAYER_ONLY_EXTRA, false)
 
     private val adTag: Uri?
-        get() = intent.getParcelableExtra(AD_TAG_EXTRA)
+        get() = IntentCompat.getParcelableExtra(intent, AD_TAG_EXTRA, Uri::class.java)
 
     private val client by safeInject<OkHttpClient>()
     private val playerManager by unsafeLazy { StreamPlayerManager(this, client, adTag) }

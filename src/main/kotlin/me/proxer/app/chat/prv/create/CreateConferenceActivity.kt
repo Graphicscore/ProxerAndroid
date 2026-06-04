@@ -3,6 +3,7 @@ package me.proxer.app.chat.prv.create
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.commitNow
 import me.proxer.app.R
 import me.proxer.app.base.DrawerActivity
@@ -44,7 +45,7 @@ class CreateConferenceActivity : DrawerActivity() {
         get() = intent.getBooleanExtra(IS_GROUP_EXTRA, false)
 
     val initialParticipant: Participant?
-        get() = intent.getParcelableExtra(INITIAL_PARTICIPANT_EXTRA)
+        get() = IntentCompat.getParcelableExtra(intent, INITIAL_PARTICIPANT_EXTRA, Participant::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

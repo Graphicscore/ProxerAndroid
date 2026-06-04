@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.content.IntentCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.fragment.app.commitNow
 import com.uber.autodispose.android.lifecycle.scope
@@ -65,7 +66,7 @@ class PrvMessengerActivity : DrawerActivity() {
         super.onCreate(savedInstanceState)
 
         if (supportFragmentManager.fragments.isEmpty()) {
-            val conference = intent.getParcelableExtra<LocalConference>(CONFERENCE_EXTRA)
+            val conference = IntentCompat.getParcelableExtra(intent, CONFERENCE_EXTRA, LocalConference::class.java)
             val initialMessage = intent.getStringExtra(Intent.EXTRA_TEXT)
 
             if (conference != null) {

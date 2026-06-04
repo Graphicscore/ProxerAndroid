@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -65,10 +66,10 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         get() = hostingActivity.username
 
     private val category: Category
-        get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as Category
+        get() = BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java) as Category
 
     private var filter: UserMediaListFilterType?
-        get() = requireArguments().getSerializable(FILTER_ARGUMENT) as? UserMediaListFilterType
+        get() = BundleCompat.getSerializable(requireArguments(), FILTER_ARGUMENT, UserMediaListFilterType::class.java)
         set(value) {
             requireArguments().putSerializable(FILTER_ARGUMENT, value)
 

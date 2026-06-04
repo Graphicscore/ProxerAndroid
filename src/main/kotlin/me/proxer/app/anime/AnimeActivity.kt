@@ -82,6 +82,7 @@ class AnimeActivity : DrawerActivity() {
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
                 true -> {
+                    @Suppress("DEPRECATION")
                     intent.getSerializableExtra(LANGUAGE_EXTRA) as AnimeLanguage
                 }
 

@@ -90,6 +90,7 @@ class MediaActivity : ImageTabsActivity() {
             title = value
         }
 
+    @Suppress("DEPRECATION")
     var category: Category?
         get() = intent.getSerializableExtra(CATEGORY_EXTRA) as Category?
         set(value) {

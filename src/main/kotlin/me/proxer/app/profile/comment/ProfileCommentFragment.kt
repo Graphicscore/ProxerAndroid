@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Observer
@@ -61,7 +62,7 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
         get() = hostingActivity.username
 
     private var category: Category?
-        get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as? Category
+        get() = BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java)
         set(value) {
             requireArguments().putSerializable(CATEGORY_ARGUMENT, value)
 

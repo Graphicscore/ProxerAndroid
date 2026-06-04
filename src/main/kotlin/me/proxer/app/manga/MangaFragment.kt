@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
 import androidx.core.view.isInvisible
@@ -147,7 +148,7 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        lastPosition = savedInstanceState?.getParcelable(LAST_POSITION_STATE)
+        lastPosition = savedInstanceState?.let { BundleCompat.getParcelable(it, LAST_POSITION_STATE, Parcelable::class.java) }
         hasLowMemory = savedInstanceState?.getByte(LOW_MEMORY_STATE) == 1.toByte()
 
         preloader = MangaPreloader()

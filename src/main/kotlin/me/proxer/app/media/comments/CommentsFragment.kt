@@ -6,6 +6,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.TooltipCompat
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Observer
@@ -75,7 +76,7 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
 
     private var sortCriteria: CommentSortCriteria
         get() =
-            requireArguments().getSerializable(SORT_CRITERIA_ARGUMENT) as? CommentSortCriteria
+            BundleCompat.getSerializable(requireArguments(), SORT_CRITERIA_ARGUMENT, CommentSortCriteria::class.java)
                 ?: CommentSortCriteria.RATING
         set(value) {
             requireArguments().putSerializable(SORT_CRITERIA_ARGUMENT, value)

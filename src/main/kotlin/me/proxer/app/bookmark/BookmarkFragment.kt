@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
@@ -78,7 +79,7 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
         }
 
     private var category: Category?
-        get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as? Category
+        get() = BundleCompat.getSerializable(requireArguments(), CATEGORY_ARGUMENT, Category::class.java)
         set(value) {
             requireArguments().putSerializable(CATEGORY_ARGUMENT, value)
 

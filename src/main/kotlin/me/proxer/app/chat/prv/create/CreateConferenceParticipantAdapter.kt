@@ -1,6 +1,7 @@
 package me.proxer.app.chat.prv.create
 
 import android.os.Bundle
+import androidx.core.os.BundleCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,7 +43,7 @@ class CreateConferenceParticipantAdapter(
         get() = ArrayList(data)
 
     init {
-        data = savedInstanceState?.getParcelableArrayList(LIST_STATE) ?: emptyList()
+        data = savedInstanceState?.let { BundleCompat.getParcelableArrayList(it, LIST_STATE, Participant::class.java) } ?: emptyList()
     }
 
     override fun onCreateViewHolder(

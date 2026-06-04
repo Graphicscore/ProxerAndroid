@@ -9,6 +9,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.text.Editable
 import android.widget.EditText
+import androidx.core.content.IntentCompat
+import androidx.core.os.BundleCompat
 import androidx.recyclerview.widget.RecyclerView
 
 inline val RecyclerView.safeLayoutManager: RecyclerView.LayoutManager
@@ -24,10 +26,13 @@ inline fun Intent.getSafeStringArrayExtra(key: String): Array<out String> =
     requireNotNull(getStringArrayExtra(key)) { "No value found for key $key" }
 
 inline fun <reified T : Parcelable> Intent.getSafeParcelableExtra(key: String) =
-    requireNotNull(getParcelableExtra<T>(key)) { "No value found for key $key" }
+    requireNotNull(IntentCompat.getParcelableExtra(this, key, T::class.java)) { "No value found for key $key" }
 
-inline fun <T : Parcelable> Bundle.getSafeParcelable(key: String) =
-    requireNotNull(getParcelable<T>(key)) { "No value found for key $key" }
+inline fun <reified T : Parcelable> Bundle.getSafeParcelable(key: String) =
+    requireNotNull(BundleCompat.getParcelable(this, key, T::class.java)) { "No value found for key $key" }
+
+inline fun <reified T : Parcelable> Bundle.getSafeParcelableArrayList(key: String) =
+    requireNotNull(BundleCompat.getParcelableArrayList(this, key, T::class.java)) { "No value found for key $key" }
 
 inline fun Bundle.getSafeCharSequence(key: String) =
     requireNotNull(getCharSequence(key)) { "No value found for key $key" }

@@ -9,6 +9,7 @@ import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.core.view.postDelayed
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commitNow
@@ -160,7 +161,7 @@ class MainActivity : DrawerActivity() {
 
         if (requestCode == IntroductionBuilder.INTRODUCTION_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                data?.getParcelableArrayListExtra<Option>(OPTION_RESULT)?.forEach { option ->
+                IntentCompat.getParcelableArrayListExtra(data ?: return, OPTION_RESULT, Option::class.java)?.forEach { option ->
                     when (option.position) {
                         1 -> {
                             preferenceHelper.areNewsNotificationsEnabled = option.isActivated
@@ -266,6 +267,7 @@ class MainActivity : DrawerActivity() {
 
         return when (actionDrawerItem) {
             null -> {
+                @Suppress("DEPRECATION")
                 val sectionExtra = intent.getSerializableExtra(SECTION_EXTRA) as? DrawerItem
 
                 sectionExtra ?: preferenceHelper.startPage
