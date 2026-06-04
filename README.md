@@ -1,19 +1,14 @@
-# ![](art/logo/proxer-logo-title.png) Proxer.Me Android [![Latest Release](https://img.shields.io/github/release/proxer/ProxerAndroid.svg)](https://github.com/proxer/ProxerAndroid/releases/latest) [![Build status](https://github.com/proxer/ProxerAndroid/workflows/CI/badge.svg)](https://github.com/proxer/ProxerAndroid/actions?workflow=CI)
-
-### Unmaintained
-
-This app is not maintained anymore and will not receive any more updates. It might or might not work anymore.
+# ![](art/logo/proxer-logo-title.png) Unofficial Proxer.Me Android [![Latest Release](https://img.shields.io/github/release/proxer/ProxerAndroid.svg)](https://github.com/proxer/ProxerAndroid/releases/latest) [![Build status](https://github.com/proxer/ProxerAndroid/workflows/CI/badge.svg)](https://github.com/proxer/ProxerAndroid/actions?workflow=CI)
 
 ### What is this?
 
-Proxer.Me Android is the official mobile client for the german Anime & Manga page [Proxer.Me](https://proxer.me).<br>
-It features major functionalities including an anime player for various hosters and languages, a mobile-friendly manga reader, offline synchronized chat and much more.
+This is a fork of the Proxer.Me Android App, it is a unoffical mobile client for the german Anime & Manga page [Proxer.Me](https://proxer.me).<br>
+It features major functionalities including an anime player for various hosters and languages, a mobile and tv friendly anime and manga streamer/reader, offline synchronized chat and much more.
 
 ### Downloads
-
-| ![](art/logo/play-logo.png) Google Play Store                           | ![](art/logo/proxer-logo.png) Proxer App Store | ![](art/logo/github-logo.png) Github                                |
-|-------------------------------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------|
-| [Download](https://play.google.com/store/apps/details?id=me.proxer.app) | [Download](https://proxer.me/apps/info/3)      | [Download](https://github.com/proxer/ProxerAndroid/releases/latest) |
+| ![](art/logo/github-logo.png) Github                                |
+|---------------------------------------------------------------------|
+| [Download](https://github.com/Graphicscore/ProxerAndroid/releases/latest) |
 
 #### Building yourself
 
