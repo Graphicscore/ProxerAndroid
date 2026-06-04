@@ -15,6 +15,7 @@ import me.proxer.app.anime.schedule.ScheduleViewModel
 import me.proxer.app.auth.LoginHandler
 import me.proxer.app.auth.LoginViewModel
 import me.proxer.app.auth.LogoutViewModel
+import me.proxer.app.tv.TvShellViewModel
 import me.proxer.app.auth.ProxerLoginTokenManager
 import me.proxer.app.bookmark.BookmarkViewModel
 import me.proxer.app.chat.prv.LocalConference
@@ -236,6 +237,7 @@ private val applicationModules = module {
 private val viewModelModule = module {
     viewModel { LoginViewModel() }
     viewModel { LogoutViewModel() }
+    viewModel { TvShellViewModel() }
 
     viewModel { NewsViewModel() }
     viewModel { NotificationViewModel() }
