@@ -35,6 +35,7 @@ class TvShellViewModel : ViewModel() {
 
     override fun onCleared() {
         logoutDisposable?.dispose()
+        logoutDisposable = null
         disposables.dispose()
         super.onCleared()
     }

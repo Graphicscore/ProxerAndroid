@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +37,9 @@ import androidx.tv.material3.Surface
 import coil.compose.AsyncImage
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
+import me.proxer.app.tv.auth.TvLoginActivity
 import me.proxer.app.util.extension.enumSetOf
+import me.proxer.app.util.extension.startActivity
 import me.proxer.library.entity.list.MediaListEntry
 import me.proxer.library.enums.FskConstraint
 import me.proxer.library.enums.Language
@@ -51,8 +54,7 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun TvBrowseScreen(
     onMediaClick: (id: String, name: String) -> Unit,
-    onSearchClick: () -> Unit,
-    onLoginClick: () -> Unit
+    onSearchClick: () -> Unit
 ) {
     val viewModel: MediaListViewModel = koinViewModel {
         parametersOf(
@@ -74,6 +76,8 @@ fun TvBrowseScreen(
     val entries by viewModel.data.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
+
+    val context = LocalContext.current
 
     val gridState = rememberLazyGridState()
     val shouldLoadMore by remember {
@@ -101,10 +105,7 @@ fun TvBrowseScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("ProxerTV", fontSize = 24.sp, color = Color.White)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = onSearchClick) { Text("Search") }
-                OutlinedButton(onClick = onLoginClick) { Text("Sign In") }
-            }
+            OutlinedButton(onClick = onSearchClick) { Text("Search") }
         }
 
         when {
@@ -117,7 +118,7 @@ fun TvBrowseScreen(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
                         error = error!!,
-                        onLoginClick = onLoginClick,
+                        onLoginClick = { context.startActivity<TvLoginActivity>() },
                         onRetryClick = { viewModel.load() }
                     )
                 }

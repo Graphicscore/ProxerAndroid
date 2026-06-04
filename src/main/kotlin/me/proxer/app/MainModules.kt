@@ -15,7 +15,6 @@ import me.proxer.app.anime.schedule.ScheduleViewModel
 import me.proxer.app.auth.LoginHandler
 import me.proxer.app.auth.LoginViewModel
 import me.proxer.app.auth.LogoutViewModel
-import me.proxer.app.tv.TvShellViewModel
 import me.proxer.app.auth.ProxerLoginTokenManager
 import me.proxer.app.bookmark.BookmarkViewModel
 import me.proxer.app.chat.prv.LocalConference
@@ -54,6 +53,7 @@ import me.proxer.app.profile.media.ProfileMediaListViewModel
 import me.proxer.app.profile.settings.ProfileSettingsViewModel
 import me.proxer.app.profile.topten.TopTenViewModel
 import me.proxer.app.settings.status.ServerStatusViewModel
+import me.proxer.app.tv.TvShellViewModel
 import me.proxer.app.ui.LinkCheckViewModel
 import me.proxer.app.util.Mp4UploadTrustManagerWorkaround
 import me.proxer.app.util.Validators
