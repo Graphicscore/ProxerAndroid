@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.chat.prv.message
 
 import android.annotation.SuppressLint

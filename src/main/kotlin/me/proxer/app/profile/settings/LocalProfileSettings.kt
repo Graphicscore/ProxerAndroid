@@ -1,3 +1,5 @@
+@file:Suppress("ANNOTATION_WILL_BE_APPLIED_ALSO_TO_PROPERTY_OR_FIELD")
+
 package me.proxer.app.profile.settings
 
 import com.squareup.moshi.Json

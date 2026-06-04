@@ -219,6 +219,7 @@ class ScheduleWidgetUpdateWorker(
         bindBaseLayout(id, views)
 
         views.setPendingIntentTemplate(R.id.list, detailPendingIntent)
+        @Suppress("DEPRECATION")
         views.setRemoteAdapter(R.id.list, intent)
 
         appWidgetManager.updateAppWidget(id, views)

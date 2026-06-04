@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app
 
 import android.content.res.Resources

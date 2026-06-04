@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.chat.pub.message
 
 import androidx.appcompat.app.AppCompatActivity

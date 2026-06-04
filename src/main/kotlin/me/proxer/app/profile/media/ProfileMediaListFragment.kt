@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.profile.media
 
 import android.os.Bundle

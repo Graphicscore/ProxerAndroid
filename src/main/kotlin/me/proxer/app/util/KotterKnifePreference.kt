@@ -18,6 +18,7 @@ fun <V : Preference> PreferenceFragmentCompat.bindPreference(
 private val PreferenceFragmentCompat.preferenceFinder: PreferenceFragmentCompat.(CharSequence) -> Preference?
     get() = { findPreference(it) }
 
+@Suppress("UNCHECKED_CAST")
 private fun <T, V : Preference> required(
     key: CharSequence,
     finder: T.(CharSequence) -> Preference?,
@@ -41,6 +42,7 @@ private class Lazy<in T, out V>(
             value = initializer(thisRef, property)
         }
 
+        @Suppress("UNCHECKED_CAST")
         return value as V
     }
 

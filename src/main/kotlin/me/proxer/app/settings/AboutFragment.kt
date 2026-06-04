@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.settings
 
 import android.content.ActivityNotFoundException

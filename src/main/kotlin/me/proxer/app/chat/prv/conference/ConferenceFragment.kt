@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package me.proxer.app.chat.prv.conference
 
 import android.os.Bundle

@@ -83,6 +83,7 @@ abstract class BaseActivity :
         }
     }
 
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun onBackPressed() {
         // Workaround for memory leak on Android 10: https://twitter.com/Piwai/status/1169274624749658112
         if (isTaskRoot && supportFragmentManager.backStackEntryCount == 0) {
@@ -92,6 +93,7 @@ abstract class BaseActivity :
         }
     }
 
+    @Suppress("DEPRECATION")
     override fun setLikelyUrl(url: HttpUrl): Boolean =
         customTabsHelper.mayLaunchUrl(url.androidUri(), bundleOf(), emptyList())
 

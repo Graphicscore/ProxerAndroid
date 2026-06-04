@@ -26,5 +26,6 @@ class MangaLinearLayoutManger(
         isItemPrefetchEnabled = false
     }
 
+    @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
     override fun getExtraLayoutSpace(state: RecyclerView.State) = extraLayoutSpace
 }

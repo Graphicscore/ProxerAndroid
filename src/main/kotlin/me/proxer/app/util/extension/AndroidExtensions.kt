@@ -36,6 +36,7 @@ inline fun Context.resolveColor(
     }
 
 @CheckResult
+@Suppress("DEPRECATION")
 inline fun <reified T : Any> Context.intentFor(vararg params: Pair<String, Any?>): Intent {
     val intent = Intent(this, T::class.java)
     params.forEach { intent.putExtras(bundleOf(it)) }

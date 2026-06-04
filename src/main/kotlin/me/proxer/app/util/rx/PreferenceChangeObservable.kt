@@ -35,6 +35,7 @@ class PreferenceChangeObservable<T>(
             preference: Preference,
             newValue: Any,
         ): Boolean {
+            @Suppress("UNCHECKED_CAST")
             newValue as T
 
             return if (!isDisposed) {

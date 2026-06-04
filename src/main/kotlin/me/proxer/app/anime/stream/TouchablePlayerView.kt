@@ -43,6 +43,7 @@ class TouchablePlayerView
         private val notificationManager = requireNotNull(context.getSystemService<NotificationManager>())
 
         private val audioStreamType
+            @Suppress("DEPRECATION")
             get() = Util.getStreamTypeForAudioUsage(player?.audioAttributes?.usage ?: C.USAGE_MEDIA)
 
         private val canChangeAudio

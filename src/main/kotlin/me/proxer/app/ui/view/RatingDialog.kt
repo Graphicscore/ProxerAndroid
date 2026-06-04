@@ -21,6 +21,7 @@ class RatingDialog : BaseDialog() {
                 .show(activity.supportFragmentManager, "rating_dialog")
     }
 
+    @Suppress("DEPRECATION")
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         MaterialDialog(requireContext())
             .title(R.string.dialog_rating_title)

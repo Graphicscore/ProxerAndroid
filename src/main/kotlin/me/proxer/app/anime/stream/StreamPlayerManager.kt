@@ -142,6 +142,7 @@ class StreamPlayerManager(
                     localPlayer.removeListener(eventListener)
                     castPlayer?.removeListener(eventListener)
 
+                    @Suppress("DEPRECATION")
                     castPlayer?.setSessionAvailabilityListener(null)
 
                     adsLoader?.release()
@@ -380,6 +381,7 @@ class StreamPlayerManager(
             setAudioAttributes(audioAttributes, true)
         }
 
+    @Suppress("DEPRECATION")
     private fun buildCastPlayer(context: StreamActivity): CastPlayer? =
         context
             .getSafeCastContext()

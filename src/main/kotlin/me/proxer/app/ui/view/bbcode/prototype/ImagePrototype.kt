@@ -68,6 +68,7 @@ object ImagePrototype : AutoClosingPrototype {
         val url = (childViews.firstOrNull() as? TextView)?.text.toString().trim()
         val proxyUrl = url.toPrefixedUrlOrNull()?.proxyIfRequired()
 
+        @Suppress("UNCHECKED_CAST")
         val heightMap = args[HEIGHT_MAP_ARGUMENT] as MutableMap<String, Int>?
 
         val width = args[WIDTH_ARGUMENT] as Int? ?: MATCH_PARENT

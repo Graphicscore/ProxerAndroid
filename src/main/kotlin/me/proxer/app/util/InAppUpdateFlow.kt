@@ -65,6 +65,7 @@ class InAppUpdateFlow {
                     .make(rootView, R.string.activity_update_available, Snackbar.LENGTH_INDEFINITE)
                     .apply {
                         setAction(R.string.activity_update_action_download) {
+                            @Suppress("DEPRECATION")
                             appUpdateManager.startUpdateFlowForResult(
                                 appUpdateInfo,
                                 AppUpdateType.FLEXIBLE,
