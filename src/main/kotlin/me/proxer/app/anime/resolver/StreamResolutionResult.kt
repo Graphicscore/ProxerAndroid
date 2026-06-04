@@ -78,6 +78,8 @@ sealed class StreamResolutionResult {
         fun show(customTabsAware: CustomTabsAware) {
             customTabsAware.showPage(url, skipCheck = true)
         }
+
+        fun makeIntent(): Intent = Intent(Intent.ACTION_VIEW, url.androidUri())
     }
 
     class App(uri: Uri) : StreamResolutionResult() {
