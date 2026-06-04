@@ -46,7 +46,7 @@ import me.proxer.app.util.compat.MenuPopupCompat
 import me.proxer.app.util.extension.dip
 import me.proxer.app.util.extension.resolveColor
 import me.proxer.app.util.extension.setIconicsImage
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.core.parameter.parametersOf
 
 /**
@@ -63,7 +63,7 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
     override val hostingActivity: EditCommentActivity
         get() = activity as EditCommentActivity
 
-    override val viewModel by sharedViewModel<EditCommentViewModel> {
+    override val viewModel by activityViewModel<EditCommentViewModel> {
         parametersOf(id, entryId)
     }
 
