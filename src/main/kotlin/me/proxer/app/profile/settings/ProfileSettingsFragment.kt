@@ -16,7 +16,7 @@ import me.proxer.library.util.ProxerUtils
 import net.xpece.android.support.preference.ListPreference
 import net.xpece.android.support.preference.SwitchPreference
 import net.xpece.android.support.preference.XpPreferenceFragment
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import java.util.Locale
 
 /**
@@ -30,7 +30,7 @@ class ProfileSettingsFragment : XpPreferenceFragment() {
         }
     }
 
-    private val viewModel by sharedViewModel<ProfileSettingsViewModel>()
+    private val viewModel by activityViewModel<ProfileSettingsViewModel>()
 
     private val bannerAdsEnabled by bindPreference<SwitchPreference>("banner_ads_enabled")
     private val videoAdsInterval by bindPreference<ListPreference>("video_ads_interval")

@@ -43,7 +43,7 @@ import me.proxer.app.util.extension.toTypeAppString
 import me.proxer.library.entity.info.Entry
 import me.proxer.library.entity.info.MediaUserInfo
 import me.proxer.library.enums.IndustryType
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.core.parameter.parametersOf
 
 /**
@@ -63,7 +63,7 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
     override val hostingActivity: MediaActivity
         get() = activity as MediaActivity
 
-    override val viewModel by sharedViewModel<MediaInfoViewModel> { parametersOf(id) }
+    override val viewModel by activityViewModel<MediaInfoViewModel> { parametersOf(id) }
 
     private val id: String
         get() = hostingActivity.id

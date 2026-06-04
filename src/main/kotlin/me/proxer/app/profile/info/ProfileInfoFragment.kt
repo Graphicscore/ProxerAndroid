@@ -22,7 +22,7 @@ import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.linkClicks
 import me.proxer.app.util.extension.linkify
 import me.proxer.app.util.extension.toPrefixedUrlOrNull
-import org.koin.androidx.viewmodel.ext.android.sharedViewModel
+import org.koin.androidx.viewmodel.ext.android.activityViewModel
 import org.koin.core.parameter.parametersOf
 
 /**
@@ -46,7 +46,7 @@ class ProfileInfoFragment : BaseContentFragment<UserInfoWrapper>(R.layout.fragme
     override val hostingActivity: ProfileActivity
         get() = activity as ProfileActivity
 
-    override val viewModel by sharedViewModel<ProfileViewModel> {
+    override val viewModel by activityViewModel<ProfileViewModel> {
         parametersOf(userId, username)
     }
 
