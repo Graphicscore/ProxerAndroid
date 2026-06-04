@@ -44,12 +44,6 @@ class ChatContainerFragment : BaseFragment(R.layout.fragment_chat_container) {
     private val showMessenger
         get() = requireArguments().getBoolean(SHOW_MESSENGER_ARGUMENT, false)
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        setHasOptionsMenu(true)
-    }
-
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,

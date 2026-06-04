@@ -13,6 +13,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.core.view.updatePadding
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -258,8 +259,6 @@ class MediaListFragment :
             .subscribe { (view, entry) ->
                 MediaActivity.navigateTo(requireActivity(), entry.id, entry.name, entry.medium.toCategory(), view)
             }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -270,104 +269,114 @@ class MediaListFragment :
 
         innerAdapter.glide = Glide.with(this)
 
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_media_list,
+                        menu,
+                        true,
+                    )
+
+                    when (sortCriteria) {
+                        MediaSearchSortCriteria.RATING -> menu.findItem(R.id.rating).isChecked = true
+                        MediaSearchSortCriteria.CLICKS -> menu.findItem(R.id.clicks).isChecked = true
+                        MediaSearchSortCriteria.EPISODE_AMOUNT -> menu.findItem(R.id.episodeAmount).isChecked = true
+                        MediaSearchSortCriteria.NAME -> menu.findItem(R.id.name).isChecked = true
+                        else -> error("Unsupported sort criteria: $sortCriteria")
+                    }
+
+                    val filterSubMenu = menu.findItem(R.id.filter).subMenu ?: return
+
+                    when (category) {
+                        Category.ANIME -> filterSubMenu.setGroupVisible(R.id.filterManga, false)
+                        Category.MANGA, Category.NOVEL -> filterSubMenu.setGroupVisible(R.id.filterAnime, false)
+                    }
+
+                    when (type) {
+                        MediaType.ALL_ANIME -> filterSubMenu.findItem(R.id.all_anime).isChecked = true
+                        MediaType.ANIMESERIES -> filterSubMenu.findItem(R.id.animeseries).isChecked = true
+                        MediaType.MOVIE -> filterSubMenu.findItem(R.id.movies).isChecked = true
+                        MediaType.OVA -> filterSubMenu.findItem(R.id.ova).isChecked = true
+                        MediaType.HENTAI -> filterSubMenu.findItem(R.id.hentai).isChecked = true
+                        MediaType.ALL_MANGA -> filterSubMenu.findItem(R.id.all_manga).isChecked = true
+                        MediaType.MANGASERIES -> filterSubMenu.findItem(R.id.mangaseries).isChecked = true
+                        MediaType.ONESHOT -> filterSubMenu.findItem(R.id.oneshot).isChecked = true
+                        MediaType.DOUJIN -> filterSubMenu.findItem(R.id.doujin).isChecked = true
+                        MediaType.HMANGA -> filterSubMenu.findItem(R.id.hmanga).isChecked = true
+                        else -> error("Unsupported type: $type")
+                    }
+
+                    menu.findItem(R.id.search).let { searchItem ->
+                        searchView = searchItem.actionView as SearchView
+
+                        searchItem
+                            .actionViewEvents()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe { event ->
+                                if (event.menuItem.isActionViewExpanded) {
+                                    searchQuery = null
+
+                                    viewModel.reload()
+                                }
+
+                                TransitionManager.endTransitions(toolbar)
+                                TransitionManager.beginDelayedTransition(toolbar)
+                            }
+
+                        searchView
+                            .queryTextChangeEvents()
+                            .skipInitialValue()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe { event ->
+                                searchQuery = event.queryText.toString().trim()
+
+                                if (event.isSubmitted) {
+                                    searchView.clearFocus()
+
+                                    viewModel.reload()
+                                }
+                            }
+
+                        searchQuery?.let {
+                            searchItem.expandActionView()
+                            searchView.setQuery(it, false)
+                            searchView.clearFocus()
+                        }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.rating -> sortCriteria = MediaSearchSortCriteria.RATING
+                        R.id.clicks -> sortCriteria = MediaSearchSortCriteria.CLICKS
+                        R.id.episodeAmount -> sortCriteria = MediaSearchSortCriteria.EPISODE_AMOUNT
+                        R.id.name -> sortCriteria = MediaSearchSortCriteria.NAME
+                        R.id.all_anime -> type = MediaType.ALL_ANIME
+                        R.id.animeseries -> type = MediaType.ANIMESERIES
+                        R.id.movies -> type = MediaType.MOVIE
+                        R.id.ova -> type = MediaType.OVA
+                        R.id.hentai -> type = MediaType.HENTAI
+                        R.id.all_manga -> type = MediaType.ALL_MANGA
+                        R.id.mangaseries -> type = MediaType.MANGASERIES
+                        R.id.oneshot -> type = MediaType.ONESHOT
+                        R.id.doujin -> type = MediaType.DOUJIN
+                        R.id.hmanga -> type = MediaType.HMANGA
+                        else -> return false
+                    }
+                    menuItem.isChecked = true
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
+
         searchBottomSheetManager = MediaListSearchBottomSheet.bindTo(this, viewModel)
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_media_list, menu, true)
-
-        when (sortCriteria) {
-            MediaSearchSortCriteria.RATING -> menu.findItem(R.id.rating).isChecked = true
-            MediaSearchSortCriteria.CLICKS -> menu.findItem(R.id.clicks).isChecked = true
-            MediaSearchSortCriteria.EPISODE_AMOUNT -> menu.findItem(R.id.episodeAmount).isChecked = true
-            MediaSearchSortCriteria.NAME -> menu.findItem(R.id.name).isChecked = true
-            else -> error("Unsupported sort criteria: $sortCriteria")
-        }
-
-        val filterSubMenu = menu.findItem(R.id.filter).subMenu ?: return
-
-        when (category) {
-            Category.ANIME -> filterSubMenu.setGroupVisible(R.id.filterManga, false)
-            Category.MANGA, Category.NOVEL -> filterSubMenu.setGroupVisible(R.id.filterAnime, false)
-        }
-
-        when (type) {
-            MediaType.ALL_ANIME -> filterSubMenu.findItem(R.id.all_anime).isChecked = true
-            MediaType.ANIMESERIES -> filterSubMenu.findItem(R.id.animeseries).isChecked = true
-            MediaType.MOVIE -> filterSubMenu.findItem(R.id.movies).isChecked = true
-            MediaType.OVA -> filterSubMenu.findItem(R.id.ova).isChecked = true
-            MediaType.HENTAI -> filterSubMenu.findItem(R.id.hentai).isChecked = true
-            MediaType.ALL_MANGA -> filterSubMenu.findItem(R.id.all_manga).isChecked = true
-            MediaType.MANGASERIES -> filterSubMenu.findItem(R.id.mangaseries).isChecked = true
-            MediaType.ONESHOT -> filterSubMenu.findItem(R.id.oneshot).isChecked = true
-            MediaType.DOUJIN -> filterSubMenu.findItem(R.id.doujin).isChecked = true
-            MediaType.HMANGA -> filterSubMenu.findItem(R.id.hmanga).isChecked = true
-            else -> error("Unsupported type: $type")
-        }
-
-        menu.findItem(R.id.search).let { searchItem ->
-            searchView = searchItem.actionView as SearchView
-
-            searchItem
-                .actionViewEvents()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe { event ->
-                    if (event.menuItem.isActionViewExpanded) {
-                        searchQuery = null
-
-                        viewModel.reload()
-                    }
-
-                    TransitionManager.endTransitions(toolbar)
-                    TransitionManager.beginDelayedTransition(toolbar)
-                }
-
-            searchView
-                .queryTextChangeEvents()
-                .skipInitialValue()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe { event ->
-                    searchQuery = event.queryText.toString().trim()
-
-                    if (event.isSubmitted) {
-                        searchView.clearFocus()
-
-                        viewModel.reload()
-                    }
-                }
-
-            searchQuery?.let {
-                searchItem.expandActionView()
-                searchView.setQuery(it, false)
-                searchView.clearFocus()
-            }
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.rating -> sortCriteria = MediaSearchSortCriteria.RATING
-            R.id.clicks -> sortCriteria = MediaSearchSortCriteria.CLICKS
-            R.id.episodeAmount -> sortCriteria = MediaSearchSortCriteria.EPISODE_AMOUNT
-            R.id.name -> sortCriteria = MediaSearchSortCriteria.NAME
-            R.id.all_anime -> type = MediaType.ALL_ANIME
-            R.id.animeseries -> type = MediaType.ANIMESERIES
-            R.id.movies -> type = MediaType.MOVIE
-            R.id.ova -> type = MediaType.OVA
-            R.id.hentai -> type = MediaType.HENTAI
-            R.id.all_manga -> type = MediaType.ALL_MANGA
-            R.id.mangaseries -> type = MediaType.MANGASERIES
-            R.id.oneshot -> type = MediaType.ONESHOT
-            R.id.doujin -> type = MediaType.DOUJIN
-            R.id.hmanga -> type = MediaType.HMANGA
-        }
-
-        item.isChecked = true
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed(): Boolean = searchBottomSheetManager.onBackPressed()

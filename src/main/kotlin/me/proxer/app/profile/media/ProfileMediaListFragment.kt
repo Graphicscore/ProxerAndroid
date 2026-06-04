@@ -7,6 +7,7 @@ import android.view.MenuItem
 import android.view.View
 import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
@@ -94,8 +95,6 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
             .subscribe {
                 viewModel.addItemToDelete(it)
             }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -103,6 +102,45 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    val menuResource =
+                        when (category) {
+                            Category.ANIME -> R.menu.fragment_user_media_list_anime
+                            Category.MANGA, Category.NOVEL -> R.menu.fragment_user_media_list_manga
+                        }
+
+                    IconicsMenuInflaterUtil.inflate(menuInflater, requireContext(), menuResource, menu, true)
+
+                    when (filter) {
+                        UserMediaListFilterType.WATCHING -> menu.findItem(R.id.watching).isChecked = true
+                        UserMediaListFilterType.WATCHED -> menu.findItem(R.id.watched).isChecked = true
+                        UserMediaListFilterType.WILL_WATCH -> menu.findItem(R.id.will_watch).isChecked = true
+                        UserMediaListFilterType.CANCELLED -> menu.findItem(R.id.cancelled).isChecked = true
+                        null -> menu.findItem(R.id.all).isChecked = true
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.watching -> filter = UserMediaListFilterType.WATCHING
+                        R.id.watched -> filter = UserMediaListFilterType.WATCHED
+                        R.id.will_watch -> filter = UserMediaListFilterType.WILL_WATCH
+                        R.id.cancelled -> filter = UserMediaListFilterType.CANCELLED
+                        R.id.all -> filter = null
+                        else -> return false
+                    }
+                    menuItem.isChecked = true
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         innerAdapter.glide = Glide.with(this)
 
@@ -119,42 +157,5 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
                 }
             },
         )
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        val menuResource =
-            when (category) {
-                Category.ANIME -> R.menu.fragment_user_media_list_anime
-                Category.MANGA, Category.NOVEL -> R.menu.fragment_user_media_list_manga
-            }
-
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), menuResource, menu, true)
-
-        when (filter) {
-            UserMediaListFilterType.WATCHING -> menu.findItem(R.id.watching).isChecked = true
-            UserMediaListFilterType.WATCHED -> menu.findItem(R.id.watched).isChecked = true
-            UserMediaListFilterType.WILL_WATCH -> menu.findItem(R.id.will_watch).isChecked = true
-            UserMediaListFilterType.CANCELLED -> menu.findItem(R.id.cancelled).isChecked = true
-            null -> menu.findItem(R.id.all).isChecked = true
-        }
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.watching -> filter = UserMediaListFilterType.WATCHING
-            R.id.watched -> filter = UserMediaListFilterType.WATCHED
-            R.id.will_watch -> filter = UserMediaListFilterType.WILL_WATCH
-            R.id.cancelled -> filter = UserMediaListFilterType.CANCELLED
-            R.id.all -> filter = null
-        }
-
-        item.isChecked = true
-
-        return true
     }
 }

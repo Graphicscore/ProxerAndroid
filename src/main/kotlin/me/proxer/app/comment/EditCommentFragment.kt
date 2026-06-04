@@ -23,6 +23,7 @@ import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.core.text.set
+import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.transition.TransitionManager
@@ -113,34 +114,44 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
         initUI()
         initListeners()
 
-        setHasOptionsMenu(true)
-    }
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_edit_comment,
+                        menu,
+                        true,
+                    )
+                }
 
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_edit_comment, menu, true)
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.preview -> {
+                            commentBottomSheetBehavior.state =
+                                when (commentBottomSheetBehavior.state) {
+                                    BottomSheetBehavior.STATE_HIDDEN -> BottomSheetBehavior.STATE_EXPANDED
+                                    else -> BottomSheetBehavior.STATE_HIDDEN
+                                }
+                        }
 
-        super.onCreateOptionsMenu(menu, inflater)
-    }
+                        R.id.publish -> {
+                            viewModel.publish()
+                        }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.preview -> {
-                commentBottomSheetBehavior.state =
-                    when (commentBottomSheetBehavior.state) {
-                        BottomSheetBehavior.STATE_HIDDEN -> BottomSheetBehavior.STATE_EXPANDED
-                        else -> BottomSheetBehavior.STATE_HIDDEN
+                        else -> {
+                            return false
+                        }
                     }
-            }
-
-            R.id.publish -> {
-                viewModel.publish()
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
     }
 
     override fun showData(data: LocalComment) {

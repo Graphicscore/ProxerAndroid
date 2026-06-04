@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -150,8 +151,6 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
             .subscribe { (conference) ->
                 PrvMessengerActivity.navigateTo(requireActivity(), conference, initialMessage)
             }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -159,6 +158,79 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    if (initialMessage == null) {
+                        IconicsMenuInflaterUtil.inflate(
+                            menuInflater,
+                            requireContext(),
+                            R.menu.fragment_conferences,
+                            menu,
+                            true,
+                        )
+                    } else {
+                        IconicsMenuInflaterUtil.inflate(
+                            menuInflater,
+                            requireContext(),
+                            R.menu.fragment_share_receiver,
+                            menu,
+                            true,
+                        )
+                    }
+
+                    menu.findItem(R.id.search).let { searchItem ->
+                        val searchView = searchItem.actionView as SearchView
+
+                        searchItem
+                            .actionViewEvents()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe {
+                                if (it.menuItem.isActionViewExpanded) {
+                                    searchQuery = null
+                                }
+
+                                TransitionManager.endTransitions(toolbar)
+                                TransitionManager.beginDelayedTransition(toolbar)
+                            }
+
+                        searchView
+                            .queryTextChangeEvents()
+                            .skipInitialValue()
+                            .debounce(200, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe {
+                                searchQuery = it.queryText.toString().trim()
+
+                                if (it.isSubmitted) {
+                                    searchView.clearFocus()
+                                }
+                            }
+
+                        if (searchQuery.isNullOrBlank().not()) {
+                            searchItem.expandActionView()
+                            searchView.setQuery(searchQuery, false)
+                            searchView.clearFocus()
+                        }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.create_chat -> CreateConferenceActivity.navigateTo(requireActivity(), false)
+                        R.id.new_group -> CreateConferenceActivity.navigateTo(requireActivity(), true)
+                        else -> return false
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         adapter.glide = Glide.with(this)
         adapter.registerAdapterDataObserver(adapterDataObserver)
@@ -187,64 +259,6 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
         recyclerView.adapter = null
 
         super.onDestroyView()
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        if (initialMessage == null) {
-            IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_conferences, menu, true)
-        } else {
-            IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_share_receiver, menu, true)
-        }
-
-        menu.findItem(R.id.search).let { searchItem ->
-            val searchView = searchItem.actionView as SearchView
-
-            searchItem
-                .actionViewEvents()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe {
-                    if (it.menuItem.isActionViewExpanded) {
-                        searchQuery = null
-                    }
-
-                    TransitionManager.endTransitions(toolbar)
-                    TransitionManager.beginDelayedTransition(toolbar)
-                }
-
-            searchView
-                .queryTextChangeEvents()
-                .skipInitialValue()
-                .debounce(200, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe {
-                    searchQuery = it.queryText.toString().trim()
-
-                    if (it.isSubmitted) {
-                        searchView.clearFocus()
-                    }
-                }
-
-            if (searchQuery.isNullOrBlank().not()) {
-                searchItem.expandActionView()
-                searchView.setQuery(searchQuery, false)
-                searchView.clearFocus()
-            }
-        }
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.create_chat -> CreateConferenceActivity.navigateTo(requireActivity(), false)
-            R.id.new_group -> CreateConferenceActivity.navigateTo(requireActivity(), true)
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun showData(data: List<ConferenceWithMessage>) {

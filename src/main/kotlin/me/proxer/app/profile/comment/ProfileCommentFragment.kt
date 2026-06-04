@@ -8,6 +8,7 @@ import android.view.View
 import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
@@ -111,8 +112,6 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                         viewModel.deleteComment(comment)
                     }.show()
             }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -120,6 +119,41 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_user_comments,
+                        menu,
+                        true,
+                    )
+
+                    when (category) {
+                        Category.ANIME -> menu.findItem(R.id.anime).isChecked = true
+                        Category.MANGA -> menu.findItem(R.id.manga).isChecked = true
+                        else -> menu.findItem(R.id.all).isChecked = true
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.anime -> category = Category.ANIME
+                        R.id.manga -> category = Category.MANGA
+                        R.id.all -> category = null
+                        else -> return false
+                    }
+                    menuItem.isChecked = true
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         viewModel.itemDeletionError.observe(
             viewLifecycleOwner,
@@ -134,33 +168,6 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                 }
             },
         )
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_user_comments, menu, true)
-
-        when (category) {
-            Category.ANIME -> menu.findItem(R.id.anime).isChecked = true
-            Category.MANGA -> menu.findItem(R.id.manga).isChecked = true
-            else -> menu.findItem(R.id.all).isChecked = true
-        }
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.anime -> category = Category.ANIME
-            R.id.manga -> category = Category.MANGA
-            R.id.all -> category = null
-        }
-
-        item.isChecked = true
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

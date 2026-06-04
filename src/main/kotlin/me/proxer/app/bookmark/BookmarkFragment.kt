@@ -9,6 +9,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -141,8 +142,6 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
             .subscribe {
                 viewModel.addItemToDelete(it)
             }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -150,6 +149,97 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_bookmarks,
+                        menu,
+                        true,
+                    )
+
+                    when (category) {
+                        Category.ANIME -> menu.findItem(R.id.anime).isChecked = true
+                        Category.MANGA -> menu.findItem(R.id.manga).isChecked = true
+                        else -> menu.findItem(R.id.all).isChecked = true
+                    }
+
+                    menu.findItem(R.id.filterAvailable).isChecked = filterAvailable == true
+
+                    menu.findItem(R.id.search).let { searchItem ->
+                        searchView = searchItem.actionView as SearchView
+
+                        searchItem
+                            .actionViewEvents()
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe { event ->
+                                if (event.menuItem.isActionViewExpanded) {
+                                    searchQuery = null
+                                }
+
+                                TransitionManager.endTransitions(toolbar)
+                                TransitionManager.beginDelayedTransition(toolbar)
+                            }
+
+                        searchView
+                            .queryTextChangeEvents()
+                            .skipInitialValue()
+                            .debounce(500, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
+                            .subscribe { event ->
+                                if (event.isSubmitted) {
+                                    searchView.clearFocus()
+                                }
+
+                                searchQuery = event.queryText.toString().trim()
+                            }
+
+                        searchQuery?.let {
+                            searchItem.expandActionView()
+                            searchView.setQuery(it, false)
+                            searchView.clearFocus()
+                        }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.anime -> {
+                            category = Category.ANIME
+                            menuItem.isChecked = true
+                        }
+
+                        R.id.manga -> {
+                            category = Category.MANGA
+                            menuItem.isChecked = true
+                        }
+
+                        R.id.all -> {
+                            category = null
+                            menuItem.isChecked = true
+                        }
+
+                        R.id.filterAvailable -> {
+                            filterAvailable = !menuItem.isChecked
+                            menuItem.isChecked = !menuItem.isChecked
+                        }
+
+                        else -> {
+                            return false
+                        }
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         innerAdapter.glide = Glide.with(this)
 
@@ -194,87 +284,6 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
                 }
             },
         )
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_bookmarks, menu, true)
-
-        when (category) {
-            Category.ANIME -> menu.findItem(R.id.anime).isChecked = true
-            Category.MANGA -> menu.findItem(R.id.manga).isChecked = true
-            else -> menu.findItem(R.id.all).isChecked = true
-        }
-
-        menu.findItem(R.id.filterAvailable).isChecked = filterAvailable == true
-
-        menu.findItem(R.id.search).let { searchItem ->
-            searchView = searchItem.actionView as SearchView
-
-            searchItem
-                .actionViewEvents()
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe { event ->
-                    if (event.menuItem.isActionViewExpanded) {
-                        searchQuery = null
-                    }
-
-                    TransitionManager.endTransitions(toolbar)
-                    TransitionManager.beginDelayedTransition(toolbar)
-                }
-
-            searchView
-                .queryTextChangeEvents()
-                .skipInitialValue()
-                .debounce(500, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
-                .subscribe { event ->
-                    if (event.isSubmitted) {
-                        searchView.clearFocus()
-                    }
-
-                    searchQuery = event.queryText.toString().trim()
-                }
-
-            searchQuery?.let {
-                searchItem.expandActionView()
-                searchView.setQuery(it, false)
-                searchView.clearFocus()
-            }
-        }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.anime -> {
-                category = Category.ANIME
-
-                item.isChecked = true
-            }
-
-            R.id.manga -> {
-                category = Category.MANGA
-
-                item.isChecked = true
-            }
-
-            R.id.all -> {
-                category = null
-
-                item.isChecked = true
-            }
-
-            R.id.filterAvailable -> {
-                filterAvailable = !item.isChecked
-
-                item.isChecked = !item.isChecked
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun showError(action: ErrorUtils.ErrorAction) {

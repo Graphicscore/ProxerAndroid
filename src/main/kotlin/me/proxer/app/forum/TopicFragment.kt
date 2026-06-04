@@ -6,6 +6,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -71,8 +72,6 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
                     if (view.drawable != null && post.image.isNotBlank()) view else null,
                 )
             }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -80,6 +79,57 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_topic,
+                        menu,
+                        true,
+                    )
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.show_in_browser -> {
+                            val url = (activity?.intent?.dataString ?: "").toPrefixedUrlOrNull()
+
+                            if (url != null) {
+                                val mobileUrl =
+                                    url
+                                        .newBuilder()
+                                        .setQueryParameter(
+                                            "device",
+                                            ProxerUtils.getSafeApiEnumName(Device.MOBILE),
+                                        ).build()
+
+                                showPage(mobileUrl, forceBrowser = true, skipCheck = true)
+                            } else {
+                                viewModel.metaData.value?.categoryId?.also { categoryId ->
+                                    showPage(
+                                        ProxerUrls.forumWeb(categoryId, id, Device.MOBILE),
+                                        forceBrowser = true,
+                                        skipCheck = true,
+                                    )
+                                }
+                            }
+                        }
+
+                        else -> {
+                            return false
+                        }
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         innerAdapter.glide = Glide.with(this)
 
@@ -89,42 +139,5 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
                 it?.let { topic = it.subject }
             },
         )
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_topic, menu, true)
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.show_in_browser -> {
-                val url = (activity?.intent?.dataString ?: "").toPrefixedUrlOrNull()
-
-                if (url != null) {
-                    val mobileUrl =
-                        url
-                            .newBuilder()
-                            .setQueryParameter("device", ProxerUtils.getSafeApiEnumName(Device.MOBILE))
-                            .build()
-
-                    showPage(mobileUrl, forceBrowser = true, skipCheck = true)
-                } else {
-                    viewModel.metaData.value?.categoryId?.also { categoryId ->
-                        showPage(
-                            ProxerUrls.forumWeb(categoryId, id, Device.MOBILE),
-                            forceBrowser = true,
-                            skipCheck = true,
-                        )
-                    }
-                }
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 }

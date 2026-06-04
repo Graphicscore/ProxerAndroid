@@ -15,6 +15,7 @@ import androidx.appcompat.view.ActionMode
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -209,8 +210,6 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         innerAdapter.mentionsClickSubject
             .autoDisposable(this.scope())
             .subscribe { ProfileActivity.navigateTo(requireActivity(), username = it) }
-
-        setHasOptionsMenu(true)
     }
 
     override fun onViewCreated(
@@ -218,6 +217,32 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_messenger,
+                        menu,
+                        true,
+                    )
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                    when (menuItem.itemId) {
+                        R.id.report -> MessengerReportDialog.show(hostingActivity, conference.id.toString())
+                        else -> return false
+                    }
+                    return true
+                }
+            },
+            viewLifecycleOwner,
+        )
 
         // Call getter as soon as possible to make keyboard detection work properly.
         emojiPopup
@@ -311,23 +336,6 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
                 if (it != null && messageInput.safeText.isBlank()) messageInput.setText(it)
             },
         )
-    }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_messenger, menu, true)
-
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.report -> MessengerReportDialog.show(hostingActivity, conference.id.toString())
-        }
-
-        return super.onOptionsItemSelected(item)
     }
 
     override fun onResume() {

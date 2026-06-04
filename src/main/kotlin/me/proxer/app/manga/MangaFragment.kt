@@ -14,6 +14,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
+import androidx.core.view.MenuProvider
 import androidx.core.view.doOnLayout
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
@@ -237,8 +238,6 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
             }
 
         viewModel.setEpisode(episode, false)
-
-        setHasOptionsMenu(true)
     }
 
     override fun onCreateView(
@@ -257,6 +256,63 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(
+                    menu: Menu,
+                    menuInflater: MenuInflater,
+                ) {
+                    IconicsMenuInflaterUtil.inflate(
+                        menuInflater,
+                        requireContext(),
+                        R.menu.fragment_manga,
+                        menu,
+                        true,
+                    )
+
+                    toolbar.doOnLayout {
+                        toolbar.findViewById<View>(R.id.toggle_orientation).rotation =
+                            when (readerOrientation) {
+                                MangaReaderOrientation.LEFT_TO_RIGHT -> 90f
+                                MangaReaderOrientation.RIGHT_TO_LEFT -> 270f
+                                MangaReaderOrientation.VERTICAL -> 0.0f
+                            }
+                    }
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.toggle_orientation -> {
+                            readerOrientation =
+                                when (readerOrientation) {
+                                    MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
+                                    MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
+                                    MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
+                                }
+
+                            bindOrientationOptionsItem()
+                            bindHeaderAndFooterHeight()
+                            bindLayoutManager()
+
+                            hostingActivity.multilineSnackbar(
+                                when (readerOrientation) {
+                                    MangaReaderOrientation.LEFT_TO_RIGHT -> R.string.fragment_manga_left_to_right
+                                    MangaReaderOrientation.RIGHT_TO_LEFT -> R.string.fragment_manga_right_to_left
+                                    MangaReaderOrientation.VERTICAL -> R.string.fragment_manga_vertical
+                                },
+                            )
+
+                            true
+                        }
+
+                        else -> {
+                            false
+                        }
+                    }
+            },
+            viewLifecycleOwner,
+        )
 
         initHeaderAndFooter()
 
@@ -317,54 +373,6 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
 
         super.onDestroyView()
     }
-
-    override fun onCreateOptionsMenu(
-        menu: Menu,
-        inflater: MenuInflater,
-    ) {
-        IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_manga, menu, true)
-
-        toolbar.doOnLayout {
-            toolbar.findViewById<View>(R.id.toggle_orientation).rotation =
-                when (readerOrientation) {
-                    MangaReaderOrientation.LEFT_TO_RIGHT -> 90f
-                    MangaReaderOrientation.RIGHT_TO_LEFT -> 270f
-                    MangaReaderOrientation.VERTICAL -> 0.0f
-                }
-        }
-
-        return super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.toggle_orientation -> {
-                readerOrientation =
-                    when (readerOrientation) {
-                        MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
-                        MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
-                        MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
-                    }
-
-                bindOrientationOptionsItem()
-                bindHeaderAndFooterHeight()
-                bindLayoutManager()
-
-                hostingActivity.multilineSnackbar(
-                    when (readerOrientation) {
-                        MangaReaderOrientation.LEFT_TO_RIGHT -> R.string.fragment_manga_left_to_right
-                        MangaReaderOrientation.RIGHT_TO_LEFT -> R.string.fragment_manga_right_to_left
-                        MangaReaderOrientation.VERTICAL -> R.string.fragment_manga_vertical
-                    },
-                )
-
-                true
-            }
-
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
-        }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
