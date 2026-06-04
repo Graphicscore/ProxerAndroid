@@ -84,7 +84,7 @@ ext {
     threetenVersion = "1.4.9"
     glideVersion = "5.0.7"
     retrofitVersion = "2.12.0"
-    okHttpVersion = "4.12.0"
+    okHttpVersion = "5.3.2"
     okioVersion = "3.17.0"
     moshiVersion = "1.15.2"
     easyHeaderFooterAdapterVersion = "3.0.0"
