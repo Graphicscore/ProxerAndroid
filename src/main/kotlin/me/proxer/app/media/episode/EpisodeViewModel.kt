@@ -15,23 +15,27 @@ import me.proxer.library.enums.MediaLanguage
 /**
  * @author Ruben Gees
  */
-class EpisodeViewModel(private val entryId: String) : BaseViewModel<List<EpisodeRow>>() {
-
+class EpisodeViewModel(
+    private val entryId: String,
+) : BaseViewModel<List<EpisodeRow>>() {
     override val dataSingle: Single<List<EpisodeRow>>
-        get() = Single.fromCallable { validate() }
-            .flatMap {
-                api.info.episodeInfo(entryId)
-                    .limit(Int.MAX_VALUE)
-                    .buildSingle()
-            }
-            .map { info ->
-                info.episodes
-                    .asSequence()
-                    .groupBy { it.number }
-                    .map { (_, episodes) -> EpisodeRow(info.category, info.userProgress, info.lastEpisode, episodes) }
-                    .toList()
-                    .sortedBy { it.number }
-            }
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap {
+                    api.info
+                        .episodeInfo(entryId)
+                        .limit(Int.MAX_VALUE)
+                        .buildSingle()
+                }.map { info ->
+                    info.episodes
+                        .asSequence()
+                        .groupBy { it.number }
+                        .map { (_, episodes) ->
+                            EpisodeRow(info.category, info.userProgress, info.lastEpisode, episodes)
+                        }.toList()
+                        .sortedBy { it.number }
+                }
 
     val bookmarkData = ResettingMutableLiveData<Unit?>()
     val bookmarkError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
@@ -45,23 +49,29 @@ class EpisodeViewModel(private val entryId: String) : BaseViewModel<List<Episode
         super.onCleared()
     }
 
-    fun bookmark(episode: Int, language: MediaLanguage, category: Category) {
+    fun bookmark(
+        episode: Int,
+        language: MediaLanguage,
+        category: Category,
+    ) {
         bookmarkDisposable?.dispose()
-        bookmarkDisposable = Single.fromCallable { validators.validateLogin() }
-            .flatMap { api.ucp.setBookmark(entryId, episode, language, category).buildSingle() }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe { isLoading.value = true }
-            .doAfterTerminate { isLoading.value = false }
-            .subscribeAndLogErrors(
-                {
-                    bookmarkError.value = null
-                    bookmarkData.value = Unit
-                },
-                {
-                    bookmarkData.value = null
-                    bookmarkError.value = ErrorUtils.handle(it)
-                }
-            )
+        bookmarkDisposable =
+            Single
+                .fromCallable { validators.validateLogin() }
+                .flatMap { api.ucp.setBookmark(entryId, episode, language, category).buildSingle() }
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe { isLoading.value = true }
+                .doAfterTerminate { isLoading.value = false }
+                .subscribeAndLogErrors(
+                    {
+                        bookmarkError.value = null
+                        bookmarkData.value = Unit
+                    },
+                    {
+                        bookmarkData.value = null
+                        bookmarkError.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 }

@@ -17,10 +17,11 @@ import androidx.tv.material3.MaterialTheme
 @Composable
 fun TvPlaceholderScreen(sectionName: String) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(sectionName, fontSize = 28.sp, color = MaterialTheme.colorScheme.onBackground)

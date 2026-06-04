@@ -34,13 +34,13 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
-
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
 
-        fun newInstance() = ProfileCommentFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ProfileCommentFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val emptyDataMessage = R.string.error_no_data_comments
@@ -71,15 +71,17 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
     override val layoutManager by unsafeLazy { LinearLayoutManager(context) }
     override var innerAdapter by Delegates.notNull<ProfileCommentAdapter>()
 
-    private val editComment = registerForActivityResult(EditCommentActivity.Contract()) { comment ->
-        if (comment != null) {
-            Single.fromCallable { comment }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(this.scope())
-                .subscribeAndLogErrors { viewModel.updateComment(it) }
+    private val editComment =
+        registerForActivityResult(EditCommentActivity.Contract()) { comment ->
+            if (comment != null) {
+                Single
+                    .fromCallable { comment }
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDisposable(this.scope())
+                    .subscribeAndLogErrors { viewModel.updateComment(it) }
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,7 +97,6 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
         innerAdapter.editClickSubject
             .autoDisposable(this.scope())
             .subscribe {
-
                 editComment.launch(EditCommentActivity.Contract.Input(it.id, it.entryId, it.entryName))
             }
 
@@ -107,14 +108,16 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                     .negativeButton(res = R.string.cancel)
                     .positiveButton(res = R.string.dialog_comment_delete_positive) {
                         viewModel.deleteComment(comment)
-                    }
-                    .show()
+                    }.show()
             }
 
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.itemDeletionError.observe(
@@ -125,14 +128,17 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
                         getString(R.string.error_comment_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_user_comments, menu, true)
 
         when (category) {

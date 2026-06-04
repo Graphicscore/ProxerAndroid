@@ -39,7 +39,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  * @author Ruben Gees
  */
 class LoginDialog : BaseDialog() {
-
     companion object {
         private val websiteRegex = Regex("Proxer \\b(.+?)\\b")
 
@@ -64,12 +63,13 @@ class LoginDialog : BaseDialog() {
         setLikelyUrl(ProxerUrls.registerWeb())
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .noAutoDismiss()
-        .title(R.string.dialog_login_title)
-        .positiveButton(R.string.dialog_login_positive) { validateAndLogin() }
-        .negativeButton(R.string.cancel) { it.dismiss() }
-        .customView(R.layout.dialog_login, scrollable = true)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .noAutoDismiss()
+            .title(R.string.dialog_login_title)
+            .positiveButton(R.string.dialog_login_positive) { validateAndLogin() }
+            .negativeButton(R.string.cancel) { it.dismiss() }
+            .customView(R.layout.dialog_login, scrollable = true)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -89,28 +89,33 @@ class LoginDialog : BaseDialog() {
         secret.transformationMethod = null
 
         registrationInfo.compoundDrawablePadding = dip(12)
-        registrationInfo.text = requireContext().getString(R.string.dialog_login_registration)
-            .linkify(web = false, mentions = false, custom = arrayOf(websiteRegex))
+        registrationInfo.text =
+            requireContext()
+                .getString(R.string.dialog_login_registration)
+                .linkify(web = false, mentions = false, custom = arrayOf(websiteRegex))
 
         registrationInfo.setCompoundDrawables(generateInfoDrawable(), null, null, null)
     }
 
     private fun setupListeners() {
         listOf(password, secret).forEach {
-            it.editorActionEvents { event -> event.actionId == EditorInfo.IME_ACTION_GO }
+            it
+                .editorActionEvents { event -> event.actionId == EditorInfo.IME_ACTION_GO }
                 .filter { event -> event.actionId == EditorInfo.IME_ACTION_GO }
                 .autoDisposable(dialogLifecycleOwner.scope())
                 .subscribe { validateAndLogin() }
         }
 
         listOf(username to usernameContainer, password to passwordContainer).forEach { (input, container) ->
-            input.textChanges()
+            input
+                .textChanges()
                 .skipInitialValue()
                 .autoDisposable(dialogLifecycleOwner.scope())
                 .subscribe { setError(container, null) }
         }
 
-        registrationInfo.linkClicks()
+        registrationInfo
+            .linkClicks()
             .map { ProxerUrls.registerWeb() }
             .autoDisposable(dialogLifecycleOwner.scope())
             .subscribe { showPage(it, skipCheck = true) }
@@ -123,7 +128,7 @@ class LoginDialog : BaseDialog() {
                 it?.let {
                     dismiss()
                 }
-            }
+            },
         )
 
         viewModel.error.observe(
@@ -134,7 +139,7 @@ class LoginDialog : BaseDialog() {
 
                     requireContext().toast(it.message)
                 }
-            }
+            },
         )
 
         viewModel.isLoading.observe(
@@ -142,7 +147,7 @@ class LoginDialog : BaseDialog() {
             Observer {
                 inputContainer.isGone = it == true
                 progress.isVisible = it == true
-            }
+            },
         )
 
         viewModel.isTwoFactorAuthenticationEnabled.observe(
@@ -151,7 +156,7 @@ class LoginDialog : BaseDialog() {
                 secretContainer.isVisible = it == true
                 secret.imeOptions = if (it == true) EditorInfo.IME_ACTION_GO else EditorInfo.IME_ACTION_NEXT
                 password.imeOptions = if (it == true) EditorInfo.IME_ACTION_NEXT else EditorInfo.IME_ACTION_GO
-            }
+            },
         )
     }
 
@@ -165,28 +170,39 @@ class LoginDialog : BaseDialog() {
         }
     }
 
-    private fun validateInput(username: String, password: String) = when {
+    private fun validateInput(
+        username: String,
+        password: String,
+    ) = when {
         username.isBlank() -> {
             setError(usernameContainer, getString(R.string.dialog_login_error_username))
 
             false
         }
+
         password.isBlank() -> {
             setError(passwordContainer, getString(R.string.dialog_login_error_password))
 
             false
         }
-        else -> true
+
+        else -> {
+            true
+        }
     }
 
-    private fun setError(container: TextInputLayout, errorText: String?) {
+    private fun setError(
+        container: TextInputLayout,
+        errorText: String?,
+    ) {
         container.isErrorEnabled = errorText != null
         container.error = errorText
     }
 
-    private fun generateInfoDrawable() = IconicsDrawable(requireContext()).apply {
-        icon = CommunityMaterial.Icon2.cmd_information_outline
-        colorInt = requireContext().resolveColor(R.attr.colorIcon)
-        sizeDp = 20
-    }
+    private fun generateInfoDrawable() =
+        IconicsDrawable(requireContext()).apply {
+            icon = CommunityMaterial.Icon2.cmd_information_outline
+            colorInt = requireContext().resolveColor(R.attr.colorIcon)
+            sizeDp = 20
+        }
 }

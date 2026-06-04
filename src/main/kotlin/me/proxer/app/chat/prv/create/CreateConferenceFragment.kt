@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputLayout
 import com.jakewharton.rxbinding3.view.clicks
@@ -32,7 +33,6 @@ import com.vanniktech.emoji.EmojiEditText
 import com.vanniktech.emoji.EmojiPopup
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseAdapter.ContainerPositionResolver
 import me.proxer.app.base.BaseFragment
@@ -55,11 +55,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conference) {
-
     companion object {
-        fun newInstance() = CreateConferenceFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            CreateConferenceFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val hostingActivity: CreateConferenceActivity
@@ -75,10 +75,12 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         get() = hostingActivity.initialParticipant
 
     private val emojiPopup by unsafeLazy {
-        val popup = EmojiPopup.Builder.fromRootView(root)
-            .setOnEmojiPopupShownListener { updateIcons() }
-            .setOnEmojiPopupDismissListener { updateIcons() }
-            .build(messageInput)
+        val popup =
+            EmojiPopup.Builder
+                .fromRootView(root)
+                .setOnEmojiPopupShownListener { updateIcons() }
+                .setOnEmojiPopupDismissListener { updateIcons() }
+                .build(messageInput)
 
         popup
     }
@@ -146,23 +148,32 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
             }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        addParticipantFooter = inflater.inflate(
-            R.layout.item_create_conference_add_participant,
-            container,
-            false
-        ) as ViewGroup
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
+        addParticipantFooter =
+            inflater.inflate(
+                R.layout.item_create_conference_add_participant,
+                container,
+                false,
+            ) as ViewGroup
 
-        addParticipantInputFooter = inflater.inflate(
-            R.layout.item_create_conference_add_participant_input,
-            container,
-            false
-        ) as ViewGroup
+        addParticipantInputFooter =
+            inflater.inflate(
+                R.layout.item_create_conference_add_participant_input,
+                container,
+                false,
+            ) as ViewGroup
 
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         // Call getter as soon as possible to make keyboard detection work properly.
@@ -176,14 +187,16 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         participants.layoutManager = LinearLayoutManager(context)
         participants.adapter = adapter
 
-        val schemeColors = requireContext().let { context ->
-            intArrayOf(context.resolveColor(R.attr.colorPrimary), context.resolveColor(R.attr.colorSecondary))
-        }
+        val schemeColors =
+            requireContext().let { context ->
+                intArrayOf(context.resolveColor(R.attr.colorPrimary), context.resolveColor(R.attr.colorSecondary))
+            }
 
         progress.setColorSchemeColors(*schemeColors)
         progress.isEnabled = false
 
-        emojiButton.clicks()
+        emojiButton
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { emojiPopup.toggle() }
 
@@ -195,7 +208,7 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
             Observer {
                 progress.isEnabled = it == true
                 progress.isRefreshing = it == true
-            }
+            },
         )
 
         viewModel.result.observe(
@@ -206,7 +219,7 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
 
                     PrvMessengerActivity.navigateTo(requireActivity(), it)
                 }
-            }
+            },
         )
 
         viewModel.error.observe(
@@ -217,10 +230,10 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                         it.message,
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
@@ -246,13 +259,14 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                 false -> CommunityMaterial.Icon.cmd_account_multiple_plus
             },
             96,
-            16
+            16,
         )
 
         acceptParticipant.setIconicsImage(CommunityMaterial.Icon.cmd_check, 48, 16)
         cancelParticipant.setIconicsImage(CommunityMaterial.Icon.cmd_close, 48, 16)
 
-        addParticipantFooter.clicks()
+        addParticipantFooter
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 adapter.footer = addParticipantInputFooter
@@ -262,7 +276,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                 }
             }
 
-        cancelParticipant.clicks()
+        cancelParticipant
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 participantInput.text.clear()
@@ -272,7 +287,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                 messageInput.requestFocus()
             }
 
-        acceptParticipant.clicks()
+        acceptParticipant
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 if (validateAndAddUser()) {
@@ -280,7 +296,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                 }
             }
 
-        participantInput.textChanges()
+        participantInput
+            .textChanges()
             .skipInitialValue()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
@@ -288,7 +305,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                 participantInputContainer.isErrorEnabled = false
             }
 
-        participantInput.editorActions { it == EditorInfo.IME_ACTION_NEXT }
+        participantInput
+            .editorActions { it == EditorInfo.IME_ACTION_NEXT }
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 if (it == EditorInfo.IME_ACTION_NEXT && validateAndAddUser()) {
@@ -302,7 +320,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
     }
 
     private fun initSendButton() {
-        sendButton.clicks()
+        sendButton
+            .clicks()
             .map {
                 validators.validateLogin()
 
@@ -312,36 +331,42 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
 
                 when {
                     isGroup && topic.isBlank() -> throw TopicEmptyException()
+
                     firstMessage.isBlank() -> throw InvalidInputException(
-                        requireContext().getString(R.string.error_missing_message)
+                        requireContext().getString(R.string.error_missing_message),
                     )
+
                     participants.isEmpty() -> throw InvalidInputException(
-                        requireContext().getString(R.string.error_missing_participants)
+                        requireContext().getString(R.string.error_missing_participants),
                     )
                 }
 
                 Triple(topic, firstMessage, participants)
-            }
-            .doOnError {
+            }.doOnError {
                 when (it) {
-                    is InvalidInputException -> it.message?.let { message ->
-                        hostingActivity.multilineSnackbar(message)
+                    is InvalidInputException -> {
+                        it.message?.let { message ->
+                            hostingActivity.multilineSnackbar(message)
+                        }
                     }
+
                     is TopicEmptyException -> {
                         topicInputContainer.isErrorEnabled = true
                         topicInputContainer.error = requireContext().getString(R.string.error_input_empty)
                     }
-                    else -> ErrorUtils.handle(it).let { action ->
-                        hostingActivity.multilineSnackbar(
-                            action.message,
-                            Snackbar.LENGTH_LONG,
-                            action.buttonMessage,
-                            action.toClickListener(hostingActivity)
-                        )
+
+                    else -> {
+                        ErrorUtils.handle(it).let { action ->
+                            hostingActivity.multilineSnackbar(
+                                action.message,
+                                Snackbar.LENGTH_LONG,
+                                action.buttonMessage,
+                                action.toClickListener(hostingActivity),
+                            )
+                        }
                     }
                 }
-            }
-            .retry()
+            }.retry()
             .filter { viewModel.isLoading.value != true }
             .observeOn(AndroidSchedulers.mainThread())
             .autoDisposable(viewLifecycleOwner.scope())
@@ -355,7 +380,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
 
     private fun initTopicInput() {
         if (isGroup) {
-            topicInput.textChanges()
+            topicInput
+                .textChanges()
                 .skipInitialValue()
                 .autoDisposable(viewLifecycleOwner.scope())
                 .subscribe {
@@ -363,7 +389,8 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                     topicInputContainer.error = null
                 }
 
-            topicInput.editorActions { it == EditorInfo.IME_ACTION_NEXT }
+            topicInput
+                .editorActions { it == EditorInfo.IME_ACTION_NEXT }
                 .autoDisposable(viewLifecycleOwner.scope())
                 .subscribe {
                     if (it == EditorInfo.IME_ACTION_NEXT) {
@@ -389,54 +416,59 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         }
     }
 
-    private fun validateAndAddUser(): Boolean = participantInput.text.toString().trim().let {
-        when {
-            it.isBlank() -> {
-                participantInputContainer.isErrorEnabled = true
-                participantInputContainer.error = requireContext().getString(R.string.error_input_empty)
+    private fun validateAndAddUser(): Boolean =
+        participantInput.text.toString().trim().let {
+            when {
+                it.isBlank() -> {
+                    participantInputContainer.isErrorEnabled = true
+                    participantInputContainer.error = requireContext().getString(R.string.error_input_empty)
 
-                false
-            }
-            innerAdapter.contains(it) -> {
-                participantInputContainer.isErrorEnabled = true
-                participantInputContainer.error = requireContext().getString(R.string.error_duplicate_participant)
-
-                false
-            }
-            it.equals(storageHelper.user?.name, ignoreCase = true) -> {
-                participantInputContainer.isErrorEnabled = true
-                participantInputContainer.error = requireContext().getString(R.string.error_self_participant)
-
-                false
-            }
-            else -> {
-                innerAdapter.add(Participant(it, ""))
-
-                participantInput.text.clear()
-
-                if (!isGroup && innerAdapter.itemCount >= 1) {
-                    adapter.footer = null
-
-                    true
-                } else {
                     false
+                }
+
+                innerAdapter.contains(it) -> {
+                    participantInputContainer.isErrorEnabled = true
+                    participantInputContainer.error = requireContext().getString(R.string.error_duplicate_participant)
+
+                    false
+                }
+
+                it.equals(storageHelper.user?.name, ignoreCase = true) -> {
+                    participantInputContainer.isErrorEnabled = true
+                    participantInputContainer.error = requireContext().getString(R.string.error_self_participant)
+
+                    false
+                }
+
+                else -> {
+                    innerAdapter.add(Participant(it, ""))
+
+                    participantInput.text.clear()
+
+                    if (!isGroup && innerAdapter.itemCount >= 1) {
+                        adapter.footer = null
+
+                        true
+                    } else {
+                        false
+                    }
                 }
             }
         }
-    }
 
     private fun updateIcons() {
-        val emojiButtonIcon: IIcon = when (emojiPopup.isShowing) {
-            true -> CommunityMaterial.Icon2.cmd_keyboard
-            false -> CommunityMaterial.Icon.cmd_emoticon
-        }
+        val emojiButtonIcon: IIcon =
+            when (emojiPopup.isShowing) {
+                true -> CommunityMaterial.Icon2.cmd_keyboard
+                false -> CommunityMaterial.Icon.cmd_emoticon
+            }
 
         emojiButton.setImageDrawable(
             IconicsDrawable(requireContext(), emojiButtonIcon).apply {
                 colorInt = requireContext().resolveColor(R.attr.colorIcon)
                 paddingDp = 6
                 sizeDp = 32
-            }
+            },
         )
 
         sendButton.setImageDrawable(
@@ -444,7 +476,7 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
                 colorInt = requireContext().resolveColor(R.attr.colorSecondary)
                 paddingDp = 4
                 sizeDp = 32
-            }
+            },
         )
     }
 }

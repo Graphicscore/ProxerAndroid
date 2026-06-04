@@ -30,8 +30,9 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-abstract class BaseActivity : AppCompatActivity(), CustomTabsAware {
-
+abstract class BaseActivity :
+    AppCompatActivity(),
+    CustomTabsAware {
     private companion object {
         private const val STATE = "activity_state"
     }
@@ -91,11 +92,14 @@ abstract class BaseActivity : AppCompatActivity(), CustomTabsAware {
         }
     }
 
-    override fun setLikelyUrl(url: HttpUrl): Boolean {
-        return customTabsHelper.mayLaunchUrl(url.androidUri(), bundleOf(), emptyList())
-    }
+    override fun setLikelyUrl(url: HttpUrl): Boolean =
+        customTabsHelper.mayLaunchUrl(url.androidUri(), bundleOf(), emptyList())
 
-    override fun showPage(url: HttpUrl, forceBrowser: Boolean, skipCheck: Boolean) {
+    override fun showPage(
+        url: HttpUrl,
+        forceBrowser: Boolean,
+        skipCheck: Boolean,
+    ) {
         customTabsHelper.fallbackHandleLink(this, url, forceBrowser, skipCheck)
     }
 
@@ -104,7 +108,7 @@ abstract class BaseActivity : AppCompatActivity(), CustomTabsAware {
         duration: Int = Snackbar.LENGTH_LONG,
         actionMessage: Int = ErrorUtils.ErrorAction.ACTION_MESSAGE_DEFAULT,
         actionCallback: View.OnClickListener? = null,
-        maxLines: Int = -1
+        maxLines: Int = -1,
     ) {
         Snackbar.make(root, message, duration).apply {
             when (actionMessage) {
@@ -113,12 +117,19 @@ abstract class BaseActivity : AppCompatActivity(), CustomTabsAware {
 
                     setAction(multilineActionMessage, actionCallback)
                 }
-                ErrorUtils.ErrorAction.ACTION_MESSAGE_HIDE -> setAction(null, null)
-                else -> setAction(actionMessage, actionCallback)
+
+                ErrorUtils.ErrorAction.ACTION_MESSAGE_HIDE -> {
+                    setAction(null, null)
+                }
+
+                else -> {
+                    setAction(actionMessage, actionCallback)
+                }
             }
 
             if (maxLines >= 0) {
-                (view as ViewGroup).recursiveChildren
+                (view as ViewGroup)
+                    .recursiveChildren
                     .filterIsInstance(TextView::class.java)
                     .forEach { it.maxLines = maxLines }
             }

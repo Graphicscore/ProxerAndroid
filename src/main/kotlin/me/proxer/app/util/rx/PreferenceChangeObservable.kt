@@ -11,9 +11,8 @@ import me.proxer.app.util.extension.checkMainThread
  */
 class PreferenceChangeObservable<T>(
     private val preference: Preference,
-    private val handled: (T) -> Boolean
+    private val handled: (T) -> Boolean,
 ) : Observable<T>() {
-
     override fun subscribeActual(observer: Observer<in T>) {
         if (!observer.checkMainThread()) {
             return
@@ -29,10 +28,13 @@ class PreferenceChangeObservable<T>(
     internal class Listener<T>(
         private val preference: Preference,
         private val handled: (T) -> Boolean,
-        private val observer: Observer<in T>
-    ) : MainThreadDisposable(), Preference.OnPreferenceChangeListener {
-
-        override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {
+        private val observer: Observer<in T>,
+    ) : MainThreadDisposable(),
+        Preference.OnPreferenceChangeListener {
+        override fun onPreferenceChange(
+            preference: Preference,
+            newValue: Any,
+        ): Boolean {
             newValue as T
 
             return if (!isDisposed) {

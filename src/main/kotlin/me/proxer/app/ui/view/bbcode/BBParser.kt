@@ -45,23 +45,52 @@ import java.util.regex.Pattern.quote
  * @author Ruben Gees
  */
 object BBParser {
-
-    private val textOnlyPrototypes = setOf(
-        BoldPrototype, ItalicPrototype, UnderlinePrototype, StrikethroughPrototype, SizePrototype, ColorPrototype,
-        LeftPrototype, CenterPrototype, RightPrototype, SuperscriptPrototype, SubscriptPrototype
-    )
+    private val textOnlyPrototypes =
+        setOf(
+            BoldPrototype,
+            ItalicPrototype,
+            UnderlinePrototype,
+            StrikethroughPrototype,
+            SizePrototype,
+            ColorPrototype,
+            LeftPrototype,
+            CenterPrototype,
+            RightPrototype,
+            SuperscriptPrototype,
+            SubscriptPrototype,
+        )
 
     private val simplePrototypes = textOnlyPrototypes.plus(SpoilerPrototype)
 
-    private val defaultPrototypes = simplePrototypes.plus(
-        setOf(
-            QuotePrototype, UrlPrototype, QuotePrototype, UrlPrototype, ImagePrototype, DividerPrototype,
-            VideoPrototype, TablePrototype, TableRowPrototype, TableCellPrototype, CodePrototype, HidePrototype,
-            UnorderedListPrototype, OrderedListPrototype, ListItemPrototype, MapPrototype, AttachmentPrototype,
-            FacebookPrototype, TwitterPrototype, PollPrototype, BreakPrototype, PdfPrototype, AgeRestrictionPrototype,
-            WikiPrototype
+    private val defaultPrototypes =
+        simplePrototypes.plus(
+            setOf(
+                QuotePrototype,
+                UrlPrototype,
+                QuotePrototype,
+                UrlPrototype,
+                ImagePrototype,
+                DividerPrototype,
+                VideoPrototype,
+                TablePrototype,
+                TableRowPrototype,
+                TableCellPrototype,
+                CodePrototype,
+                HidePrototype,
+                UnorderedListPrototype,
+                OrderedListPrototype,
+                ListItemPrototype,
+                MapPrototype,
+                AttachmentPrototype,
+                FacebookPrototype,
+                TwitterPrototype,
+                PollPrototype,
+                BreakPrototype,
+                PdfPrototype,
+                AgeRestrictionPrototype,
+                WikiPrototype,
+            ),
         )
-    )
 
     private val regexCache = mutableMapOf<Set<BBPrototype>, Regex>()
 
@@ -71,11 +100,12 @@ object BBParser {
         regexCache[defaultPrototypes] = constructRegex(defaultPrototypes)
     }
 
-    fun parseSimple(input: String): BBTree {
-        return parse(input, simplePrototypes)
-    }
+    fun parseSimple(input: String): BBTree = parse(input, simplePrototypes)
 
-    fun parse(input: String, prototypes: Set<BBPrototype> = defaultPrototypes): BBTree {
+    fun parse(
+        input: String,
+        prototypes: Set<BBPrototype> = defaultPrototypes,
+    ): BBTree {
         val trimmedInput = input.trim()
         val result = BBTree(RootPrototype, null)
         val parts = constructRegex(prototypes).findAll(trimmedInput)
@@ -143,18 +173,24 @@ object BBParser {
         return result
     }
 
-    private fun constructRegex(prototypes: Set<BBPrototype>) = regexCache.getOrPut(prototypes) {
-        val prototypeRegex = prototypes.joinToString("|") {
-            when (it.canHaveChildren) {
-                true -> it.startRegex.pattern + "|" + it.endRegex.pattern
-                false -> it.startRegex.pattern
-            }
+    private fun constructRegex(prototypes: Set<BBPrototype>) =
+        regexCache.getOrPut(prototypes) {
+            val prototypeRegex =
+                prototypes.joinToString("|") {
+                    when (it.canHaveChildren) {
+                        true -> it.startRegex.pattern + "|" + it.endRegex.pattern
+                        false -> it.startRegex.pattern
+                    }
+                }
+
+            Regex("${quote("[")}(($prototypeRegex)?)${quote("]")}", REGEX_OPTIONS)
         }
 
-        Regex("${quote("[")}(($prototypeRegex)?)${quote("]")}", REGEX_OPTIONS)
-    }
-
-    private fun findFittingTree(tree: BBTree, endTag: String, finishedList: List<BBTree>): BBTree? {
+    private fun findFittingTree(
+        tree: BBTree,
+        endTag: String,
+        finishedList: List<BBTree>,
+    ): BBTree? {
         var currentTree = tree.parent
 
         while (true) {
@@ -168,7 +204,10 @@ object BBParser {
         }
     }
 
-    private fun findNextUnfinishedTree(tree: BBTree, finishedList: List<BBTree>): BBTree {
+    private fun findNextUnfinishedTree(
+        tree: BBTree,
+        finishedList: List<BBTree>,
+    ): BBTree {
         var currentTree = tree
 
         while (true) {
@@ -182,4 +221,5 @@ object BBParser {
 }
 
 fun String.toBBTree(args: BBArgs = BBArgs()) = BBParser.parse(this).optimize(args)
+
 fun String.toSimpleBBTree(args: BBArgs = BBArgs()) = BBParser.parseSimple(this).optimize(args)

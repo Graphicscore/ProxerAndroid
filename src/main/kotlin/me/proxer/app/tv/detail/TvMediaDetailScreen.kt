@@ -37,7 +37,7 @@ fun TvMediaDetailScreen(
     entryId: String,
     entryName: String,
     onWatchEpisodes: (episodeAmount: Int) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val viewModel: MediaInfoViewModel = koinViewModel { parametersOf(entryId) }
     val entry by viewModel.data.observeAsState()
@@ -49,63 +49,72 @@ fun TvMediaDetailScreen(
     }
 
     Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
-        horizontalArrangement = Arrangement.spacedBy(24.dp)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(24.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         AsyncImage(
             model = ProxerUrls.entryImage(entryId).toString(),
             contentDescription = entryName,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .width(240.dp)
-                .fillMaxHeight()
+            modifier =
+                Modifier
+                    .width(240.dp)
+                    .fillMaxHeight(),
         )
 
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OutlinedButton(onClick = onBack) { Text("← Back") }
 
             when {
-                isLoading == true && entry == null -> CircularProgressIndicator()
+                isLoading == true && entry == null -> {
+                    CircularProgressIndicator()
+                }
+
                 error != null -> {
                     TvErrorView(
                         error = error!!,
-                        onRetryClick = { viewModel.load() }
+                        onRetryClick = { viewModel.load() },
                     )
                 }
-                else -> entry?.let { e ->
-                    Text(e.name, fontSize = 28.sp, color = MaterialTheme.colorScheme.onBackground)
-                    Text(
-                        "Rating: ${"%.1f".format(e.rating.toDouble())}/10",
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        fontSize = 14.sp
-                    )
-                    Text(
-                        "Episodes: ${e.episodeAmount}",
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        fontSize = 14.sp
-                    )
-                    if (e.description.isNotBlank()) {
-                        Spacer(Modifier.height(8.dp))
-                        Text("Synopsis", color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp)
+
+                else -> {
+                    entry?.let { e ->
+                        Text(e.name, fontSize = 28.sp, color = MaterialTheme.colorScheme.onBackground)
                         Text(
-                            e.description,
+                            "Rating: ${"%.1f".format(e.rating.toDouble())}/10",
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                             fontSize = 14.sp,
-                            lineHeight = 20.sp
                         )
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    Button(onClick = { onWatchEpisodes(e.episodeAmount) }) {
-                        Text("Watch Episodes", fontSize = 16.sp)
+                        Text(
+                            "Episodes: ${e.episodeAmount}",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                            fontSize = 14.sp,
+                        )
+                        if (e.description.isNotBlank()) {
+                            Spacer(Modifier.height(8.dp))
+                            Text("Synopsis", color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp)
+                            Text(
+                                e.description,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                fontSize = 14.sp,
+                                lineHeight = 20.sp,
+                            )
+                        }
+                        Spacer(Modifier.height(8.dp))
+                        Button(onClick = { onWatchEpisodes(e.episodeAmount) }) {
+                            Text("Watch Episodes", fontSize = 16.sp)
+                        }
                     }
                 }
             }

@@ -16,9 +16,8 @@ open class LocalUserHistoryEntry(
     open val language: MediaLanguage,
     open val medium: Medium,
     open val category: Category,
-    open val episode: Int
+    open val episode: Int,
 ) : ProxerIdItem {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is LocalUserHistoryEntry) return false
@@ -45,10 +44,9 @@ open class LocalUserHistoryEntry(
         return result
     }
 
-    override fun toString(): String {
-        return "LocalUserHistoryEntry(id='$id', entryId='$entryId', name='$name', language=$language, " +
+    override fun toString(): String =
+        "LocalUserHistoryEntry(id='$id', entryId='$entryId', name='$name', language=$language, " +
             "medium=$medium, category=$category, episode=$episode)"
-    }
 
     data class Ucp(
         override val id: String,
@@ -58,6 +56,6 @@ open class LocalUserHistoryEntry(
         override val medium: Medium,
         override val category: Category,
         override val episode: Int,
-        val date: Date
+        val date: Date,
     ) : LocalUserHistoryEntry(id, entryId, name, language, medium, category, episode)
 }

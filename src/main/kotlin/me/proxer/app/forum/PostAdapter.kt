@@ -10,6 +10,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
@@ -17,7 +18,6 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -34,18 +34,21 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Ruben Gees
  */
 class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
-
     var glide: RequestManager? = null
     val profileClickSubject: PublishSubject<Pair<ImageView, ParsedPost>> = PublishSubject.create()
 
     private val heightMap = ConcurrentHashMap<String, Int>()
     private var layoutManager: LayoutManager? = null
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) {
         holder.bind(data[position])
     }
 
@@ -65,8 +68,9 @@ class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val userContainer by bindView<ViewGroup>(R.id.userContainer)
         internal val image by bindView<ImageView>(R.id.image)
         internal val user by bindView<TextView>(R.id.user)
@@ -90,12 +94,14 @@ class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
         }
 
         fun bind(item: ParsedPost) {
-            userContainer.clicks()
+            userContainer
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(profileClickSubject)
 
-            Observable.merge(post.heightChanges.map { post }, signature.heightChanges.map { signature })
+            Observable
+                .merge(post.heightChanges.map { post }, signature.heightChanges.map { signature })
                 .autoDisposable(this)
                 .subscribe {
                     it.requestLayout()
@@ -132,7 +138,8 @@ class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
             if (item.image.isBlank()) {
                 image.setIconicsImage(CommunityMaterial.Icon.cmd_account, 32, 4, R.attr.colorSecondary)
             } else {
-                glide?.load(ProxerUrls.userImage(item.image).toString())
+                glide
+                    ?.load(ProxerUrls.userImage(item.image).toString())
                     ?.transition(DrawableTransitionOptions.withCrossFade())
                     ?.circleCrop()
                     ?.logErrors()

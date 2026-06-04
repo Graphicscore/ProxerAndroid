@@ -11,9 +11,8 @@ import me.proxer.app.util.extension.checkMainThread
  */
 class PreferenceClickObservable(
     private val preference: Preference,
-    private val handled: (Unit) -> Boolean
+    private val handled: (Unit) -> Boolean,
 ) : Observable<Unit>() {
-
     override fun subscribeActual(observer: Observer<in Unit>) {
         if (!observer.checkMainThread()) {
             return
@@ -29,11 +28,11 @@ class PreferenceClickObservable(
     internal class Listener(
         private val preference: Preference,
         private val handled: (Unit) -> Boolean,
-        private val observer: Observer<in Unit>
-    ) : MainThreadDisposable(), Preference.OnPreferenceClickListener {
-
-        override fun onPreferenceClick(preference: Preference): Boolean {
-            return if (!isDisposed) {
+        private val observer: Observer<in Unit>,
+    ) : MainThreadDisposable(),
+        Preference.OnPreferenceClickListener {
+        override fun onPreferenceClick(preference: Preference): Boolean =
+            if (!isDisposed) {
                 try {
                     if (handled.invoke(Unit)) {
                         observer.onNext(Unit)
@@ -51,7 +50,6 @@ class PreferenceClickObservable(
             } else {
                 false
             }
-        }
 
         override fun onDispose() {
             preference.onPreferenceClickListener = null

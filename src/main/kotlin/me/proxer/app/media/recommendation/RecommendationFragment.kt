@@ -6,10 +6,10 @@ import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.bumptech.glide.Glide
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseContentFragment
 import me.proxer.app.media.MediaActivity
@@ -26,11 +26,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class RecommendationFragment : BaseContentFragment<List<Recommendation>>(R.layout.fragment_recommendation) {
-
     companion object {
-        fun newInstance() = RecommendationFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            RecommendationFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<RecommendationViewModel> { parametersOf(id) }
@@ -61,7 +61,7 @@ class RecommendationFragment : BaseContentFragment<List<Recommendation>>(R.layou
                     recommendation.id,
                     recommendation.name,
                     recommendation.category,
-                    view
+                    view,
                 )
             }
     }
@@ -73,17 +73,21 @@ class RecommendationFragment : BaseContentFragment<List<Recommendation>>(R.layou
         super.onDestroyView()
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)
 
         recyclerView.setHasFixedSize(true)
         recyclerView.enableFastScroll()
-        recyclerView.layoutManager = StaggeredGridLayoutManager(
-            DeviceUtils.calculateSpanAmount(requireActivity()) + 1,
-            StaggeredGridLayoutManager.VERTICAL
-        )
+        recyclerView.layoutManager =
+            StaggeredGridLayoutManager(
+                DeviceUtils.calculateSpanAmount(requireActivity()) + 1,
+                StaggeredGridLayoutManager.VERTICAL,
+            )
         recyclerView.adapter = adapter
     }
 

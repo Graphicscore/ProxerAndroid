@@ -12,14 +12,19 @@ import android.os.ParcelFileDescriptor
 import com.davemorrissey.labs.subscaleview.decoder.ImageRegionDecoder
 import kotlin.math.roundToInt
 
-class AndroidPdfRegionDecoder(private val page: Int, private val file: java.io.File, private val scale: Float) :
-    ImageRegionDecoder {
-
+class AndroidPdfRegionDecoder(
+    private val page: Int,
+    private val file: java.io.File,
+    private val scale: Float,
+) : ImageRegionDecoder {
     private var renderer: PdfRenderer? = null
     private var pdfPage: PdfRenderer.Page? = null
     private var fd: ParcelFileDescriptor? = null
 
-    override fun init(context: Context?, uri: Uri): Point {
+    override fun init(
+        context: Context?,
+        uri: Uri,
+    ): Point {
         fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
         renderer = PdfRenderer(fd!!)
         pdfPage = renderer!!.openPage(page)
@@ -28,7 +33,10 @@ class AndroidPdfRegionDecoder(private val page: Int, private val file: java.io.F
 
     override fun isReady() = pdfPage != null
 
-    override fun decodeRegion(sRect: Rect, sampleSize: Int): Bitmap {
+    override fun decodeRegion(
+        sRect: Rect,
+        sampleSize: Int,
+    ): Bitmap {
         val outputScale = scale / sampleSize
         val outputWidth = ((sRect.width().toFloat()) / sampleSize).roundToInt().coerceAtLeast(1)
         val outputHeight = ((sRect.height().toFloat()) / sampleSize).roundToInt().coerceAtLeast(1)

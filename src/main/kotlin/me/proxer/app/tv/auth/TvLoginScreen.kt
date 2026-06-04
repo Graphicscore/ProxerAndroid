@@ -49,12 +49,12 @@ fun TvLoginScreen(onLoginSuccess: () -> Unit) {
 
     Box(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             modifier = Modifier.width(400.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("Sign In to Proxer", fontSize = 28.sp)
 
@@ -65,7 +65,7 @@ fun TvLoginScreen(onLoginSuccess: () -> Unit) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                enabled = isLoading != true
+                enabled = isLoading != true,
             )
 
             OutlinedTextField(
@@ -75,11 +75,12 @@ fun TvLoginScreen(onLoginSuccess: () -> Unit) {
                 singleLine = true,
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = if (isTwoFa == true) ImeAction.Next else ImeAction.Done
-                ),
-                enabled = isLoading != true
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = if (isTwoFa == true) ImeAction.Next else ImeAction.Done,
+                    ),
+                enabled = isLoading != true,
             )
 
             if (isTwoFa == true) {
@@ -90,14 +91,14 @@ fun TvLoginScreen(onLoginSuccess: () -> Unit) {
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    enabled = isLoading != true
+                    enabled = isLoading != true,
                 )
             }
 
             error?.let { errorAction ->
                 Text(
                     text = stringResource(errorAction.message),
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
 
@@ -106,11 +107,11 @@ fun TvLoginScreen(onLoginSuccess: () -> Unit) {
                     viewModel.login(
                         username,
                         password,
-                        if (isTwoFa == true) secretKey.takeIf { it.isNotBlank() } else null
+                        if (isTwoFa == true) secretKey.takeIf { it.isNotBlank() } else null,
                     )
                 },
                 enabled = isLoading != true && username.isNotBlank() && password.isNotBlank(),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 if (isLoading == true) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))

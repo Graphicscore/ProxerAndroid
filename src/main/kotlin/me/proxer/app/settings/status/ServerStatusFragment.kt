@@ -23,11 +23,11 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  * @author Ruben Gees
  */
 class ServerStatusFragment : BaseContentFragment<List<ServerStatus>>(R.layout.fragment_server_status) {
-
     companion object {
-        fun newInstance() = ServerStatusFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ServerStatusFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val isSwipeToRefreshEnabled = true
@@ -43,7 +43,10 @@ class ServerStatusFragment : BaseContentFragment<List<ServerStatus>>(R.layout.fr
     private val overallStatus: TextView by bindView(R.id.overallStatus)
     private val recyclerView: RecyclerView by bindView(R.id.recyclerView)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView.setHasFixedSize(true)
@@ -57,17 +60,19 @@ class ServerStatusFragment : BaseContentFragment<List<ServerStatus>>(R.layout.fr
 
         val allServersOnline = data.all { it.online }
 
-        val overallStatusText = when (allServersOnline) {
-            true -> getString(R.string.fragment_server_status_overall_online)
-            false -> getString(R.string.fragment_server_status_overall_offline)
-        }
+        val overallStatusText =
+            when (allServersOnline) {
+                true -> getString(R.string.fragment_server_status_overall_online)
+                false -> getString(R.string.fragment_server_status_overall_offline)
+            }
 
-        val overallStatusIcon = IconicsDrawable(requireContext()).apply {
-            icon = if (allServersOnline) CommunityMaterial.Icon.cmd_earth else CommunityMaterial.Icon.cmd_earth_off
-            colorRes = if (allServersOnline) R.color.green_500 else R.color.red_500
-            paddingDp = 12
-            sizeDp = 48
-        }
+        val overallStatusIcon =
+            IconicsDrawable(requireContext()).apply {
+                icon = if (allServersOnline) CommunityMaterial.Icon.cmd_earth else CommunityMaterial.Icon.cmd_earth_off
+                colorRes = if (allServersOnline) R.color.green_500 else R.color.red_500
+                paddingDp = 12
+                sizeDp = 48
+            }
 
         overallStatus.text = overallStatusText
         overallStatus.setCompoundDrawablesWithIntrinsicBounds(overallStatusIcon, null, null, null)

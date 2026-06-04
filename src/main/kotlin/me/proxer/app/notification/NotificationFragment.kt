@@ -24,11 +24,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class NotificationFragment : PagedContentFragment<ProxerNotification>() {
-
     companion object {
-        fun newInstance() = NotificationFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            NotificationFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val isSwipeToRefreshEnabled = true
@@ -62,7 +62,10 @@ class NotificationFragment : PagedContentFragment<ProxerNotification>() {
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.deletionError.observe(
@@ -73,14 +76,17 @@ class NotificationFragment : PagedContentFragment<ProxerNotification>() {
                         getString(R.string.error_notification_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_notifications, menu, true)
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -88,8 +94,10 @@ class NotificationFragment : PagedContentFragment<ProxerNotification>() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.delete_all -> if (!innerAdapter.isEmpty()) {
-                NotificationDeletionConfirmationDialog.show(hostingActivity)
+            R.id.delete_all -> {
+                if (!innerAdapter.isEmpty()) {
+                    NotificationDeletionConfirmationDialog.show(hostingActivity)
+                }
             }
         }
 

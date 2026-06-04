@@ -18,8 +18,8 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.disposables.Disposables
 import timber.log.Timber
 
-inline fun Observer<*>.checkMainThread(): Boolean {
-    return if (Looper.myLooper() != Looper.getMainLooper()) {
+inline fun Observer<*>.checkMainThread(): Boolean =
+    if (Looper.myLooper() != Looper.getMainLooper()) {
         val threadName = Thread.currentThread().name
 
         onSubscribe(Disposables.empty())
@@ -29,238 +29,210 @@ inline fun Observer<*>.checkMainThread(): Boolean {
     } else {
         true
     }
-}
 
 inline fun <reified I, reified O> Observable<I>.mapBindingAdapterPosition(
     noinline bindingAdapterPosition: (I) -> Int,
-    noinline mapper: (Int) -> O
-): Observable<O> {
-    return this.map(bindingAdapterPosition)
+    noinline mapper: (Int) -> O,
+): Observable<O> =
+    this
+        .map(bindingAdapterPosition)
         .filter { it != RecyclerView.NO_POSITION }
         .map(mapper)
-}
 
 inline fun <T> Observable<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> Observable<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> Observable<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> Observable<T>.subscribeAndLogErrors(): Disposable? {
-    return this.subscribe(
+inline fun <T> Observable<T>.subscribeAndLogErrors(): Disposable? =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun <T> Flowable<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> Flowable<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> Flowable<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> Flowable<T>.subscribeAndLogErrors(): Disposable? {
-    return this.subscribe(
+inline fun <T> Flowable<T>.subscribeAndLogErrors(): Disposable? =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun <T> Single<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> Single<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> Single<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> Single<T>.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun <T> Single<T>.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun Completable.subscribeAndLogErrors(
     noinline onSuccess: () -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun Completable.subscribeAndLogErrors(noinline onSuccess: () -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun Completable.subscribeAndLogErrors(noinline onSuccess: () -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun Completable.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun Completable.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun <T> Maybe<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> Maybe<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> Maybe<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> Maybe<T>.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun <T> Maybe<T>.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun <T> ObservableSubscribeProxy<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> ObservableSubscribeProxy<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> ObservableSubscribeProxy<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> ObservableSubscribeProxy<T>.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun <T> ObservableSubscribeProxy<T>.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun <T> FlowableSubscribeProxy<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> FlowableSubscribeProxy<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> FlowableSubscribeProxy<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> FlowableSubscribeProxy<T>.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun <T> FlowableSubscribeProxy<T>.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun <T> SingleSubscribeProxy<T>.subscribeAndLogErrors(
     noinline onSuccess: (T) -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun <T> SingleSubscribeProxy<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun <T> SingleSubscribeProxy<T>.subscribeAndLogErrors(noinline onSuccess: (T) -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun <T> SingleSubscribeProxy<T>.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun <T> SingleSubscribeProxy<T>.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}
 
 inline fun CompletableSubscribeProxy.subscribeAndLogErrors(
     noinline onSuccess: () -> Unit,
-    noinline onError: (Throwable) -> Unit
-): Disposable {
-    return this.subscribe(onSuccess) {
+    noinline onError: (Throwable) -> Unit,
+): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
         onError(it)
     }
-}
 
-inline fun CompletableSubscribeProxy.subscribeAndLogErrors(noinline onSuccess: () -> Unit): Disposable {
-    return this.subscribe(onSuccess) {
+inline fun CompletableSubscribeProxy.subscribeAndLogErrors(noinline onSuccess: () -> Unit): Disposable =
+    this.subscribe(onSuccess) {
         Timber.e(it)
     }
-}
 
-inline fun CompletableSubscribeProxy.subscribeAndLogErrors(): Disposable {
-    return this.subscribe(
+inline fun CompletableSubscribeProxy.subscribeAndLogErrors(): Disposable =
+    this.subscribe(
         {},
         {
             Timber.e(it)
-        }
+        },
     )
-}

@@ -14,24 +14,30 @@ import me.proxer.app.util.extension.startActivity
  * @author Ruben Gees
  */
 class CreateConferenceActivity : DrawerActivity() {
-
     companion object {
         private const val IS_GROUP_EXTRA = "is_group"
         private const val INITIAL_PARTICIPANT_EXTRA = "initial_participant"
 
-        fun navigateTo(context: Activity, isGroup: Boolean = false, initialParticipant: Participant? = null) {
+        fun navigateTo(
+            context: Activity,
+            isGroup: Boolean = false,
+            initialParticipant: Participant? = null,
+        ) {
             context.startActivity<CreateConferenceActivity>(
                 IS_GROUP_EXTRA to isGroup,
-                INITIAL_PARTICIPANT_EXTRA to initialParticipant
+                INITIAL_PARTICIPANT_EXTRA to initialParticipant,
             )
         }
 
-        fun getIntent(context: Activity, isGroup: Boolean = false, initialParticipant: Participant? = null): Intent {
-            return context.intentFor<CreateConferenceActivity>(
+        fun getIntent(
+            context: Activity,
+            isGroup: Boolean = false,
+            initialParticipant: Participant? = null,
+        ): Intent =
+            context.intentFor<CreateConferenceActivity>(
                 IS_GROUP_EXTRA to isGroup,
-                INITIAL_PARTICIPANT_EXTRA to initialParticipant
+                INITIAL_PARTICIPANT_EXTRA to initialParticipant,
             )
-        }
     }
 
     val isGroup: Boolean
@@ -43,10 +49,11 @@ class CreateConferenceActivity : DrawerActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        title = when (isGroup) {
-            true -> getString(R.string.action_create_group)
-            false -> getString(R.string.action_create_chat)
-        }
+        title =
+            when (isGroup) {
+                true -> getString(R.string.action_create_group)
+                false -> getString(R.string.action_create_chat)
+            }
 
         if (savedInstanceState == null) {
             supportFragmentManager.commitNow {

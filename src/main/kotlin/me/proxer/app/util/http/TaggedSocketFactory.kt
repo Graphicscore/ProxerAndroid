@@ -9,41 +9,46 @@ import javax.net.SocketFactory
  * @author Ruben Gees
  */
 class TaggedSocketFactory : SocketFactory() {
-
     private val delegate = getDefault()
 
-    override fun createSocket(): Socket {
-        return delegate.createSocket()
+    override fun createSocket(): Socket =
+        delegate
+            .createSocket()
             .also { TrafficStats.setThreadStatsTag(1) }
-    }
 
-    override fun createSocket(host: String?, port: Int): Socket {
-        return delegate.createSocket(host, port)
+    override fun createSocket(
+        host: String?,
+        port: Int,
+    ): Socket =
+        delegate
+            .createSocket(host, port)
             .also { TrafficStats.setThreadStatsTag(1) }
-    }
 
     override fun createSocket(
         host: String?,
         port: Int,
         localHost: InetAddress?,
-        localPort: Int
-    ): Socket {
-        return delegate.createSocket(host, port, localHost, localPort)
+        localPort: Int,
+    ): Socket =
+        delegate
+            .createSocket(host, port, localHost, localPort)
             .also { TrafficStats.setThreadStatsTag(1) }
-    }
 
-    override fun createSocket(host: InetAddress?, port: Int): Socket {
-        return delegate.createSocket(host, port)
+    override fun createSocket(
+        host: InetAddress?,
+        port: Int,
+    ): Socket =
+        delegate
+            .createSocket(host, port)
             .also { TrafficStats.setThreadStatsTag(1) }
-    }
 
     override fun createSocket(
         address: InetAddress?,
         port: Int,
         localAddress: InetAddress?,
-        localPort: Int
-    ): Socket {
-        return delegate.createSocket(address, port, localAddress, localPort)
+        localPort: Int,
+    ): Socket =
+        delegate
+            .createSocket(address, port, localAddress, localPort)
             .also { TrafficStats.setThreadStatsTag(1) }
-    }
 }

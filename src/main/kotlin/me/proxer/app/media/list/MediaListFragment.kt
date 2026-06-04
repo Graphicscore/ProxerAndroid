@@ -17,13 +17,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL
 import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
 import com.jakewharton.rxbinding3.appcompat.queryTextChangeEvents
 import com.jakewharton.rxbinding3.view.actionViewEvents
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BackPressAware
 import me.proxer.app.base.PagedContentFragment
@@ -52,8 +52,9 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment_media_list), BackPressAware {
-
+class MediaListFragment :
+    PagedContentFragment<MediaListEntry>(R.layout.fragment_media_list),
+    BackPressAware {
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
         private const val SORT_CRITERIA_ARGUMENT = "sort_criteria"
@@ -69,9 +70,10 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         private const val TAG_SPOILER_FILTER_ARGUMENT = "tag_spoiler_filter"
         private const val HIDE_FINISHED_ARGUMENT = "hide_finished"
 
-        fun newInstance(category: Category) = MediaListFragment().apply {
-            arguments = bundleOf(CATEGORY_ARGUMENT to category)
-        }
+        fun newInstance(category: Category) =
+            MediaListFragment().apply {
+                arguments = bundleOf(CATEGORY_ARGUMENT to category)
+            }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -79,8 +81,18 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
 
     override val viewModel by viewModel<MediaListViewModel> {
         unsafeParametersOf(
-            sortCriteria, type, searchQuery, language, genres, excludedGenres, fskConstraints,
-            tags, excludedTags, tagRateFilter, tagSpoilerFilter, hideFinished
+            sortCriteria,
+            type,
+            searchQuery,
+            language,
+            genres,
+            excludedGenres,
+            fskConstraints,
+            tags,
+            excludedTags,
+            tagRateFilter,
+            tagSpoilerFilter,
+            hideFinished,
         )
     }
 
@@ -94,8 +106,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         get() = requireArguments().getSerializable(CATEGORY_ARGUMENT) as Category
 
     private var sortCriteria: MediaSearchSortCriteria
-        get() = requireArguments().getSerializable(SORT_CRITERIA_ARGUMENT) as? MediaSearchSortCriteria
-            ?: MediaSearchSortCriteria.RATING
+        get() =
+            requireArguments().getSerializable(SORT_CRITERIA_ARGUMENT) as? MediaSearchSortCriteria
+                ?: MediaSearchSortCriteria.RATING
         set(value) {
             requireArguments().putSerializable(SORT_CRITERIA_ARGUMENT, value)
 
@@ -103,11 +116,12 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     private var type: MediaType
-        get() = requireArguments().getSerializable(TYPE_ARGUMENT) as? MediaType ?: when (category) {
-            Category.ANIME -> MediaType.ALL_ANIME
-            Category.MANGA -> MediaType.ALL_MANGA
-            else -> error("Unknown value for category")
-        }
+        get() =
+            requireArguments().getSerializable(TYPE_ARGUMENT) as? MediaType ?: when (category) {
+                Category.ANIME -> MediaType.ALL_ANIME
+                Category.MANGA -> MediaType.ALL_MANGA
+                else -> error("Unknown value for category")
+            }
         set(value) {
             requireArguments().putSerializable(TYPE_ARGUMENT, value)
 
@@ -171,8 +185,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var tagRateFilter: TagRateFilter
-        get() = requireArguments().getSerializable(TAG_RATE_FILTER_ARGUMENT) as? TagRateFilter
-            ?: TagRateFilter.RATED_ONLY
+        get() =
+            requireArguments().getSerializable(TAG_RATE_FILTER_ARGUMENT) as? TagRateFilter
+                ?: TagRateFilter.RATED_ONLY
         set(value) {
             requireArguments().putSerializable(TAG_RATE_FILTER_ARGUMENT, value)
 
@@ -180,8 +195,9 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         }
 
     internal var tagSpoilerFilter: TagSpoilerFilter
-        get() = requireArguments().getSerializable(TAG_SPOILER_FILTER_ARGUMENT) as? TagSpoilerFilter
-            ?: TagSpoilerFilter.NO_SPOILERS
+        get() =
+            requireArguments().getSerializable(TAG_SPOILER_FILTER_ARGUMENT) as? TagSpoilerFilter
+                ?: TagSpoilerFilter.NO_SPOILERS
         set(value) {
             requireArguments().putSerializable(TAG_SPOILER_FILTER_ARGUMENT, value)
 
@@ -234,7 +250,10 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
@@ -242,7 +261,10 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         searchBottomSheetManager = MediaListSearchBottomSheet.bindTo(this, viewModel)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_media_list, menu, true)
 
         when (sortCriteria) {
@@ -277,7 +299,8 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         menu.findItem(R.id.search).let { searchItem ->
             searchView = searchItem.actionView as SearchView
 
-            searchItem.actionViewEvents()
+            searchItem
+                .actionViewEvents()
                 .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
                 .subscribe { event ->
                     if (event.menuItem.isActionViewExpanded) {
@@ -290,7 +313,8 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
                     TransitionManager.beginDelayedTransition(toolbar)
                 }
 
-            searchView.queryTextChangeEvents()
+            searchView
+                .queryTextChangeEvents()
                 .skipInitialValue()
                 .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
                 .subscribe { event ->
@@ -334,9 +358,7 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onBackPressed(): Boolean {
-        return searchBottomSheetManager.onBackPressed()
-    }
+    override fun onBackPressed(): Boolean = searchBottomSheetManager.onBackPressed()
 
     override fun showData(data: List<MediaListEntry>) {
         super.showData(data)
@@ -365,14 +387,24 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
     private fun setInitialType() {
         if (requireActivity().intent.action == Intent.ACTION_VIEW) {
             if (category == Category.ANIME) {
-                when (requireActivity().intent.data?.pathSegments?.getOrNull(1) ?: 1) {
+                when (
+                    requireActivity()
+                        .intent.data
+                        ?.pathSegments
+                        ?.getOrNull(1) ?: 1
+                ) {
                     "animeseries" -> type = MediaType.ANIMESERIES
                     "movie" -> type = MediaType.MOVIE
                     "ova" -> type = MediaType.OVA
                     "hentai" -> type = MediaType.HENTAI
                 }
             } else if (category == Category.MANGA) {
-                when (requireActivity().intent.data?.pathSegments?.getOrNull(1) ?: 1) {
+                when (
+                    requireActivity()
+                        .intent.data
+                        ?.pathSegments
+                        ?.getOrNull(1) ?: 1
+                ) {
                     "mangaseries" -> type = MediaType.MANGASERIES
                     "oneshot" -> type = MediaType.ONESHOT
                     "doujin" -> type = MediaType.DOUJIN
@@ -384,7 +416,12 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
 
     private fun setInitialSortCriteria() {
         if (requireActivity().intent.action == Intent.ACTION_VIEW) {
-            when (requireActivity().intent.data?.pathSegments?.getOrNull(2) ?: 2) {
+            when (
+                requireActivity()
+                    .intent.data
+                    ?.pathSegments
+                    ?.getOrNull(2) ?: 2
+            ) {
                 "rating" -> sortCriteria = MediaSearchSortCriteria.RATING
                 "clicks" -> sortCriteria = MediaSearchSortCriteria.CLICKS
             }
@@ -393,12 +430,14 @@ class MediaListFragment : PagedContentFragment<MediaListEntry>(R.layout.fragment
 
     private fun setContentFooterIfNeeded() {
         if (adapter.footer == null) {
-            adapter.footer = View(context).apply {
-                layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    searchBottomSheetTitle.height
-                )
-            }
+            adapter.footer =
+                View(context).apply {
+                    layoutParams =
+                        ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            searchBottomSheetTitle.height,
+                        )
+                }
         }
     }
 }

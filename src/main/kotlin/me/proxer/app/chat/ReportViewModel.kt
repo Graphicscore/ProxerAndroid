@@ -13,7 +13,6 @@ import me.proxer.app.util.extension.subscribeAndLogErrors
  * @author Ruben Gees
  */
 abstract class ReportViewModel : ViewModel() {
-
     val data = MutableLiveData<Unit?>()
     val error = MutableLiveData<ErrorUtils.ErrorAction?>()
     val isLoading = MutableLiveData<Boolean?>()
@@ -27,27 +26,33 @@ abstract class ReportViewModel : ViewModel() {
         super.onCleared()
     }
 
-    fun sendReport(messageId: String, message: String) {
+    fun sendReport(
+        messageId: String,
+        message: String,
+    ) {
         if (isLoading.value != true) {
             dataDisposable?.dispose()
-            dataDisposable = reportSingle(messageId, message)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-                    error.value = null
-                    isLoading.value = true
-                }
-                .doAfterTerminate { isLoading.value = false }
-                .subscribeAndLogErrors(
-                    {
-                        data.value = Unit
-                    },
-                    {
-                        error.value = ErrorUtils.handle(it)
-                    }
-                )
+            dataDisposable =
+                reportSingle(messageId, message)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe {
+                        error.value = null
+                        isLoading.value = true
+                    }.doAfterTerminate { isLoading.value = false }
+                    .subscribeAndLogErrors(
+                        {
+                            data.value = Unit
+                        },
+                        {
+                            error.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 
-    protected abstract fun reportSingle(id: String, message: String): Single<*>
+    protected abstract fun reportSingle(
+        id: String,
+        message: String,
+    ): Single<*>
 }

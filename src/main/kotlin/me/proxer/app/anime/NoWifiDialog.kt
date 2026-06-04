@@ -17,13 +17,15 @@ import me.proxer.app.util.extension.getSafeString
  * @author Ruben Gees
  */
 class NoWifiDialog : BaseDialog() {
-
     companion object {
         const val STREAM_ID_RESULT = "stream_id"
 
         private const val STREAM_ID_ARGUMENT = "stream_id"
 
-        fun show(activity: AppCompatActivity, streamId: String) = NoWifiDialog()
+        fun show(
+            activity: AppCompatActivity,
+            streamId: String,
+        ) = NoWifiDialog()
             .apply { arguments = bundleOf(STREAM_ID_ARGUMENT to streamId) }
             .show(activity.supportFragmentManager, "no_wifi_dialog")
     }
@@ -33,14 +35,14 @@ class NoWifiDialog : BaseDialog() {
     private val streamId: String
         get() = requireArguments().getSafeString(STREAM_ID_ARGUMENT)
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .customView(R.layout.dialog_no_wifi, scrollable = true)
-        .positiveButton(R.string.dialog_no_wifi_positive) {
-            if (remember.isChecked) {
-                preferenceHelper.shouldCheckCellular = false
-            }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .customView(R.layout.dialog_no_wifi, scrollable = true)
+            .positiveButton(R.string.dialog_no_wifi_positive) {
+                if (remember.isChecked) {
+                    preferenceHelper.shouldCheckCellular = false
+                }
 
-            setFragmentResult(STREAM_ID_RESULT, bundleOf(STREAM_ID_RESULT to streamId))
-        }
-        .negativeButton(R.string.cancel)
+                setFragmentResult(STREAM_ID_RESULT, bundleOf(STREAM_ID_RESULT to streamId))
+            }.negativeButton(R.string.cancel)
 }

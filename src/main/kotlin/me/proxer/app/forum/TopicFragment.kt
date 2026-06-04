@@ -8,10 +8,10 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.PagedContentFragment
 import me.proxer.app.profile.ProfileActivity
@@ -28,11 +28,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class TopicFragment : PagedContentFragment<ParsedPost>() {
-
     companion object {
-        fun newInstance() = TopicFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            TopicFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -68,14 +68,17 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
                     post.userId,
                     post.username,
                     post.image,
-                    if (view.drawable != null && post.image.isNotBlank()) view else null
+                    if (view.drawable != null && post.image.isNotBlank()) view else null,
                 )
             }
 
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
@@ -84,11 +87,14 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
             viewLifecycleOwner,
             Observer {
                 it?.let { topic = it.subject }
-            }
+            },
         )
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_topic, menu, true)
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -100,9 +106,11 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
                 val url = (activity?.intent?.dataString ?: "").toPrefixedUrlOrNull()
 
                 if (url != null) {
-                    val mobileUrl = url.newBuilder()
-                        .setQueryParameter("device", ProxerUtils.getSafeApiEnumName(Device.MOBILE))
-                        .build()
+                    val mobileUrl =
+                        url
+                            .newBuilder()
+                            .setQueryParameter("device", ProxerUtils.getSafeApiEnumName(Device.MOBILE))
+                            .build()
 
                     showPage(mobileUrl, forceBrowser = true, skipCheck = true)
                 } else {
@@ -110,7 +118,7 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
                         showPage(
                             ProxerUrls.forumWeb(categoryId, id, Device.MOBILE),
                             forceBrowser = true,
-                            skipCheck = true
+                            skipCheck = true,
                         )
                     }
                 }

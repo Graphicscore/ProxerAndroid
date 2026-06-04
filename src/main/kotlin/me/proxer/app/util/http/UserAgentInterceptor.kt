@@ -9,18 +9,22 @@ import okhttp3.Response
  * @author Ruben Gees
  */
 class UserAgentInterceptor : Interceptor {
-
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
 
-        val newRequest = when (request.header("User-Agent") == null && request.url.hasProxerHost) {
-            true ->
-                request.newBuilder()
-                    .header("User-Agent", USER_AGENT)
-                    .build()
+        val newRequest =
+            when (request.header("User-Agent") == null && request.url.hasProxerHost) {
+                true -> {
+                    request
+                        .newBuilder()
+                        .header("User-Agent", USER_AGENT)
+                        .build()
+                }
 
-            false -> request
-        }
+                false -> {
+                    request
+                }
+            }
 
         return chain.proceed(newRequest)
     }

@@ -10,6 +10,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.view.ViewCompat
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.target.ImageViewTarget
@@ -21,7 +22,6 @@ import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.android.ViewScopeProvider
 import com.uber.autodispose.autoDisposable
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.ui.ImageDetailActivity
 import me.proxer.app.ui.view.bbcode.BBArgs
@@ -40,7 +40,6 @@ import okhttp3.HttpUrl
  * @author Ruben Gees
  */
 object ImagePrototype : AutoClosingPrototype {
-
     const val HEIGHT_MAP_ARGUMENT = "dimension_map"
 
     private const val WIDTH_ARGUMENT = "width"
@@ -50,13 +49,20 @@ object ImagePrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *img *=? *\"?.*?\"?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *img *", REGEX_OPTIONS)
 
-    override fun construct(code: String, parent: BBTree): BBTree {
+    override fun construct(
+        code: String,
+        parent: BBTree,
+    ): BBTree {
         val width = BBUtils.cutAttribute(code, widthAttributeRegex)?.toIntOrNull()
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(WIDTH_ARGUMENT to width)))
     }
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         val url = (childViews.firstOrNull() as? TextView)?.text.toString().trim()
@@ -76,7 +82,8 @@ object ImagePrototype : AutoClosingPrototype {
                 args.glide?.let { loadImage(it, view, proxyUrl, heightMap) }
 
                 (parent.context as? Activity)?.let { context ->
-                    view.clicks()
+                    view
+                        .clicks()
                         .autoDisposable(ViewScopeProvider.from(parent))
                         .subscribe {
                             if (view.getTag(R.id.error_tag) == true) {
@@ -88,7 +95,7 @@ object ImagePrototype : AutoClosingPrototype {
                             }
                         }
                 }
-            }
+            },
         )
     }
 
@@ -96,7 +103,7 @@ object ImagePrototype : AutoClosingPrototype {
         glide: RequestManager,
         view: ImageView,
         url: HttpUrl?,
-        heightMap: MutableMap<String, Int>?
+        heightMap: MutableMap<String, Int>?,
     ) = glide
         .load(url.toString())
         .centerInside()
@@ -107,7 +114,7 @@ object ImagePrototype : AutoClosingPrototype {
                     model: Any,
                     target: Target<Drawable>,
                     dataSource: DataSource,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     if (model is String) {
                         heightMap?.put(model, resource.intrinsicHeight)
@@ -124,21 +131,19 @@ object ImagePrototype : AutoClosingPrototype {
                     error: GlideException?,
                     model: Any?,
                     target: Target<Drawable>,
-                    isFirstResource: Boolean
+                    isFirstResource: Boolean,
                 ): Boolean {
                     view.setTag(R.id.error_tag, true)
 
                     return false
                 }
-            }
-        )
-        .error(
+            },
+        ).error(
             IconicsDrawable(view.context, CommunityMaterial.Icon3.cmd_refresh).apply {
                 colorInt = view.context.resolveColor(R.attr.colorIcon)
                 sizeDp = 32
-            }
-        )
-        .logErrors()
+            },
+        ).logErrors()
         .into(view)
 
     private fun findHost(view: View): BBCodeView? {

@@ -26,7 +26,6 @@ import me.proxer.library.api.Endpoint
  * @author Ruben Gees
  */
 class CreateConferenceViewModel : ViewModel() {
-
     val isLoading = MutableLiveData<Boolean>()
     val result = ResettingMutableLiveData<LocalConference>()
     val error = ResettingMutableLiveData<ErrorUtils.ErrorAction>()
@@ -41,48 +40,55 @@ class CreateConferenceViewModel : ViewModel() {
     private var disposables = CompositeDisposable()
 
     init {
-        disposables += bus.register(MessengerWorker.SynchronizationEvent::class.java)
-            .flatMap {
-                newConferenceId.let { newConferenceId ->
-                    when (newConferenceId) {
-                        null -> Observable.never()
-                        else -> messengerDao.findConference(newConferenceId).let { foundConference ->
-                            when (foundConference) {
-                                null -> Observable.never()
-                                else -> Observable.just(foundConference)
+        disposables +=
+            bus
+                .register(MessengerWorker.SynchronizationEvent::class.java)
+                .flatMap {
+                    newConferenceId.let { newConferenceId ->
+                        when (newConferenceId) {
+                            null -> {
+                                Observable.never()
+                            }
+
+                            else -> {
+                                messengerDao.findConference(newConferenceId).let { foundConference ->
+                                    when (foundConference) {
+                                        null -> Observable.never()
+                                        else -> Observable.just(foundConference)
+                                    }
+                                }
                             }
                         }
                     }
+                }.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    newConferenceId = null
+
+                    isLoading.value = false
+                    error.value = null
+                    result.value = it
                 }
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                newConferenceId = null
 
-                isLoading.value = false
-                error.value = null
-                result.value = it
-            }
-
-        disposables += bus.register(MessengerErrorEvent::class.java)
-            .flatMap {
-                newConferenceId.let { newConferenceId ->
-                    when (newConferenceId) {
-                        null -> Observable.never()
-                        else -> Observable.just(ErrorUtils.handle(it.error))
+        disposables +=
+            bus
+                .register(MessengerErrorEvent::class.java)
+                .flatMap {
+                    newConferenceId.let { newConferenceId ->
+                        when (newConferenceId) {
+                            null -> Observable.never()
+                            else -> Observable.just(ErrorUtils.handle(it.error))
+                        }
                     }
-                }
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                newConferenceId = null
+                }.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    newConferenceId = null
 
-                isLoading.value = false
-                result.value = null
-                error.value = it
-            }
+                    isLoading.value = false
+                    result.value = null
+                    error.value = it
+                }
     }
 
     override fun onCleared() {
@@ -94,39 +100,47 @@ class CreateConferenceViewModel : ViewModel() {
         super.onCleared()
     }
 
-    fun createGroup(topic: String, firstMessage: String, participants: List<Participant>) = createConference(
+    fun createGroup(
+        topic: String,
+        firstMessage: String,
+        participants: List<Participant>,
+    ) = createConference(
         api
             .messenger
-            .createConferenceGroup(topic, firstMessage, participants.map { it.username })
+            .createConferenceGroup(topic, firstMessage, participants.map { it.username }),
     )
 
-    fun createChat(firstMessage: String, participant: Participant) = createConference(
+    fun createChat(
+        firstMessage: String,
+        participant: Participant,
+    ) = createConference(
         api
             .messenger
-            .createConference(firstMessage, participant.username)
+            .createConference(firstMessage, participant.username),
     )
 
     private fun createConference(endpoint: Endpoint<String>) {
         creationDisposable?.dispose()
-        creationDisposable = endpoint.buildSingle()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                newConferenceId = null
-                isLoading.value = true
-                result.value = null
-                error.value = null
-            }
-            .subscribeAndLogErrors(
-                {
-                    newConferenceId = it.toLong()
+        creationDisposable =
+            endpoint
+                .buildSingle()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    newConferenceId = null
+                    isLoading.value = true
+                    result.value = null
+                    error.value = null
+                }.subscribeAndLogErrors(
+                    {
+                        newConferenceId = it.toLong()
 
-                    MessengerWorker.enqueueSynchronization()
-                },
-                {
-                    isLoading.value = false
-                    error.value = ErrorUtils.handle(it)
-                }
-            )
+                        MessengerWorker.enqueueSynchronization()
+                    },
+                    {
+                        isLoading.value = false
+                        error.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 }

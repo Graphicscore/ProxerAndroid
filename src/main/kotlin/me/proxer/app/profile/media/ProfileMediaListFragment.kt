@@ -8,11 +8,11 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.PagedContentFragment
 import me.proxer.app.media.MediaActivity
@@ -31,14 +31,14 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>() {
-
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
         private const val FILTER_ARGUMENT = "filter"
 
-        fun newInstance(category: Category) = ProfileMediaListFragment().apply {
-            arguments = bundleOf(CATEGORY_ARGUMENT to category)
-        }
+        fun newInstance(category: Category) =
+            ProfileMediaListFragment().apply {
+                arguments = bundleOf(CATEGORY_ARGUMENT to category)
+            }
     }
 
     override val emptyDataMessage = R.string.error_no_data_user_media_list
@@ -51,7 +51,7 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
     override val layoutManager by unsafeLazy {
         StaggeredGridLayoutManager(
             DeviceUtils.calculateSpanAmount(requireActivity()) + 1,
-            StaggeredGridLayoutManager.VERTICAL
+            StaggeredGridLayoutManager.VERTICAL,
         )
     }
 
@@ -97,7 +97,10 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
@@ -110,18 +113,22 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
                         getString(R.string.error_media_entry_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        val menuResource = when (category) {
-            Category.ANIME -> R.menu.fragment_user_media_list_anime
-            Category.MANGA, Category.NOVEL -> R.menu.fragment_user_media_list_manga
-        }
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
+        val menuResource =
+            when (category) {
+                Category.ANIME -> R.menu.fragment_user_media_list_anime
+                Category.MANGA, Category.NOVEL -> R.menu.fragment_user_media_list_manga
+            }
 
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), menuResource, menu, true)
 

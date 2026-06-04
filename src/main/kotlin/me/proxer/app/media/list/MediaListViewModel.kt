@@ -45,9 +45,8 @@ class MediaListViewModel(
     var excludedTags: List<LocalTag>,
     var tagRateFilter: TagRateFilter?,
     var tagSpoilerFilter: TagSpoilerFilter?,
-    var hideFinished: Boolean?
+    var hideFinished: Boolean?,
 ) : PagedContentViewModel<MediaListEntry>() {
-
     override val itemsOnPage = 30
 
     override val isLoginRequired: Boolean
@@ -57,19 +56,21 @@ class MediaListViewModel(
         get() = isLoginRequired
 
     override val endpoint: PagingLimitEndpoint<List<MediaListEntry>>
-        get() = api.list.mediaSearch()
-            .sort(sortCriteria)
-            .name(searchQuery)
-            .language(language)
-            .genres(genres.asSequence().map { it.id }.toSet())
-            .excludedGenres(excludedGenres.asSequence().map { it.id }.toSet())
-            .fskConstraints(fskConstraints)
-            .tags(tags.asSequence().map { it.id }.toSet())
-            .excludedTags(excludedTags.asSequence().map { it.id }.toSet())
-            .tagRateFilter(tagRateFilter)
-            .tagSpoilerFilter(tagSpoilerFilter)
-            .hideFinished(hideFinished)
-            .type(type)
+        get() =
+            api.list
+                .mediaSearch()
+                .sort(sortCriteria)
+                .name(searchQuery)
+                .language(language)
+                .genres(genres.asSequence().map { it.id }.toSet())
+                .excludedGenres(excludedGenres.asSequence().map { it.id }.toSet())
+                .fskConstraints(fskConstraints)
+                .tags(tags.asSequence().map { it.id }.toSet())
+                .excludedTags(excludedTags.asSequence().map { it.id }.toSet())
+                .tagRateFilter(tagRateFilter)
+                .tagSpoilerFilter(tagSpoilerFilter)
+                .hideFinished(hideFinished)
+                .type(type)
 
     var sortCriteria by Delegates.observable(sortCriteria) { _, old, new ->
         if (old != new) reload()
@@ -80,8 +81,8 @@ class MediaListViewModel(
             reload()
 
             if (
-                old.isAgeRestricted() && new.isAgeRestricted().not() ||
-                old.isAgeRestricted().not() && new.isAgeRestricted()
+                (old.isAgeRestricted() && new.isAgeRestricted().not()) ||
+                (old.isAgeRestricted().not() && new.isAgeRestricted())
             ) {
                 loadTags()
             }
@@ -104,50 +105,61 @@ class MediaListViewModel(
 
     fun loadTags() {
         tagsDisposable?.dispose()
-        tagsDisposable = Single
-            .fromCallable { tagDao.getTags() }
-            .flatMap { cachedTags ->
-                when {
-                    shouldUpdateTags() || cachedTags.isEmpty() ->
-                        tagSingle()
-                            .map { remoteTags -> remoteTags.map { it.toParcelableTag() } }
-                            .doOnSuccess {
-                                tagDao.replaceTags(it)
+        tagsDisposable =
+            Single
+                .fromCallable { tagDao.getTags() }
+                .flatMap { cachedTags ->
+                    when {
+                        shouldUpdateTags() || cachedTags.isEmpty() -> {
+                            tagSingle()
+                                .map { remoteTags -> remoteTags.map { it.toParcelableTag() } }
+                                .doOnSuccess {
+                                    tagDao.replaceTags(it)
 
-                                preferenceHelper.lastTagUpdateDate = Instant.now()
-                            }
-                    else -> Single.just(cachedTags)
+                                    preferenceHelper.lastTagUpdateDate = Instant.now()
+                                }
+                        }
+
+                        else -> {
+                            Single.just(cachedTags)
+                        }
+                    }
+                }.map {
+                    val tagsToFilter =
+                        when (type) {
+                            MediaType.HENTAI, MediaType.HMANGA -> enumSetOf(TagType.TAG, TagType.H_TAG)
+                            else -> enumSetOf(TagType.TAG)
+                        }
+
+                    val genreTags = it.filter { tag -> tag.type == TagType.GENRE }
+                    val entryTags = it.filter { tag -> tag.type in tagsToFilter }
+
+                    TagContainer(genreTags, entryTags)
+                }.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeAndLogErrors { tags ->
+                    genreData.value = tags.genreTags
+                    tagData.value = tags.entryTags
                 }
-            }
-            .map {
-                val tagsToFilter = when (type) {
-                    MediaType.HENTAI, MediaType.HMANGA -> enumSetOf(TagType.TAG, TagType.H_TAG)
-                    else -> enumSetOf(TagType.TAG)
-                }
-
-                val genreTags = it.filter { tag -> tag.type == TagType.GENRE }
-                val entryTags = it.filter { tag -> tag.type in tagsToFilter }
-
-                TagContainer(genreTags, entryTags)
-            }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribeAndLogErrors { tags ->
-                genreData.value = tags.genreTags
-                tagData.value = tags.entryTags
-            }
     }
 
-    private fun tagSingle(): Single<List<Tag>> {
-        return Single.zip(
+    private fun tagSingle(): Single<List<Tag>> =
+        Single.zip(
             api.list.tagList().buildSingle(),
-            api.list.tagList().type(TagType.H_TAG).buildSingle(),
-            { first: List<Tag>, second: List<Tag> -> first + second }
+            api.list
+                .tagList()
+                .type(TagType.H_TAG)
+                .buildSingle(),
+            { first: List<Tag>, second: List<Tag> -> first + second },
         )
-    }
 
-    private fun shouldUpdateTags() = preferenceHelper.lastTagUpdateDate.toLocalDate()
-        .isBefore(LocalDate.now().minusDays(15))
+    private fun shouldUpdateTags() =
+        preferenceHelper.lastTagUpdateDate
+            .toLocalDate()
+            .isBefore(LocalDate.now().minusDays(15))
 
-    private data class TagContainer(val genreTags: List<LocalTag>, val entryTags: List<LocalTag>)
+    private data class TagContainer(
+        val genreTags: List<LocalTag>,
+        val entryTags: List<LocalTag>,
+    )
 }

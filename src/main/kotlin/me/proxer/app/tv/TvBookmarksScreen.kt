@@ -45,9 +45,10 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun TvBookmarksScreen() {
-    val viewModel: BookmarkViewModel = koinViewModel {
-        parametersOf(null, Category.ANIME, false)
-    }
+    val viewModel: BookmarkViewModel =
+        koinViewModel {
+            parametersOf(null, Category.ANIME, false)
+        }
     val entries by viewModel.data.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
@@ -74,15 +75,17 @@ fun TvBookmarksScreen() {
                     CircularProgressIndicator()
                 }
             }
+
             error != null -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
                         error = error!!,
                         onLoginClick = { context.startActivity<TvLoginActivity>() },
-                        onRetryClick = { viewModel.load() }
+                        onRetryClick = { viewModel.load() },
                     )
                 }
             }
+
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(5),
@@ -90,23 +93,24 @@ fun TvBookmarksScreen() {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     items(entries ?: emptyList()) { bookmark ->
                         TvBookmarkCard(
                             bookmark = bookmark,
                             onClick = {
                                 TvEpisodeActivity.navigateTo(context, bookmark.entryId, bookmark.name, 0)
-                            }
+                            },
                         )
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         if (isLoading == true && entries?.isNotEmpty() == true) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator()
                             }
@@ -119,37 +123,42 @@ fun TvBookmarksScreen() {
 }
 
 @Composable
-private fun TvBookmarkCard(bookmark: Bookmark, onClick: () -> Unit) {
+private fun TvBookmarkCard(
+    bookmark: Bookmark,
+    onClick: () -> Unit,
+) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.width(180.dp).height(270.dp)
+        modifier = Modifier.width(180.dp).height(270.dp),
     ) {
         Column {
             AsyncImage(
                 model = ProxerUrls.entryImage(bookmark.entryId).toString(),
                 contentDescription = bookmark.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
             )
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(8.dp),
             ) {
                 Text(
                     text = bookmark.name,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.sp,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 Text(
                     text = "Ep ${bookmark.episode}",
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                    fontSize = 11.sp
+                    fontSize = 11.sp,
                 )
             }
         }

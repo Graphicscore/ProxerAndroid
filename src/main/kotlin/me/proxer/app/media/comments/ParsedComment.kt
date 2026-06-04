@@ -24,9 +24,10 @@ data class ParsedComment(
     val helpfulVotes: Int,
     val instant: Instant,
     val author: String,
-    override val image: String
-) : ProxerIdItem, ProxerImageItem, ProxerDateItem {
-
+    override val image: String,
+) : ProxerIdItem,
+    ProxerImageItem,
+    ProxerDateItem {
     @Transient
     override val date = instant.toDate()
 }

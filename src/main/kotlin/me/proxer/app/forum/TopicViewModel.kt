@@ -13,22 +13,26 @@ import me.proxer.app.util.extension.toTopicMetaData
 /**
  * @author Ruben Gees
  */
-class TopicViewModel(private val id: String, private val resources: Resources) : PagedViewModel<ParsedPost>() {
-
+class TopicViewModel(
+    private val id: String,
+    private val resources: Resources,
+) : PagedViewModel<ParsedPost>() {
     override val itemsOnPage = 10
 
     override val dataSingle: Single<List<ParsedPost>>
-        get() = Single.fromCallable { validate() }
-            .flatMap {
-                api.forum.topic(id)
-                    .page(page)
-                    .limit(itemsOnPage)
-                    .buildSingle()
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSuccess { metaData.value = it.toTopicMetaData() }
-            .observeOn(Schedulers.computation())
-            .map { it.posts.map { post -> post.toParsedPost(resources) } }
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap {
+                    api.forum
+                        .topic(id)
+                        .page(page)
+                        .limit(itemsOnPage)
+                        .buildSingle()
+                }.observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess { metaData.value = it.toTopicMetaData() }
+                .observeOn(Schedulers.computation())
+                .map { it.posts.map { post -> post.toParsedPost(resources) } }
 
     val metaData = MutableLiveData<TopicMetaData>()
 }

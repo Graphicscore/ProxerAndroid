@@ -13,9 +13,9 @@ import me.proxer.app.util.extension.startActivity
  * @author Ruben Gees
  */
 class NotificationActivity : DrawerActivity() {
-
     companion object {
         fun navigateTo(context: Activity) = context.startActivity<NotificationActivity>()
+
         fun getIntent(context: Context) = context.intentFor<NotificationActivity>()
     }
 

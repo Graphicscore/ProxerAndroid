@@ -18,3 +18,15 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+[src/main/kotlin/me/proxer/app/tv/**]
+ktlint_standard_function-naming = disabled
+
+[src/main/kotlin/me/zhanghai/**]
+ktlint_disabled = true
+
+[src/main/kotlin/com/gojuno/**]
+ktlint_disabled = true
+
+[src/main/kotlin/androidx/recyclerview/widget/BindAwareViewHolder.kt]
+ktlint_disabled = true

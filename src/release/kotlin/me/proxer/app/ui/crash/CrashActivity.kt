@@ -22,17 +22,18 @@ import me.proxer.app.util.extension.linkify
  * @author Ruben Gees
  */
 class CrashActivity : BaseActivity() {
-
     private companion object {
         private const val DEVELOPER_PROXER_NAME = "RubyGee"
     }
 
     private val config: CaocConfig
-        get() = try {
-            CustomActivityOnCrash.getConfigFromIntent(intent)
-        } catch (ignored: Exception) { // Workaround for a bug in Caoc.
-            CaocConfig()
-        } ?: CaocConfig()
+        get() =
+            try {
+                CustomActivityOnCrash.getConfigFromIntent(intent)
+            } catch (ignored: Exception) {
+                // Workaround for a bug in Caoc.
+                CaocConfig()
+            } ?: CaocConfig()
 
     private val errorDetails: String
         get() {
@@ -53,21 +54,24 @@ class CrashActivity : BaseActivity() {
         setSupportActionBar(toolbar)
         title = getString(R.string.section_crash)
 
-        report.clicks()
+        report
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe { CrashDialog.show(this, errorDetails) }
 
-        restart.clicks()
+        restart
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe { CustomActivityOnCrash.restartApplication(this, config) }
 
-        text.linkClicks()
+        text
+            .linkClicks()
             .autoDisposable(this.scope())
             .subscribe {
                 CustomActivityOnCrash.restartApplicationWithIntent(
                     this,
                     CreateConferenceActivity.getIntent(this, false, Participant(DEVELOPER_PROXER_NAME)),
-                    config
+                    config,
                 )
             }
 

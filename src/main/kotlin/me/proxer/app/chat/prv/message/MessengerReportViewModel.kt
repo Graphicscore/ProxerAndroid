@@ -9,13 +9,17 @@ import me.proxer.app.util.extension.safeInject
 import me.proxer.library.ProxerApi
 
 class MessengerReportViewModel : ReportViewModel() {
-
     private val api by safeInject<ProxerApi>()
     private val messengerDao by safeInject<MessengerDao>()
     private val messengerDatabase by safeInject<MessengerDatabase>()
 
-    override fun reportSingle(id: String, message: String): Single<Unit> {
-        return api.messenger.report(id, message).buildSingle()
+    override fun reportSingle(
+        id: String,
+        message: String,
+    ): Single<Unit> =
+        api.messenger
+            .report(id, message)
+            .buildSingle()
             .map {
                 messengerDatabase.runInTransaction {
                     val conference = messengerDao.getConference(id.toLong())
@@ -26,5 +30,4 @@ class MessengerReportViewModel : ReportViewModel() {
                     }
                 }
             }
-    }
 }

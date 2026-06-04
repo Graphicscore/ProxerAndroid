@@ -15,7 +15,6 @@ import me.proxer.app.R
  * @author Ruben Gees
  */
 object DeviceUtils {
-
     fun isTablet(context: Context) = context.resources.getBoolean(R.bool.is_tablet)
 
     fun isLargeTablet(context: Context) = context.resources.getBoolean(R.bool.is_large_tablet)
@@ -50,18 +49,24 @@ object DeviceUtils {
         }
     }
 
-    fun getVerticalMargin(context: Context, withItems: Boolean = true) = context.resources.getDimensionPixelSize(
+    fun getVerticalMargin(
+        context: Context,
+        withItems: Boolean = true,
+    ) = context.resources.getDimensionPixelSize(
         when (withItems) {
             true -> R.dimen.screen_vertical_margin_with_items
             false -> R.dimen.screen_vertical_margin
-        }
+        },
     )
 
-    fun getHorizontalMargin(context: Context, withItems: Boolean = true) = context.resources.getDimensionPixelSize(
+    fun getHorizontalMargin(
+        context: Context,
+        withItems: Boolean = true,
+    ) = context.resources.getDimensionPixelSize(
         when (withItems) {
             true -> R.dimen.screen_horizontal_margin_with_items
             false -> R.dimen.screen_horizontal_margin
-        }
+        },
     )
 
     fun isLandscape(resources: Resources) = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE

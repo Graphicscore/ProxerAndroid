@@ -49,7 +49,6 @@ import java.util.concurrent.TimeUnit
  * @author Ruben Gees
  */
 class MainApplication : Application() {
-
     companion object {
         const val USER_AGENT = "ProxerAndroid/${BuildConfig.VERSION_NAME}"
         const val GENERIC_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
@@ -88,15 +87,17 @@ class MainApplication : Application() {
     private fun initConnectionManager() {
         val connectivityManager = requireNotNull(getSystemService<ConnectivityManager>())
 
-        val callback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                if (connectivityManager.isConnected) {
-                    Completable.fromAction { bus.post(NetworkConnectedEvent()) }
-                        .delay(100, TimeUnit.MILLISECONDS)
-                        .subscribeAndLogErrors()
+        val callback =
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    if (connectivityManager.isConnected) {
+                        Completable
+                            .fromAction { bus.post(NetworkConnectedEvent()) }
+                            .delay(100, TimeUnit.MILLISECONDS)
+                            .subscribeAndLogErrors()
+                    }
                 }
             }
-        }
 
         connectivityManager.registerNetworkCallback(NetworkRequest.Builder().build(), callback)
     }
@@ -115,7 +116,10 @@ class MainApplication : Application() {
         ProviderInstaller.installIfNeededAsync(
             this,
             object : ProviderInstaller.ProviderInstallListener {
-                override fun onProviderInstallFailed(errorCode: Int, recoveryIntent: Intent?) {
+                override fun onProviderInstallFailed(
+                    errorCode: Int,
+                    recoveryIntent: Intent?,
+                ) {
                     GoogleApiAvailability.getInstance().apply {
                         Timber.e("Error installing security patches with error code $errorCode")
 
@@ -129,34 +133,38 @@ class MainApplication : Application() {
                 }
 
                 override fun onProviderInstalled() = Unit
-            }
+            },
         )
     }
 
     private fun enableStrictModeForDebug() {
         if (BuildConfig.DEBUG) {
-            val threadPolicy = StrictModeCompat.ThreadPolicy.Builder()
-                .detectAll()
-                .permitCustomSlowCalls()
-                .permitDiskWrites()
-                .permitDiskReads()
-                .penaltyDialog()
-                .penaltyLog()
-                .build()
+            val threadPolicy =
+                StrictModeCompat.ThreadPolicy
+                    .Builder()
+                    .detectAll()
+                    .permitCustomSlowCalls()
+                    .permitDiskWrites()
+                    .permitDiskReads()
+                    .penaltyDialog()
+                    .penaltyLog()
+                    .build()
 
-            val vmPolicy = StrictModeCompat.VmPolicy.Builder()
-                .detectActivityLeaks()
-                .detectCleartextNetwork()
-                .detectFileUriExposure()
-                .detectLeakedClosableObjects()
-                .detectLeakedRegistrationObjects()
-                .detectLeakedSqlLiteObjects()
-                .detectContentUriWithoutPermission()
-                .detectNonSdkApiUsage()
-                .detectImplicitDirectBoot()
-                .detectCredentialProtectedWhileLocked()
-                .penaltyLog()
-                .build()
+            val vmPolicy =
+                StrictModeCompat.VmPolicy
+                    .Builder()
+                    .detectActivityLeaks()
+                    .detectCleartextNetwork()
+                    .detectFileUriExposure()
+                    .detectLeakedClosableObjects()
+                    .detectLeakedRegistrationObjects()
+                    .detectLeakedSqlLiteObjects()
+                    .detectContentUriWithoutPermission()
+                    .detectNonSdkApiUsage()
+                    .detectImplicitDirectBoot()
+                    .detectCredentialProtectedWhileLocked()
+                    .penaltyLog()
+                    .build()
 
             StrictModeCompat.setPolicies(threadPolicy, vmPolicy)
         }
@@ -177,11 +185,20 @@ class MainApplication : Application() {
 
         RxJavaPlugins.setErrorHandler { error ->
             when (error) {
-                is UndeliverableException -> Timber.e(error, "Can't deliver error")
-                is InterruptedException -> Timber.w(error)
-                else ->
-                    Thread.currentThread().uncaughtExceptionHandler
+                is UndeliverableException -> {
+                    Timber.e(error, "Can't deliver error")
+                }
+
+                is InterruptedException -> {
+                    Timber.w(error)
+                }
+
+                else -> {
+                    Thread
+                        .currentThread()
+                        .uncaughtExceptionHandler
                         ?.uncaughtException(Thread.currentThread(), error)
+                }
             }
         }
 

@@ -16,23 +16,31 @@ import me.proxer.app.ui.view.bbcode.prototype.BBPrototype.Companion.REGEX_OPTION
  * @author Ruben Gees
  */
 object TablePrototype : AutoClosingPrototype {
-
     override val startRegex = Regex(" *table( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *table *", REGEX_OPTIONS)
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = CenterPrototype.makeViews(parent, children.filter { it.prototype == TableRowPrototype }, args)
 
         return when (childViews.size) {
-            0, 1 -> assignWeights(childViews)
-            else -> listOf(
-                LinearLayout(parent.context).apply {
-                    layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                    orientation = LinearLayout.VERTICAL
+            0, 1 -> {
+                assignWeights(childViews)
+            }
 
-                    assignWeights(childViews).forEach { addView(it) }
-                }
-            )
+            else -> {
+                listOf(
+                    LinearLayout(parent.context).apply {
+                        layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                        orientation = LinearLayout.VERTICAL
+
+                        assignWeights(childViews).forEach { addView(it) }
+                    },
+                )
+            }
         }
     }
 
@@ -43,9 +51,10 @@ object TablePrototype : AutoClosingPrototype {
 
         rows.forEach { (row, cells) ->
             cells.forEach {
-                it.layoutParams = LinearLayout.LayoutParams(0, WRAP_CONTENT, weight).apply {
-                    gravity = Gravity.CENTER
-                }
+                it.layoutParams =
+                    LinearLayout.LayoutParams(0, WRAP_CONTENT, weight).apply {
+                        gravity = Gravity.CENTER
+                    }
             }
 
             if (cells.size < maxSize) {

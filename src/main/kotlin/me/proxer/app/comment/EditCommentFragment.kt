@@ -53,11 +53,11 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_edit_comment) {
-
     companion object {
-        fun newInstance() = EditCommentFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            EditCommentFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val hostingActivity: EditCommentActivity
@@ -104,7 +104,10 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
     private val entryId: String?
         get() = hostingActivity.entryId
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         initUI()
@@ -113,7 +116,10 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
         setHasOptionsMenu(true)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_edit_comment, menu, true)
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -121,11 +127,17 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.preview -> commentBottomSheetBehavior.state = when (commentBottomSheetBehavior.state) {
-                BottomSheetBehavior.STATE_HIDDEN -> BottomSheetBehavior.STATE_EXPANDED
-                else -> BottomSheetBehavior.STATE_HIDDEN
+            R.id.preview -> {
+                commentBottomSheetBehavior.state =
+                    when (commentBottomSheetBehavior.state) {
+                        BottomSheetBehavior.STATE_HIDDEN -> BottomSheetBehavior.STATE_EXPANDED
+                        else -> BottomSheetBehavior.STATE_HIDDEN
+                    }
             }
-            R.id.publish -> viewModel.publish()
+
+            R.id.publish -> {
+                viewModel.publish()
+            }
         }
 
         return super.onOptionsItemSelected(item)
@@ -174,10 +186,12 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
     }
 
     private fun initUI() {
-        rules.text = resources.getStringArray(R.array.fragment_edit_comment_rules)
-            .joinTo(SpannableStringBuilder(), "\n\n") {
-                SpannableString(it.parseAsHtml()).apply { this[0..length] = BulletSpan(requireContext().dip(6)) }
-            }
+        rules.text =
+            resources
+                .getStringArray(R.array.fragment_edit_comment_rules)
+                .joinTo(SpannableStringBuilder(), "\n\n") {
+                    SpannableString(it.parseAsHtml()).apply { this[0..length] = BulletSpan(requireContext().dip(6)) }
+                }
 
         editor.isNestedScrollingEnabled = false
 
@@ -201,7 +215,9 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
     }
 
     private fun initListeners() {
-        rulesContainer.clicks().mergeWith(expandRules.clicks())
+        rulesContainer
+            .clicks()
+            .mergeWith(expandRules.clicks())
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 editor.clearFocus()
@@ -212,17 +228,20 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
                 ViewCompat.animate(expandRules).rotation(if (rules.isVisible) 180f else 0f)
             }
 
-        rating.ratingChanges()
+        rating
+            .ratingChanges()
             .skipInitialValue()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.updateRating(it) }
 
-        editor.textChanges()
+        editor
+            .textChanges()
             .skipInitialValue()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.updateContent(it.toString()) }
 
-        editor.textChanges()
+        editor
+            .textChanges()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 editor.requestFocus()
@@ -237,18 +256,21 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
             left to "left",
             center to "center",
             right to "right",
-            spoiler to "spoiler"
+            spoiler to "spoiler",
         ).forEach { (button, tag) ->
-            button.clicks()
+            button
+                .clicks()
                 .autoDisposable(viewLifecycleOwner.scope())
                 .subscribe { insertTag(tag) }
         }
 
-        ratingClear.clicks()
+        ratingClear
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.updateRating(0f) }
 
-        size.clicks()
+        size
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 PopupMenu(requireContext(), size, Gravity.TOP)
@@ -257,10 +279,9 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
                             menuInflater,
                             requireContext(),
                             R.menu.fragment_edit_comment_size,
-                            menu
+                            menu,
                         )
-                    }
-                    .apply {
+                    }.apply {
                         itemClicks()
                             .autoDisposable(viewLifecycleOwner.scope())
                             .subscribe {
@@ -272,12 +293,12 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
                                     R.id.huge -> insertTag("size", "5")
                                 }
                             }
-                    }
-                    .let { MenuPopupCompat(requireContext(), it.menu, color) }
+                    }.let { MenuPopupCompat(requireContext(), it.menu, color) }
                     .show(-dip(48), 0)
             }
 
-        color.clicks()
+        color
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 PopupMenu(requireContext(), color, Gravity.TOP)
@@ -286,10 +307,9 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
                             menuInflater,
                             requireContext(),
                             R.menu.fragment_edit_comment_color,
-                            menu
+                            menu,
                         )
-                    }
-                    .apply {
+                    }.apply {
                         itemClicks()
                             .autoDisposable(viewLifecycleOwner.scope())
                             .subscribe {
@@ -304,13 +324,13 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
                                     R.id.white -> insertTag("color", getColorString(android.R.color.white))
                                 }
                             }
-                    }
-                    .let { MenuPopupCompat(requireContext(), it.menu, color) }
+                    }.let { MenuPopupCompat(requireContext(), it.menu, color) }
                     .forceShowIcon()
                     .show(-dip(48), 0)
             }
 
-        commentPreviewTitle.clicks()
+        commentPreviewTitle
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 editor.clearFocus()
@@ -318,7 +338,10 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
             }
     }
 
-    private fun insertTag(tag: String, value: String = "") {
+    private fun insertTag(
+        tag: String,
+        value: String = "",
+    ) {
         val startTag = "[$tag${if (value.isNotEmpty()) "=$value" else ""}]"
         val endTag = "[/$tag]"
 
@@ -338,33 +361,36 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
                 editor.setSelection(editor.selectionEnd - endTag.length)
                 editor.requestFocus()
 
-                requireContext().getSystemService<InputMethodManager>()
+                requireContext()
+                    .getSystemService<InputMethodManager>()
                     ?.showSoftInput(editor, InputMethodManager.SHOW_IMPLICIT)
             }
         }
     }
 
-    private fun getRatingTitle(rating: Int) = when (rating) {
-        1 -> R.string.fragment_edit_comment_rating_title_1
-        2 -> R.string.fragment_edit_comment_rating_title_2
-        3 -> R.string.fragment_edit_comment_rating_title_3
-        4 -> R.string.fragment_edit_comment_rating_title_4
-        5 -> R.string.fragment_edit_comment_rating_title_5
-        6 -> R.string.fragment_edit_comment_rating_title_6
-        7 -> R.string.fragment_edit_comment_rating_title_7
-        8 -> R.string.fragment_edit_comment_rating_title_8
-        9 -> R.string.fragment_edit_comment_rating_title_9
-        10 -> R.string.fragment_edit_comment_rating_title_10
-        else -> R.string.fragment_edit_comment_rating_title_0
-    }
+    private fun getRatingTitle(rating: Int) =
+        when (rating) {
+            1 -> R.string.fragment_edit_comment_rating_title_1
+            2 -> R.string.fragment_edit_comment_rating_title_2
+            3 -> R.string.fragment_edit_comment_rating_title_3
+            4 -> R.string.fragment_edit_comment_rating_title_4
+            5 -> R.string.fragment_edit_comment_rating_title_5
+            6 -> R.string.fragment_edit_comment_rating_title_6
+            7 -> R.string.fragment_edit_comment_rating_title_7
+            8 -> R.string.fragment_edit_comment_rating_title_8
+            9 -> R.string.fragment_edit_comment_rating_title_9
+            10 -> R.string.fragment_edit_comment_rating_title_10
+            else -> R.string.fragment_edit_comment_rating_title_0
+        }
 
-    private fun getColorString(@ColorRes color: Int): String {
-        return "#${Integer.toHexString(ContextCompat.getColor(requireContext(), color) and 0x00ffffff)}"
-    }
+    private fun getColorString(
+        @ColorRes color: Int,
+    ): String = "#${Integer.toHexString(ContextCompat.getColor(requireContext(), color) and 0x00ffffff)}"
 
-    private fun generateEmptyDrawable() = IconicsDrawable(requireContext()).apply {
-        icon = CommunityMaterial.Icon3.cmd_thought_bubble
-        colorInt = requireContext().resolveColor(R.attr.colorIcon)
-        sizeDp = 128
-    }
+    private fun generateEmptyDrawable() =
+        IconicsDrawable(requireContext()).apply {
+            icon = CommunityMaterial.Icon3.cmd_thought_bubble
+            colorInt = requireContext().resolveColor(R.attr.colorIcon)
+            sizeDp = 128
+        }
 }

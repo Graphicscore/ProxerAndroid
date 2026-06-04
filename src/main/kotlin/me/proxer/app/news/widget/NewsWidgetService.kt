@@ -10,7 +10,6 @@ import me.proxer.app.util.extension.safeInject
  * @author Ruben Gees
  */
 class NewsWidgetService : RemoteViewsService() {
-
     companion object {
         const val ARGUMENT_NEWS = "news"
     }
@@ -18,8 +17,10 @@ class NewsWidgetService : RemoteViewsService() {
     private val moshi by safeInject<Moshi>()
 
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
-        val news = intent.getSafeStringArrayExtra(ARGUMENT_NEWS)
-            .mapNotNull { moshi.adapter(SimpleNews::class.java).fromJson(it) }
+        val news =
+            intent
+                .getSafeStringArrayExtra(ARGUMENT_NEWS)
+                .mapNotNull { moshi.adapter(SimpleNews::class.java).fromJson(it) }
 
         return NewsWidgetViewsFactory(applicationContext, false, news)
     }

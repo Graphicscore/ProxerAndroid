@@ -18,9 +18,10 @@ data class ParsedChatMessage(
     override val image: String,
     val message: String,
     val action: ChatMessageAction,
-    val instant: Instant
-) : ProxerIdItem, ProxerImageItem, ProxerDateItem {
-
+    val instant: Instant,
+) : ProxerIdItem,
+    ProxerImageItem,
+    ProxerDateItem {
     @Transient
     override val date = instant.toDate()
 

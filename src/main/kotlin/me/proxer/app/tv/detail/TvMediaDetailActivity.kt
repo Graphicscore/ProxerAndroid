@@ -10,7 +10,6 @@ import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
 
 class TvMediaDetailActivity : ComponentActivity() {
-
     private val entryId: String get() = intent.getSafeStringExtra(ID_EXTRA)
     private val entryName: String get() = intent.getStringExtra(NAME_EXTRA) ?: ""
 
@@ -27,7 +26,7 @@ class TvMediaDetailActivity : ComponentActivity() {
                     onWatchEpisodes = { episodeAmount ->
                         TvEpisodeActivity.navigateTo(activity, id, name, episodeAmount)
                     },
-                    onBack = { finish() }
+                    onBack = { finish() },
                 )
             }
         }
@@ -37,7 +36,11 @@ class TvMediaDetailActivity : ComponentActivity() {
         private const val ID_EXTRA = "id"
         private const val NAME_EXTRA = "name"
 
-        fun navigateTo(context: Context, id: String, name: String) {
+        fun navigateTo(
+            context: Context,
+            id: String,
+            name: String,
+        ) {
             context.startActivity<TvMediaDetailActivity>(ID_EXTRA to id, NAME_EXTRA to name)
         }
     }

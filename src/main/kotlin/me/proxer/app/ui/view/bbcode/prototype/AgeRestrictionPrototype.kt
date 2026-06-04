@@ -24,59 +24,71 @@ import me.proxer.app.util.extension.safeInject
  * @author Ruben Gees
  */
 object AgeRestrictionPrototype : AutoClosingPrototype {
-
     override val startRegex = Regex(" *age18( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *age18 *", REGEX_OPTIONS)
 
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = super.makeViews(parent, children, args)
 
         return when {
-            childViews.isEmpty() -> childViews
-            !preferenceHelper.isAgeRestrictedMediaAllowed -> listOf(
-                FrameLayout(parent.context).apply {
-                    val text = parent.context.getString(R.string.view_bbcode_hide_age_restricted)
+            childViews.isEmpty() -> {
+                childViews
+            }
 
-                    layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
+            !preferenceHelper.isAgeRestrictedMediaAllowed -> {
+                listOf(
+                    FrameLayout(parent.context).apply {
+                        val text = parent.context.getString(R.string.view_bbcode_hide_age_restricted)
 
-                    addView(
-                        TextPrototype.makeView(parent, args + BBArgs(text = text)).apply {
-                            setTag(R.id.ignore_tag, Unit)
+                        layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
 
-                            gravity = CENTER
-                        }
-                    )
-                }
-            )
-            else -> listOf(
-                LinearLayout(parent.context).apply {
-                    val fourDip = dip(4)
-                    val text = parent.context.getString(R.string.view_bbcode_age_restricted)
+                        addView(
+                            TextPrototype.makeView(parent, args + BBArgs(text = text)).apply {
+                                setTag(R.id.ignore_tag, Unit)
 
-                    layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                    orientation = VERTICAL
+                                gravity = CENTER
+                            },
+                        )
+                    },
+                )
+            }
 
-                    setPadding(fourDip, fourDip, fourDip, fourDip)
-                    setBackgroundColor(parent.context.resolveColor(R.attr.colorSelectedSurface))
+            else -> {
+                listOf(
+                    LinearLayout(parent.context).apply {
+                        val fourDip = dip(4)
+                        val text = parent.context.getString(R.string.view_bbcode_age_restricted)
 
-                    addView(
-                        TextPrototype.makeView(parent, args + BBArgs(text = text)).apply {
-                            setTag(R.id.ignore_tag, Unit)
+                        layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                        orientation = VERTICAL
 
-                            layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                                updateMargins(bottom = fourDip * 4)
-                            }
+                        setPadding(fourDip, fourDip, fourDip, fourDip)
+                        setBackgroundColor(parent.context.resolveColor(R.attr.colorSelectedSurface))
 
-                            typeface = Typeface.DEFAULT_BOLD
-                            gravity = CENTER
-                        }
-                    )
+                        addView(
+                            TextPrototype.makeView(parent, args + BBArgs(text = text)).apply {
+                                setTag(R.id.ignore_tag, Unit)
 
-                    childViews.forEach { addView(it) }
-                }
-            )
+                                layoutParams =
+                                    LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                                        updateMargins(bottom = fourDip * 4)
+                                    }
+
+                                typeface = Typeface.DEFAULT_BOLD
+                                gravity = CENTER
+                            },
+                        )
+
+                        childViews.forEach { addView(it) }
+                    },
+                )
+            }
         }
     }
 }

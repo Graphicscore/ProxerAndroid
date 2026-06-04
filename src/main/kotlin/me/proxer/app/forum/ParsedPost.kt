@@ -22,9 +22,10 @@ data class ParsedPost(
     val modifiedByName: String?,
     val modifiedReason: String?,
     val parsedMessage: BBTree,
-    val thankYouAmount: Int
-) : ProxerIdItem, ProxerImageItem, ProxerDateItem {
-
+    val thankYouAmount: Int,
+) : ProxerIdItem,
+    ProxerImageItem,
+    ProxerDateItem {
     @Transient
     override val date = instant.toDate()
 }

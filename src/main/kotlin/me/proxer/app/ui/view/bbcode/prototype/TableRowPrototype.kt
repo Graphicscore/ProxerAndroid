@@ -15,23 +15,31 @@ import me.proxer.app.ui.view.bbcode.prototype.BBPrototype.Companion.REGEX_OPTION
  * @author Ruben Gees
  */
 object TableRowPrototype : AutoClosingPrototype {
-
     override val startRegex = Regex(" *tr( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *tr *", REGEX_OPTIONS)
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = children.filter { it.prototype == TableCellPrototype }.flatMap { it.makeViews(parent, args) }
 
         return when (childViews.size) {
-            0 -> emptyList()
-            else -> listOf(
-                LinearLayout(parent.context).apply {
-                    layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
-                    orientation = HORIZONTAL
+            0 -> {
+                emptyList()
+            }
 
-                    childViews.forEach { addView(it) }
-                }
-            )
+            else -> {
+                listOf(
+                    LinearLayout(parent.context).apply {
+                        layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, WRAP_CONTENT)
+                        orientation = HORIZONTAL
+
+                        childViews.forEach { addView(it) }
+                    },
+                )
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ import androidx.core.text.parseAsHtml
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.afollestad.materialdialogs.MaterialDialog
+import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding3.view.clicks
@@ -26,7 +27,6 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.PagedContentFragment
 import me.proxer.app.comment.EditCommentActivity
@@ -46,13 +46,13 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_comments) {
-
     companion object {
         private const val SORT_CRITERIA_ARGUMENT = "sort_criteria"
 
-        fun newInstance() = CommentsFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            CommentsFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val emptyDataMessage = R.string.error_no_data_comments
@@ -74,8 +74,9 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
         get() = hostingActivity.name
 
     private var sortCriteria: CommentSortCriteria
-        get() = requireArguments().getSerializable(SORT_CRITERIA_ARGUMENT) as? CommentSortCriteria
-            ?: CommentSortCriteria.RATING
+        get() =
+            requireArguments().getSerializable(SORT_CRITERIA_ARGUMENT) as? CommentSortCriteria
+                ?: CommentSortCriteria.RATING
         set(value) {
             requireArguments().putSerializable(SORT_CRITERIA_ARGUMENT, value)
 
@@ -88,15 +89,17 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
 
     private val create by bindView<FloatingActionButton>(R.id.create)
 
-    private val editComment = registerForActivityResult(EditCommentActivity.Contract()) { comment ->
-        if (comment != null) {
-            Single.fromCallable { comment }
-                .subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(this.scope())
-                .subscribeAndLogErrors { viewModel.updateComment(it) }
+    private val editComment =
+        registerForActivityResult(EditCommentActivity.Contract()) { comment ->
+            if (comment != null) {
+                Single
+                    .fromCallable { comment }
+                    .subscribeOn(Schedulers.computation())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDisposable(this.scope())
+                    .subscribeAndLogErrors { viewModel.updateComment(it) }
+            }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,7 +114,7 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
                     comment.authorId,
                     comment.author,
                     comment.image,
-                    if (view.drawable != null && comment.image.isNotBlank()) view else null
+                    if (view.drawable != null && comment.image.isNotBlank()) view else null,
                 )
             }
 
@@ -129,20 +132,23 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
                     .negativeButton(res = R.string.cancel)
                     .positiveButton(res = R.string.dialog_comment_delete_positive) {
                         viewModel.deleteComment(comment)
-                    }
-                    .show()
+                    }.show()
             }
 
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
         innerAdapter.categoryCallback = { category }
 
-        hostingActivity.headerHeightChanges()
+        hostingActivity
+            .headerHeightChanges()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { create.translationY = it }
 
@@ -154,10 +160,10 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
                         getString(R.string.error_comment_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
 
         create.setImageDrawable(
@@ -165,10 +171,11 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
                 colorInt = requireContext().resolveColor(R.attr.colorOnPrimary)
                 paddingDp = 8
                 sizeDp = 64
-            }
+            },
         )
 
-        create.clicks()
+        create
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { editComment.launch(EditCommentActivity.Contract.Input(entryId = id, name = name)) }
 
@@ -181,7 +188,10 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
         super.onDestroy()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_comments, menu, true)
 
         when (sortCriteria) {

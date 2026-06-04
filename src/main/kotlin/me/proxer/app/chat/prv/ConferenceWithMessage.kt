@@ -8,14 +8,13 @@ import me.proxer.library.enums.MessageAction
  */
 data class ConferenceWithMessage(
     @Embedded val conference: LocalConference,
-    @Embedded val message: SimpleLocalMessage?
+    @Embedded val message: SimpleLocalMessage?,
 ) {
-
     data class SimpleLocalMessage(
         val messageId: Long,
         val messageText: String,
         val userId: String,
         val username: String,
-        val messageAction: MessageAction
+        val messageAction: MessageAction,
     )
 }

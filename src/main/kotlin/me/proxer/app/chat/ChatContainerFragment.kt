@@ -21,13 +21,13 @@ import me.proxer.app.util.extension.unsafeLazy
  * @author Ruben Gees
  */
 class ChatContainerFragment : BaseFragment(R.layout.fragment_chat_container) {
-
     companion object {
         private const val SHOW_MESSENGER_ARGUMENT = "show_messenger"
 
-        fun newInstance(showMessenger: Boolean = false) = ChatContainerFragment().apply {
-            arguments = bundleOf(SHOW_MESSENGER_ARGUMENT to showMessenger)
-        }
+        fun newInstance(showMessenger: Boolean = false) =
+            ChatContainerFragment().apply {
+                arguments = bundleOf(SHOW_MESSENGER_ARGUMENT to showMessenger)
+            }
     }
 
     override val hostingActivity: MainActivity
@@ -50,7 +50,10 @@ class ChatContainerFragment : BaseFragment(R.layout.fragment_chat_container) {
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         tabs.isVisible = true
@@ -77,24 +80,27 @@ class ChatContainerFragment : BaseFragment(R.layout.fragment_chat_container) {
 
     private inner class SectionsPagerAdapter :
         FragmentStateAdapter(childFragmentManager, viewLifecycleOwner.lifecycle) {
-
         override fun getItemCount() = 2
 
-        override fun createFragment(position: Int) = when (position) {
-            0 -> ChatRoomFragment.newInstance()
-            1 -> ConferenceFragment.newInstance()
-            else -> error("Unknown index passed: $position")
-        }
+        override fun createFragment(position: Int) =
+            when (position) {
+                0 -> ChatRoomFragment.newInstance()
+                1 -> ConferenceFragment.newInstance()
+                else -> error("Unknown index passed: $position")
+            }
     }
 
     private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
-
-        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
-            tab.text = when (position) {
-                0 -> getString(R.string.fragment_chat_container_public)
-                1 -> getString(R.string.fragment_chat_container_private)
-                else -> error("Unknown index passed: $position")
-            }
+        override fun onConfigureTab(
+            tab: TabLayout.Tab,
+            position: Int,
+        ) {
+            tab.text =
+                when (position) {
+                    0 -> getString(R.string.fragment_chat_container_public)
+                    1 -> getString(R.string.fragment_chat_container_private)
+                    else -> error("Unknown index passed: $position")
+                }
         }
     }
 }

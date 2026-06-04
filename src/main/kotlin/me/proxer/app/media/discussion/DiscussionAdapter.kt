@@ -25,47 +25,54 @@ import me.proxer.library.entity.info.ForumDiscussion
  * @author Ruben Gees
  */
 class DiscussionAdapter : BaseAdapter<ForumDiscussion, ViewHolder>() {
-
     val clickSubject: PublishSubject<ForumDiscussion> = PublishSubject.create()
 
     init {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_discussion, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_discussion, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val subject: TextView by bindView(R.id.subject)
         internal val metaInfo: AppCompatTextView by bindView(R.id.metaInfo)
 
         fun bind(item: ForumDiscussion) {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
 
-            val metaInfoText = metaInfo.context.getString(
-                R.string.fragment_discussion_meta_info,
-                item.firstPostUsername,
-                item.categoryName
-            )
+            val metaInfoText =
+                metaInfo.context.getString(
+                    R.string.fragment_discussion_meta_info,
+                    item.firstPostUsername,
+                    item.categoryName,
+                )
 
             subject.text = item.subject
-            metaInfo.fastText = SpannableString(metaInfoText).apply {
-                val usernameSpanStart = indexOf(item.firstPostUsername)
-                val usernameSpanEnd = usernameSpanStart + item.firstPostUsername.length
-                val categorySpanStart = indexOf(item.categoryName)
-                val categorySpanEnd = categorySpanStart + item.categoryName.length
+            metaInfo.fastText =
+                SpannableString(metaInfoText).apply {
+                    val usernameSpanStart = indexOf(item.firstPostUsername)
+                    val usernameSpanEnd = usernameSpanStart + item.firstPostUsername.length
+                    val categorySpanStart = indexOf(item.categoryName)
+                    val categorySpanEnd = categorySpanStart + item.categoryName.length
 
-                this[usernameSpanStart..usernameSpanEnd] = StyleSpan(Typeface.BOLD)
-                this[categorySpanStart..categorySpanEnd] = StyleSpan(Typeface.BOLD)
-            }
+                    this[usernameSpanStart..usernameSpanEnd] = StyleSpan(Typeface.BOLD)
+                    this[categorySpanStart..categorySpanEnd] = StyleSpan(Typeface.BOLD)
+                }
         }
     }
 }

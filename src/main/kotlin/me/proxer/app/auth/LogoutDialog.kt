@@ -20,7 +20,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  * @author Ruben Gees
  */
 class LogoutDialog : BaseDialog() {
-
     companion object {
         fun show(activity: FragmentActivity) = LogoutDialog().show(activity.supportFragmentManager, "logout_dialog")
     }
@@ -30,11 +29,12 @@ class LogoutDialog : BaseDialog() {
     private val content: TextView by bindView(R.id.content)
     private val progress: ProgressBar by bindView(R.id.progress)
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .noAutoDismiss()
-        .positiveButton(R.string.dialog_logout_positive) { viewModel.logout() }
-        .negativeButton(R.string.cancel) { dismiss() }
-        .customView(R.layout.dialog_logout, scrollable = true)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .noAutoDismiss()
+            .positiveButton(R.string.dialog_logout_positive) { viewModel.logout() }
+            .negativeButton(R.string.cancel) { dismiss() }
+            .customView(R.layout.dialog_logout, scrollable = true)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -43,7 +43,7 @@ class LogoutDialog : BaseDialog() {
             dialogLifecycleOwner,
             Observer {
                 it?.let { dismiss() }
-            }
+            },
         )
 
         viewModel.error.observe(
@@ -54,7 +54,7 @@ class LogoutDialog : BaseDialog() {
 
                     requireContext().toast(it.message)
                 }
-            }
+            },
         )
 
         viewModel.isLoading.observe(
@@ -62,7 +62,7 @@ class LogoutDialog : BaseDialog() {
             Observer {
                 content.isGone = it == true
                 progress.isVisible = it == true
-            }
+            },
         )
     }
 }

@@ -8,13 +8,14 @@ import me.proxer.app.util.extension.readStringSafely
  * @author Ruben Gees
  */
 class ParcelableStringBooleanMap : Parcelable {
-
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<ParcelableStringBooleanMap> {
-            override fun createFromParcel(source: Parcel) = ParcelableStringBooleanMap(source)
-            override fun newArray(size: Int) = arrayOfNulls<ParcelableStringBooleanMap?>(size)
-        }
+        val CREATOR =
+            object : Parcelable.Creator<ParcelableStringBooleanMap> {
+                override fun createFromParcel(source: Parcel) = ParcelableStringBooleanMap(source)
+
+                override fun newArray(size: Int) = arrayOfNulls<ParcelableStringBooleanMap?>(size)
+            }
     }
 
     val size: Int get() = internalMap.size
@@ -30,7 +31,10 @@ class ParcelableStringBooleanMap : Parcelable {
         }
     }
 
-    override fun writeToParcel(dest: Parcel, flags: Int) {
+    override fun writeToParcel(
+        dest: Parcel,
+        flags: Int,
+    ) {
         dest.writeInt(size)
 
         entries.forEach {
@@ -44,8 +48,14 @@ class ParcelableStringBooleanMap : Parcelable {
     operator fun get(key: String) = internalMap[key]
 
     fun containsKey(key: String) = internalMap.containsKey(key)
-    fun put(key: String, value: Boolean) = internalMap.put(key, value)
+
+    fun put(
+        key: String,
+        value: Boolean,
+    ) = internalMap.put(key, value)
+
     fun remove(key: String) = internalMap.remove(key)
+
     fun clear() = internalMap.clear()
 
     fun putOrRemove(key: String) {

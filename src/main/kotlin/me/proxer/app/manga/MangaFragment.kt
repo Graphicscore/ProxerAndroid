@@ -20,6 +20,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.github.rubensousa.gravitysnaphelper.GravitySnapHelper
 import com.google.android.material.snackbar.Snackbar
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
@@ -28,7 +29,6 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseAdapter.ContainerPositionResolver
 import me.proxer.app.base.BaseContentFragment
@@ -57,14 +57,14 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_manga) {
-
     companion object {
         private const val LAST_POSITION_STATE = "fragment_manga_last_position"
         private const val LOW_MEMORY_STATE = "fragment_manga_low_memory"
 
-        fun newInstance() = MangaFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            MangaFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by activityViewModel<MangaViewModel> { parametersOf(id, language, episode) }
@@ -107,12 +107,16 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
     private var hasLowMemory = false
     private var lastPosition: Parcelable? = null
 
-    private val mediaControlTextResolver = object : MediaControlView.TextResourceResolver {
-        override fun next() = requireContext().getString(R.string.fragment_manga_next_chapter)
-        override fun previous() = requireContext().getString(R.string.fragment_manga_previous_chapter)
-        override fun bookmarkThis() = requireContext().getString(R.string.fragment_manga_bookmark_this_chapter)
-        override fun bookmarkNext() = requireContext().getString(R.string.fragment_manga_bookmark_next_chapter)
-    }
+    private val mediaControlTextResolver =
+        object : MediaControlView.TextResourceResolver {
+            override fun next() = requireContext().getString(R.string.fragment_manga_next_chapter)
+
+            override fun previous() = requireContext().getString(R.string.fragment_manga_previous_chapter)
+
+            override fun bookmarkThis() = requireContext().getString(R.string.fragment_manga_bookmark_this_chapter)
+
+            override fun bookmarkNext() = requireContext().getString(R.string.fragment_manga_bookmark_next_chapter)
+        }
 
     private var preloader by Delegates.notNull<MangaPreloader>()
     private var innerAdapter by Delegates.notNull<MangaAdapter>()
@@ -165,20 +169,55 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
 
                 // Add one to the position to account for the header.
                 when (readerOrientation) {
-                    MangaReaderOrientation.LEFT_TO_RIGHT -> when {
-                        xCoordinate < widthPart -> recyclerView.smoothScrollToPosition(position - 1 + 1)
-                        xCoordinate >= widthPart && xCoordinate < widthPart * 3 -> hostingActivity.toggleFullscreen()
-                        else -> recyclerView.smoothScrollToPosition(position + 1 + 1)
+                    MangaReaderOrientation.LEFT_TO_RIGHT -> {
+                        when {
+                            xCoordinate < widthPart -> {
+                                recyclerView.smoothScrollToPosition(position - 1 + 1)
+                            }
+
+                            xCoordinate >= widthPart && xCoordinate < widthPart * 3 -> {
+                                hostingActivity
+                                    .toggleFullscreen()
+                            }
+
+                            else -> {
+                                recyclerView.smoothScrollToPosition(position + 1 + 1)
+                            }
+                        }
                     }
-                    MangaReaderOrientation.RIGHT_TO_LEFT -> when {
-                        xCoordinate < widthPart -> recyclerView.smoothScrollToPosition(position + 1 + 1)
-                        xCoordinate >= widthPart && xCoordinate < widthPart * 3 -> hostingActivity.toggleFullscreen()
-                        else -> recyclerView.smoothScrollToPosition(position - 1 + 1)
+
+                    MangaReaderOrientation.RIGHT_TO_LEFT -> {
+                        when {
+                            xCoordinate < widthPart -> {
+                                recyclerView.smoothScrollToPosition(position + 1 + 1)
+                            }
+
+                            xCoordinate >= widthPart && xCoordinate < widthPart * 3 -> {
+                                hostingActivity
+                                    .toggleFullscreen()
+                            }
+
+                            else -> {
+                                recyclerView.smoothScrollToPosition(position - 1 + 1)
+                            }
+                        }
                     }
-                    MangaReaderOrientation.VERTICAL -> when {
-                        yCoordinate < heightPart -> recyclerView.smoothScrollBy(0, -normalizedParentHeight)
-                        yCoordinate >= heightPart && yCoordinate < heightPart * 3 -> hostingActivity.toggleFullscreen()
-                        else -> recyclerView.smoothScrollBy(0, normalizedParentHeight)
+
+                    MangaReaderOrientation.VERTICAL -> {
+                        when {
+                            yCoordinate < heightPart -> {
+                                recyclerView.smoothScrollBy(0, -normalizedParentHeight)
+                            }
+
+                            yCoordinate >= heightPart && yCoordinate < heightPart * 3 -> {
+                                hostingActivity
+                                    .toggleFullscreen()
+                            }
+
+                            else -> {
+                                recyclerView.smoothScrollBy(0, normalizedParentHeight)
+                            }
+                        }
                     }
                 }
             }
@@ -198,14 +237,21 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         setHasOptionsMenu(true)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View? {
         header = inflater.inflate(R.layout.layout_media_control, container, false) as MediaControlView
         footer = inflater.inflate(R.layout.layout_media_control, container, false) as MediaControlView
 
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         initHeaderAndFooter()
@@ -228,7 +274,7 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                 it?.let {
                     hostingActivity.snackbar(R.string.fragment_set_user_info_success)
                 }
-            }
+            },
         )
 
         viewModel.userStateError.observe(
@@ -239,10 +285,10 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                         getString(R.string.error_set_user_info, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
@@ -268,28 +314,33 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         super.onDestroyView()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_manga, menu, true)
 
         toolbar.doOnLayout {
-            toolbar.findViewById<View>(R.id.toggle_orientation).rotation = when (readerOrientation) {
-                MangaReaderOrientation.LEFT_TO_RIGHT -> 90f
-                MangaReaderOrientation.RIGHT_TO_LEFT -> 270f
-                MangaReaderOrientation.VERTICAL -> 0.0f
-            }
+            toolbar.findViewById<View>(R.id.toggle_orientation).rotation =
+                when (readerOrientation) {
+                    MangaReaderOrientation.LEFT_TO_RIGHT -> 90f
+                    MangaReaderOrientation.RIGHT_TO_LEFT -> 270f
+                    MangaReaderOrientation.VERTICAL -> 0.0f
+                }
         }
 
         return super.onCreateOptionsMenu(menu, inflater)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
             R.id.toggle_orientation -> {
-                readerOrientation = when (readerOrientation) {
-                    MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
-                    MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
-                    MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
-                }
+                readerOrientation =
+                    when (readerOrientation) {
+                        MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
+                        MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
+                        MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
+                    }
 
                 bindOrientationOptionsItem()
                 bindHeaderAndFooterHeight()
@@ -300,14 +351,16 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                         MangaReaderOrientation.LEFT_TO_RIGHT -> R.string.fragment_manga_left_to_right
                         MangaReaderOrientation.RIGHT_TO_LEFT -> R.string.fragment_manga_right_to_left
                         MangaReaderOrientation.VERTICAL -> R.string.fragment_manga_vertical
-                    }
+                    },
                 )
 
                 true
             }
-            else -> super.onOptionsItemSelected(item)
+
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
         }
-    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
@@ -355,7 +408,10 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         preloader.cancel()
         innerAdapter.swapDataAndNotifyWithDiffing(emptyList())
 
-        if (viewModel.error.value?.data?.get(ErrorUtils.ENTRY_DATA_KEY) !is EntryCore) {
+        if (viewModel.error.value
+                ?.data
+                ?.get(ErrorUtils.ENTRY_DATA_KEY) !is EntryCore
+        ) {
             adapter.header = null
             adapter.footer = null
 
@@ -426,7 +482,7 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                     horizontalMargin,
                     verticalMargin,
                     horizontalMargin,
-                    verticalMargin
+                    verticalMargin,
                 )
             }
         }
@@ -439,20 +495,23 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                     horizontalMargin,
                     verticalMargin,
                     horizontalMargin,
-                    verticalMargin
+                    verticalMargin,
                 )
             }
         }
 
-        Observable.merge(header.uploaderClickSubject, footer.uploaderClickSubject)
+        Observable
+            .merge(header.uploaderClickSubject, footer.uploaderClickSubject)
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { ProfileActivity.navigateTo(requireActivity(), it.id, it.name) }
 
-        Observable.merge(header.translatorGroupClickSubject, footer.translatorGroupClickSubject)
+        Observable
+            .merge(header.translatorGroupClickSubject, footer.translatorGroupClickSubject)
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { TranslatorGroupActivity.navigateTo(requireActivity(), it.id, it.name) }
 
-        Observable.merge(header.episodeSwitchSubject, footer.episodeSwitchSubject)
+        Observable
+            .merge(header.episodeSwitchSubject, footer.episodeSwitchSubject)
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 if (areBookmarksAutomatic && it > episode && storageHelper.isLoggedIn) {
@@ -462,11 +521,13 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                 episode = it
             }
 
-        Observable.merge(header.bookmarkSetSubject, footer.bookmarkSetSubject)
+        Observable
+            .merge(header.bookmarkSetSubject, footer.bookmarkSetSubject)
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.bookmark(it) }
 
-        Observable.merge(header.finishClickSubject, footer.finishClickSubject)
+        Observable
+            .merge(header.finishClickSubject, footer.finishClickSubject)
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.markAsFinished() }
     }
@@ -474,11 +535,12 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
     private fun showHeaderAndFooter(data: MangaChapterInfo) {
         bindHeaderAndFooterHeight()
 
-        val translatorGroup = data.chapter.scanGroupId?.let { id ->
-            data.chapter.scanGroupName?.let { name ->
-                SimpleTranslatorGroup(id, name)
+        val translatorGroup =
+            data.chapter.scanGroupId?.let { id ->
+                data.chapter.scanGroupName?.let { name ->
+                    SimpleTranslatorGroup(id, name)
+                }
             }
-        }
 
         header.episodeInfo = SimpleEpisodeInfo(data.episodeAmount, episode)
         header.uploader = Uploader(data.chapter.uploaderId, data.chapter.uploaderName)
@@ -492,13 +554,16 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
     }
 
     private fun bindOrientationOptionsItem() {
-        val rotation = when (readerOrientation) {
-            MangaReaderOrientation.LEFT_TO_RIGHT -> 90f
-            MangaReaderOrientation.RIGHT_TO_LEFT -> 270f
-            MangaReaderOrientation.VERTICAL -> 0.0f
-        }
+        val rotation =
+            when (readerOrientation) {
+                MangaReaderOrientation.LEFT_TO_RIGHT -> 90f
+                MangaReaderOrientation.RIGHT_TO_LEFT -> 270f
+                MangaReaderOrientation.VERTICAL -> 0.0f
+            }
 
-        toolbar.findViewById<View>(R.id.toggle_orientation).animate()
+        toolbar
+            .findViewById<View>(R.id.toggle_orientation)
+            .animate()
             .rotation(rotation)
             .setDuration(mediumAnimationTime.toLong())
             .start()
@@ -515,10 +580,11 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         recyclerView.layoutManager = MangaLinearLayoutManger(requireContext(), readerOrientation)
 
         if (!isVertical) {
-            gravitySnapHelper = GravitySnapHelper(Gravity.END)
-                .apply { maxFlingSizeFraction = 1.0f }
-                .apply { scrollMsPerInch = 50f }
-                .apply { attachToRecyclerView(recyclerView) }
+            gravitySnapHelper =
+                GravitySnapHelper(Gravity.END)
+                    .apply { maxFlingSizeFraction = 1.0f }
+                    .apply { scrollMsPerInch = 50f }
+                    .apply { attachToRecyclerView(recyclerView) }
         }
 
         innerAdapter.isVertical = isVertical

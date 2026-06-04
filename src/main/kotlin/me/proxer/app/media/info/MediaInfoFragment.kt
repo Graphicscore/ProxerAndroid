@@ -50,14 +50,14 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_info) {
-
     companion object {
         private const val SHOW_UNRATED_TAGS_ARGUMENT = "show_unrated_tags"
         private const val SHOW_SPOILER_TAGS_ARGUMENT = "show_spoiler_tags"
 
-        fun newInstance() = MediaInfoFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            MediaInfoFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val hostingActivity: MediaActivity
@@ -106,30 +106,38 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
 
     private val description: TextView by bindView(R.id.description)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         updateUnratedButton()
         updateSpoilerButton()
         bindUserInfo(null)
 
-        noteContainer.clicks()
+        noteContainer
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.note() }
 
-        favorContainer.clicks()
+        favorContainer
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.toggleFavorite() }
 
-        finishContainer.clicks()
+        finishContainer
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.markAsFinished() }
 
-        subscribeContainer.clicks()
+        subscribeContainer
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.toggleSubscription() }
 
-        unratedTags.clicks()
+        unratedTags
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 showUnratedTags = !showUnratedTags
@@ -137,7 +145,8 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
                 viewModel.data.value?.let { entry -> bindTags(entry) }
             }
 
-        spoilerTags.clicks()
+        spoilerTags
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 showSpoilerTags = !showSpoilerTags
@@ -149,7 +158,7 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
             viewLifecycleOwner,
             Observer {
                 bindUserInfo(it)
-            }
+            },
         )
 
         viewModel.userInfoUpdateData.observe(
@@ -158,7 +167,7 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
                 it?.let {
                     hostingActivity.snackbar(R.string.fragment_set_user_info_success)
                 }
-            }
+            },
         )
 
         viewModel.userInfoUpdateError.observe(
@@ -169,10 +178,10 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
                         getString(R.string.error_set_user_info, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
@@ -200,20 +209,22 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         description.text = entry.description
     }
 
-    private fun bindRating(result: Entry) = if (result.rating > 0) {
-        ratingContainer.isVisible = true
-        rating.rating = result.rating / 2.0f
-        ratingAmount.isVisible = true
-        ratingAmount.text = requireContext().resources.getQuantityString(
-            R.plurals.fragment_media_info_rate_count,
-            result.ratingAmount,
-            result.rating,
-            result.ratingAmount
-        )
-    } else {
-        ratingContainer.isGone = true
-        ratingAmount.isGone = true
-    }
+    private fun bindRating(result: Entry) =
+        if (result.rating > 0) {
+            ratingContainer.isVisible = true
+            rating.rating = result.rating / 2.0f
+            ratingAmount.isVisible = true
+            ratingAmount.text =
+                requireContext().resources.getQuantityString(
+                    R.plurals.fragment_media_info_rate_count,
+                    result.ratingAmount,
+                    result.rating,
+                    result.ratingAmount,
+                )
+        } else {
+            ratingContainer.isGone = true
+            ratingAmount.isGone = true
+        }
 
     private fun bindSynonyms(result: Entry) {
         result.synonyms.forEach {
@@ -225,8 +236,10 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         val seasons = result.seasons
 
         if (seasons.isNotEmpty()) {
-            val tableRow = LayoutInflater.from(context)
-                .inflate(R.layout.layout_media_info_seasons_row, infoTable, false)
+            val tableRow =
+                LayoutInflater
+                    .from(context)
+                    .inflate(R.layout.layout_media_info_seasons_row, infoTable, false)
 
             val seasonStartView = tableRow.findViewById<TextView>(R.id.seasonStart)
             val seasonEndView = tableRow.findViewById<TextView>(R.id.seasonEnd)
@@ -247,8 +260,8 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         infoTable.addView(
             constructInfoTableRow(
                 requireContext().getString(R.string.fragment_media_info_status_title),
-                result.state.toAppString(requireContext())
-            )
+                result.state.toAppString(requireContext()),
+            ),
         )
     }
 
@@ -256,8 +269,8 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         infoTable.addView(
             constructInfoTableRow(
                 requireContext().getString(R.string.fragment_media_info_license_title),
-                result.license.toAppString(requireContext())
-            )
+                result.license.toAppString(requireContext()),
+            ),
         )
     }
 
@@ -270,30 +283,36 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
                 infoTable.addView(
                     constructInfoTableRow(title, content).also { tableRow ->
                         tableRow.findViewById<View>(R.id.content).also { contentView ->
-                            val selectableItemBackground = TypedValue().apply {
-                                requireContext().theme.resolveAttribute(R.attr.selectableItemBackground, this, true)
-                            }
+                            val selectableItemBackground =
+                                TypedValue().apply {
+                                    requireContext().theme.resolveAttribute(R.attr.selectableItemBackground, this, true)
+                                }
 
                             contentView.setBackgroundResource(selectableItemBackground.resourceId)
 
-                            contentView.clicks()
+                            contentView
+                                .clicks()
                                 .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
                                 .subscribe {
                                     MediaActivity.navigateTo(
                                         requireActivity(),
                                         adaptionInfo.id,
                                         adaptionInfo.name,
-                                        adaptionInfo.medium?.toCategory()
+                                        adaptionInfo.medium?.toCategory(),
                                     )
                                 }
                         }
-                    }
+                    },
                 )
             }
         }
     }
 
-    private fun constructInfoTableRow(title: String, content: String, isSelectable: Boolean = false): View {
+    private fun constructInfoTableRow(
+        title: String,
+        content: String,
+        isSelectable: Boolean = false,
+    ): View {
         val tableRow = LayoutInflater.from(context).inflate(R.layout.layout_media_info_row, infoTable, false)
         val titleView = tableRow.findViewById<TextView>(R.id.title)
         val contentView = tableRow.findViewById<TextView>(R.id.content)
@@ -318,7 +337,7 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
             genres,
             result.genres.toList(),
             mapFunction = { it.name },
-            onClick = { hostingActivity.multilineSnackbar(it.description) }
+            onClick = { hostingActivity.multilineSnackbar(it.description) },
         )
     }
 
@@ -332,46 +351,59 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
             updateUnratedButton()
         }
 
-        val filteredTags = result.tags.filter {
-            when (it.isRated) {
-                true -> when (it.isSpoiler) {
-                    true -> showSpoilerTags
-                    false -> true
-                }
-                false -> when (showUnratedTags) {
-                    true -> when (it.isSpoiler) {
-                        true -> showSpoilerTags
-                        false -> true
+        val filteredTags =
+            result.tags.filter {
+                when (it.isRated) {
+                    true -> {
+                        when (it.isSpoiler) {
+                            true -> showSpoilerTags
+                            false -> true
+                        }
                     }
-                    false -> false
+
+                    false -> {
+                        when (showUnratedTags) {
+                            true -> {
+                                when (it.isSpoiler) {
+                                    true -> showSpoilerTags
+                                    false -> true
+                                }
+                            }
+
+                            false -> {
+                                false
+                            }
+                        }
+                    }
                 }
             }
-        }
 
         bindChips(
             tags,
             filteredTags,
             mapFunction = { it.name },
-            onClick = { hostingActivity.multilineSnackbar(it.description) }
+            onClick = { hostingActivity.multilineSnackbar(it.description) },
         )
     }
 
     private fun updateUnratedButton() {
-        unratedTags.text = getString(
-            when (showUnratedTags) {
-                true -> R.string.fragment_media_info_tags_unrated_hide
-                false -> R.string.fragment_media_info_tags_unrated_show
-            }
-        )
+        unratedTags.text =
+            getString(
+                when (showUnratedTags) {
+                    true -> R.string.fragment_media_info_tags_unrated_hide
+                    false -> R.string.fragment_media_info_tags_unrated_show
+                },
+            )
     }
 
     private fun updateSpoilerButton() {
-        spoilerTags.text = getString(
-            when (showSpoilerTags) {
-                true -> R.string.fragment_media_info_tags_spoiler_hide
-                false -> R.string.fragment_media_info_tags_spoiler_show
-            }
-        )
+        spoilerTags.text =
+            getString(
+                when (showSpoilerTags) {
+                    true -> R.string.fragment_media_info_tags_spoiler_hide
+                    false -> R.string.fragment_media_info_tags_spoiler_show
+                },
+            )
     }
 
     private fun bindFskConstraints(result: Entry) {
@@ -382,12 +414,15 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
             fskConstraints.isGone = true
         } else {
             result.fskConstraints.forEach { constraint ->
-                val image = LayoutInflater.from(context)
-                    .inflate(R.layout.layout_image, fskConstraints, false) as ImageView
+                val image =
+                    LayoutInflater
+                        .from(context)
+                        .inflate(R.layout.layout_image, fskConstraints, false) as ImageView
 
                 image.setImageDrawable(constraint.toAppDrawable(requireContext()))
 
-                image.clicks()
+                image
+                    .clicks()
                     .autoDisposable(viewLifecycleOwner.scope())
                     .subscribe {
                         hostingActivity.multilineSnackbar(constraint.toAppStringDescription(requireContext()))
@@ -398,55 +433,62 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         }
     }
 
-    private fun bindTranslatorGroups(result: Entry) = if (result.translatorGroups.isEmpty()) {
-        translatorGroupsTitle.isGone = true
-        translatorGroups.isGone = true
-    } else {
-        bindChips(
-            translatorGroups,
-            result.translatorGroups,
-            mapFunction = { it.name },
-            onClick = { TranslatorGroupActivity.navigateTo(requireActivity(), it.id, it.name) }
-        )
-    }
+    private fun bindTranslatorGroups(result: Entry) =
+        if (result.translatorGroups.isEmpty()) {
+            translatorGroupsTitle.isGone = true
+            translatorGroups.isGone = true
+        } else {
+            bindChips(
+                translatorGroups,
+                result.translatorGroups,
+                mapFunction = { it.name },
+                onClick = { TranslatorGroupActivity.navigateTo(requireActivity(), it.id, it.name) },
+            )
+        }
 
-    private fun bindIndustries(result: Entry) = if (result.industries.isEmpty()) {
-        industriesTitle.isGone = true
-        industries.isGone = true
-    } else {
-        bindChips(
-            industries,
-            result.industries,
-            mapFunction = {
-                if (it.type == IndustryType.UNKNOWN) {
-                    it.name
-                } else {
-                    "${it.name} (${it.type.toAppString(requireContext())})"
-                }
-            },
-            onClick = {
-                IndustryActivity.navigateTo(requireActivity(), it.id, it.name)
-            }
-        )
-    }
+    private fun bindIndustries(result: Entry) =
+        if (result.industries.isEmpty()) {
+            industriesTitle.isGone = true
+            industries.isGone = true
+        } else {
+            bindChips(
+                industries,
+                result.industries,
+                mapFunction = {
+                    if (it.type == IndustryType.UNKNOWN) {
+                        it.name
+                    } else {
+                        "${it.name} (${it.type.toAppString(requireContext())})"
+                    }
+                },
+                onClick = {
+                    IndustryActivity.navigateTo(requireActivity(), it.id, it.name)
+                },
+            )
+        }
 
     private fun <T> bindChips(
         layout: FlexboxLayout,
         items: List<T>,
         mapFunction: (T) -> String = { it.toString() },
-        onClick: ((T) -> Unit)? = null
+        onClick: ((T) -> Unit)? = null,
     ) {
         layout.post {
             if (layout.width <= 0 || view == null || view?.isAttachedToWindow != true) return@post
             if (layout.childCount > 0) layout.removeAllViews()
 
-            for ((index, mappedItem) in items.asSequence().map(mapFunction).withIndex().toList()) {
+            for ((index, mappedItem) in items
+                .asSequence()
+                .map(mapFunction)
+                .withIndex()
+                .toList()) {
                 val chip = LayoutInflater.from(layout.context).inflate(R.layout.item_chip, layout, false) as Chip
 
                 chip.text = mappedItem
 
                 if (onClick != null) {
-                    chip.clicks()
+                    chip
+                        .clicks()
                         .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
                         .subscribe { onClick.invoke(items[index]) }
                 }

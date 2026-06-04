@@ -9,10 +9,11 @@ import me.proxer.app.util.extension.toPrefixedUrlOrNull
  * @author Ruben Gees
  */
 object AmazonPrimeVideoStreamResolver : StreamResolver() {
-
     override val name = "Amazon Prime Video"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime.link(id)
-        .buildSingle()
-        .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
+    override fun resolve(id: String): Single<StreamResolutionResult> =
+        api.anime
+            .link(id)
+            .buildSingle()
+            .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
 }

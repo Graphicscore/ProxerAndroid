@@ -17,6 +17,7 @@ import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding3.recyclerview.scrollEvents
@@ -35,7 +36,6 @@ import com.vanniktech.emoji.EmojiEditText
 import com.vanniktech.emoji.EmojiPopup
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.PagedContentFragment
 import me.proxer.app.profile.ProfileActivity
@@ -56,11 +56,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_chat) {
-
     companion object {
-        fun newInstance() = ChatFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            ChatFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<ChatViewModel> { parametersOf(chatRoomId) }
@@ -71,52 +71,70 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
     override val hostingActivity: ChatActivity
         get() = activity as ChatActivity
 
-    private val actionModeCallback: ActionMode.Callback = object : ActionMode.Callback {
-        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-            requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimary)
+    private val actionModeCallback: ActionMode.Callback =
+        object : ActionMode.Callback {
+            override fun onPrepareActionMode(
+                mode: ActionMode,
+                menu: Menu,
+            ): Boolean {
+                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimary)
 
-            innerAdapter.selectedMessages.let {
-                val user = storageHelper.user
+                innerAdapter.selectedMessages.let {
+                    val user = storageHelper.user
 
-                menu.findItem(R.id.reply).isVisible = it.size == 1 && it.first().userId != user?.id && user != null
-                menu.findItem(R.id.report).isVisible = it.size == 1 && it.first().userId != user?.id && user != null
+                    menu.findItem(R.id.reply).isVisible = it.size == 1 && it.first().userId != user?.id && user != null
+                    menu.findItem(R.id.report).isVisible = it.size == 1 && it.first().userId != user?.id && user != null
+                }
+
+                return false
             }
 
-            return false
-        }
+            override fun onActionItemClicked(
+                mode: ActionMode,
+                item: MenuItem,
+            ): Boolean {
+                when (item.itemId) {
+                    R.id.copy -> handleCopyClick()
+                    R.id.reply -> handleReplyClick()
+                    R.id.report -> handleReportClick()
+                    else -> return false
+                }
 
-        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-            when (item.itemId) {
-                R.id.copy -> handleCopyClick()
-                R.id.reply -> handleReplyClick()
-                R.id.report -> handleReportClick()
-                else -> return false
+                return true
             }
 
-            return true
+            override fun onCreateActionMode(
+                mode: ActionMode,
+                menu: Menu,
+            ): Boolean {
+                IconicsMenuInflaterUtil.inflate(
+                    mode.menuInflater,
+                    requireContext(),
+                    R.menu.fragment_chat_cab,
+                    menu,
+                    true,
+                )
+
+                return true
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode) {
+                actionMode = null
+
+                innerAdapter.clearSelection()
+                innerAdapter.notifyDataSetChanged()
+
+                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimaryDark)
+            }
         }
-
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-            IconicsMenuInflaterUtil.inflate(mode.menuInflater, requireContext(), R.menu.fragment_chat_cab, menu, true)
-
-            return true
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode) {
-            actionMode = null
-
-            innerAdapter.clearSelection()
-            innerAdapter.notifyDataSetChanged()
-
-            requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimaryDark)
-        }
-    }
 
     private val emojiPopup by unsafeLazy {
-        val popup = EmojiPopup.Builder.fromRootView(root)
-            .setOnEmojiPopupShownListener { updateInput() }
-            .setOnEmojiPopupDismissListener { updateInput() }
-            .build(messageInput)
+        val popup =
+            EmojiPopup.Builder
+                .fromRootView(root)
+                .setOnEmojiPopupShownListener { updateInput() }
+                .setOnEmojiPopupDismissListener { updateInput() }
+                .build(messageInput)
 
         popup
     }
@@ -150,7 +168,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
                     item.userId,
                     item.username,
                     item.image,
-                    if (view.drawable != null && item.image.isNotBlank()) view else null
+                    if (view.drawable != null && item.image.isNotBlank()) view else null,
                 )
             }
 
@@ -178,7 +196,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
             .subscribe {
                 getString(R.string.clipboard_title).let { title ->
                     requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-                        ClipData.newPlainText(title, it.toString())
+                        ClipData.newPlainText(title, it.toString()),
                     )
 
                     requireContext().toast(R.string.clipboard_status)
@@ -190,7 +208,10 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
             .subscribe { ProfileActivity.navigateTo(requireActivity(), username = it) }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         // Call getter as soon as possible to make keyboard detection work properly.
@@ -205,24 +226,28 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
 
         scrollToBottom.setIconicsImage(CommunityMaterial.Icon.cmd_chevron_down, 32, colorAttr = R.attr.colorOnSurface)
 
-        recyclerView.scrollEvents()
+        recyclerView
+            .scrollEvents()
             .skip(1)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { updateScrollToBottomVisibility() }
 
-        scrollToBottom.clicks()
+        scrollToBottom
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 recyclerView.stopScroll()
                 layoutManager.scrollToPositionWithOffset(0, 0)
             }
 
-        emojiButton.clicks()
+        emojiButton
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { emojiPopup.toggle() }
 
-        sendButton.clicks()
+        sendButton
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 messageInput.safeText.toString().trim().let { text ->
@@ -239,7 +264,8 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
                 }
             }
 
-        messageInput.textChanges()
+        messageInput
+            .textChanges()
             .skipInitialValue()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { message ->
@@ -264,17 +290,17 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
                         getString(R.string.error_chat_send_message, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
 
         viewModel.draft.observe(
             viewLifecycleOwner,
             Observer {
                 if (it != null && messageInput.safeText.isBlank()) messageInput.setText(it)
-            }
+            },
         )
     }
 
@@ -339,44 +365,48 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
             sendButton.isEnabled = false
             messageInput.isEnabled = false
 
-            messageInput.hint = when {
-                innerAdapter.isEmpty() -> getString(R.string.fragment_chat_loading_message)
-                isReadOnly -> getString(R.string.fragment_chat_read_only_message)
-                else -> getString(R.string.fragment_chat_login_required_message)
-            }
+            messageInput.hint =
+                when {
+                    innerAdapter.isEmpty() -> getString(R.string.fragment_chat_loading_message)
+                    isReadOnly -> getString(R.string.fragment_chat_read_only_message)
+                    else -> getString(R.string.fragment_chat_login_required_message)
+                }
         }
 
         updateIcons(!shouldEnabledInput)
     }
 
     private fun updateIcons(disabledColor: Boolean) {
-        val emojiButtonIcon: IIcon = when (emojiPopup.isShowing) {
-            true -> CommunityMaterial.Icon2.cmd_keyboard
-            false -> CommunityMaterial.Icon.cmd_emoticon
-        }
+        val emojiButtonIcon: IIcon =
+            when (emojiPopup.isShowing) {
+                true -> CommunityMaterial.Icon2.cmd_keyboard
+                false -> CommunityMaterial.Icon.cmd_emoticon
+            }
 
         emojiButton.setImageDrawable(
             IconicsDrawable(requireContext(), emojiButtonIcon).apply {
-                colorInt = when (disabledColor) {
-                    true -> requireContext().resolveColor(R.attr.colorIconDisabled)
-                    false -> requireContext().resolveColor(R.attr.colorIcon)
-                }
+                colorInt =
+                    when (disabledColor) {
+                        true -> requireContext().resolveColor(R.attr.colorIconDisabled)
+                        false -> requireContext().resolveColor(R.attr.colorIcon)
+                    }
 
                 paddingDp = 6
                 sizeDp = 32
-            }
+            },
         )
 
         sendButton.setImageDrawable(
             IconicsDrawable(requireContext(), CommunityMaterial.Icon3.cmd_send).apply {
-                colorInt = when (disabledColor) {
-                    true -> requireContext().resolveColor(R.attr.colorIconDisabled)
-                    false -> requireContext().resolveColor(R.attr.colorIcon)
-                }
+                colorInt =
+                    when (disabledColor) {
+                        true -> requireContext().resolveColor(R.attr.colorIconDisabled)
+                        false -> requireContext().resolveColor(R.attr.colorIcon)
+                    }
 
                 paddingDp = 4
                 sizeDp = 32
-            }
+            },
         )
     }
 
@@ -385,7 +415,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
         val content = innerAdapter.selectedMessages.joinToString(separator = "\n", transform = { it.message })
 
         requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-            ClipData.newPlainText(title, content)
+            ClipData.newPlainText(title, content),
         )
 
         requireContext().toast(R.string.clipboard_status)

@@ -10,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding3.recyclerview.scrollEvents
@@ -19,7 +20,6 @@ import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.base.BaseContentFragment
@@ -49,13 +49,13 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_episode) {
-
     companion object {
         private const val LANGUAGES_EXTRA = "languages"
 
-        fun newInstance() = EpisodeFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            EpisodeFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -76,13 +76,16 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
         get() = hostingActivity.category
 
     private var languages: Set<MediaLanguage>?
-        get() = requireArguments().getStringArrayList(LANGUAGES_EXTRA)
-            ?.map { ProxerUtils.toSafeApiEnum<MediaLanguage>(it) }
-            ?.toSet()
+        get() =
+            requireArguments()
+                .getStringArrayList(LANGUAGES_EXTRA)
+                ?.map { ProxerUtils.toSafeApiEnum<MediaLanguage>(it) }
+                ?.toSet()
         set(value) {
-            val stringLanguages = value
-                ?.let { enums -> enums.map { ProxerUtils.getSafeApiEnumName(it) } }
-                ?: emptyList()
+            val stringLanguages =
+                value
+                    ?.let { enums -> enums.map { ProxerUtils.getSafeApiEnumName(it) } }
+                    ?: emptyList()
 
             requireArguments().putStringArrayList(LANGUAGES_EXTRA, ArrayList(stringLanguages))
         }
@@ -105,28 +108,36 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
             .autoDisposable(this.scope())
             .subscribe { (language, episode) ->
                 when (episode.category) {
-                    Category.ANIME -> AnimeActivity.navigateTo(
-                        requireActivity(),
-                        id,
-                        episode.number,
-                        language.toAnimeLanguage(),
-                        name,
-                        episode.episodeAmount
-                    )
-                    Category.MANGA, Category.NOVEL -> MangaActivity.navigateTo(
-                        requireActivity(),
-                        id,
-                        episode.number,
-                        language.toGeneralLanguage(),
-                        episode.title,
-                        name,
-                        episode.episodeAmount
-                    )
+                    Category.ANIME -> {
+                        AnimeActivity.navigateTo(
+                            requireActivity(),
+                            id,
+                            episode.number,
+                            language.toAnimeLanguage(),
+                            name,
+                            episode.episodeAmount,
+                        )
+                    }
+
+                    Category.MANGA, Category.NOVEL -> {
+                        MangaActivity.navigateTo(
+                            requireActivity(),
+                            id,
+                            episode.number,
+                            language.toGeneralLanguage(),
+                            episode.title,
+                            name,
+                            episode.episodeAmount,
+                        )
+                    }
                 }
             }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)
@@ -138,27 +149,35 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
 
         scrollToBottom.setIconicsImage(CommunityMaterial.Icon.cmd_chevron_down, 32, colorAttr = R.attr.colorOnSurface)
 
-        recyclerView.scrollEvents()
+        recyclerView
+            .scrollEvents()
             .skip(1)
             .debounce(10, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { updateScrollToBottomVisibility() }
 
-        hostingActivity.headerHeightChanges()
+        hostingActivity
+            .headerHeightChanges()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { scrollToBottom.translationY = it }
 
-        scrollToBottom.clicks()
+        scrollToBottom
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
-                val indexBasedUserProgress = viewModel.data.value?.firstOrNull()?.userProgress?.minus(1) ?: 0
+                val indexBasedUserProgress =
+                    viewModel.data.value
+                        ?.firstOrNull()
+                        ?.userProgress
+                        ?.minus(1) ?: 0
                 val currentPosition = layoutManager.findLastVisibleItemPosition()
 
-                val targetPosition = when (currentPosition >= indexBasedUserProgress) {
-                    true -> if (adapter.itemCount == 0) 0 else adapter.itemCount - 1
-                    false -> indexBasedUserProgress
-                }
+                val targetPosition =
+                    when (currentPosition >= indexBasedUserProgress) {
+                        true -> if (adapter.itemCount == 0) 0 else adapter.itemCount - 1
+                        false -> indexBasedUserProgress
+                    }
 
                 hostingActivity.collapse()
                 recyclerView.stopScroll()
@@ -173,7 +192,7 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
 
                     updateBookmarkErrorButton()
                 }
-            }
+            },
         )
 
         viewModel.bookmarkData.observe(
@@ -182,7 +201,7 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
                 it?.let {
                     hostingActivity.snackbar(R.string.fragment_set_user_info_success)
                 }
-            }
+            },
         )
 
         viewModel.bookmarkError.observe(
@@ -193,10 +212,10 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
                         getString(R.string.error_set_user_info, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
 
         storageHelper.isLoggedInObservable
@@ -239,8 +258,8 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
                         Category.MANGA, Category.NOVEL -> R.string.error_no_data_chapters
                     },
                     R.string.fragment_media_info_bookmark,
-                    ButtonAction.BOOKMARK
-                )
+                    ButtonAction.BOOKMARK,
+                ),
             )
         }
 
@@ -265,7 +284,8 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
             if (!safeLanguages.isNullOrEmpty() && safeCategory != null && storageHelper.isLoggedIn) {
                 errorButton.isVisible = true
 
-                errorButton.clicks()
+                errorButton
+                    .clicks()
                     .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
                     .subscribe {
                         if (safeLanguages.size == 1) {

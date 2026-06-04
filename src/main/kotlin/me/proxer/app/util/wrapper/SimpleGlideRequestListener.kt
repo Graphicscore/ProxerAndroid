@@ -9,12 +9,11 @@ import com.bumptech.glide.request.target.Target
  * @author Ruben Gees
  */
 abstract class SimpleGlideRequestListener<R> : RequestListener<R> {
-
     override fun onLoadFailed(
         error: GlideException?,
         model: Any?,
         target: Target<R>,
-        isFirstResource: Boolean
+        isFirstResource: Boolean,
     ): Boolean = false
 
     override fun onResourceReady(
@@ -22,6 +21,6 @@ abstract class SimpleGlideRequestListener<R> : RequestListener<R> {
         model: Any,
         target: Target<R & Any>,
         dataSource: DataSource,
-        isFirstResource: Boolean
+        isFirstResource: Boolean,
     ): Boolean = false
 }

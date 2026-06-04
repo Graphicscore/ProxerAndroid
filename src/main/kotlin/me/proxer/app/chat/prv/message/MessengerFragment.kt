@@ -59,16 +59,19 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_messenger) {
-
     companion object {
         private const val CONFERENCE_ARGUEMNT = "conference"
         private const val INITIAL_MESSAGE_ARGUEMNT = "initial_meesage"
 
-        fun newInstance(conference: LocalConference, initialMessage: String? = null) = MessengerFragment().apply {
-            arguments = bundleOf(
-                CONFERENCE_ARGUEMNT to conference,
-                INITIAL_MESSAGE_ARGUEMNT to initialMessage
-            )
+        fun newInstance(
+            conference: LocalConference,
+            initialMessage: String? = null,
+        ) = MessengerFragment().apply {
+            arguments =
+                bundleOf(
+                    CONFERENCE_ARGUEMNT to conference,
+                    INITIAL_MESSAGE_ARGUEMNT to initialMessage,
+                )
         }
     }
 
@@ -77,54 +80,66 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
     override val emptyDataMessage = R.string.error_no_data_chat
     override val isSwipeToRefreshEnabled = false
 
-    private val actionModeCallback: ActionMode.Callback = object : ActionMode.Callback {
-        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-            requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimary)
+    private val actionModeCallback: ActionMode.Callback =
+        object : ActionMode.Callback {
+            override fun onPrepareActionMode(
+                mode: ActionMode,
+                menu: Menu,
+            ): Boolean {
+                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimary)
 
-            innerAdapter.selectedMessages.let {
-                menu.findItem(R.id.reply).isVisible = it.size == 1 && it.first().userId != storageHelper.user?.id
+                innerAdapter.selectedMessages.let {
+                    menu.findItem(R.id.reply).isVisible = it.size == 1 && it.first().userId != storageHelper.user?.id
+                }
+
+                return false
             }
 
-            return false
-        }
+            override fun onActionItemClicked(
+                mode: ActionMode,
+                item: MenuItem,
+            ): Boolean {
+                when (item.itemId) {
+                    R.id.copy -> handleCopyClick()
+                    R.id.reply -> handleReplyClick()
+                    else -> return false
+                }
 
-        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-            when (item.itemId) {
-                R.id.copy -> handleCopyClick()
-                R.id.reply -> handleReplyClick()
-                else -> return false
+                return true
             }
 
-            return true
+            override fun onCreateActionMode(
+                mode: ActionMode,
+                menu: Menu,
+            ): Boolean {
+                IconicsMenuInflaterUtil.inflate(
+                    mode.menuInflater,
+                    requireContext(),
+                    R.menu.fragment_messenger_cab,
+                    menu,
+                    true,
+                )
+
+                return true
+            }
+
+            override fun onDestroyActionMode(mode: ActionMode) {
+                actionMode = null
+
+                innerAdapter.clearSelection()
+                innerAdapter.notifyDataSetChanged()
+
+                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimaryDark)
+            }
         }
-
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-            IconicsMenuInflaterUtil.inflate(
-                mode.menuInflater,
-                requireContext(),
-                R.menu.fragment_messenger_cab,
-                menu,
-                true
-            )
-
-            return true
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode) {
-            actionMode = null
-
-            innerAdapter.clearSelection()
-            innerAdapter.notifyDataSetChanged()
-
-            requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimaryDark)
-        }
-    }
 
     private val emojiPopup by unsafeLazy {
-        val popup = EmojiPopup.Builder.fromRootView(root)
-            .setOnEmojiPopupShownListener { updateInput() }
-            .setOnEmojiPopupDismissListener { updateInput() }
-            .build(messageInput)
+        val popup =
+            EmojiPopup.Builder
+                .fromRootView(root)
+                .setOnEmojiPopupShownListener { updateInput() }
+                .setOnEmojiPopupDismissListener { updateInput() }
+                .build(messageInput)
 
         popup
     }
@@ -184,7 +199,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
             .subscribe {
                 getString(R.string.clipboard_title).let { title ->
                     requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-                        ClipData.newPlainText(title, it.toString())
+                        ClipData.newPlainText(title, it.toString()),
                     )
 
                     requireContext().toast(R.string.clipboard_status)
@@ -198,7 +213,10 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         // Call getter as soon as possible to make keyboard detection work properly.
@@ -213,17 +231,18 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
             viewLifecycleOwner,
             Observer {
                 conference = it
-            }
+            },
         )
 
         viewModel.deleted.observe(
             viewLifecycleOwner,
             Observer {
                 requireActivity().finish()
-            }
+            },
         )
 
-        toolbar.clicks()
+        toolbar
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 when (conference.isGroup) {
@@ -234,24 +253,28 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
 
         scrollToBottom.setIconicsImage(CommunityMaterial.Icon.cmd_chevron_down, 32, colorAttr = R.attr.colorOnSurface)
 
-        recyclerView.scrollEvents()
+        recyclerView
+            .scrollEvents()
             .skip(1)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { updateScrollToBottomVisibility() }
 
-        scrollToBottom.clicks()
+        scrollToBottom
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 recyclerView.stopScroll()
                 layoutManager.scrollToPositionWithOffset(0, 0)
             }
 
-        emojiButton.clicks()
+        emojiButton
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { emojiPopup.toggle() }
 
-        sendButton.clicks()
+        sendButton
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 messageInput.text.toString().trim().let { text ->
@@ -268,7 +291,8 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
                 }
             }
 
-        messageInput.textChanges()
+        messageInput
+            .textChanges()
             .skipInitialValue()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { message ->
@@ -285,11 +309,14 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
             viewLifecycleOwner,
             Observer {
                 if (it != null && messageInput.safeText.isBlank()) messageInput.setText(it)
-            }
+            },
         )
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_messenger, menu, true)
 
         super.onCreateOptionsMenu(menu, inflater)
@@ -308,7 +335,8 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
 
         MessengerNotifications.cancel(requireContext())
 
-        bus.register(MessengerFragmentPingEvent::class.java)
+        bus
+            .register(MessengerFragmentPingEvent::class.java)
             .autoDisposable(this.scope())
             .subscribe()
     }
@@ -368,43 +396,47 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
             sendButton.isEnabled = false
             messageInput.isEnabled = false
 
-            messageInput.hint = when {
-                innerAdapter.isEmpty() -> getString(R.string.fragment_chat_loading_message)
-                else -> getString(R.string.fragment_chat_login_required_message)
-            }
+            messageInput.hint =
+                when {
+                    innerAdapter.isEmpty() -> getString(R.string.fragment_chat_loading_message)
+                    else -> getString(R.string.fragment_chat_login_required_message)
+                }
         }
 
         updateIcons(!shouldEnabledInput)
     }
 
     private fun updateIcons(disabledColor: Boolean) {
-        val emojiButtonIcon: IIcon = when (emojiPopup.isShowing) {
-            true -> CommunityMaterial.Icon2.cmd_keyboard
-            false -> CommunityMaterial.Icon.cmd_emoticon
-        }
+        val emojiButtonIcon: IIcon =
+            when (emojiPopup.isShowing) {
+                true -> CommunityMaterial.Icon2.cmd_keyboard
+                false -> CommunityMaterial.Icon.cmd_emoticon
+            }
 
         emojiButton.setImageDrawable(
             IconicsDrawable(requireContext(), emojiButtonIcon).apply {
-                colorInt = when (disabledColor) {
-                    true -> requireContext().resolveColor(R.attr.colorIconDisabled)
-                    false -> requireContext().resolveColor(R.attr.colorIcon)
-                }
+                colorInt =
+                    when (disabledColor) {
+                        true -> requireContext().resolveColor(R.attr.colorIconDisabled)
+                        false -> requireContext().resolveColor(R.attr.colorIcon)
+                    }
 
                 paddingDp = 6
                 sizeDp = 32
-            }
+            },
         )
 
         sendButton.setImageDrawable(
             IconicsDrawable(requireContext(), CommunityMaterial.Icon3.cmd_send).apply {
-                colorInt = when (disabledColor) {
-                    true -> requireContext().resolveColor(R.attr.colorIconDisabled)
-                    false -> requireContext().resolveColor(R.attr.colorSecondary)
-                }
+                colorInt =
+                    when (disabledColor) {
+                        true -> requireContext().resolveColor(R.attr.colorIconDisabled)
+                        false -> requireContext().resolveColor(R.attr.colorSecondary)
+                    }
 
                 paddingDp = 4
                 sizeDp = 32
-            }
+            },
         )
     }
 
@@ -413,7 +445,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         val content = innerAdapter.selectedMessages.joinToString(separator = "\n", transform = { it.message })
 
         requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-            ClipData.newPlainText(title, content)
+            ClipData.newPlainText(title, content),
         )
 
         requireContext().toast(R.string.clipboard_status)
@@ -428,7 +460,8 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         messageInput.setSelection(messageInput.safeText.length)
         messageInput.requestFocus()
 
-        requireContext().getSystemService<InputMethodManager>()
+        requireContext()
+            .getSystemService<InputMethodManager>()
             ?.showSoftInput(messageInput, InputMethodManager.SHOW_IMPLICIT)
 
         actionMode?.finish()

@@ -46,9 +46,8 @@ import okhttp3.HttpUrl
 class MessengerAdapter(
     savedInstanceState: Bundle?,
     private val isGroup: Boolean,
-    private val storageHelper: StorageHelper
+    private val storageHelper: StorageHelper,
 ) : BaseAdapter<LocalMessage, MessageViewHolder>() {
-
     private companion object {
         private const val IS_SELECTING_STATE = "chat_is_selecting"
         private const val TIME_DISPLAY_STATE = "chat_time_display"
@@ -62,11 +61,12 @@ class MessengerAdapter(
     val mentionsClickSubject: PublishSubject<String> = PublishSubject.create()
 
     val selectedMessages: List<LocalMessage>
-        get() = data
-            .asSequence()
-            .filter { messageSelectionMap[it.id.toString()] == true }
-            .sortedBy { it.date }
-            .toList()
+        get() =
+            data
+                .asSequence()
+                .filter { messageSelectionMap[it.id.toString()] == true }
+                .sortedBy { it.date }
+                .toList()
 
     val enqueuedMessageCount: Int
         get() = data.takeWhile { it.id < 0 }.size
@@ -79,15 +79,17 @@ class MessengerAdapter(
     private var isSelecting = false
 
     init {
-        messageSelectionMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(IS_SELECTING_STATE)
-        }
+        messageSelectionMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(IS_SELECTING_STATE)
+            }
 
-        timeDisplayMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(TIME_DISPLAY_STATE)
-        }
+        timeDisplayMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(TIME_DISPLAY_STATE)
+            }
 
         isSelecting = savedInstanceState?.getBoolean(MESSAGE_SELECTION_STATE) == true
 
@@ -104,47 +106,55 @@ class MessengerAdapter(
             result = MessageType.ACTION.type
         } else {
             when {
-                position - 1 < 0 ->
-                    result = if (position + 1 >= itemCount) {
-                        MessageType.SINGLE.type // The item is the only one.
-                    } else {
-                        val next = data[position + 1]
-
-                        if (next.userId == current.userId && next.action == MessageAction.NONE) {
-                            MessageType.BOTTOM.type /* The item is the bottommost item and has an item from the same
-                                                   user above. */
+                position - 1 < 0 -> {
+                    result =
+                        if (position + 1 >= itemCount) {
+                            MessageType.SINGLE.type // The item is the only one.
                         } else {
-                            MessageType.SINGLE.type /* The item is the bottommost item and doesn't have an item from
-                                                   the same user above. */
+                            val next = data[position + 1]
+
+                            if (next.userId == current.userId && next.action == MessageAction.NONE) {
+                                // The item is the bottommost item and has an item from the same user above.
+                                MessageType.BOTTOM.type
+                            } else {
+                                // The item is the bottommost item and doesn't have an item from the same user above.
+                                MessageType.SINGLE.type
+                            }
                         }
-                    }
+                }
+
                 position + 1 >= itemCount -> {
                     val previous = data[position - 1]
 
-                    result = if (previous.userId == current.userId && previous.action == MessageAction.NONE) {
-                        MessageType.TOP.type // The item is the topmost item and has an item from the same user beneath.
-                    } else {
-                        MessageType.SINGLE.type /* The item is the topmost item and doesn't have an item from the
-                                                   same user beneath. */
-                    }
+                    result =
+                        if (previous.userId == current.userId && previous.action == MessageAction.NONE) {
+                            // The item is the topmost item and has an item from the same user beneath.
+                            MessageType.TOP.type
+                        } else {
+                            // The item is the topmost item and doesn't have an item from the same user beneath.
+                            MessageType.SINGLE.type
+                        }
                 }
+
                 else -> {
                     val previous = data[position - 1]
                     val next = data[position + 1]
 
-                    result = if (previous.userId == current.userId && previous.action == MessageAction.NONE) {
-                        if (next.userId == current.userId && next.action == MessageAction.NONE) {
-                            MessageType.INNER.type // The item is in between two other items from the same user.
+                    result =
+                        if (previous.userId == current.userId && previous.action == MessageAction.NONE) {
+                            if (next.userId == current.userId && next.action == MessageAction.NONE) {
+                                MessageType.INNER.type // The item is in between two other items from the same user.
+                            } else {
+                                MessageType.TOP.type // The item has an item from the same user beneath but not above.
+                            }
                         } else {
-                            MessageType.TOP.type // The item has an item from the same user beneath but not above.
+                            if (next.userId == current.userId && next.action == MessageAction.NONE) {
+                                // The item has an item from the same user above but not beneath.
+                                MessageType.BOTTOM.type
+                            } else {
+                                MessageType.SINGLE.type // The item stands alone.
+                            }
                         }
-                    } else {
-                        if (next.userId == current.userId && next.action == MessageAction.NONE) {
-                            MessageType.BOTTOM.type // The item has an item from the same user above but not beneath.
-                        } else {
-                            MessageType.SINGLE.type // The item stands alone.
-                        }
-                    }
                 }
             }
 
@@ -156,27 +166,43 @@ class MessengerAdapter(
         return result
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): MessageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
 
         return when (MessageType.from(viewType)) {
-            MessageType.TOP, MessageType.SINGLE ->
+            MessageType.TOP, MessageType.SINGLE -> {
                 if (isGroup) {
                     MessageTitleViewHolder(inflater.inflate(R.layout.item_message_single, parent, false))
                 } else {
                     MessageViewHolder(inflater.inflate(R.layout.item_message, parent, false))
                 }
-            MessageType.BOTTOM, MessageType.INNER -> MessageViewHolder(
-                inflater.inflate(R.layout.item_message, parent, false)
-            )
-            MessageType.ACTION -> ActionViewHolder(
-                inflater.inflate(R.layout.item_message_action, parent, false)
-            )
-            else -> MessageViewHolder(inflater.inflate(R.layout.item_message_self, parent, false))
+            }
+
+            MessageType.BOTTOM, MessageType.INNER -> {
+                MessageViewHolder(
+                    inflater.inflate(R.layout.item_message, parent, false),
+                )
+            }
+
+            MessageType.ACTION -> {
+                ActionViewHolder(
+                    inflater.inflate(R.layout.item_message_action, parent, false),
+                )
+            }
+
+            else -> {
+                MessageViewHolder(inflater.inflate(R.layout.item_message_self, parent, false))
+            }
         }
     }
 
-    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: MessageViewHolder,
+        position: Int,
+    ) {
         val margins = getMarginsForPosition(position)
         val context = holder.itemView.context
 
@@ -216,9 +242,15 @@ class MessengerAdapter(
         messageSelectionSubject.onNext(messageSelectionMap.size)
     }
 
-    override fun areItemsTheSame(old: LocalMessage, new: LocalMessage) = old.id == new.id
+    override fun areItemsTheSame(
+        old: LocalMessage,
+        new: LocalMessage,
+    ) = old.id == new.id
 
-    override fun areContentsTheSame(old: LocalMessage, new: LocalMessage) = old.userId == new.userId &&
+    override fun areContentsTheSame(
+        old: LocalMessage,
+        new: LocalMessage,
+    ) = old.userId == new.userId &&
         old.action == new.action && old.date == new.date && old.message == new.message
 
     override fun saveInstanceState(outState: Bundle) {
@@ -241,18 +273,22 @@ class MessengerAdapter(
                 marginTop = 0
                 marginBottom = 0
             }
+
             MessageType.SINGLE, MessageType.SELF_SINGLE -> {
                 marginTop = 6
                 marginBottom = 6
             }
+
             MessageType.TOP, MessageType.SELF_TOP -> {
                 marginTop = 6
                 marginBottom = 0
             }
+
             MessageType.BOTTOM, MessageType.SELF_BOTTOM -> {
                 marginTop = 0
                 marginBottom = 6
             }
+
             MessageType.ACTION -> {
                 marginTop = 12
                 marginBottom = 12
@@ -262,8 +298,9 @@ class MessengerAdapter(
         return marginTop to if (position == 0) 0 else marginBottom
     }
 
-    open inner class MessageViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    open inner class MessageViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val root: ViewGroup by bindView(R.id.root)
         internal val container: CardView by bindView(R.id.container)
         internal val text: BBCodeView by bindView(R.id.text)
@@ -275,17 +312,23 @@ class MessengerAdapter(
                 IconicsDrawable(text.context, CommunityMaterial.Icon.cmd_clock_outline).apply {
                     colorInt = text.context.resolveColor(R.attr.colorIcon)
                     sizeDp = 15
-                }
+                },
             )
         }
 
-        internal open fun bind(message: LocalMessage, marginTop: Int, marginBottom: Int) {
-            container.clicks()
+        internal open fun bind(
+            message: LocalMessage,
+            marginTop: Int,
+            marginBottom: Int,
+        ) {
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe { onContainerClick(root, it) }
 
-            container.longClicks { onContainerLongClickHandled(root) }
+            container
+                .longClicks { onContainerLongClickHandled(root) }
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe { onContainerLongClick(root, it) }
@@ -298,7 +341,10 @@ class MessengerAdapter(
             applyMargins(marginTop, marginBottom)
         }
 
-        internal open fun onContainerClick(v: View, message: LocalMessage) {
+        internal open fun onContainerClick(
+            v: View,
+            message: LocalMessage,
+        ) {
             val id = message.id.toString()
 
             if (isSelecting) {
@@ -319,7 +365,10 @@ class MessengerAdapter(
             layoutManager?.requestSimpleAnimationsInNextLayout()
         }
 
-        internal open fun onContainerLongClick(v: View, message: LocalMessage) {
+        internal open fun onContainerLongClick(
+            v: View,
+            message: LocalMessage,
+        ) {
             val id = message.id.toString()
 
             if (!isSelecting) {
@@ -332,9 +381,7 @@ class MessengerAdapter(
             }
         }
 
-        internal open fun onContainerLongClickHandled(v: View): Boolean {
-            return !isSelecting
-        }
+        internal open fun onContainerLongClickHandled(v: View): Boolean = !isSelecting
 
         internal open fun applyMessage(message: LocalMessage) {
             text.tree = message.styledMessage
@@ -344,10 +391,11 @@ class MessengerAdapter(
             time.text = message.date.toLocalDateTime().distanceInWordsToNow(time.context)
         }
 
-        internal open fun applySendStatus(message: LocalMessage) = when (message.id < 0) {
-            true -> sendStatus?.isVisible = true
-            false -> sendStatus?.isGone = true
-        }
+        internal open fun applySendStatus(message: LocalMessage) =
+            when (message.id < 0) {
+                true -> sendStatus?.isVisible = true
+                false -> sendStatus?.isGone = true
+            }
 
         internal open fun applySelection(message: LocalMessage) {
             container.setCardBackgroundColor(
@@ -355,8 +403,8 @@ class MessengerAdapter(
                     when {
                         messageSelectionMap[message.id.toString()] == true -> R.attr.colorSelectedSurface
                         else -> R.attr.colorSurface
-                    }
-                )
+                    },
+                ),
             )
         }
 
@@ -364,7 +412,10 @@ class MessengerAdapter(
             time.isVisible = timeDisplayMap[message.id.toString()] == true
         }
 
-        internal open fun applyMargins(marginTop: Int, marginBottom: Int) {
+        internal open fun applyMargins(
+            marginTop: Int,
+            marginBottom: Int,
+        ) {
             root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = marginTop
                 bottomMargin = marginBottom
@@ -372,8 +423,9 @@ class MessengerAdapter(
         }
     }
 
-    internal inner class MessageTitleViewHolder(itemView: View) : MessageViewHolder(itemView) {
-
+    internal inner class MessageTitleViewHolder(
+        itemView: View,
+    ) : MessageViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
@@ -383,10 +435,15 @@ class MessengerAdapter(
             image.isGone = true
         }
 
-        override fun bind(message: LocalMessage, marginTop: Int, marginBottom: Int) {
+        override fun bind(
+            message: LocalMessage,
+            marginTop: Int,
+            marginBottom: Int,
+        ) {
             super.bind(message, marginTop, marginBottom)
 
-            titleContainer.clicks()
+            titleContainer
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(titleClickSubject)
@@ -396,9 +453,13 @@ class MessengerAdapter(
         }
     }
 
-    internal inner class ActionViewHolder(itemView: View) : MessageViewHolder(itemView) {
-
-        override fun onContainerClick(v: View, message: LocalMessage) {
+    internal inner class ActionViewHolder(
+        itemView: View,
+    ) : MessageViewHolder(itemView) {
+        override fun onContainerClick(
+            v: View,
+            message: LocalMessage,
+        ) {
             val id = message.id.toString()
 
             timeDisplayMap.putOrRemove(id)
@@ -408,7 +469,10 @@ class MessengerAdapter(
             layoutManager?.requestSimpleAnimationsInNextLayout()
         }
 
-        override fun onContainerLongClick(v: View, message: LocalMessage) = Unit
+        override fun onContainerLongClick(
+            v: View,
+            message: LocalMessage,
+        ) = Unit
 
         override fun onContainerLongClickHandled(v: View) = false
 
@@ -419,10 +483,19 @@ class MessengerAdapter(
         }
     }
 
-    private enum class MessageType(val type: Int) {
-        INNER(0), SINGLE(1), TOP(2), BOTTOM(3),
-        SELF_INNER(4), SELF_SINGLE(5), SELF_TOP(6), SELF_BOTTOM(7),
-        ACTION(8);
+    private enum class MessageType(
+        val type: Int,
+    ) {
+        INNER(0),
+        SINGLE(1),
+        TOP(2),
+        BOTTOM(3),
+        SELF_INNER(4),
+        SELF_SINGLE(5),
+        SELF_TOP(6),
+        SELF_BOTTOM(7),
+        ACTION(8),
+        ;
 
         companion object {
             fun from(type: Int) = values().firstOrNull { it.type == type } ?: error("Unknown type: $type")

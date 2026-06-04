@@ -54,24 +54,25 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun TvBrowseScreen(
     onMediaClick: (id: String, name: String) -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
 ) {
-    val viewModel: MediaListViewModel = koinViewModel {
-        parametersOf(
-            MediaSearchSortCriteria.RATING,
-            MediaType.ANIMESERIES,
-            null as String?,
-            null as Language?,
-            emptyList<LocalTag>(),
-            emptyList<LocalTag>(),
-            enumSetOf<FskConstraint>(),
-            emptyList<LocalTag>(),
-            emptyList<LocalTag>(),
-            null as TagRateFilter?,
-            null as TagSpoilerFilter?,
-            null as Boolean?
-        )
-    }
+    val viewModel: MediaListViewModel =
+        koinViewModel {
+            parametersOf(
+                MediaSearchSortCriteria.RATING,
+                MediaType.ANIMESERIES,
+                null as String?,
+                null as Language?,
+                emptyList<LocalTag>(),
+                emptyList<LocalTag>(),
+                enumSetOf<FskConstraint>(),
+                emptyList<LocalTag>(),
+                emptyList<LocalTag>(),
+                null as TagRateFilter?,
+                null as TagSpoilerFilter?,
+                null as Boolean?,
+            )
+        }
 
     val entries by viewModel.data.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
@@ -98,11 +99,12 @@ fun TvBrowseScreen(
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text("ProxerTV", fontSize = 24.sp, color = MaterialTheme.colorScheme.onBackground)
             OutlinedButton(onClick = onSearchClick) { Text("Search") }
@@ -114,15 +116,17 @@ fun TvBrowseScreen(
                     CircularProgressIndicator()
                 }
             }
+
             error != null -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
                         error = error!!,
                         onLoginClick = { context.startActivity<TvLoginActivity>() },
-                        onRetryClick = { viewModel.load() }
+                        onRetryClick = { viewModel.load() },
                     )
                 }
             }
+
             else -> {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(5),
@@ -130,7 +134,7 @@ fun TvBrowseScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
                     items(entries ?: emptyList()) { entry ->
                         TvMediaCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
@@ -138,10 +142,11 @@ fun TvBrowseScreen(
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         if (isLoading == true && entries?.isNotEmpty() == true) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator()
                             }
@@ -154,34 +159,40 @@ fun TvBrowseScreen(
 }
 
 @Composable
-fun TvMediaCard(entry: MediaListEntry, onClick: () -> Unit) {
+fun TvMediaCard(
+    entry: MediaListEntry,
+    onClick: () -> Unit,
+) {
     Surface(
         onClick = onClick,
-        modifier = Modifier
-            .width(180.dp)
-            .height(270.dp)
+        modifier =
+            Modifier
+                .width(180.dp)
+                .height(270.dp),
     ) {
         Column {
             AsyncImage(
                 model = ProxerUrls.entryImage(entry.id).toString(),
                 contentDescription = entry.name,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
             )
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(8.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(8.dp),
             ) {
                 Text(
                     text = entry.name,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.sp,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

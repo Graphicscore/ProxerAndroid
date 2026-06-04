@@ -8,8 +8,11 @@ import android.content.Context
  * @author Ruben Gees
  */
 class ScheduleWidgetProvider : AppWidgetProvider() {
-
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+    ) {
         ScheduleWidgetUpdateWorker.enqueueWork()
     }
 }

@@ -14,25 +14,25 @@ import okhttp3.Request
  * @author Ruben Gees
  */
 object ProxerStreamResolver : StreamResolver() {
-
     private val regex = Regex("<source type=\"(.*?)\" src=\"(.*?)\">")
 
     override val name = "Proxer-Stream"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> {
-        return api.anime.vastLink(id)
+    override fun resolve(id: String): Single<StreamResolutionResult> =
+        api.anime
+            .vastLink(id)
             .buildSingle()
             .flatMap { (link, adTag) ->
                 client
                     .newCall(
-                        Request.Builder()
+                        Request
+                            .Builder()
                             .get()
                             .url(link.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
                             .header("User-Agent", USER_AGENT)
                             .header("Connection", "close")
-                            .build()
-                    )
-                    .toBodySingle()
+                            .build(),
+                    ).toBodySingle()
                     .map {
                         val regexResult = regex.find(it) ?: throw StreamResolutionException()
 
@@ -44,5 +44,4 @@ object ProxerStreamResolver : StreamResolver() {
                         StreamResolutionResult.Video(url, type, adTag = adTagUri)
                     }
             }
-    }
 }

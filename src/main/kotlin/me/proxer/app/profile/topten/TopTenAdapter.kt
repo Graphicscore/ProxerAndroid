@@ -9,12 +9,12 @@ import android.widget.TextView
 import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -28,7 +28,6 @@ import me.proxer.library.util.ProxerUrls
  * @author Ruben Gees
  */
 class TopTenAdapter : BaseAdapter<LocalTopTenEntry, ViewHolder>() {
-
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<Pair<ImageView, LocalTopTenEntry>> = PublishSubject.create()
     val deleteSubject: PublishSubject<LocalTopTenEntry> = PublishSubject.create()
@@ -37,11 +36,15 @@ class TopTenAdapter : BaseAdapter<LocalTopTenEntry, ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_top_ten_entry, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_top_ten_entry, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -51,8 +54,9 @@ class TopTenAdapter : BaseAdapter<LocalTopTenEntry, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
@@ -63,7 +67,8 @@ class TopTenAdapter : BaseAdapter<LocalTopTenEntry, ViewHolder>() {
         }
 
         fun bind(item: LocalTopTenEntry) {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
@@ -75,7 +80,8 @@ class TopTenAdapter : BaseAdapter<LocalTopTenEntry, ViewHolder>() {
             if (item is LocalTopTenEntry.Ucp) {
                 deleteButton.isVisible = true
 
-                deleteButton.clicks()
+                deleteButton
+                    .clicks()
                     .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                     .autoDisposable(this)
                     .subscribe(deleteSubject)

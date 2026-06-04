@@ -17,10 +17,10 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ThemeDialog : BaseDialog() {
-
     companion object {
-        fun show(activity: AppCompatActivity) = ThemeDialog()
-            .show(activity.supportFragmentManager, "theme_dialog")
+        fun show(activity: AppCompatActivity) =
+            ThemeDialog()
+                .show(activity.supportFragmentManager, "theme_dialog")
     }
 
     private val colorList by bindView<RecyclerView>(R.id.colorList)
@@ -34,25 +34,26 @@ class ThemeDialog : BaseDialog() {
         adapter = ThemeAdapter(preferenceHelper.themeContainer)
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .noAutoDismiss()
-        .title(R.string.dialog_theme_title)
-        .positiveButton(R.string.dialog_theme_positive) {
-            val theme = adapter.selected
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .noAutoDismiss()
+            .title(R.string.dialog_theme_title)
+            .positiveButton(R.string.dialog_theme_positive) {
+                val theme = adapter.selected
 
-            val variant = when (val id = nightRadioGroup.checkedRadioButtonId) {
-                R.id.systemButton -> ThemeVariant.SYSTEM
-                R.id.lightButton -> ThemeVariant.LIGHT
-                R.id.darkButton -> ThemeVariant.DARK
-                else -> error("Unknown radio button id: $id")
-            }
+                val variant =
+                    when (val id = nightRadioGroup.checkedRadioButtonId) {
+                        R.id.systemButton -> ThemeVariant.SYSTEM
+                        R.id.lightButton -> ThemeVariant.LIGHT
+                        R.id.darkButton -> ThemeVariant.DARK
+                        else -> error("Unknown radio button id: $id")
+                    }
 
-            preferenceHelper.themeContainer = ThemeContainer(theme, variant)
+                preferenceHelper.themeContainer = ThemeContainer(theme, variant)
 
-            dismiss()
-        }
-        .negativeButton(R.string.cancel) { it.dismiss() }
-        .customView(R.layout.dialog_theme)
+                dismiss()
+            }.negativeButton(R.string.cancel) { it.dismiss() }
+            .customView(R.layout.dialog_theme)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -66,7 +67,7 @@ class ThemeDialog : BaseDialog() {
                 ThemeVariant.LIGHT -> R.id.lightButton
                 ThemeVariant.DARK -> R.id.darkButton
                 ThemeVariant.SYSTEM -> R.id.systemButton
-            }
+            },
         )
     }
 }

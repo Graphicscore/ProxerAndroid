@@ -14,26 +14,30 @@ import me.proxer.app.R
  * @author Ruben Gees
  */
 object TaskDescriptionCompat {
-
-    fun setTaskDescription(activity: Activity, @ColorInt primaryColor: Int) {
-        val activityInfo = activity.packageManager.getActivityInfo(
-            activity.componentName,
-            PackageManager.GET_META_DATA
-        )
-
-        val taskDescription = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            ActivityManager.TaskDescription(
-                activity.getString(R.string.app_name),
-                activityInfo.icon,
-                primaryColor
+    fun setTaskDescription(
+        activity: Activity,
+        @ColorInt primaryColor: Int,
+    ) {
+        val activityInfo =
+            activity.packageManager.getActivityInfo(
+                activity.componentName,
+                PackageManager.GET_META_DATA,
             )
-        } else {
-            ActivityManager.TaskDescription(
-                activity.getString(R.string.app_name),
-                BitmapFactory.decodeResource(activity.resources, activityInfo.icon),
-                primaryColor
-            )
-        }
+
+        val taskDescription =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                ActivityManager.TaskDescription(
+                    activity.getString(R.string.app_name),
+                    activityInfo.icon,
+                    primaryColor,
+                )
+            } else {
+                ActivityManager.TaskDescription(
+                    activity.getString(R.string.app_name),
+                    BitmapFactory.decodeResource(activity.resources, activityInfo.icon),
+                    primaryColor,
+                )
+            }
 
         activity.setTaskDescription(taskDescription)
     }

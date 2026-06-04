@@ -18,58 +18,68 @@ import java.util.regex.Pattern.quote
  * @author Ruben Gees
  */
 object DailymotionStreamResolver : StreamResolver() {
-
     private val regex = Regex("\"qualities\":(${quote("{")}.+${quote("}")}${quote("]")}${quote("}")}),")
 
     override val name = "Dailymotion"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> {
-        return api.anime.link(id)
+    override fun resolve(id: String): Single<StreamResolutionResult> =
+        api.anime
+            .link(id)
             .buildSingle()
             .flatMap { url ->
-                client.newCall(
-                    Request.Builder()
-                        .get()
-                        .url(url.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
-                        .header("User-Agent", GENERIC_USER_AGENT)
-                        .header("Connection", "close")
-                        .build()
-                )
-                    .toBodySingle()
-            }
-            .map { html ->
+                client
+                    .newCall(
+                        Request
+                            .Builder()
+                            .get()
+                            .url(url.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
+                            .header("User-Agent", GENERIC_USER_AGENT)
+                            .header("Connection", "close")
+                            .build(),
+                    ).toBodySingle()
+            }.map { html ->
                 val qualitiesJson = regex.find(html)?.value ?: throw StreamResolutionException()
 
-                val qualityMap = try {
-                    moshi.adapter(DailymotionQualityMap::class.java)
-                        .fromJson("{${qualitiesJson.trimEnd(',')}}")
-                        ?: throw StreamResolutionException()
-                } catch (error: JsonDataException) {
-                    throw StreamResolutionException()
-                } catch (error: JsonEncodingException) {
-                    throw StreamResolutionException()
-                }
-
-                val link = qualityMap.qualities
-                    .flatMap { (quality, links) ->
-                        links.mapNotNull { (type, url) ->
-                            url.toHttpUrlOrNull()?.let { DailymotionLinkWithQuality(quality, type, it) }
-                        }
+                val qualityMap =
+                    try {
+                        moshi
+                            .adapter(DailymotionQualityMap::class.java)
+                            .fromJson("{${qualitiesJson.trimEnd(',')}}")
+                            ?: throw StreamResolutionException()
+                    } catch (error: JsonDataException) {
+                        throw StreamResolutionException()
+                    } catch (error: JsonEncodingException) {
+                        throw StreamResolutionException()
                     }
-                    .filter { it.type == "application/x-mpegURL" || it.type == "video/mp4" }
-                    .sortedWith(compareBy<DailymotionLinkWithQuality> { it.type }.thenByDescending { it.quality })
-                    .firstOrNull()
-                    ?: throw StreamResolutionException()
+
+                val link =
+                    qualityMap.qualities
+                        .flatMap { (quality, links) ->
+                            links.mapNotNull { (type, url) ->
+                                url.toHttpUrlOrNull()?.let { DailymotionLinkWithQuality(quality, type, it) }
+                            }
+                        }.filter { it.type == "application/x-mpegURL" || it.type == "video/mp4" }
+                        .sortedWith(compareBy<DailymotionLinkWithQuality> { it.type }.thenByDescending { it.quality })
+                        .firstOrNull()
+                        ?: throw StreamResolutionException()
 
                 StreamResolutionResult.Video(link.url, link.type)
             }
-    }
 
     @JsonClass(generateAdapter = true)
-    internal data class DailymotionQualityMap(val qualities: Map<String, Array<DailymotionLink>>)
+    internal data class DailymotionQualityMap(
+        val qualities: Map<String, Array<DailymotionLink>>,
+    )
 
     @JsonClass(generateAdapter = true)
-    internal data class DailymotionLink(val type: String, val url: String)
+    internal data class DailymotionLink(
+        val type: String,
+        val url: String,
+    )
 
-    private data class DailymotionLinkWithQuality(val quality: String, val type: String, val url: HttpUrl)
+    private data class DailymotionLinkWithQuality(
+        val quality: String,
+        val type: String,
+        val url: HttpUrl,
+    )
 }

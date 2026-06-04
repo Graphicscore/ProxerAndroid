@@ -18,15 +18,16 @@ data class LocalTag(
     val name: String,
     val description: String,
     val subType: TagSubType,
-    val isSpoiler: Boolean
+    val isSpoiler: Boolean,
 ) : Parcelable {
-
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<LocalTag> {
-            override fun createFromParcel(parcel: Parcel) = LocalTag(parcel)
-            override fun newArray(size: Int): Array<LocalTag?> = arrayOfNulls(size)
-        }
+        val CREATOR =
+            object : Parcelable.Creator<LocalTag> {
+                override fun createFromParcel(parcel: Parcel) = LocalTag(parcel)
+
+                override fun newArray(size: Int): Array<LocalTag?> = arrayOfNulls(size)
+            }
     }
 
     constructor(parcel: Parcel) : this(
@@ -35,10 +36,13 @@ data class LocalTag(
         parcel.readStringSafely(),
         parcel.readStringSafely(),
         TagSubType.values()[parcel.readInt()],
-        parcel.readByte() != 0.toByte()
+        parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(id)
         parcel.writeInt(type.ordinal)
         parcel.writeString(name)
@@ -47,7 +51,5 @@ data class LocalTag(
         parcel.writeByte(if (isSpoiler) 1 else 0)
     }
 
-    override fun describeContents(): Int {
-        return 0
-    }
+    override fun describeContents(): Int = 0
 }

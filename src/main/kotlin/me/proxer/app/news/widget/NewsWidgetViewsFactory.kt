@@ -15,11 +15,12 @@ import me.proxer.app.util.extension.toLocalDateTime
 class NewsWidgetViewsFactory(
     private val context: Context,
     private val dark: Boolean,
-    private val news: List<SimpleNews>
+    private val news: List<SimpleNews>,
 ) : RemoteViewsService.RemoteViewsFactory {
-
     override fun hasStableIds() = true
+
     override fun getItemId(position: Int) = news[position].id.toLong()
+
     override fun getLoadingView() = null
 
     override fun getViewAt(position: Int): RemoteViews? {
@@ -31,11 +32,12 @@ class NewsWidgetViewsFactory(
 
         val result = RemoteViews(BuildConfig.APPLICATION_ID, layout)
         val topicIntent = TopicActivity.getIntent(context, news.threadId, news.categoryId, news.subject)
-        val info = context.getString(
-            R.string.widget_news_info,
-            news.date.toLocalDateTime().distanceInWordsToNow(context),
-            news.category
-        )
+        val info =
+            context.getString(
+                R.string.widget_news_info,
+                news.date.toLocalDateTime().distanceInWordsToNow(context),
+                news.category,
+            )
 
         result.setTextViewText(R.id.subject, news.subject)
         result.setTextViewText(R.id.info, info)
@@ -45,9 +47,12 @@ class NewsWidgetViewsFactory(
     }
 
     override fun getCount() = news.size
+
     override fun getViewTypeCount() = 1
 
     override fun onCreate() = Unit
+
     override fun onDestroy() = Unit
+
     override fun onDataSetChanged() = Unit
 }

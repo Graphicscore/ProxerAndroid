@@ -16,7 +16,6 @@ import me.proxer.app.util.extension.subscribeAndLogErrors
 import me.proxer.library.ProxerApi
 
 class TvShellViewModel : ViewModel() {
-
     private val storageHelper by safeInject<StorageHelper>()
     private val api by safeInject<ProxerApi>()
 
@@ -29,8 +28,9 @@ class TvShellViewModel : ViewModel() {
     private var logoutDisposable: Disposable? = null
 
     init {
-        disposables += storageHelper.isLoggedInObservable
-            .subscribe { user.value = storageHelper.user }
+        disposables +=
+            storageHelper.isLoggedInObservable
+                .subscribe { user.value = storageHelper.user }
     }
 
     override fun onCleared() {
@@ -43,19 +43,20 @@ class TvShellViewModel : ViewModel() {
     fun logout() {
         if (isLoggingOut.value != true) {
             logoutDisposable?.dispose()
-            logoutDisposable = api.user.logout()
-                .buildSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-                    logoutError.value = null
-                    isLoggingOut.value = true
-                }
-                .doAfterTerminate { isLoggingOut.value = false }
-                .subscribeAndLogErrors(
-                    { logoutSuccess.value = Unit },
-                    { logoutError.value = ErrorUtils.handle(it) }
-                )
+            logoutDisposable =
+                api.user
+                    .logout()
+                    .buildSingle()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe {
+                        logoutError.value = null
+                        isLoggingOut.value = true
+                    }.doAfterTerminate { isLoggingOut.value = false }
+                    .subscribeAndLogErrors(
+                        { logoutSuccess.value = Unit },
+                        { logoutError.value = ErrorUtils.handle(it) },
+                    )
         }
     }
 }

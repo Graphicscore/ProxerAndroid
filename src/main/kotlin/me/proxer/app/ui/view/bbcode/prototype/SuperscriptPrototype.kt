@@ -10,11 +10,13 @@ import me.proxer.app.ui.view.bbcode.prototype.BBPrototype.Companion.REGEX_OPTION
  * @author Ruben Gees
  */
 object SuperscriptPrototype : TextMutatorPrototype {
-
     override val startRegex = Regex(" *sup( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *sup *", REGEX_OPTIONS)
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs) = text.apply {
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ) = text.apply {
         this[0..length] = SuperscriptSpan()
     }
 }

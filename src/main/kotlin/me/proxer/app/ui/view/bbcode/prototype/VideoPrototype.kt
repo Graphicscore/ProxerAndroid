@@ -14,7 +14,6 @@ import me.proxer.app.util.extension.toPrefixedUrlOrNull
  * @author Ruben Gees
  */
 object VideoPrototype : TextMutatorPrototype, AutoClosingPrototype {
-
     private const val TYPE_ARGUMENT = "type"
     private const val TYPE_YOUTUBE = "youtube"
     private const val TYPE_YOUTUBE_URL = "https://youtu.be/"
@@ -24,27 +23,39 @@ object VideoPrototype : TextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *video( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *video *", REGEX_OPTIONS)
 
-    override fun construct(code: String, parent: BBTree): BBTree {
+    override fun construct(
+        code: String,
+        parent: BBTree,
+    ): BBTree {
         val type = BBUtils.cutAttribute(code, attributeRegex)
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(TYPE_ARGUMENT to type)))
     }
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ): SpannableStringBuilder {
         val type = args[TYPE_ARGUMENT] as String?
         val urlOrId = text.trim()
 
-        val url = when {
-            type?.equals(TYPE_YOUTUBE, ignoreCase = true) == true -> "$TYPE_YOUTUBE_URL$urlOrId"
-            else -> urlOrId.toString()
-        }.toPrefixedUrlOrNull()
+        val url =
+            when {
+                type?.equals(TYPE_YOUTUBE, ignoreCase = true) == true -> "$TYPE_YOUTUBE_URL$urlOrId"
+                else -> urlOrId.toString()
+            }.toPrefixedUrlOrNull()
 
         return when (url) {
-            null -> text
-            else ->
-                text.toSpannableStringBuilder()
+            null -> {
+                text
+            }
+
+            else -> {
+                text
+                    .toSpannableStringBuilder()
                     .replace(0, text.length, args.safeResources.getString(R.string.view_bbcode_video_link))
                     .linkifyUrl(url)
+            }
         }
     }
 }

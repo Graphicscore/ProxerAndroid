@@ -38,7 +38,6 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class MediaActivity : ImageTabsActivity() {
-
     companion object {
         private const val ID_EXTRA = "id"
         private const val NAME_EXTRA = "name"
@@ -56,7 +55,7 @@ class MediaActivity : ImageTabsActivity() {
             id: String,
             name: String? = null,
             category: Category? = null,
-            imageView: ImageView? = null
+            imageView: ImageView? = null,
         ) {
             getIntent(context, id, name, category).let {
                 ActivityUtils.navigateToWithImageTransition(it, context, imageView)
@@ -67,21 +66,21 @@ class MediaActivity : ImageTabsActivity() {
             context: Context,
             id: String,
             name: String? = null,
-            category: Category? = null
-        ): Intent {
-            return context.intentFor<MediaActivity>(
+            category: Category? = null,
+        ): Intent =
+            context.intentFor<MediaActivity>(
                 ID_EXTRA to id,
                 NAME_EXTRA to name,
-                CATEGORY_EXTRA to category
+                CATEGORY_EXTRA to category,
             )
-        }
     }
 
     val id: String
-        get() = when (intent.hasExtra(ID_EXTRA)) {
-            true -> intent.getSafeStringExtra(ID_EXTRA)
-            false -> intent.data?.pathSegments?.getOrNull(1) ?: "-1"
-        }
+        get() =
+            when (intent.hasExtra(ID_EXTRA)) {
+                true -> intent.getSafeStringExtra(ID_EXTRA)
+                false -> intent.data?.pathSegments?.getOrNull(1) ?: "-1"
+            }
 
     var name: String?
         get() = intent.getStringExtra(NAME_EXTRA)
@@ -104,17 +103,23 @@ class MediaActivity : ImageTabsActivity() {
     override val sectionsTabCallback: TabLayoutMediator.TabConfigurationStrategy by unsafeLazy { SectionsTabCallback() }
 
     private val customItemToDisplay: Int
-        get() = when (intent.action) {
-            Intent.ACTION_VIEW -> when (intent.data?.pathSegments?.getOrNull(2)) {
-                COMMENTS_SUB_SECTION -> 1
-                EPISODES_SUB_SECTION, EPISODES_ALTERNATIVE_SUB_SECTION -> 2
-                RELATIONS_SUB_SECTION -> 3
-                RECOMMENDATIONS_SUB_SECTION -> 4
-                DISCUSSIONS_SUB_SECTION -> 5
-                else -> 0
+        get() =
+            when (intent.action) {
+                Intent.ACTION_VIEW -> {
+                    when (intent.data?.pathSegments?.getOrNull(2)) {
+                        COMMENTS_SUB_SECTION -> 1
+                        EPISODES_SUB_SECTION, EPISODES_ALTERNATIVE_SUB_SECTION -> 2
+                        RELATIONS_SUB_SECTION -> 3
+                        RECOMMENDATIONS_SUB_SECTION -> 4
+                        DISCUSSIONS_SUB_SECTION -> 5
+                        else -> 0
+                    }
+                }
+
+                else -> {
+                    0
+                }
             }
-            else -> 0
-        }
 
     private val viewModel by viewModel<MediaInfoViewModel> { parametersOf(id) }
 
@@ -132,7 +137,7 @@ class MediaActivity : ImageTabsActivity() {
                         viewPager.currentItem = customItemToDisplay
                     }
                 }
-            }
+            },
         )
 
         preferenceHelper.isAgeRestrictedMediaAllowedObservable
@@ -148,12 +153,15 @@ class MediaActivity : ImageTabsActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_share -> name?.let {
-                ShareCompat.IntentBuilder(this)
-                    .setText(getString(R.string.share_media, it, ProxerUrls.infoWeb(id)))
-                    .setType("text/plain")
-                    .setChooserTitle(getString(R.string.share_title))
-                    .startChooser()
+            R.id.action_share -> {
+                name?.let {
+                    ShareCompat
+                        .IntentBuilder(this)
+                        .setText(getString(R.string.share_media, it, ProxerUrls.infoWeb(id)))
+                        .setType("text/plain")
+                        .setChooserTitle(getString(R.string.share_title))
+                        .startChooser()
+                }
             }
         }
 
@@ -167,76 +175,117 @@ class MediaActivity : ImageTabsActivity() {
     }
 
     private inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
-
-        override fun getItemCount(): Int {
-            return when {
-                viewModel.data.value != null || preferenceHelper.isAgeRestrictedMediaAllowed -> when (category) {
-                    Category.ANIME, Category.MANGA -> 6
-                    Category.NOVEL -> 5
-                    null -> 1
+        override fun getItemCount(): Int =
+            when {
+                viewModel.data.value != null || preferenceHelper.isAgeRestrictedMediaAllowed -> {
+                    when (category) {
+                        Category.ANIME, Category.MANGA -> 6
+                        Category.NOVEL -> 5
+                        null -> 1
+                    }
                 }
-                else -> 1
-            }
-        }
 
-        override fun createFragment(position: Int) = when (category) {
-            Category.ANIME, Category.MANGA -> when (position) {
-                0 -> MediaInfoFragment.newInstance()
-                1 -> CommentsFragment.newInstance()
-                2 -> EpisodeFragment.newInstance()
-                3 -> RelationFragment.newInstance()
-                4 -> RecommendationFragment.newInstance()
-                5 -> DiscussionFragment.newInstance()
-                else -> error("Unknown index passed: $position")
+                else -> {
+                    1
+                }
             }
-            Category.NOVEL -> when (position) {
-                0 -> MediaInfoFragment.newInstance()
-                1 -> CommentsFragment.newInstance()
-                2 -> RelationFragment.newInstance()
-                3 -> RecommendationFragment.newInstance()
-                4 -> DiscussionFragment.newInstance()
-                else -> error("Unknown index passed: $position")
+
+        override fun createFragment(position: Int) =
+            when (category) {
+                Category.ANIME, Category.MANGA -> {
+                    when (position) {
+                        0 -> MediaInfoFragment.newInstance()
+                        1 -> CommentsFragment.newInstance()
+                        2 -> EpisodeFragment.newInstance()
+                        3 -> RelationFragment.newInstance()
+                        4 -> RecommendationFragment.newInstance()
+                        5 -> DiscussionFragment.newInstance()
+                        else -> error("Unknown index passed: $position")
+                    }
+                }
+
+                Category.NOVEL -> {
+                    when (position) {
+                        0 -> MediaInfoFragment.newInstance()
+                        1 -> CommentsFragment.newInstance()
+                        2 -> RelationFragment.newInstance()
+                        3 -> RecommendationFragment.newInstance()
+                        4 -> DiscussionFragment.newInstance()
+                        else -> error("Unknown index passed: $position")
+                    }
+                }
+
+                null -> {
+                    MediaInfoFragment.newInstance()
+                }
             }
-            null -> MediaInfoFragment.newInstance()
-        }
 
-        override fun getItemId(position: Int) = when (category) {
-            Category.ANIME, Category.MANGA -> position.toLong()
-            Category.NOVEL -> position.toLong()
-            null -> -1L
-        }
+        override fun getItemId(position: Int) =
+            when (category) {
+                Category.ANIME, Category.MANGA -> position.toLong()
+                Category.NOVEL -> position.toLong()
+                null -> -1L
+            }
 
-        override fun containsItem(itemId: Long) = when (category) {
-            Category.ANIME, Category.MANGA -> itemId in 0..5
-            Category.NOVEL -> itemId in 0..4
-            null -> itemId == -1L
-        }
+        override fun containsItem(itemId: Long) =
+            when (category) {
+                Category.ANIME, Category.MANGA -> itemId in 0..5
+                Category.NOVEL -> itemId in 0..4
+                null -> itemId == -1L
+            }
     }
 
     private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
+        override fun onConfigureTab(
+            tab: TabLayout.Tab,
+            position: Int,
+        ) {
+            tab.text =
+                when (category) {
+                    Category.ANIME, Category.MANGA -> {
+                        when (position) {
+                            0 -> {
+                                getString(R.string.section_media_info)
+                            }
 
-        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
-            tab.text = when (category) {
-                Category.ANIME, Category.MANGA -> when (position) {
-                    0 -> getString(R.string.section_media_info)
-                    1 -> getString(R.string.section_comments)
-                    2 ->
-                        category?.toEpisodeAppString(this@MediaActivity)
-                            ?: getString(R.string.category_anime_episodes_title)
-                    3 -> getString(R.string.section_relations)
-                    4 -> getString(R.string.section_recommendations)
-                    5 -> getString(R.string.section_discussions)
-                    else -> error("Unknown index passed: $position")
+                            1 -> {
+                                getString(R.string.section_comments)
+                            }
+
+                            2 -> {
+                                category?.toEpisodeAppString(this@MediaActivity)
+                                    ?: getString(R.string.category_anime_episodes_title)
+                            }
+
+                            3 -> {
+                                getString(R.string.section_relations)
+                            }
+
+                            4 -> {
+                                getString(R.string.section_recommendations)
+                            }
+
+                            5 -> {
+                                getString(R.string.section_discussions)
+                            }
+
+                            else -> {
+                                error("Unknown index passed: $position")
+                            }
+                        }
+                    }
+
+                    else -> {
+                        when (position) {
+                            0 -> getString(R.string.section_media_info)
+                            1 -> getString(R.string.section_comments)
+                            2 -> getString(R.string.section_relations)
+                            3 -> getString(R.string.section_recommendations)
+                            4 -> getString(R.string.section_discussions)
+                            else -> error("Unknown index passed: $position")
+                        }
+                    }
                 }
-                else -> when (position) {
-                    0 -> getString(R.string.section_media_info)
-                    1 -> getString(R.string.section_comments)
-                    2 -> getString(R.string.section_relations)
-                    3 -> getString(R.string.section_recommendations)
-                    4 -> getString(R.string.section_discussions)
-                    else -> error("Unknown index passed: $position")
-                }
-            }
         }
     }
 }

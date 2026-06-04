@@ -17,11 +17,14 @@ import me.proxer.app.util.extension.dip
  * @author Ruben Gees
  */
 object OrderedListPrototype : AutoClosingPrototype {
-
     override val startRegex = Regex(" *ol( .*?)?", BBPrototype.REGEX_OPTIONS)
     override val endRegex = Regex("/ *ol *", BBPrototype.REGEX_OPTIONS)
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = children.filter { it.prototype == ListItemPrototype }.flatMap { it.makeViews(parent, args) }
 
         return listOf(
@@ -39,19 +42,20 @@ object OrderedListPrototype : AutoClosingPrototype {
 
                             addView(
                                 TextPrototype.makeView(parent, args + BBArgs(text = "${index + 1}.")).apply {
-                                    layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                                        setMargins(0, 0, eightDip, 0)
+                                    layoutParams =
+                                        LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                                            setMargins(0, 0, eightDip, 0)
 
-                                        gravity = CENTER
-                                    }
-                                }
+                                            gravity = CENTER
+                                        }
+                                },
                             )
 
                             addView(it)
-                        }
+                        },
                     )
                 }
-            }
+            },
         )
     }
 }

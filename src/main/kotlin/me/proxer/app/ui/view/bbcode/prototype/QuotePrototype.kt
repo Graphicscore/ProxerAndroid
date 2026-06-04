@@ -19,7 +19,6 @@ import me.proxer.app.util.extension.linkify
 import me.proxer.app.util.extension.resolveColor
 
 object QuotePrototype : AutoClosingPrototype {
-
     private const val QUOTE_ARGUMENT = "quote"
 
     private val quoteAttributeRegex = Regex("quote *= *(.+?)( |$)", REGEX_OPTIONS)
@@ -27,22 +26,30 @@ object QuotePrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *quote( *=\"?.+?\"?)?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *quote *", REGEX_OPTIONS)
 
-    override fun construct(code: String, parent: BBTree): BBTree {
+    override fun construct(
+        code: String,
+        parent: BBTree,
+    ): BBTree {
         val quote = BBUtils.cutAttribute(code, quoteAttributeRegex)
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(QUOTE_ARGUMENT to quote)))
     }
 
-    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
+    override fun makeViews(
+        parent: BBCodeView,
+        children: List<BBTree>,
+        args: BBArgs,
+    ): List<View> {
         val childViews = super.makeViews(parent, children, args)
         val quote = args[QUOTE_ARGUMENT] as String?
         val result = mutableListOf<View>()
 
-        val layout = when (childViews.size) {
-            0 -> null
-            1 -> FrameLayout(parent.context)
-            else -> LinearLayout(parent.context).apply { orientation = VERTICAL }
-        }
+        val layout =
+            when (childViews.size) {
+                0 -> null
+                1 -> FrameLayout(parent.context)
+                else -> LinearLayout(parent.context).apply { orientation = VERTICAL }
+            }
 
         layout?.apply {
             val fourDip = parent.dip(4)

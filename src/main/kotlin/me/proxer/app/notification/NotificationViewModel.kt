@@ -18,36 +18,41 @@ import me.proxer.library.enums.NotificationFilter
  * @author Ruben Gees
  */
 class NotificationViewModel : PagedViewModel<ProxerNotification>() {
-
     override val itemsOnPage = 30
 
     override val dataSingle: Single<List<ProxerNotification>>
-        get() = Single.fromCallable { validators.validateLogin() }
-            .flatMap {
-                when (page) {
-                    0 ->
-                        api.notifications.notifications()
-                            .markAsRead(true)
-                            .page(page)
-                            .filter(NotificationFilter.UNREAD)
-                            .limit(Int.MAX_VALUE)
-                            .buildSingle()
-                            .doOnSuccess { items -> firstPageItemAmount = items.size }
-                            .flatMap { unreadResult ->
-                                readSingle().map { readResult ->
-                                    mergeNewDataWithExistingData(unreadResult, readResult, 0)
+        get() =
+            Single
+                .fromCallable { validators.validateLogin() }
+                .flatMap {
+                    when (page) {
+                        0 -> {
+                            api.notifications
+                                .notifications()
+                                .markAsRead(true)
+                                .page(page)
+                                .filter(NotificationFilter.UNREAD)
+                                .limit(Int.MAX_VALUE)
+                                .buildSingle()
+                                .doOnSuccess { items -> firstPageItemAmount = items.size }
+                                .flatMap { unreadResult ->
+                                    readSingle().map { readResult ->
+                                        mergeNewDataWithExistingData(unreadResult, readResult, 0)
+                                    }
                                 }
-                            }
-                    else -> readSingle()
-                }
-            }
-            .doOnSuccess {
-                if (page == 0) {
-                    it.firstOrNull()?.date?.toInstantBP()?.let { date ->
-                        storageHelper.lastNotificationsDate = date
+                        }
+
+                        else -> {
+                            readSingle()
+                        }
+                    }
+                }.doOnSuccess {
+                    if (page == 0) {
+                        it.firstOrNull()?.date?.toInstantBP()?.let { date ->
+                            storageHelper.lastNotificationsDate = date
+                        }
                     }
                 }
-            }
 
     val deletionError = ResettingMutableLiveData<ErrorUtils.ErrorAction?>()
 
@@ -73,9 +78,10 @@ class NotificationViewModel : PagedViewModel<ProxerNotification>() {
 
     override fun refresh() = reload()
 
-    override fun areItemsTheSame(old: ProxerNotification, new: ProxerNotification): Boolean {
-        return old == new
-    }
+    override fun areItemsTheSame(
+        old: ProxerNotification,
+        new: ProxerNotification,
+    ): Boolean = old == new
 
     fun addItemToDelete(item: ProxerNotification) {
         deletionQueue.add(item)
@@ -91,7 +97,8 @@ class NotificationViewModel : PagedViewModel<ProxerNotification>() {
 
         deletionQueue.clear()
 
-        api.notifications.deleteAllNotifications()
+        api.notifications
+            .deleteAllNotifications()
             .buildSingle()
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
@@ -101,7 +108,7 @@ class NotificationViewModel : PagedViewModel<ProxerNotification>() {
                 },
                 {
                     deletionError.value = ErrorUtils.handle(it)
-                }
+                },
             )
     }
 
@@ -110,28 +117,32 @@ class NotificationViewModel : PagedViewModel<ProxerNotification>() {
         deletionDisposable?.dispose()
 
         deletionQueue.poll()?.let { item ->
-            deletionDisposable = api.notifications.deleteNotification(item.id)
-                .buildSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeAndLogErrors(
-                    {
-                        data.value = data.value?.filterNot { newItem -> newItem == item }
+            deletionDisposable =
+                api.notifications
+                    .deleteNotification(item.id)
+                    .buildSingle()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeAndLogErrors(
+                        {
+                            data.value = data.value?.filterNot { newItem -> newItem == item }
 
-                        doItemDeletion()
-                    },
-                    {
-                        deletionQueue.clear()
+                            doItemDeletion()
+                        },
+                        {
+                            deletionQueue.clear()
 
-                        deletionError.value = ErrorUtils.handle(it)
-                    }
-                )
+                            deletionError.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 
-    private fun readSingle() = api.notifications.notifications()
-        .page(page - firstPageItemAmount / itemsOnPage)
-        .filter(NotificationFilter.READ)
-        .limit(itemsOnPage)
-        .buildSingle()
+    private fun readSingle() =
+        api.notifications
+            .notifications()
+            .page(page - firstPageItemAmount / itemsOnPage)
+            .filter(NotificationFilter.READ)
+            .limit(itemsOnPage)
+            .buildSingle()
 }

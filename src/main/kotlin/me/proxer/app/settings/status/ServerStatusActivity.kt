@@ -11,7 +11,6 @@ import me.proxer.app.util.extension.startActivity
  * @author Ruben Gees
  */
 class ServerStatusActivity : DrawerActivity() {
-
     companion object {
         fun navigateTo(context: Activity) = context.startActivity<ServerStatusActivity>()
     }

@@ -17,27 +17,30 @@ import me.proxer.app.util.extension.toast
  * @author Ruben Gees
  */
 class CrashDialog : BaseDialog() {
-
     companion object {
         private const val ERROR_DETAILS_ARGUMENT = "error_details"
 
-        fun show(activity: AppCompatActivity, errorDetails: String) = CrashDialog().apply {
-            arguments = bundleOf(ERROR_DETAILS_ARGUMENT to errorDetails)
-        }.show(activity.supportFragmentManager, "crash_dialog")
+        fun show(
+            activity: AppCompatActivity,
+            errorDetails: String,
+        ) = CrashDialog()
+            .apply {
+                arguments = bundleOf(ERROR_DETAILS_ARGUMENT to errorDetails)
+            }.show(activity.supportFragmentManager, "crash_dialog")
     }
 
     private val errorDetails: String
         get() = requireArguments().getSafeString(ERROR_DETAILS_ARGUMENT)
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .title(R.string.dialog_crash_title)
-        .message(text = errorDetails)
-        .neutralButton(R.string.dialog_crash_neutral) {
-            requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-                ClipData.newPlainText(getString(R.string.clipboard_crash_title), errorDetails)
-            )
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .title(R.string.dialog_crash_title)
+            .message(text = errorDetails)
+            .neutralButton(R.string.dialog_crash_neutral) {
+                requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
+                    ClipData.newPlainText(getString(R.string.clipboard_crash_title), errorDetails),
+                )
 
-            requireContext().toast(R.string.clipboard_status)
-        }
-        .negativeButton(R.string.dialog_crash_negative)
+                requireContext().toast(R.string.clipboard_status)
+            }.negativeButton(R.string.dialog_crash_negative)
 }

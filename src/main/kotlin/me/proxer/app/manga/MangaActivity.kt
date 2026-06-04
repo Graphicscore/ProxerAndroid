@@ -50,7 +50,6 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class MangaActivity : BaseActivity() {
-
     companion object {
         private const val ID_EXTRA = "id"
         private const val EPISODE_EXTRA = "episode"
@@ -66,7 +65,7 @@ class MangaActivity : BaseActivity() {
             language: Language,
             chapterTitle: String?,
             name: String? = null,
-            episodeAmount: Int? = null
+            episodeAmount: Int? = null,
         ) {
             context.startActivity<MangaActivity>(
                 ID_EXTRA to id,
@@ -74,22 +73,32 @@ class MangaActivity : BaseActivity() {
                 LANGUAGE_EXTRA to language,
                 CHAPTER_TITLE_EXTRA to chapterTitle,
                 NAME_EXTRA to name,
-                EPISODE_AMOUNT_EXTRA to episodeAmount
+                EPISODE_AMOUNT_EXTRA to episodeAmount,
             )
         }
     }
 
     val id: String
-        get() = when (intent.hasExtra(ID_EXTRA)) {
-            true -> intent.getSafeStringExtra(ID_EXTRA)
-            false -> intent.data?.pathSegments?.getOrNull(1) ?: "-1"
-        }
+        get() =
+            when (intent.hasExtra(ID_EXTRA)) {
+                true -> intent.getSafeStringExtra(ID_EXTRA)
+                false -> intent.data?.pathSegments?.getOrNull(1) ?: "-1"
+            }
 
     var episode: Int
-        get() = when (intent.hasExtra(EPISODE_EXTRA)) {
-            true -> intent.getIntExtra(EPISODE_EXTRA, 1)
-            false -> intent.data?.pathSegments?.getOrNull(2)?.toIntOrNull() ?: 1
-        }
+        get() =
+            when (intent.hasExtra(EPISODE_EXTRA)) {
+                true -> {
+                    intent.getIntExtra(EPISODE_EXTRA, 1)
+                }
+
+                false -> {
+                    intent.data
+                        ?.pathSegments
+                        ?.getOrNull(2)
+                        ?.toIntOrNull() ?: 1
+                }
+            }
         set(value) {
             intent.putExtra(EPISODE_EXTRA, value)
 
@@ -97,12 +106,20 @@ class MangaActivity : BaseActivity() {
         }
 
     val language: Language
-        get() = when (intent.hasExtra(LANGUAGE_EXTRA)) {
-            true -> intent.getSerializableExtra(LANGUAGE_EXTRA) as Language
-            false ->
-                intent.data?.pathSegments?.getOrNull(3)?.let { ProxerUtils.toApiEnum<Language>(it) }
-                    ?: Language.ENGLISH
-        }
+        get() =
+            when (intent.hasExtra(LANGUAGE_EXTRA)) {
+                true -> {
+                    intent.getSerializableExtra(LANGUAGE_EXTRA) as Language
+                }
+
+                false -> {
+                    intent.data
+                        ?.pathSegments
+                        ?.getOrNull(3)
+                        ?.let { ProxerUtils.toApiEnum<Language>(it) }
+                        ?: Language.ENGLISH
+                }
+            }
 
     var chapterTitle: String?
         get() = intent.getStringExtra(CHAPTER_TITLE_EXTRA)
@@ -121,10 +138,11 @@ class MangaActivity : BaseActivity() {
         }
 
     var episodeAmount: Int?
-        get() = when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
-            true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
-            else -> null
-        }
+        get() =
+            when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
+                true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
+                else -> null
+            }
         set(value) {
             when (value) {
                 null -> intent.removeExtra(EPISODE_AMOUNT_EXTRA)
@@ -182,29 +200,35 @@ class MangaActivity : BaseActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_share -> name?.let {
-                val link = ProxerUrls.mangaWeb(id, episode, language)
+            R.id.action_share -> {
+                name?.let {
+                    val link = ProxerUrls.mangaWeb(id, episode, language)
 
-                val text = chapterTitle.let { title ->
-                    when {
-                        title.isNullOrBlank() -> getString(R.string.share_manga, episode, it, link)
-                        else -> getString(R.string.share_manga_title, title, it, link)
-                    }
+                    val text =
+                        chapterTitle.let { title ->
+                            when {
+                                title.isNullOrBlank() -> getString(R.string.share_manga, episode, it, link)
+                                else -> getString(R.string.share_manga_title, title, it, link)
+                            }
+                        }
+
+                    ShareCompat.IntentBuilder
+                        .from(this)
+                        .setText(text)
+                        .setType("text/plain")
+                        .setChooserTitle(getString(R.string.share_title))
+                        .startChooser()
                 }
-
-                ShareCompat.IntentBuilder
-                    .from(this)
-                    .setText(text)
-                    .setType("text/plain")
-                    .setChooserTitle(getString(R.string.share_title))
-                    .startChooser()
             }
         }
 
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
+    override fun onMultiWindowModeChanged(
+        isInMultiWindowMode: Boolean,
+        newConfig: Configuration,
+    ) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
 
         if (!isInMultiWindowMode) {
@@ -221,7 +245,8 @@ class MangaActivity : BaseActivity() {
 
         setFullscreen(true)
 
-        window.decorView.systemUiVisibilityChanges()
+        window.decorView
+            .systemUiVisibilityChanges()
             .autoDisposable(this.scope())
             .subscribe {
                 if (it and SYSTEM_UI_FLAG_FULLSCREEN == 0) {
@@ -285,7 +310,8 @@ class MangaActivity : BaseActivity() {
 
     private fun setupToolbar() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        toolbar.clicks()
+        toolbar
+            .clicks()
             .autoDisposable(this.scope())
             .subscribe {
                 name?.let {

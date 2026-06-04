@@ -9,13 +9,13 @@ import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.jakewharton.rxbinding3.view.longClicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -33,7 +33,6 @@ import me.proxer.library.util.ProxerUrls
  * @author Ruben Gees
  */
 class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
-
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<Bookmark> = PublishSubject.create()
     val longClickSubject: PublishSubject<Pair<ImageView, Bookmark>> = PublishSubject.create()
@@ -43,11 +42,15 @@ class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_bookmark, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_bookmark, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -57,11 +60,19 @@ class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
         glide = null
     }
 
-    override fun areItemsTheSame(old: Bookmark, new: Bookmark) = old.entryId == new.entryId
-    override fun areContentsTheSame(old: Bookmark, new: Bookmark) = old.id == new.id
+    override fun areItemsTheSame(
+        old: Bookmark,
+        new: Bookmark,
+    ) = old.entryId == new.entryId
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
+    override fun areContentsTheSame(
+        old: Bookmark,
+        new: Bookmark,
+    ) = old.id == new.id
 
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val title: TextView by bindView(R.id.title)
         internal val medium: TextView by bindView(R.id.medium)
@@ -79,13 +90,14 @@ class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
 
             ViewCompat.setTransitionName(image, "bookmark_${item.id}")
 
-            val availabilityIndicator = AppCompatResources.getDrawable(
-                episode.context,
-                when (item.isAvailable) {
-                    true -> R.drawable.ic_circle_green
-                    false -> R.drawable.ic_circle_red
-                }
-            )
+            val availabilityIndicator =
+                AppCompatResources.getDrawable(
+                    episode.context,
+                    when (item.isAvailable) {
+                        true -> R.drawable.ic_circle_green
+                        false -> R.drawable.ic_circle_red
+                    },
+                )
 
             title.text = item.name
             medium.text = item.medium.toAppString(medium.context)
@@ -98,17 +110,20 @@ class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
         }
 
         private fun initListeners() {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
 
-            container.longClicks()
+            container
+                .longClicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(longClickSubject)
 
-            delete.clicks()
+            delete
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(deleteClickSubject)

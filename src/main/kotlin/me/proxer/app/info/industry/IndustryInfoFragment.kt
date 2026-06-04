@@ -34,11 +34,11 @@ import org.koin.core.parameter.parametersOf
  * @author Ruben Gees
  */
 class IndustryInfoFragment : BaseContentFragment<Industry>(R.layout.fragment_industry) {
-
     companion object {
-        fun newInstance() = IndustryInfoFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            IndustryInfoFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<IndustryInfoViewModel> { parametersOf(id) }
@@ -63,22 +63,27 @@ class IndustryInfoFragment : BaseContentFragment<Industry>(R.layout.fragment_ind
     private val descriptionContainer: ViewGroup by bindView(R.id.descriptionContainer)
     private val description: TextView by bindView(R.id.description)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
-        link.linkClicks()
+        link
+            .linkClicks()
             .map { it.toPrefixedUrlOrNull().toOptional() }
             .filterSome()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { showPage(it, skipCheck = true) }
 
-        link.linkLongClicks()
+        link
+            .linkLongClicks()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe {
                 val title = getString(R.string.clipboard_title)
 
                 requireContext().getSystemService<ClipboardManager>()?.setPrimaryClip(
-                    ClipData.newPlainText(title, it.toString())
+                    ClipData.newPlainText(title, it.toString()),
                 )
 
                 requireContext().toast(R.string.clipboard_status)

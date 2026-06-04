@@ -50,9 +50,8 @@ import java.util.concurrent.TimeUnit
  */
 class ScheduleWidgetUpdateWorker(
     context: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : Worker(context, workerParams) {
-
     companion object {
         private const val NAME = "ScheduleWidgetUpdateWorker"
 
@@ -61,14 +60,15 @@ class ScheduleWidgetUpdateWorker(
         private val dayDateTimeFormatter = DateTimeFormatter.ofPattern("dd. MMMM", Locale.GERMANY)
 
         fun enqueueWork() {
-            val workRequest = OneTimeWorkRequestBuilder<ScheduleWidgetUpdateWorker>()
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
-                )
-                .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
-                .build()
+            val workRequest =
+                OneTimeWorkRequestBuilder<ScheduleWidgetUpdateWorker>()
+                    .setConstraints(
+                        Constraints
+                            .Builder()
+                            .setRequiredNetworkType(NetworkType.CONNECTED)
+                            .build(),
+                    ).setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 15, TimeUnit.SECONDS)
+                    .build()
 
             workManager.beginUniqueWork(NAME, ExistingWorkPolicy.KEEP, workRequest).enqueue()
         }
@@ -97,27 +97,28 @@ class ScheduleWidgetUpdateWorker(
         darkWidgetIds.forEach { id -> bindLoadingLayout(appWidgetManager, id, true) }
 
         return try {
-            val calendarEntries = if (!isStopped) {
-                api.media.calendar()
-                    .build()
-                    .also { currentCall = it }
-                    .safeExecute()
-                    .asSequence()
-                    .filter { it.date.toLocalDateTimeBP().dayOfMonth == LocalDate.now().dayOfMonth }
-                    .map {
-                        SimpleCalendarEntry(
-                            it.id,
-                            it.entryId,
-                            it.name,
-                            it.episode,
-                            it.date.toInstantBP(),
-                            it.uploadDate.toInstantBP()
-                        )
-                    }
-                    .toList()
-            } else {
-                emptyList()
-            }
+            val calendarEntries =
+                if (!isStopped) {
+                    api.media
+                        .calendar()
+                        .build()
+                        .also { currentCall = it }
+                        .safeExecute()
+                        .asSequence()
+                        .filter { it.date.toLocalDateTimeBP().dayOfMonth == LocalDate.now().dayOfMonth }
+                        .map {
+                            SimpleCalendarEntry(
+                                it.id,
+                                it.entryId,
+                                it.name,
+                                it.episode,
+                                it.date.toInstantBP(),
+                                it.uploadDate.toInstantBP(),
+                            )
+                        }.toList()
+                } else {
+                    emptyList()
+                }
 
             if (!isStopped) {
                 if (calendarEntries.isEmpty()) {
@@ -155,47 +156,65 @@ class ScheduleWidgetUpdateWorker(
         appWidgetManager: AppWidgetManager,
         id: Int,
         calendarEntries: List<SimpleCalendarEntry>,
-        dark: Boolean
+        dark: Boolean,
     ) {
-        val views = RemoteViews(
-            BuildConfig.APPLICATION_ID,
+        val views =
+            RemoteViews(
+                BuildConfig.APPLICATION_ID,
+                when (dark) {
+                    true -> R.layout.layout_widget_schedule_dark_list
+                    false -> R.layout.layout_widget_schedule_list
+                },
+            )
+
+        val serializedCalendarEntries =
+            calendarEntries
+                .map { moshi.adapter(SimpleCalendarEntry::class.java).toJson(it) }
+                .toTypedArray()
+
+        val intent =
             when (dark) {
-                true -> R.layout.layout_widget_schedule_dark_list
-                false -> R.layout.layout_widget_schedule_list
+                true -> {
+                    applicationContext.intentFor<ScheduleWidgetDarkService>(
+                        ScheduleWidgetDarkService.ARGUMENT_CALENDAR_ENTRIES to serializedCalendarEntries,
+                    )
+                }
+
+                false -> {
+                    applicationContext.intentFor<ScheduleWidgetService>(
+                        ScheduleWidgetService.ARGUMENT_CALENDAR_ENTRIES to serializedCalendarEntries,
+                    )
+                }
             }
-        )
-
-        val serializedCalendarEntries = calendarEntries
-            .map { moshi.adapter(SimpleCalendarEntry::class.java).toJson(it) }
-            .toTypedArray()
-
-        val intent = when (dark) {
-            true -> applicationContext.intentFor<ScheduleWidgetDarkService>(
-                ScheduleWidgetDarkService.ARGUMENT_CALENDAR_ENTRIES to serializedCalendarEntries
-            )
-            false -> applicationContext.intentFor<ScheduleWidgetService>(
-                ScheduleWidgetService.ARGUMENT_CALENDAR_ENTRIES to serializedCalendarEntries
-            )
-        }
 
         val detailIntent = applicationContext.intentFor<MediaActivity>()
         val detailPendingIntent = PendingIntent.getActivity(applicationContext, 0, detailIntent, FLAG_UPDATE_CURRENT)
 
-        val position = when (calendarEntries.isEmpty()) {
-            true -> 0
-            false ->
-                calendarEntries
-                    .indexOfFirst { it.date.isAfter(Instant.now()) }
-                    .let {
-                        when (it < 0) {
-                            true -> when (Instant.now().isAfter(calendarEntries.last().date)) {
-                                true -> calendarEntries.lastIndex
-                                false -> 0
+        val position =
+            when (calendarEntries.isEmpty()) {
+                true -> {
+                    0
+                }
+
+                false -> {
+                    calendarEntries
+                        .indexOfFirst { it.date.isAfter(Instant.now()) }
+                        .let {
+                            when (it < 0) {
+                                true -> {
+                                    when (Instant.now().isAfter(calendarEntries.last().date)) {
+                                        true -> calendarEntries.lastIndex
+                                        false -> 0
+                                    }
+                                }
+
+                                false -> {
+                                    it
+                                }
                             }
-                            false -> it
                         }
-                    }
-        }
+                }
+            }
 
         bindBaseLayout(id, views)
 
@@ -211,14 +230,20 @@ class ScheduleWidgetUpdateWorker(
         }
     }
 
-    private fun bindErrorLayout(appWidgetManager: AppWidgetManager, id: Int, errorAction: ErrorAction, dark: Boolean) {
-        val views = RemoteViews(
-            BuildConfig.APPLICATION_ID,
-            when (dark) {
-                true -> R.layout.layout_widget_schedule_dark_error
-                false -> R.layout.layout_widget_schedule_error
-            }
-        )
+    private fun bindErrorLayout(
+        appWidgetManager: AppWidgetManager,
+        id: Int,
+        errorAction: ErrorAction,
+        dark: Boolean,
+    ) {
+        val views =
+            RemoteViews(
+                BuildConfig.APPLICATION_ID,
+                when (dark) {
+                    true -> R.layout.layout_widget_schedule_dark_error
+                    false -> R.layout.layout_widget_schedule_error
+                },
+            )
 
         val errorIntent = errorAction.toIntent()
 
@@ -238,27 +263,37 @@ class ScheduleWidgetUpdateWorker(
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindLoadingLayout(appWidgetManager: AppWidgetManager, id: Int, dark: Boolean) {
-        val views = RemoteViews(
-            BuildConfig.APPLICATION_ID,
-            when (dark) {
-                true -> R.layout.layout_widget_schedule_dark_loading
-                false -> R.layout.layout_widget_schedule_loading
-            }
-        )
+    private fun bindLoadingLayout(
+        appWidgetManager: AppWidgetManager,
+        id: Int,
+        dark: Boolean,
+    ) {
+        val views =
+            RemoteViews(
+                BuildConfig.APPLICATION_ID,
+                when (dark) {
+                    true -> R.layout.layout_widget_schedule_dark_loading
+                    false -> R.layout.layout_widget_schedule_loading
+                },
+            )
 
         bindBaseLayout(id, views)
 
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindBaseLayout(id: Int, views: RemoteViews) {
+    private fun bindBaseLayout(
+        id: Int,
+        views: RemoteViews,
+    ) {
         val intent = MainActivity.getSectionIntent(applicationContext, MaterialDrawerWrapper.DrawerItem.SCHEDULE)
         val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, FLAG_UPDATE_CURRENT)
 
-        val updateIntent = applicationContext.intentFor<ScheduleWidgetProvider>()
-            .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
-            .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(id))
+        val updateIntent =
+            applicationContext
+                .intentFor<ScheduleWidgetProvider>()
+                .setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE)
+                .putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(id))
 
         val updatePendingIntent = PendingIntent.getBroadcast(applicationContext, 0, updateIntent, FLAG_UPDATE_CURRENT)
 
@@ -268,11 +303,12 @@ class ScheduleWidgetUpdateWorker(
 
         views.setImageViewBitmap(
             R.id.refresh,
-            IconicsDrawable(applicationContext, CommunityMaterial.Icon3.cmd_refresh).apply {
-                colorRes = android.R.color.white
-                paddingDp = 8
-                sizeDp = 32
-            }.toBitmap()
+            IconicsDrawable(applicationContext, CommunityMaterial.Icon3.cmd_refresh)
+                .apply {
+                    colorRes = android.R.color.white
+                    paddingDp = 8
+                    sizeDp = 32
+                }.toBitmap(),
         )
     }
 }

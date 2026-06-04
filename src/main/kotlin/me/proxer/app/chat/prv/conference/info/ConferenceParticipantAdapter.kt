@@ -9,6 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.gojuno.koptional.rxjava2.filterSome
 import com.gojuno.koptional.toOptional
@@ -21,7 +22,6 @@ import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -41,7 +41,6 @@ import okhttp3.HttpUrl
  * @author Ruben Gees
  */
 class ConferenceParticipantAdapter : BaseAdapter<ConferenceParticipant, ViewHolder>() {
-
     var leaderId: String? = null
     var glide: RequestManager? = null
     val participantClickSubject: PublishSubject<Pair<ImageView, ConferenceParticipant>> = PublishSubject.create()
@@ -51,13 +50,18 @@ class ConferenceParticipantAdapter : BaseAdapter<ConferenceParticipant, ViewHold
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_conference_participant, parent, false)
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder =
+        ViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.item_conference_participant, parent, false),
         )
-    }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -67,19 +71,22 @@ class ConferenceParticipantAdapter : BaseAdapter<ConferenceParticipant, ViewHold
         glide = null
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val image: ImageView by bindView(R.id.image)
         internal val username: TextView by bindView(R.id.username)
         internal val status: TextView by bindView(R.id.status)
 
         fun bind(item: ConferenceParticipant) {
-            itemView.clicks()
+            itemView
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(participantClickSubject)
 
-            status.linkClicks()
+            status
+                .linkClicks()
                 .map { it.toPrefixedUrlOrNull().toOptional() }
                 .filterSome()
                 .autoDisposable(this)
@@ -98,7 +105,7 @@ class ConferenceParticipantAdapter : BaseAdapter<ConferenceParticipant, ViewHold
                         paddingDp = 8
                         sizeDp = 32
                     },
-                    null
+                    null,
                 )
             } else {
                 username.setCompoundDrawables(null, null, null, null)
@@ -114,7 +121,8 @@ class ConferenceParticipantAdapter : BaseAdapter<ConferenceParticipant, ViewHold
             if (item.image.isBlank()) {
                 image.setIconicsImage(CommunityMaterial.Icon.cmd_account, 96, 16, R.attr.colorSecondary)
             } else {
-                glide?.load(ProxerUrls.userImage(item.image).toString())
+                glide
+                    ?.load(ProxerUrls.userImage(item.image).toString())
                     ?.transition(DrawableTransitionOptions.withCrossFade())
                     ?.circleCrop()
                     ?.logErrors()

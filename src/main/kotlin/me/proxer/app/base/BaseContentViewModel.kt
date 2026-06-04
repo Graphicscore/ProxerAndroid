@@ -8,10 +8,11 @@ import me.proxer.library.api.Endpoint
  * @author Ruben Gees
  */
 abstract class BaseContentViewModel<T : Any> : BaseViewModel<T>() {
-
     override val dataSingle: Single<T>
-        get() = Single.fromCallable { validate() }
-            .flatMap { endpoint.buildSingle() }
+        get() =
+            Single
+                .fromCallable { validate() }
+                .flatMap { endpoint.buildSingle() }
 
     protected abstract val endpoint: Endpoint<T>
 }

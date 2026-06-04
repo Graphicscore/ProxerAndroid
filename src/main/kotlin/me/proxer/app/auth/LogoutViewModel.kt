@@ -15,7 +15,6 @@ import me.proxer.library.ProxerApi
  * @author Ruben Gees
  */
 class LogoutViewModel : ViewModel() {
-
     val success = MutableLiveData<Unit?>()
     val error = MutableLiveData<ErrorUtils.ErrorAction?>()
     val isLoading = MutableLiveData<Boolean?>()
@@ -34,23 +33,24 @@ class LogoutViewModel : ViewModel() {
     fun logout() {
         if (isLoading.value != true) {
             dataDisposable?.dispose()
-            dataDisposable = api.user.logout()
-                .buildSingle()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .doOnSubscribe {
-                    error.value = null
-                    isLoading.value = true
-                }
-                .doAfterTerminate { isLoading.value = false }
-                .subscribeAndLogErrors(
-                    {
-                        success.value = Unit
-                    },
-                    {
-                        error.value = ErrorUtils.handle(it)
-                    }
-                )
+            dataDisposable =
+                api.user
+                    .logout()
+                    .buildSingle()
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .doOnSubscribe {
+                        error.value = null
+                        isLoading.value = true
+                    }.doAfterTerminate { isLoading.value = false }
+                    .subscribeAndLogErrors(
+                        {
+                            success.value = Unit
+                        },
+                        {
+                            error.value = ErrorUtils.handle(it)
+                        },
+                    )
         }
     }
 }

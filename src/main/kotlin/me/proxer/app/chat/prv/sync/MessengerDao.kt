@@ -23,19 +23,23 @@ import org.threeten.bp.Instant
  */
 @Dao
 abstract class MessengerDao {
-
     @Transaction
-    open fun insertMessageToSend(user: LocalUser, text: String, conferenceId: Long): LocalMessage {
-        val message = LocalMessage(
-            calculateNextMessageToSendId(),
-            conferenceId,
-            user.id,
-            user.name,
-            text,
-            MessageAction.NONE,
-            Instant.now(),
-            Device.MOBILE
-        )
+    open fun insertMessageToSend(
+        user: LocalUser,
+        text: String,
+        conferenceId: Long,
+    ): LocalMessage {
+        val message =
+            LocalMessage(
+                calculateNextMessageToSendId(),
+                conferenceId,
+                user.id,
+                user.name,
+                text,
+                MessageAction.NONE,
+                Instant.now(),
+                Device.MOBILE,
+            )
 
         insertMessage(message)
         markConferenceAsRead(conferenceId)
@@ -98,7 +102,7 @@ abstract class MessengerDao {
             ON conferences.id = messages.conferenceId
             WHERE topic LIKE '%' || :searchQuery || '%'
             ORDER BY date DESC
-            """
+            """,
     )
     abstract fun getConferencesLiveData(searchQuery: String): LiveData<List<ConferenceWithMessage>>
 
@@ -130,10 +134,16 @@ abstract class MessengerDao {
     abstract fun getUnsentMessagesLiveDataForConference(conferenceId: Long): LiveData<List<LocalMessage>>
 
     @Query("SELECT COUNT(*) FROM messages WHERE conferenceId = :conferenceId AND id = :lastReadMessageId")
-    abstract fun getUnreadMessageAmountForConference(conferenceId: Long, lastReadMessageId: Long): Int
+    abstract fun getUnreadMessageAmountForConference(
+        conferenceId: Long,
+        lastReadMessageId: Long,
+    ): Int
 
     @Query("SELECT * FROM messages WHERE conferenceId = :conferenceId AND id >= 0 ORDER BY id DESC LIMIT :amount")
-    abstract fun getMostRecentMessagesForConference(conferenceId: Long, amount: Int): List<LocalMessage>
+    abstract fun getMostRecentMessagesForConference(
+        conferenceId: Long,
+        amount: Int,
+    ): List<LocalMessage>
 
     @Query("SELECT * FROM messages WHERE conferenceId = :conferenceId AND id >= 0 ORDER BY id DESC LIMIT 1")
     abstract fun findMostRecentMessageForConference(conferenceId: Long): LocalMessage?

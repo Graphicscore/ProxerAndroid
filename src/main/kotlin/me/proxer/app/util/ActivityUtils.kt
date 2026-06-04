@@ -9,20 +9,24 @@ import androidx.core.app.ActivityOptionsCompat
  * @author Ruben Gees
  */
 object ActivityUtils {
-
     private const val TRANSITION_NAME_EXTRA = "transition_name"
 
-    fun navigateToWithImageTransition(intent: Intent, context: Activity, imageView: ImageView?) {
+    fun navigateToWithImageTransition(
+        intent: Intent,
+        context: Activity,
+        imageView: ImageView?,
+    ) {
         if (imageView?.drawable != null) {
             intent.putExtra(TRANSITION_NAME_EXTRA, imageView.transitionName)
 
             context.startActivity(
                 intent,
-                ActivityOptionsCompat.makeSceneTransitionAnimation(
-                    context,
-                    imageView,
-                    imageView.transitionName
-                ).toBundle()
+                ActivityOptionsCompat
+                    .makeSceneTransitionAnimation(
+                        context,
+                        imageView,
+                        imageView.transitionName,
+                    ).toBundle(),
             )
         } else {
             context.startActivity(intent)

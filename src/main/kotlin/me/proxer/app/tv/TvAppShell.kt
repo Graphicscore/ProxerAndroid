@@ -22,7 +22,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TvAppShell(
     onMediaClick: (id: String, name: String) -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
 ) {
     val viewModel: TvShellViewModel = koinViewModel()
     val user by viewModel.user.observeAsState()
@@ -47,19 +47,36 @@ fun TvAppShell(
                 drawerValue = drawerValue,
                 onSectionSelected = { currentSection = it },
                 onLoginClick = { context.startActivity<TvLoginActivity>() },
-                onLogoutClick = { if (isLoggingOut != true) viewModel.logout() }
+                onLogoutClick = { if (isLoggingOut != true) viewModel.logout() },
             )
-        }
+        },
     ) {
         when (currentSection) {
-            TvSection.ANIME -> TvSearchScreen(
-                onMediaClick = onMediaClick
-            )
-            TvSection.NEWS -> TvPlaceholderScreen("News")
-            TvSection.BOOKMARKS -> TvBookmarksScreen()
-            TvSection.SCHEDULE -> TvScheduleScreen()
-            TvSection.INFO -> TvPlaceholderScreen("Info")
-            TvSection.SETTINGS -> TvPlaceholderScreen("Settings")
+            TvSection.ANIME -> {
+                TvSearchScreen(
+                    onMediaClick = onMediaClick,
+                )
+            }
+
+            TvSection.NEWS -> {
+                TvPlaceholderScreen("News")
+            }
+
+            TvSection.BOOKMARKS -> {
+                TvBookmarksScreen()
+            }
+
+            TvSection.SCHEDULE -> {
+                TvScheduleScreen()
+            }
+
+            TvSection.INFO -> {
+                TvPlaceholderScreen("Info")
+            }
+
+            TvSection.SETTINGS -> {
+                TvPlaceholderScreen("Settings")
+            }
         }
     }
 }

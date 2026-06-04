@@ -21,12 +21,14 @@ import me.proxer.library.entity.notifications.NewsArticle
  * @author Ruben Gees
  */
 object NewsNotifications {
-
     private const val ID = 1_357_913_213
 
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    fun showOrUpdate(context: Context, news: Collection<NewsArticle>) {
+    fun showOrUpdate(
+        context: Context,
+        news: Collection<NewsArticle>,
+    ) {
         when (val notification = buildNewsNotification(context, news)) {
             null -> NotificationManagerCompat.from(context).cancel(ID)
             else -> NotificationManagerCompat.from(context).notify(ID, notification)
@@ -35,7 +37,10 @@ object NewsNotifications {
 
     fun cancel(context: Context) = NotificationManagerCompat.from(context).cancel(ID)
 
-    private fun buildNewsNotification(context: Context, news: Collection<NewsArticle>): Notification? {
+    private fun buildNewsNotification(
+        context: Context,
+        news: Collection<NewsArticle>,
+    ): Notification? {
         if (news.isEmpty()) {
             return null
         }
@@ -53,46 +58,55 @@ object NewsNotifications {
 
                 title = current.subject.trim()
                 content = current.description.trim()
-                intent = PendingIntent.getActivity(
-                    context,
-                    ID,
-                    TopicActivity.getIntent(context, current.threadId, current.categoryId, current.subject),
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
+                intent =
+                    PendingIntent.getActivity(
+                        context,
+                        ID,
+                        TopicActivity.getIntent(context, current.threadId, current.categoryId, current.subject),
+                        PendingIntent.FLAG_UPDATE_CURRENT,
+                    )
 
-                style = NotificationCompat.BigTextStyle(builder)
-                    .bigText(content)
-                    .setBigContentTitle(title)
-                    .setSummaryText(newsAmount)
+                style =
+                    NotificationCompat
+                        .BigTextStyle(builder)
+                        .bigText(content)
+                        .setBigContentTitle(title)
+                        .setSummaryText(newsAmount)
             }
+
             else -> {
                 title = context.getString(R.string.notification_news_title)
                 content = newsAmount
-                intent = PendingIntent.getActivity(
-                    context,
-                    ID,
-                    MainActivity.getSectionIntent(context, DrawerItem.NEWS),
-                    PendingIntent.FLAG_UPDATE_CURRENT
-                )
+                intent =
+                    PendingIntent.getActivity(
+                        context,
+                        ID,
+                        MainActivity.getSectionIntent(context, DrawerItem.NEWS),
+                        PendingIntent.FLAG_UPDATE_CURRENT,
+                    )
 
-                style = NotificationCompat.InboxStyle().also {
-                    news.forEach { newsArticle ->
-                        it.addLine(newsArticle.subject)
+                style =
+                    NotificationCompat.InboxStyle().also {
+                        news.forEach { newsArticle ->
+                            it.addLine(newsArticle.subject)
+                        }
+
+                        it.setBigContentTitle(context.getString(R.string.notification_news_title))
+                        it.setSummaryText(newsAmount)
                     }
-
-                    it.setBigContentTitle(context.getString(R.string.notification_news_title))
-                    it.setSummaryText(newsAmount)
-                }
             }
         }
 
-        val shouldAlert = news
-            .maxByOrNull { it.date }
-            ?.date?.toInstantBP()
-            ?.isAfter(preferenceHelper.lastNewsDate)
-            ?: true
+        val shouldAlert =
+            news
+                .maxByOrNull { it.date }
+                ?.date
+                ?.toInstantBP()
+                ?.isAfter(preferenceHelper.lastNewsDate)
+                ?: true
 
-        return builder.setAutoCancel(true)
+        return builder
+            .setAutoCancel(true)
             .setSmallIcon(R.drawable.ic_stat_proxer)
             .setContentTitle(title)
             .setContentText(content)
@@ -100,9 +114,8 @@ object NewsNotifications {
             .addAction(
                 R.drawable.ic_stat_check,
                 context.getString(R.string.notification_news_read_action),
-                NewsNotificationReadReceiver.getPendingIntent(context)
-            )
-            .setDefaults(if (shouldAlert) Notification.DEFAULT_ALL else 0)
+                NewsNotificationReadReceiver.getPendingIntent(context),
+            ).setDefaults(if (shouldAlert) Notification.DEFAULT_ALL else 0)
             .setColor(ContextCompat.getColor(context, R.color.primary))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setNumber(news.size)

@@ -13,9 +13,8 @@ data class EpisodeRow(
     val category: Category,
     val userProgress: Int?,
     val episodeAmount: Int,
-    private val episodes: List<Episode>
+    private val episodes: List<Episode>,
 ) {
-
     val number: Int
     val title: String?
     val languageHosterList: List<Pair<MediaLanguage, List<String>?>>
@@ -31,11 +30,12 @@ data class EpisodeRow(
             number = -1
         }
 
-        languageHosterList = episodes.map {
-            when (it) {
-                is AnimeEpisode -> it.language to it.hosterImages.distinct()
-                else -> it.language to null
+        languageHosterList =
+            episodes.map {
+                when (it) {
+                    is AnimeEpisode -> it.language to it.hosterImages.distinct()
+                    else -> it.language to null
+                }
             }
-        }
     }
 }

@@ -23,7 +23,6 @@ import me.proxer.library.ProxerApi
  * @author Ruben Gees
  */
 abstract class BaseViewModel<T> : ViewModel() {
-
     open val data = MutableLiveData<T?>()
     open val error = MutableLiveData<ErrorUtils.ErrorAction?>()
     open val isLoading = MutableLiveData<Boolean?>()
@@ -43,27 +42,33 @@ abstract class BaseViewModel<T> : ViewModel() {
     protected abstract val dataSingle: Single<T>
 
     init {
-        disposables += storageHelper.isLoggedInObservable
-            .subscribe { if (isLoginRequired || isLoginErrorPresent()) reload() }
+        disposables +=
+            storageHelper.isLoggedInObservable
+                .subscribe { if (isLoginRequired || isLoginErrorPresent()) reload() }
 
-        disposables += preferenceHelper.isAgeRestrictedMediaAllowedObservable
-            .subscribe { if (isAgeConfirmationRequired) reload() }
+        disposables +=
+            preferenceHelper.isAgeRestrictedMediaAllowedObservable
+                .subscribe { if (isAgeConfirmationRequired) reload() }
 
-        disposables += bus.register(CaptchaSolvedEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                if (error.value?.buttonAction == ButtonAction.CAPTCHA) {
-                    refresh()
+        disposables +=
+            bus
+                .register(CaptchaSolvedEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (error.value?.buttonAction == ButtonAction.CAPTCHA) {
+                        refresh()
+                    }
                 }
-            }
 
-        disposables += bus.register(NetworkConnectedEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                if (error.value?.buttonAction == ButtonAction.NETWORK_SETTINGS) {
-                    refresh()
+        disposables +=
+            bus
+                .register(NetworkConnectedEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (error.value?.buttonAction == ButtonAction.NETWORK_SETTINGS) {
+                        refresh()
+                    }
                 }
-            }
     }
 
     override fun onCleared() {
@@ -77,25 +82,25 @@ abstract class BaseViewModel<T> : ViewModel() {
 
     open fun load() {
         dataDisposable?.dispose()
-        dataDisposable = dataSingle
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                isLoading.value = true
-                error.value = null
-                data.value = null
-            }
-            .doAfterTerminate { isLoading.value = false }
-            .subscribeAndLogErrors(
-                {
+        dataDisposable =
+            dataSingle
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    isLoading.value = true
                     error.value = null
-                    data.value = it
-                },
-                {
                     data.value = null
-                    error.value = ErrorUtils.handle(it)
-                }
-            )
+                }.doAfterTerminate { isLoading.value = false }
+                .subscribeAndLogErrors(
+                    {
+                        error.value = null
+                        data.value = it
+                    },
+                    {
+                        data.value = null
+                        error.value = ErrorUtils.handle(it)
+                    },
+                )
     }
 
     open fun loadIfPossible() {

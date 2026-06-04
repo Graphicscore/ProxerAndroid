@@ -13,5 +13,5 @@ data class TopicMetaData(
     val hits: Int,
     val isLocked: Boolean,
     val postAmount: Int,
-    val subject: String
+    val subject: String,
 )

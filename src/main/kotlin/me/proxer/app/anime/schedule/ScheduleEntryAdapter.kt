@@ -22,6 +22,7 @@ import androidx.core.view.isVisible
 import androidx.core.view.marginTop
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
@@ -30,7 +31,6 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.functions.Consumer
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.anime.schedule.ScheduleEntryAdapter.ViewHolder
 import me.proxer.app.base.AutoDisposeViewHolder
@@ -53,7 +53,6 @@ import java.util.concurrent.TimeUnit
  * @author Ruben Gees
  */
 class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
-
     private companion object {
         private val hourMinuteDateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
         private val dayTextDateTimeFormatter = DateTimeFormatter.ofPattern("EEEE", Locale.GERMAN)
@@ -72,11 +71,15 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_entry, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_entry, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) {
         holder.bind(data[position])
 
         cachedViewHolders += holder
@@ -120,8 +123,9 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val image by bindView<ImageView>(R.id.image)
         internal val title by bindView<TextView>(R.id.title)
@@ -134,20 +138,29 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
         internal var airingInfoDisposable: Disposable? = null
 
         init {
-            val itemsPerPage = when {
-                DeviceUtils.isLargeTablet(itemView.context) -> when (DeviceUtils.isLandscape(itemView.resources)) {
-                    true -> 6.5f
-                    false -> 4.5f
+            val itemsPerPage =
+                when {
+                    DeviceUtils.isLargeTablet(itemView.context) -> {
+                        when (DeviceUtils.isLandscape(itemView.resources)) {
+                            true -> 6.5f
+                            false -> 4.5f
+                        }
+                    }
+
+                    DeviceUtils.isTablet(itemView.context) -> {
+                        when (DeviceUtils.isLandscape(itemView.resources)) {
+                            true -> 5f
+                            false -> 3f
+                        }
+                    }
+
+                    else -> {
+                        when (DeviceUtils.isLandscape(itemView.resources)) {
+                            true -> 4.5f
+                            false -> 2.25f
+                        }
+                    }
                 }
-                DeviceUtils.isTablet(itemView.context) -> when (DeviceUtils.isLandscape(itemView.resources)) {
-                    true -> 5f
-                    false -> 3f
-                }
-                else -> when (DeviceUtils.isLandscape(itemView.resources)) {
-                    true -> 4.5f
-                    false -> 2.25f
-                }
-            }
 
             val margin = itemView.context.resources.getDimension(R.dimen.screen_horizontal_margin)
             val width = (DeviceUtils.getScreenWidth(itemView.context) - margin) / itemsPerPage
@@ -156,7 +169,8 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
         }
 
         fun bind(item: CalendarEntry) {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
@@ -173,10 +187,12 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
             status.minLines = currentMinStatusLines
 
             airingInfoDisposable?.dispose()
-            airingInfoDisposable = Observable.interval(0, 1, TimeUnit.SECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(this)
-                .subscribe(AiringInfoUpdateConsumer(item))
+            airingInfoDisposable =
+                Observable
+                    .interval(0, 1, TimeUnit.SECONDS)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDisposable(this)
+                    .subscribe(AiringInfoUpdateConsumer(item))
 
             glide?.defaultLoad(image, ProxerUrls.entryImage(item.entryId))
         }
@@ -196,7 +212,7 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
 
                 ratingContainer.measure(
                     makeMeasureSpec(DeviceUtils.getScreenWidth(ratingContainer.context), AT_MOST),
-                    makeMeasureSpec(0, UNSPECIFIED)
+                    makeMeasureSpec(0, UNSPECIFIED),
                 )
 
                 airingInfo.updateLayoutParams<RelativeLayout.LayoutParams> {
@@ -216,33 +232,38 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
             val airingDateText = hourMinuteDateTimeFormatter.format(itemDateTime)
             val uploadDate = hourMinuteDateTimeFormatter.format(itemUploadDateTime)
 
-            val uploadDateText = when (itemUploadDateTime.toLocalDate() != itemDateTime.toLocalDate()) {
-                true -> itemUploadDateTime.format(dayTextDateTimeFormatter) + ", " + uploadDate
-                false -> uploadDate
-            }
+            val uploadDateText =
+                when (itemUploadDateTime.toLocalDate() != itemDateTime.toLocalDate()) {
+                    true -> itemUploadDateTime.format(dayTextDateTimeFormatter) + ", " + uploadDate
+                    false -> uploadDate
+                }
 
             if (item.date == item.uploadDate) {
                 val airingText = airingInfo.context.getString(R.string.fragment_schedule_airing, airingDateText)
 
-                airingInfo.text = SpannableString(airingText).apply {
-                    this[indexOf(airingDateText)..length] = StyleSpan(Typeface.BOLD)
-                }
+                airingInfo.text =
+                    SpannableString(airingText).apply {
+                        this[indexOf(airingDateText)..length] = StyleSpan(Typeface.BOLD)
+                    }
             } else {
-                val airingUploadText = airingInfo.context.getString(
-                    R.string.fragment_schedule_airing_upload,
-                    airingDateText,
-                    uploadDateText
-                )
+                val airingUploadText =
+                    airingInfo.context.getString(
+                        R.string.fragment_schedule_airing_upload,
+                        airingDateText,
+                        uploadDateText,
+                    )
 
-                airingInfo.text = SpannableString(airingUploadText).apply {
-                    this[indexOf(airingDateText)..indexOf("\n")] = StyleSpan(Typeface.BOLD)
-                    this[lastIndexOf(uploadDateText)..length] = StyleSpan(Typeface.BOLD)
-                }
+                airingInfo.text =
+                    SpannableString(airingUploadText).apply {
+                        this[indexOf(airingDateText)..indexOf("\n")] = StyleSpan(Typeface.BOLD)
+                        this[lastIndexOf(uploadDateText)..length] = StyleSpan(Typeface.BOLD)
+                    }
             }
         }
 
-        private inner class AiringInfoUpdateConsumer(private val item: CalendarEntry) : Consumer<Long> {
-
+        private inner class AiringInfoUpdateConsumer(
+            private val item: CalendarEntry,
+        ) : Consumer<Long> {
             override fun accept(t: Long?) {
                 val now = LocalDateTime.now()
 
@@ -250,31 +271,37 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
                     if (item.date == item.uploadDate) {
                         val airedText = status.context.getString(R.string.fragment_schedule_aired)
 
-                        status.text = SpannableString(airedText).apply {
-                            val span = ForegroundColorSpan(ContextCompat.getColor(status.context, R.color.green_500))
+                        status.text =
+                            SpannableString(airedText).apply {
+                                val span =
+                                    ForegroundColorSpan(ContextCompat.getColor(status.context, R.color.green_500))
 
-                            this[0..length] = span
-                        }
+                                this[0..length] = span
+                            }
                     } else {
                         val uploadedText = status.context.getString(R.string.fragment_schedule_uploaded)
 
-                        status.text = SpannableString(uploadedText).apply {
-                            val span = ForegroundColorSpan(ContextCompat.getColor(status.context, R.color.green_500))
+                        status.text =
+                            SpannableString(uploadedText).apply {
+                                val span =
+                                    ForegroundColorSpan(ContextCompat.getColor(status.context, R.color.green_500))
 
-                            this[0..length] = span
-                        }
+                                this[0..length] = span
+                            }
                     }
                 } else {
                     if (item.date.toLocalDateTimeBP().isBefore(now)) {
-                        status.text = status.context.getString(
-                            R.string.fragment_schedule_aired_remaining_time,
-                            LocalDateTime.now().formattedDistanceTo(item.uploadDate.toLocalDateTimeBP())
-                        )
+                        status.text =
+                            status.context.getString(
+                                R.string.fragment_schedule_aired_remaining_time,
+                                LocalDateTime.now().formattedDistanceTo(item.uploadDate.toLocalDateTimeBP()),
+                            )
                     } else {
-                        status.text = status.context.getString(
-                            R.string.fragment_schedule_remaining_time,
-                            LocalDateTime.now().formattedDistanceTo(item.date.toLocalDateTimeBP())
-                        )
+                        status.text =
+                            status.context.getString(
+                                R.string.fragment_schedule_remaining_time,
+                                LocalDateTime.now().formattedDistanceTo(item.date.toLocalDateTimeBP()),
+                            )
                     }
                 }
             }

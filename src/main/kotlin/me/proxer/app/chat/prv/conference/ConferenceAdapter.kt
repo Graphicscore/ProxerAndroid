@@ -11,6 +11,7 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.google.android.material.chip.Chip
 import com.jakewharton.rxbinding3.view.clicks
@@ -24,7 +25,6 @@ import com.mikepenz.iconics.utils.sizePx
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -44,8 +44,9 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<ConferenceWithMessage, ViewHolder>() {
-
+class ConferenceAdapter(
+    private val storageHelper: StorageHelper,
+) : BaseAdapter<ConferenceWithMessage, ViewHolder>() {
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<ConferenceWithMessage> = PublishSubject.create()
 
@@ -55,11 +56,15 @@ class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<
 
     override fun getItemId(position: Int): Long = data[position].conference.id
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conference, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conference, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -69,12 +74,14 @@ class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<
         glide = null
     }
 
-    override fun areItemsTheSame(old: ConferenceWithMessage, new: ConferenceWithMessage): Boolean {
-        return old.conference.id == new.conference.id
-    }
+    override fun areItemsTheSame(
+        old: ConferenceWithMessage,
+        new: ConferenceWithMessage,
+    ): Boolean = old.conference.id == new.conference.id
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val image: ImageView by bindView(R.id.image)
         internal val topic: TextView by bindView(R.id.topic)
@@ -84,7 +91,8 @@ class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<
         internal val newMessages: Chip by bindView(R.id.newMessages)
 
         fun bind(item: ConferenceWithMessage) {
-            container.clicks()
+            container
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(clickSubject)
@@ -115,39 +123,51 @@ class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<
         }
 
         private fun bindTime(item: ConferenceWithMessage) {
-            time.text = item.conference.date.toLocalDateTime().distanceInWordsToNow(time.context)
+            time.text =
+                item.conference.date
+                    .toLocalDateTime()
+                    .distanceInWordsToNow(time.context)
         }
 
         private fun bindPreviewText(item: ConferenceWithMessage) {
             if (item.message != null) {
                 val messageFromUser = item.message.userId == storageHelper.user?.id
 
-                val trimmedFirstMessageText = item.message.messageText
-                    .replace("\r\n", " ")
-                    .replace("\n", " ")
-                    .trim()
+                val trimmedFirstMessageText =
+                    item.message.messageText
+                        .replace("\r\n", " ")
+                        .replace("\n", " ")
+                        .trim()
 
-                val processedFirstMessageText = if (item.conference.isGroup && !messageFromUser) {
-                    "${item.message.username}: $trimmedFirstMessageText"
-                } else {
-                    trimmedFirstMessageText
-                }
-
-                val icon = when (messageFromUser) {
-                    true -> when (item.message.messageId < 0) {
-                        true -> CommunityMaterial.Icon.cmd_clock_outline
-                        false -> CommunityMaterial.Icon.cmd_check
+                val processedFirstMessageText =
+                    if (item.conference.isGroup && !messageFromUser) {
+                        "${item.message.username}: $trimmedFirstMessageText"
+                    } else {
+                        trimmedFirstMessageText
                     }
-                    false -> null
-                }
+
+                val icon =
+                    when (messageFromUser) {
+                        true -> {
+                            when (item.message.messageId < 0) {
+                                true -> CommunityMaterial.Icon.cmd_clock_outline
+                                false -> CommunityMaterial.Icon.cmd_check
+                            }
+                        }
+
+                        false -> {
+                            null
+                        }
+                    }
 
                 val iconicsIcon = if (icon == null) null else generateMessageStatusDrawable(previewText.context, icon)
 
-                previewText.text = item.message.messageAction.toAppString(
-                    previewText.context,
-                    item.message.username,
-                    processedFirstMessageText
-                )
+                previewText.text =
+                    item.message.messageAction.toAppString(
+                        previewText.context,
+                        item.message.username,
+                        processedFirstMessageText,
+                    )
 
                 previewText.setCompoundDrawables(iconicsIcon, null, null, null)
             } else {
@@ -187,20 +207,23 @@ class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<
 
         private fun bindImage(item: ConferenceWithMessage) {
             if (item.conference.image.isBlank()) {
-                val icon = IconicsDrawable(image.context).apply {
-                    icon = when {
-                        item.conference.isGroup -> CommunityMaterial.Icon.cmd_account_multiple
-                        else -> CommunityMaterial.Icon.cmd_account
-                    }
+                val icon =
+                    IconicsDrawable(image.context).apply {
+                        icon =
+                            when {
+                                item.conference.isGroup -> CommunityMaterial.Icon.cmd_account_multiple
+                                else -> CommunityMaterial.Icon.cmd_account
+                            }
 
-                    colorInt = image.context.resolveColor(R.attr.colorSecondary)
-                    paddingDp = 16
-                    sizeDp = 96
-                }
+                        colorInt = image.context.resolveColor(R.attr.colorSecondary)
+                        paddingDp = 16
+                        sizeDp = 96
+                    }
 
                 image.setImageDrawable(icon)
             } else {
-                glide?.load(ProxerUrls.userImage(item.conference.image).toString())
+                glide
+                    ?.load(ProxerUrls.userImage(item.conference.image).toString())
                     ?.transition(DrawableTransitionOptions.withCrossFade())
                     ?.circleCrop()
                     ?.logErrors()
@@ -208,7 +231,10 @@ class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<
             }
         }
 
-        private fun generateMessageStatusDrawable(context: Context, icon: IIcon) = IconicsDrawable(context).apply {
+        private fun generateMessageStatusDrawable(
+            context: Context,
+            icon: IIcon,
+        ) = IconicsDrawable(context).apply {
             this.icon = icon
             colorInt = context.resolveColor(R.attr.colorIcon)
             sizePx = context.sp(14)

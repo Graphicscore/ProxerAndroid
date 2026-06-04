@@ -16,15 +16,16 @@ data class SimpleCalendarEntry(
     val name: String,
     val episode: Int,
     val date: Instant,
-    val uploadDate: Instant
+    val uploadDate: Instant,
 ) : Parcelable {
-
     companion object {
         @JvmField
-        val CREATOR = object : Parcelable.Creator<SimpleCalendarEntry> {
-            override fun createFromParcel(parcel: Parcel) = SimpleCalendarEntry(parcel)
-            override fun newArray(size: Int): Array<SimpleCalendarEntry?> = arrayOfNulls(size)
-        }
+        val CREATOR =
+            object : Parcelable.Creator<SimpleCalendarEntry> {
+                override fun createFromParcel(parcel: Parcel) = SimpleCalendarEntry(parcel)
+
+                override fun newArray(size: Int): Array<SimpleCalendarEntry?> = arrayOfNulls(size)
+            }
     }
 
     constructor(parcel: Parcel) : this(
@@ -33,10 +34,13 @@ data class SimpleCalendarEntry(
         parcel.readStringSafely(),
         parcel.readInt(),
         Instant.ofEpochMilli(parcel.readLong()),
-        Instant.ofEpochMilli(parcel.readLong())
+        Instant.ofEpochMilli(parcel.readLong()),
     )
 
-    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    override fun writeToParcel(
+        parcel: Parcel,
+        flags: Int,
+    ) {
         parcel.writeString(id)
         parcel.writeString(entryId)
         parcel.writeString(name)

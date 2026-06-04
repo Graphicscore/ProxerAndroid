@@ -15,7 +15,7 @@ class TvMainActivity : ComponentActivity() {
             TvTheme {
                 TvAppShell(
                     onMediaClick = { id, name -> TvMediaDetailActivity.navigateTo(activity, id, name) },
-                    onSearchClick = { activity.startActivity<TvSearchActivity>() }
+                    onSearchClick = { activity.startActivity<TvSearchActivity>() },
                 )
             }
         }

@@ -15,13 +15,13 @@ import me.proxer.app.util.converter.RoomConverters
 @Database(entities = [LocalConference::class, LocalMessage::class], version = 2)
 @TypeConverters(RoomConverters::class)
 abstract class MessengerDatabase : RoomDatabase() {
-
     companion object {
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
-                // Nothing to do here, needed due to a bug.
+        val MIGRATION_1_2 =
+            object : Migration(1, 2) {
+                override fun migrate(database: SupportSQLiteDatabase) {
+                    // Nothing to do here, needed due to a bug.
+                }
             }
-        }
     }
 
     abstract fun dao(): MessengerDao

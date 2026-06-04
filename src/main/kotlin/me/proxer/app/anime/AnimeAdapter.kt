@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.RequestManager
 import com.gojuno.koptional.rxjava2.filterSome
 import com.gojuno.koptional.toOptional
 import com.jakewharton.rxbinding3.view.clicks
@@ -21,7 +22,6 @@ import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.ProxerStreamResolver
 import me.proxer.app.anime.resolver.StreamResolutionResult
@@ -47,9 +47,8 @@ import org.threeten.bp.temporal.ChronoUnit
  */
 class AnimeAdapter(
     savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper
+    private val storageHelper: StorageHelper,
 ) : BaseAdapter<AnimeStream, RecyclerView.ViewHolder>() {
-
     private companion object {
         private const val EXPANDED_ITEM_STATE = "anime_stream_expanded_id"
         private const val STREAM_VIEW_TYPE = 100
@@ -67,29 +66,42 @@ class AnimeAdapter(
     private var expandedItemId: String?
 
     init {
-        expandedItemId = when (savedInstanceState) {
-            null -> null
-            else -> savedInstanceState.getString(EXPANDED_ITEM_STATE)
-        }
+        expandedItemId =
+            when (savedInstanceState) {
+                null -> null
+                else -> savedInstanceState.getString(EXPANDED_ITEM_STATE)
+            }
 
         setHasStableIds(true)
     }
 
     override fun getItemId(position: Int) = data[position].id.toLong()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
-        STREAM_VIEW_TYPE -> StreamViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_stream, parent, false)
-        )
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ) = when (viewType) {
+        STREAM_VIEW_TYPE -> {
+            StreamViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_stream, parent, false),
+            )
+        }
 
-        MESSAGE_VIEW_TYPE -> MessageViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_stream_message, parent, false)
-        )
+        MESSAGE_VIEW_TYPE -> {
+            MessageViewHolder(
+                LayoutInflater.from(parent.context).inflate(R.layout.item_stream_message, parent, false),
+            )
+        }
 
-        else -> error("Unknown viewType: $viewType")
+        else -> {
+            error("Unknown viewType: $viewType")
+        }
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+    ) {
         when (holder) {
             is StreamViewHolder -> holder.bind(data[position])
             is MessageViewHolder -> holder.bind(data[position])
@@ -126,8 +138,9 @@ class AnimeAdapter(
         super.swapDataAndNotifyWithDiffing(newData)
     }
 
-    inner class StreamViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class StreamViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val nameContainer: ViewGroup by bindView(R.id.nameContainer)
         internal val name: TextView by bindView(R.id.name)
         internal val image: ImageView by bindView(R.id.image)
@@ -174,13 +187,13 @@ class AnimeAdapter(
 
         private fun initListeners(loginRequired: Boolean) {
             // Subtract 1 from the bindingAdapterPosition, since we have a header.
-            nameContainer.clicks()
+            nameContainer
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) {
                     val resolvedPosition = positionResolver.resolve(it)
 
                     Triple(expandedItemId, data[resolvedPosition].id, resolvedPosition)
-                }
-                .autoDisposable(this)
+                }.autoDisposable(this)
                 .subscribe { (previousItemId, newItemId, position) ->
                     if (newItemId == previousItemId) {
                         expandedItemId = null
@@ -195,31 +208,36 @@ class AnimeAdapter(
                     notifyItemChanged(position)
                 }
 
-            uploaderText.clicks()
+            uploaderText
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[positionResolver.resolve(it)] }
                 .autoDisposable(this)
                 .subscribe(uploaderClickSubject)
 
-            translatorGroup.clicks()
+            translatorGroup
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[positionResolver.resolve(it)] }
                 .autoDisposable(this)
                 .subscribe(translatorGroupClickSubject)
 
-            dismissAdAlert.clicks()
+            dismissAdAlert
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { positionResolver.resolve(it) }
                 .doOnNext { storageHelper.lastAdAlertDate = Instant.now() }
                 .doAfterNext { notifyItemChanged(it) }
                 .autoDisposable(this)
                 .subscribe()
 
-            setAdInterval.clicks()
+            setAdInterval
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { positionResolver.resolve(it) }
                 .doOnNext { storageHelper.lastAdAlertDate = Instant.now() }
                 .doAfterNext { notifyItemChanged(it) }
                 .autoDisposable(this)
                 .subscribe(setAdIntervalClickSubject)
 
-            play.clicks()
+            play
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[positionResolver.resolve(it)] }
                 .autoDisposable(this)
                 .apply { if (loginRequired) subscribe(loginClickSubject) else subscribe(playClickSubject) }
@@ -230,9 +248,10 @@ class AnimeAdapter(
                 storageHelper.lastAdAlertDate.plus(14, ChronoUnit.DAYS)
             }
 
-            val shouldShowAdAlert = ProxerStreamResolver.supports(item.hosterName) &&
-                threshold.isBefore(Instant.now()) &&
-                storageHelper.profileSettings.adInterval <= 0
+            val shouldShowAdAlert =
+                ProxerStreamResolver.supports(item.hosterName) &&
+                    threshold.isBefore(Instant.now()) &&
+                    storageHelper.profileSettings.adInterval <= 0
 
             return if (shouldShowAdAlert) {
                 adAlert.isVisible = true
@@ -248,7 +267,10 @@ class AnimeAdapter(
             }
         }
 
-        private fun bindPlayAndInfo(item: AnimeStream, isLoginRequired: Boolean) {
+        private fun bindPlayAndInfo(
+            item: AnimeStream,
+            isLoginRequired: Boolean,
+        ) {
             if (item.isSupported) {
                 if (isLoginRequired) {
                     play.setText(R.string.error_action_login)
@@ -260,7 +282,7 @@ class AnimeAdapter(
                         generateInfoDrawable(CommunityMaterial.Icon.cmd_alert),
                         null,
                         null,
-                        null
+                        null,
                     )
                 } else {
                     play.setText(R.string.fragment_anime_stream_play)
@@ -268,7 +290,7 @@ class AnimeAdapter(
                         generatePlayDrawable(),
                         null,
                         null,
-                        null
+                        null,
                     )
 
                     when {
@@ -279,10 +301,13 @@ class AnimeAdapter(
                                 generateInfoDrawable(CommunityMaterial.Icon2.cmd_information),
                                 null,
                                 null,
-                                null
+                                null,
                             )
                         }
-                        else -> info.isVisible = false
+
+                        else -> {
+                            info.isVisible = false
+                        }
                     }
                 }
             } else {
@@ -294,30 +319,30 @@ class AnimeAdapter(
             }
         }
 
-        private fun generatePlayDrawable(): IconicsDrawable {
-            return IconicsDrawable(play.context, CommunityMaterial.Icon3.cmd_play).apply {
+        private fun generatePlayDrawable(): IconicsDrawable =
+            IconicsDrawable(play.context, CommunityMaterial.Icon3.cmd_play).apply {
                 colorInt = play.context.resolveColor(R.attr.colorOnPrimary)
                 paddingDp = 8
                 sizeDp = 28
             }
-        }
 
-        private fun generateInfoDrawable(icon: IIcon): IconicsDrawable {
-            return IconicsDrawable(info.context, icon).apply {
+        private fun generateInfoDrawable(icon: IIcon): IconicsDrawable =
+            IconicsDrawable(info.context, icon).apply {
                 colorInt = info.context.resolveColor(R.attr.colorIcon)
                 sizeDp = 26
             }
-        }
     }
 
-    inner class MessageViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class MessageViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val message: BetterLinkTextView by bindView(R.id.message)
 
         fun bind(item: AnimeStream) {
             val messageText = (item.resolutionResult as StreamResolutionResult.Message).message
 
-            message.linkClicks()
+            message
+                .linkClicks()
                 .map { it.toHttpUrlOrNull().toOptional() }
                 .filterSome()
                 .autoDisposable(this)

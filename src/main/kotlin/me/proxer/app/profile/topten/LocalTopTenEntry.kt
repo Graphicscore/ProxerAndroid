@@ -11,9 +11,8 @@ open class LocalTopTenEntry(
     override val id: String,
     open val name: String,
     open val category: Category,
-    open val medium: Medium
+    open val medium: Medium,
 ) : ProxerIdItem {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is LocalTopTenEntry) return false
@@ -34,15 +33,13 @@ open class LocalTopTenEntry(
         return result
     }
 
-    override fun toString(): String {
-        return "LocalTopTenEntry(id='$id', name='$name', category=$category, medium=$medium)"
-    }
+    override fun toString(): String = "LocalTopTenEntry(id='$id', name='$name', category=$category, medium=$medium)"
 
     data class Ucp(
         override val id: String,
         override val name: String,
         override val category: Category,
         override val medium: Medium,
-        val entryId: String
+        val entryId: String,
     ) : LocalTopTenEntry(id, name, category, medium)
 }

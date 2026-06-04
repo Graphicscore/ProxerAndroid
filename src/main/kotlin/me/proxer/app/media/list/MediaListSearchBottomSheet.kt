@@ -30,13 +30,12 @@ import me.proxer.library.enums.TagSpoilerFilter
  */
 class MediaListSearchBottomSheet private constructor(
     private val fragment: MediaListFragment,
-    private val viewModel: MediaListViewModel
+    private val viewModel: MediaListViewModel,
 ) {
-
     companion object {
         fun bindTo(
             fragment: MediaListFragment,
-            viewModel: MediaListViewModel
+            viewModel: MediaListViewModel,
         ) = MediaListSearchBottomSheet(fragment, viewModel)
     }
 
@@ -53,33 +52,38 @@ class MediaListSearchBottomSheet private constructor(
         initClickSubscriptions()
         initSelectionSubscriptions()
 
-        fragment.includeUnratedTags.checkedChanges()
+        fragment.includeUnratedTags
+            .checkedChanges()
             .skipInitialValue()
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribe { fragment.tagRateFilter = if (it) TagRateFilter.ALL else TagRateFilter.RATED_ONLY }
 
-        fragment.includeSpoilerTags.checkedChanges()
+        fragment.includeSpoilerTags
+            .checkedChanges()
             .skipInitialValue()
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribe { fragment.tagSpoilerFilter = if (it) TagSpoilerFilter.ALL else TagSpoilerFilter.NO_SPOILERS }
 
-        fragment.hideFinishedCheckBox.checkedChanges()
+        fragment.hideFinishedCheckBox
+            .checkedChanges()
             .skipInitialValue()
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribe { fragment.hideFinished = it }
 
-        val fskItems = FskConstraint.values().map {
-            ExpandableSelectionView.Item(
-                it.toAppString(fragment.requireContext()),
-                it.toAppStringDescription(fragment.requireContext())
-            )
-        }
+        val fskItems =
+            FskConstraint.values().map {
+                ExpandableSelectionView.Item(
+                    it.toAppString(fragment.requireContext()),
+                    it.toAppStringDescription(fragment.requireContext()),
+                )
+            }
 
-        val languageItems = listOf(
-            fragment.getString(R.string.fragment_media_list_all_languages),
-            fragment.getString(R.string.language_german),
-            fragment.getString(R.string.language_english)
-        )
+        val languageItems =
+            listOf(
+                fragment.getString(R.string.fragment_media_list_all_languages),
+                fragment.getString(R.string.language_german),
+                fragment.getString(R.string.language_english),
+            )
 
         fragment.languageSelector.simpleItems = languageItems
         fragment.fskSelector.items = fskItems
@@ -105,7 +109,7 @@ class MediaListSearchBottomSheet private constructor(
                     fragment.genreSelector.isVisible = true
                     fragment.excludedGenreSelector.isVisible = true
                 }
-            }
+            },
         )
 
         viewModel.tagData.observe(
@@ -120,21 +124,24 @@ class MediaListSearchBottomSheet private constructor(
                     fragment.tagSelector.isVisible = true
                     fragment.excludedTagSelector.isVisible = true
                 }
-            }
+            },
         )
     }
 
     private fun initClickSubscriptions() {
-        fragment.searchBottomSheetTitle.clicks()
+        fragment.searchBottomSheetTitle
+            .clicks()
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribe {
-                bottomSheetBehaviour.state = when (bottomSheetBehaviour.state) {
-                    STATE_EXPANDED -> STATE_COLLAPSED
-                    else -> STATE_EXPANDED
-                }
+                bottomSheetBehaviour.state =
+                    when (bottomSheetBehaviour.state) {
+                        STATE_EXPANDED -> STATE_COLLAPSED
+                        else -> STATE_EXPANDED
+                    }
             }
 
-        fragment.search.clicks()
+        fragment.search
+            .clicks()
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribe {
                 fragment.searchView.clearFocus()
@@ -149,11 +156,12 @@ class MediaListSearchBottomSheet private constructor(
         fragment.languageSelector.selectionChangeSubject
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribeAndLogErrors {
-                fragment.language = when {
-                    it.firstOrNull() == fragment.getString(R.string.language_german) -> Language.GERMAN
-                    it.firstOrNull() == fragment.getString(R.string.language_english) -> Language.ENGLISH
-                    else -> null
-                }
+                fragment.language =
+                    when {
+                        it.firstOrNull() == fragment.getString(R.string.language_german) -> Language.GERMAN
+                        it.firstOrNull() == fragment.getString(R.string.language_english) -> Language.ENGLISH
+                        else -> null
+                    }
             }
 
         fragment.genreSelector.selectionChangeSubject
@@ -168,20 +176,22 @@ class MediaListSearchBottomSheet private constructor(
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribeAndLogErrors { selections ->
                 viewModel.genreData.value?.let { genreData ->
-                    fragment.excludedGenres = selections.mapNotNull { selection ->
-                        genreData.find { it.name == selection }
-                    }
+                    fragment.excludedGenres =
+                        selections.mapNotNull { selection ->
+                            genreData.find { it.name == selection }
+                        }
                 }
             }
 
         fragment.fskSelector.selectionChangeSubject
             .autoDisposable(fragment.viewLifecycleOwner.scope())
             .subscribeAndLogErrors { selections ->
-                fragment.fskConstraints = enumSetOf(
-                    selections.map {
-                        ProxerLibExtensions.fskConstraintFromAppString(fragment.requireContext(), it)
-                    }
-                )
+                fragment.fskConstraints =
+                    enumSetOf(
+                        selections.map {
+                            ProxerLibExtensions.fskConstraintFromAppString(fragment.requireContext(), it)
+                        },
+                    )
             }
 
         fragment.tagSelector.selectionChangeSubject
@@ -201,11 +211,12 @@ class MediaListSearchBottomSheet private constructor(
             }
     }
 
-    fun onBackPressed() = if (bottomSheetBehaviour.state != STATE_COLLAPSED) {
-        bottomSheetBehaviour.state = STATE_COLLAPSED
+    fun onBackPressed() =
+        if (bottomSheetBehaviour.state != STATE_COLLAPSED) {
+            bottomSheetBehaviour.state = STATE_COLLAPSED
 
-        true
-    } else {
-        false
-    }
+            true
+        } else {
+            false
+        }
 }

@@ -27,18 +27,18 @@ import org.koin.compose.koinInject
 fun TvErrorView(
     error: ErrorUtils.ErrorAction,
     onLoginClick: (() -> Unit)? = null,
-    onRetryClick: () -> Unit
+    onRetryClick: () -> Unit,
 ) {
     val preferenceHelper: PreferenceHelper = koinInject()
     var showAgeConfirmDialog by remember { mutableStateOf(false) }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
             text = stringResource(error.message),
-            color = MaterialTheme.colorScheme.error
+            color = MaterialTheme.colorScheme.error,
         )
         when (error.buttonAction) {
             ButtonAction.AGE_CONFIRMATION -> {
@@ -46,19 +46,24 @@ fun TvErrorView(
                     Text(stringResource(error.buttonMessage))
                 }
             }
+
             ButtonAction.LOGIN -> {
                 OutlinedButton(onClick = { onLoginClick?.invoke() }) {
                     Text(stringResource(error.buttonMessage))
                 }
             }
+
             else -> {
                 if (error.buttonMessage != ACTION_MESSAGE_HIDE) {
                     OutlinedButton(onClick = onRetryClick) {
                         Text(
                             stringResource(
-                                if (error.buttonMessage == ACTION_MESSAGE_DEFAULT) R.string.error_action_retry
-                                else error.buttonMessage
-                            )
+                                if (error.buttonMessage == ACTION_MESSAGE_DEFAULT) {
+                                    R.string.error_action_retry
+                                } else {
+                                    error.buttonMessage
+                                },
+                            ),
                         )
                     }
                 }
@@ -75,7 +80,7 @@ fun TvErrorView(
                     onClick = {
                         preferenceHelper.isAgeRestrictedMediaAllowed = true
                         showAgeConfirmDialog = false
-                    }
+                    },
                 ) {
                     Text(stringResource(R.string.dialog_age_confirmation_positive))
                 }
@@ -84,7 +89,7 @@ fun TvErrorView(
                 TextButton(onClick = { showAgeConfirmDialog = false }) {
                     Text(stringResource(R.string.cancel))
                 }
-            }
+            },
         )
     }
 }

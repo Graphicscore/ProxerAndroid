@@ -5,10 +5,10 @@ import android.view.View
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import kotterknife.bindView
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.base.BaseContentFragment
 import me.proxer.app.profile.ProfileActivity
@@ -21,11 +21,11 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class ChatRoomInfoFragment : BaseContentFragment<List<ChatRoomUser>>(R.layout.fragment_chat_room_info) {
-
     companion object {
-        fun newInstance() = ChatRoomInfoFragment().apply {
-            this.arguments = bundleOf()
-        }
+        fun newInstance() =
+            ChatRoomInfoFragment().apply {
+                this.arguments = bundleOf()
+            }
     }
 
     override val viewModel by viewModel<ChatRoomInfoViewModel> { parametersOf(chatRoomId) }
@@ -53,7 +53,7 @@ class ChatRoomInfoFragment : BaseContentFragment<List<ChatRoomUser>>(R.layout.fr
                     item.id,
                     item.name,
                     item.image,
-                    if (view.drawable != null && item.image.isNotBlank()) view else null
+                    if (view.drawable != null && item.image.isNotBlank()) view else null,
                 )
             }
 
@@ -62,7 +62,10 @@ class ChatRoomInfoFragment : BaseContentFragment<List<ChatRoomUser>>(R.layout.fr
             .subscribe { showPage(it) }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

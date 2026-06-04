@@ -12,7 +12,6 @@ import me.proxer.library.ProxerApi
 import okhttp3.HttpUrl
 
 class LinkCheckViewModel : ViewModel() {
-
     val data = MutableLiveData<Boolean?>()
     val isLoading = MutableLiveData<Boolean?>()
 
@@ -30,21 +29,23 @@ class LinkCheckViewModel : ViewModel() {
     fun check(link: HttpUrl) {
         checkDisposable?.dispose()
 
-        checkDisposable = api.messenger.checkLink(link).buildSingle()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe {
-                isLoading.value = true
-                data.value = null
-            }
-            .doAfterTerminate { isLoading.value = false }
-            .subscribeAndLogErrors(
-                {
-                    data.value = it.isSecure
-                },
-                {
-                    data.value = false
-                }
-            )
+        checkDisposable =
+            api.messenger
+                .checkLink(link)
+                .buildSingle()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSubscribe {
+                    isLoading.value = true
+                    data.value = null
+                }.doAfterTerminate { isLoading.value = false }
+                .subscribeAndLogErrors(
+                    {
+                        data.value = it.isSecure
+                    },
+                    {
+                        data.value = false
+                    },
+                )
     }
 }

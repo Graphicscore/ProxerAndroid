@@ -36,14 +36,14 @@ inline fun ImageView.setIconicsImage(
     icon: IIcon,
     sizeDp: Int,
     paddingDp: Int = sizeDp / 4,
-    @AttrRes colorAttr: Int = R.attr.colorIcon
+    @AttrRes colorAttr: Int = R.attr.colorIcon,
 ) {
     setImageDrawable(
         IconicsDrawable(context, icon).apply {
             this.colorInt = context.resolveColor(colorAttr)
             this.paddingDp = paddingDp
             this.sizeDp = sizeDp
-        }
+        },
     )
 }
 
@@ -51,30 +51,34 @@ inline fun ViewGroup.enableLayoutAnimationsSafely() {
     this.layoutTransition = LayoutTransition().apply { setAnimateParentHierarchy(false) }
 }
 
-fun RecyclerView.isAtCompleteTop() = when (val layoutManager = this.safeLayoutManager) {
-    is StaggeredGridLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPositions(null).contains(0)
-    is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition() == 0
-    else -> false
-}
+fun RecyclerView.isAtCompleteTop() =
+    when (val layoutManager = this.safeLayoutManager) {
+        is StaggeredGridLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPositions(null).contains(0)
+        is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition() == 0
+        else -> false
+    }
 
-fun RecyclerView.isAtTop() = when (val layoutManager = this.safeLayoutManager) {
-    is StaggeredGridLayoutManager -> layoutManager.findFirstVisibleItemPositions(null).contains(0)
-    is LinearLayoutManager -> layoutManager.findFirstVisibleItemPosition() == 0
-    else -> false
-}
+fun RecyclerView.isAtTop() =
+    when (val layoutManager = this.safeLayoutManager) {
+        is StaggeredGridLayoutManager -> layoutManager.findFirstVisibleItemPositions(null).contains(0)
+        is LinearLayoutManager -> layoutManager.findFirstVisibleItemPosition() == 0
+        else -> false
+    }
 
-fun RecyclerView.scrollToTop() = when (val layoutManager = safeLayoutManager) {
-    is StaggeredGridLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
-    is LinearLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
-    else -> error("Unsupported layout manager: ${layoutManager.javaClass.name}")
-}
+fun RecyclerView.scrollToTop() =
+    when (val layoutManager = safeLayoutManager) {
+        is StaggeredGridLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
+        is LinearLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
+        else -> error("Unsupported layout manager: ${layoutManager.javaClass.name}")
+    }
 
 fun RecyclerView.doAfterAnimations(action: () -> Unit) {
     postDelayed(10) {
         if (isAnimating) {
-            val safeItemAnimator = requireNotNull(itemAnimator) {
-                "RecyclerView is reporting isAnimating as true, but no itemAnimator is set"
-            }
+            val safeItemAnimator =
+                requireNotNull(itemAnimator) {
+                    "RecyclerView is reporting isAnimating as true, but no itemAnimator is set"
+                }
 
             safeItemAnimator.isRunning { doAfterAnimations(action) }
         } else {
@@ -88,30 +92,33 @@ fun RecyclerView.enableFastScroll() {
     val trackColor = context.resolveColor(R.attr.colorFastscrollTrack)
     val pressedColor = context.resolveColor(R.attr.colorSecondary)
 
-    val thumbDrawableSelector = StateListDrawable().apply {
-        addState(intArrayOf(android.R.attr.state_pressed), ColorDrawable(pressedColor))
-        addState(intArrayOf(), ColorDrawable(thumbColor))
-    }
+    val thumbDrawableSelector =
+        StateListDrawable().apply {
+            addState(intArrayOf(android.R.attr.state_pressed), ColorDrawable(pressedColor))
+            addState(intArrayOf(), ColorDrawable(thumbColor))
+        }
 
     val trackDrawable = ColorDrawable(trackColor)
 
     try {
-        val initFastScrollerMethod = RecyclerView::class.java.getDeclaredMethod(
-            "initFastScroller",
-            StateListDrawable::class.java,
-            Drawable::class.java,
-            StateListDrawable::class.java,
-            Drawable::class.java
-        ).apply {
-            isAccessible = true
-        }
+        val initFastScrollerMethod =
+            RecyclerView::class.java
+                .getDeclaredMethod(
+                    "initFastScroller",
+                    StateListDrawable::class.java,
+                    Drawable::class.java,
+                    StateListDrawable::class.java,
+                    Drawable::class.java,
+                ).apply {
+                    isAccessible = true
+                }
 
         initFastScrollerMethod.invoke(
             this,
             thumbDrawableSelector,
             trackDrawable,
             thumbDrawableSelector,
-            trackDrawable
+            trackDrawable,
         )
     } catch (error: Exception) {
         Timber.e(error, "Could not enable fast scroll")

@@ -11,18 +11,23 @@ import me.proxer.library.util.ProxerUrls
 import me.proxer.library.util.ProxerUtils
 
 object PollPrototype : TextMutatorPrototype, AutoClosingPrototype {
-
     override val startRegex = Regex(" *poll( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *poll *", REGEX_OPTIONS)
 
-    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
+    override fun mutate(
+        text: SpannableStringBuilder,
+        args: BBArgs,
+    ): SpannableStringBuilder {
         val id = text.trim()
-        val url = ProxerUrls.webBase.newBuilder()
-            .addPathSegments("poll/$id")
-            .setQueryParameter("device", ProxerUtils.getSafeApiEnumName(Device.MOBILE))
-            .build()
+        val url =
+            ProxerUrls.webBase
+                .newBuilder()
+                .addPathSegments("poll/$id")
+                .setQueryParameter("device", ProxerUtils.getSafeApiEnumName(Device.MOBILE))
+                .build()
 
-        return text.toSpannableStringBuilder()
+        return text
+            .toSpannableStringBuilder()
             .replace(0, text.length, args.safeResources.getString(R.string.view_bbcode_poll_link))
             .linkifyUrl(url)
     }

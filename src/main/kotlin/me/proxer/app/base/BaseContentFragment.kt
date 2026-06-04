@@ -27,8 +27,9 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFragment(contentLayoutId) {
-
+abstract class BaseContentFragment<T>(
+    @LayoutRes contentLayoutId: Int,
+) : BaseFragment(contentLayoutId) {
     private companion object {
         private const val IS_SOLVING_CAPTCHA_ARGUMENT = "is_solving_captcha"
     }
@@ -49,17 +50,22 @@ abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFra
         get() = requireArguments().getBoolean(IS_SOLVING_CAPTCHA_ARGUMENT, false)
         set(value) = requireArguments().putBoolean(IS_SOLVING_CAPTCHA_ARGUMENT, value)
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
-        val schemeColors = requireContext().let { context ->
-            intArrayOf(context.resolveColor(R.attr.colorPrimary), context.resolveColor(R.attr.colorSecondary))
-        }
+        val schemeColors =
+            requireContext().let { context ->
+                intArrayOf(context.resolveColor(R.attr.colorPrimary), context.resolveColor(R.attr.colorSecondary))
+            }
 
         progress.setColorSchemeColors(*schemeColors)
         progress.isEnabled = isSwipeToRefreshEnabled
 
-        progress.refreshes()
+        progress
+            .refreshes()
             .autoDisposable(viewLifecycleOwner.scope())
             .subscribe { viewModel.refresh() }
 
@@ -70,7 +76,7 @@ abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFra
                     null -> hideError()
                     else -> showError(it)
                 }
-            }
+            },
         )
 
         viewModel.data.observe(
@@ -80,7 +86,7 @@ abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFra
                     null -> hideData()
                     else -> showData(it)
                 }
-            }
+            },
         )
 
         viewModel.isLoading.observe(
@@ -88,7 +94,7 @@ abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFra
             Observer {
                 progress.isEnabled = it == true || isSwipeToRefreshEnabled
                 progress.isRefreshing = it == true
-            }
+            },
         )
 
         if (viewModel.isLoading.value != true && viewModel.data.value == null && viewModel.error.value == null) {
@@ -119,13 +125,15 @@ abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFra
         errorText.text = getString(action.message)
         errorButton.isVisible = action.buttonMessage != ACTION_MESSAGE_HIDE
 
-        errorButton.text = when (action.buttonMessage) {
-            ACTION_MESSAGE_DEFAULT -> getString(R.string.error_action_retry)
-            ACTION_MESSAGE_HIDE -> null
-            else -> getString(action.buttonMessage)
-        }
+        errorButton.text =
+            when (action.buttonMessage) {
+                ACTION_MESSAGE_DEFAULT -> getString(R.string.error_action_retry)
+                ACTION_MESSAGE_HIDE -> null
+                else -> getString(action.buttonMessage)
+            }
 
-        errorButton.clicks()
+        errorButton
+            .clicks()
             .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
             .subscribe {
                 when (action.buttonAction) {
@@ -134,7 +142,10 @@ abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFra
 
                         showPage(ProxerUrls.captchaWeb(Utils.getIpAddress(), Device.MOBILE), skipCheck = true)
                     }
-                    else -> action.toClickListener(hostingActivity)?.onClick(errorButton) ?: viewModel.load()
+
+                    else -> {
+                        action.toClickListener(hostingActivity)?.onClick(errorButton) ?: viewModel.load()
+                    }
                 }
             }
     }

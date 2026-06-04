@@ -18,7 +18,6 @@ import java.util.concurrent.Executors
  * @author Ruben Gees
  */
 class TimberFileTree : Timber.Tree() {
-
     private companion object {
         private const val LOGS_DIRECTORY = "Proxer.Me Logs"
         private const val ROTATION_THRESHOLD = 7L
@@ -32,9 +31,17 @@ class TimberFileTree : Timber.Tree() {
 
     private val resolvedLogsDirectory get() = File(downloadsDirectory, LOGS_DIRECTORY).also { it.mkdirs() }
 
-    override fun isLoggable(tag: String?, priority: Int) = priority >= Log.INFO
+    override fun isLoggable(
+        tag: String?,
+        priority: Int,
+    ) = priority >= Log.INFO
 
-    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
+    override fun log(
+        priority: Int,
+        tag: String?,
+        message: String,
+        t: Throwable?,
+    ) {
         if (!resolvedLogsDirectory.canWrite()) {
             return
         }
@@ -46,23 +53,27 @@ class TimberFileTree : Timber.Tree() {
                 {},
                 {
                     Log.e(TimberFileTree::class.java.name, "Failure while logging to file", it)
-                }
+                },
             )
     }
 
-    private fun internalLog(tag: String?, message: String) {
+    private fun internalLog(
+        tag: String?,
+        message: String,
+    ) {
         val currentLogFiles = resolvedLogsDirectory.listFiles() ?: emptyArray()
         val currentDateTime = LocalDateTime.now()
         val rotationThresholdDate = currentDateTime.toLocalDate().minusDays(ROTATION_THRESHOLD)
 
         for (currentLogFile in currentLogFiles) {
-            val fileDate = try {
-                LocalDate.parse(currentLogFile.nameWithoutExtension)
-            } catch (error: DateTimeParseException) {
-                Log.e(TimberFileTree::class.java.name, "Invalid log file $currentLogFile found, deleting", error)
+            val fileDate =
+                try {
+                    LocalDate.parse(currentLogFile.nameWithoutExtension)
+                } catch (error: DateTimeParseException) {
+                    Log.e(TimberFileTree::class.java.name, "Invalid log file $currentLogFile found, deleting", error)
 
-                null
-            }
+                    null
+                }
 
             if (fileDate == null || fileDate.isBefore(rotationThresholdDate)) {
                 currentLogFile.deleteRecursively()

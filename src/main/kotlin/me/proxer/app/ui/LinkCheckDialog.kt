@@ -26,11 +26,13 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class LinkCheckDialog : BaseDialog() {
-
     companion object {
         private const val LINK_ARGUMENT = "link"
 
-        fun show(activity: FragmentActivity, link: HttpUrl) = LinkCheckDialog()
+        fun show(
+            activity: FragmentActivity,
+            link: HttpUrl,
+        ) = LinkCheckDialog()
             .apply { arguments = bundleOf(LINK_ARGUMENT to link.toString()) }
             .show(activity.supportFragmentManager, "link_check_dialog")
     }
@@ -46,16 +48,16 @@ class LinkCheckDialog : BaseDialog() {
     private val link: HttpUrl
         get() = requireArguments().getSafeString(LINK_ARGUMENT).toHttpUrl()
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .customView(R.layout.dialog_link_check, scrollable = true)
-        .positiveButton(R.string.dialog_link_check_positive) {
-            if (remember.isChecked) {
-                preferenceHelper.shouldCheckLinks = false
-            }
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        MaterialDialog(requireContext())
+            .customView(R.layout.dialog_link_check, scrollable = true)
+            .positiveButton(R.string.dialog_link_check_positive) {
+                if (remember.isChecked) {
+                    preferenceHelper.shouldCheckLinks = false
+                }
 
-            customTabsHelper.openHttpPage(requireActivity(), link)
-        }
-        .negativeButton(R.string.cancel)
+                customTabsHelper.openHttpPage(requireActivity(), link)
+            }.negativeButton(R.string.cancel)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -73,7 +75,7 @@ class LinkCheckDialog : BaseDialog() {
                         progressIcon.setImageDrawable(
                             IconicsDrawable(requireContext(), CommunityMaterial.Icon3.cmd_shield_check).apply {
                                 colorRes = R.color.green_500
-                            }
+                            },
                         )
                     } else {
                         progressText.setText(R.string.dialog_link_check_not_secure)
@@ -82,11 +84,11 @@ class LinkCheckDialog : BaseDialog() {
                         progressIcon.setImageDrawable(
                             IconicsDrawable(requireContext(), CommunityMaterial.Icon3.cmd_shield_alert).apply {
                                 colorRes = R.color.red_500
-                            }
+                            },
                         )
                     }
                 }
-            }
+            },
         )
 
         viewModel.isLoading.observe(
@@ -97,7 +99,7 @@ class LinkCheckDialog : BaseDialog() {
                 if (it == true) {
                     progressText.setText(R.string.dialog_link_check_progress)
                 }
-            }
+            },
         )
 
         if (savedInstanceState == null) {

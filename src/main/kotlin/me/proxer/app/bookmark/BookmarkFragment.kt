@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager.VERTICAL
 import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import com.jakewharton.rxbinding3.appcompat.queryTextChangeEvents
 import com.jakewharton.rxbinding3.view.actionViewEvents
@@ -20,7 +21,6 @@ import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import com.bumptech.glide.Glide
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.base.PagedContentFragment
@@ -43,22 +43,23 @@ import kotlin.properties.Delegates
  * @author Ruben Gees
  */
 class BookmarkFragment : PagedContentFragment<Bookmark>() {
-
     companion object {
         private const val SEARCH_QUERY_ARGUMENT = "search_query"
         private const val CATEGORY_ARGUMENT = "category"
         private const val FILTER_AVAILABLE_ARGUMENT = "filter_available"
 
-        fun newInstance() = BookmarkFragment().apply {
-            arguments = bundleOf()
-        }
+        fun newInstance() =
+            BookmarkFragment().apply {
+                arguments = bundleOf()
+            }
     }
 
     override val emptyDataMessage
-        get() = when (searchQuery.isNullOrBlank()) {
-            true -> R.string.error_no_data_bookmark
-            false -> R.string.error_no_data_search
-        }
+        get() =
+            when (searchQuery.isNullOrBlank()) {
+                true -> R.string.error_no_data_bookmark
+                false -> R.string.error_no_data_search
+            }
 
     override val viewModel by viewModel<BookmarkViewModel> { parametersOf(searchQuery, category, filterAvailable) }
 
@@ -105,21 +106,26 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
             .autoDisposable(this.scope())
             .subscribe {
                 when (it.category) {
-                    Category.ANIME -> AnimeActivity.navigateTo(
-                        requireActivity(),
-                        it.entryId,
-                        it.episode,
-                        it.language.toAnimeLanguage(),
-                        it.name
-                    )
-                    Category.MANGA, Category.NOVEL -> MangaActivity.navigateTo(
-                        requireActivity(),
-                        it.entryId,
-                        it.episode,
-                        it.language.toGeneralLanguage(),
-                        it.chapterName,
-                        it.name
-                    )
+                    Category.ANIME -> {
+                        AnimeActivity.navigateTo(
+                            requireActivity(),
+                            it.entryId,
+                            it.episode,
+                            it.language.toAnimeLanguage(),
+                            it.name,
+                        )
+                    }
+
+                    Category.MANGA, Category.NOVEL -> {
+                        MangaActivity.navigateTo(
+                            requireActivity(),
+                            it.entryId,
+                            it.episode,
+                            it.language.toGeneralLanguage(),
+                            it.chapterName,
+                            it.name,
+                        )
+                    }
                 }
             }
 
@@ -138,7 +144,10 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
         setHasOptionsMenu(true)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
@@ -151,10 +160,10 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
                         getString(R.string.error_bookmark_deletion, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
 
         viewModel.undoData.observe(
@@ -165,10 +174,10 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
                         R.string.fragment_bookmark_delete_message,
                         Snackbar.LENGTH_LONG,
                         R.string.action_undo,
-                        View.OnClickListener { viewModel.undo() }
+                        View.OnClickListener { viewModel.undo() },
                     )
                 }
-            }
+            },
         )
 
         viewModel.undoError.observe(
@@ -179,14 +188,17 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
                         getString(R.string.error_undo, getString(it.message)),
                         Snackbar.LENGTH_LONG,
                         it.buttonMessage,
-                        it.toClickListener(hostingActivity)
+                        it.toClickListener(hostingActivity),
                     )
                 }
-            }
+            },
         )
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+    override fun onCreateOptionsMenu(
+        menu: Menu,
+        inflater: MenuInflater,
+    ) {
         IconicsMenuInflaterUtil.inflate(inflater, requireContext(), R.menu.fragment_bookmarks, menu, true)
 
         when (category) {
@@ -200,7 +212,8 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
         menu.findItem(R.id.search).let { searchItem ->
             searchView = searchItem.actionView as SearchView
 
-            searchItem.actionViewEvents()
+            searchItem
+                .actionViewEvents()
                 .autoDisposable(viewLifecycleOwner.scope(Lifecycle.Event.ON_DESTROY))
                 .subscribe { event ->
                     if (event.menuItem.isActionViewExpanded) {
@@ -211,7 +224,8 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
                     TransitionManager.beginDelayedTransition(toolbar)
                 }
 
-            searchView.queryTextChangeEvents()
+            searchView
+                .queryTextChangeEvents()
                 .skipInitialValue()
                 .debounce(500, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -239,16 +253,19 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
 
                 item.isChecked = true
             }
+
             R.id.manga -> {
                 category = Category.MANGA
 
                 item.isChecked = true
             }
+
             R.id.all -> {
                 category = null
 
                 item.isChecked = true
             }
+
             R.id.filterAvailable -> {
                 filterAvailable = !item.isChecked
 

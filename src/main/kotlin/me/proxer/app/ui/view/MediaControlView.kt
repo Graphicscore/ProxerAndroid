@@ -22,8 +22,10 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class MediaControlView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
-
+class MediaControlView(
+    context: Context,
+    attrs: AttributeSet?,
+) : FrameLayout(context, attrs) {
     val uploaderClickSubject: PublishSubject<Uploader> = PublishSubject.create()
     val translatorGroupClickSubject: PublishSubject<SimpleTranslatorGroup> = PublishSubject.create()
     val episodeSwitchSubject: PublishSubject<Int> = PublishSubject.create()
@@ -82,10 +84,11 @@ class MediaControlView(context: Context, attrs: AttributeSet?) : FrameLayout(con
             next.isVisible = true
         }
 
-        bookmarkNext.text = when {
-            new.current < new.amount -> textResolver?.bookmarkNext()
-            else -> bookmarkNext.context.getString(R.string.view_media_control_finish)
-        }
+        bookmarkNext.text =
+            when {
+                new.current < new.amount -> textResolver?.bookmarkNext()
+                else -> bookmarkNext.context.getString(R.string.view_media_control_finish)
+            }
     }
 
     private val uploaderRow: ViewGroup by bindView(R.id.uploaderRow)
@@ -112,58 +115,79 @@ class MediaControlView(context: Context, attrs: AttributeSet?) : FrameLayout(con
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
 
-        uploaderText.clicks()
+        uploaderText
+            .clicks()
             .filter { uploader != null }
             .map { uploader }
             .autoDisposable(ViewScopeProvider.from(this))
             .subscribe(uploaderClickSubject)
 
-        translatorGroupText.clicks()
+        translatorGroupText
+            .clicks()
             .filter { translatorGroup != null }
             .map { translatorGroup }
             .autoDisposable(ViewScopeProvider.from(this))
             .subscribe(translatorGroupClickSubject)
 
-        previous.clicks()
+        previous
+            .clicks()
             .map { episodeInfo.current - 1 }
             .autoDisposable(ViewScopeProvider.from(this))
             .subscribe(episodeSwitchSubject)
 
-        next.clicks()
+        next
+            .clicks()
             .map { episodeInfo.current + 1 }
             .autoDisposable(ViewScopeProvider.from(this))
             .subscribe(episodeSwitchSubject)
 
-        bookmarkThis.clicks()
+        bookmarkThis
+            .clicks()
             .map { episodeInfo.current }
             .autoDisposable(ViewScopeProvider.from(this))
             .subscribe(bookmarkSetSubject)
 
-        bookmarkNext.clicks()
+        bookmarkNext
+            .clicks()
             .map { episodeInfo.current to episodeInfo.amount }
             .publish()
             .also { observable ->
-                observable.filter { (current, amount) -> current < amount }
+                observable
+                    .filter { (current, amount) -> current < amount }
                     .map { (current, _) -> current + 1 }
                     .autoDisposable(ViewScopeProvider.from(this))
                     .subscribe(bookmarkSetSubject)
 
-                observable.filter { (current, amount) -> current >= amount }
+                observable
+                    .filter { (current, amount) -> current >= amount }
                     .map { (current, _) -> current }
                     .autoDisposable(ViewScopeProvider.from(this))
                     .subscribe(finishClickSubject)
-            }
-            .connect()
+            }.connect()
     }
 
-    data class Uploader(val id: String, val name: String)
-    data class SimpleTranslatorGroup(val id: String, val name: String)
-    data class SimpleEpisodeInfo(val amount: Int, val current: Int)
+    data class Uploader(
+        val id: String,
+        val name: String,
+    )
+
+    data class SimpleTranslatorGroup(
+        val id: String,
+        val name: String,
+    )
+
+    data class SimpleEpisodeInfo(
+        val amount: Int,
+        val current: Int,
+    )
 
     interface TextResourceResolver {
         fun next(): String
+
         fun previous(): String
+
         fun bookmarkThis(): String
+
         fun bookmarkNext(): String
     }
 }

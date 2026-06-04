@@ -13,13 +13,13 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.uber.autodispose.autoDisposable
 import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
-import com.bumptech.glide.RequestManager
 import me.proxer.app.R
 import me.proxer.app.base.AutoDisposeViewHolder
 import me.proxer.app.base.BaseAdapter
@@ -42,9 +42,8 @@ import me.proxer.library.util.ProxerUrls
  */
 class CommentsAdapter(
     savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper
+    private val storageHelper: StorageHelper,
 ) : BaseAdapter<ParsedComment, ViewHolder>() {
-
     private companion object {
         private const val EXPANDED_STATE = "comments_expanded"
     }
@@ -59,19 +58,24 @@ class CommentsAdapter(
     private val expansionMap: ParcelableStringBooleanMap
 
     init {
-        expansionMap = when (savedInstanceState) {
-            null -> ParcelableStringBooleanMap()
-            else -> savedInstanceState.getSafeParcelable(EXPANDED_STATE)
-        }
+        expansionMap =
+            when (savedInstanceState) {
+                null -> ParcelableStringBooleanMap()
+                else -> savedInstanceState.getSafeParcelable(EXPANDED_STATE)
+            }
 
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        return ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))
-    }
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int,
+    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+    ) = holder.bind(data[position])
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         layoutManager = recyclerView.layoutManager
@@ -92,8 +96,9 @@ class CommentsAdapter(
         outState.putParcelable(EXPANDED_STATE, expansionMap)
     }
 
-    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
-
+    inner class ViewHolder(
+        itemView: View,
+    ) : AutoDisposeViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
@@ -158,23 +163,26 @@ class CommentsAdapter(
             divider.isVisible = !item.parsedContent.isBlank()
 
             time.text = item.date.distanceInWordsToNow(time.context)
-            progress.text = item.mediaProgress.toEpisodeAppString(
-                progress.context,
-                item.episode,
-                categoryCallback?.invoke() ?: Category.ANIME
-            )
+            progress.text =
+                item.mediaProgress.toEpisodeAppString(
+                    progress.context,
+                    item.episode,
+                    categoryCallback?.invoke() ?: Category.ANIME,
+                )
 
             handleExpansion(item.id)
             bindImage(item)
         }
 
         private fun initListeners() {
-            titleContainer.clicks()
+            titleContainer
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { image to data[it] }
                 .autoDisposable(this)
                 .subscribe(profileClickSubject)
 
-            expand.clicks()
+            expand
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it].id }
                 .autoDisposable(this)
                 .subscribe {
@@ -183,12 +191,14 @@ class CommentsAdapter(
                     handleExpansion(it, true)
                 }
 
-            edit.clicks()
+            edit
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(editClickSubject)
 
-            delete.clicks()
+            delete
+                .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
                 .autoDisposable(this)
                 .subscribe(deleteClickSubject)
@@ -206,7 +216,10 @@ class CommentsAdapter(
                 }
         }
 
-        private fun handleExpansion(itemId: String, animate: Boolean = false) {
+        private fun handleExpansion(
+            itemId: String,
+            animate: Boolean = false,
+        ) {
             ViewCompat.animate(expand).cancel()
 
             if (expansionMap.containsKey(itemId)) {
@@ -233,23 +246,29 @@ class CommentsAdapter(
             }
         }
 
-        private fun bindRatingRow(container: ViewGroup, ratingBar: RatingBar, rating: Float) = if (rating <= 0) {
+        private fun bindRatingRow(
+            container: ViewGroup,
+            ratingBar: RatingBar,
+            rating: Float,
+        ) = if (rating <= 0) {
             container.isGone = true
         } else {
             container.isVisible = true
             ratingBar.rating = rating
         }
 
-        private fun bindExpandButton(maxHeight: Int) = when (comment.height < maxHeight) {
-            true -> expand.isGone = true
-            false -> expand.isVisible = true
-        }
+        private fun bindExpandButton(maxHeight: Int) =
+            when (comment.height < maxHeight) {
+                true -> expand.isGone = true
+                false -> expand.isVisible = true
+            }
 
         private fun bindImage(item: ParsedComment) {
             if (item.image.isBlank()) {
                 image.setIconicsImage(CommunityMaterial.Icon.cmd_account, 32, 4, R.attr.colorSecondary)
             } else {
-                glide?.load(ProxerUrls.userImage(item.image).toString())
+                glide
+                    ?.load(ProxerUrls.userImage(item.image).toString())
                     ?.transition(DrawableTransitionOptions.withCrossFade())
                     ?.circleCrop()
                     ?.logErrors()
