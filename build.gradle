@@ -51,11 +51,6 @@ android {
         release {
             java.srcDirs += "src/release/kotlin"
         }
-
-        logRelease {
-            java.srcDirs = release.java.srcDirs
-            res.srcDirs = release.res.srcDirs
-        }
     }
 
     compileOptions {
@@ -110,24 +105,6 @@ android {
             }
         }
 
-        logRelease {
-            minifyEnabled true
-            shrinkResources true
-            // R8 in AGP 9 applies code optimization and unused-code removal by default; no postprocessing{} block needed
-            proguardFiles "config/shrinker/shrinker-rules.pro"
-
-            multiDexEnabled true
-
-            ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64", "x86" }
-
-            versionNameSuffix = "-logRelease-${getGitHash()}"
-            buildConfigField "String", "PROXER_API_KEY", "\"${getFromSecrets("PROXER_API_KEY")}\""
-            buildConfigField "boolean", "LOG", "Boolean.parseBoolean(\"true\")"
-
-            if (shouldSign()) {
-                signingConfig signingConfigs.release
-            }
-        }
     }
 
     lint {

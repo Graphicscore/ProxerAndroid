@@ -25,7 +25,7 @@ Gradle uses the JBR at `/opt/android-studio/jbr` (configured via `org.gradle.jav
 
 No unit or instrumented tests exist in the project.
 
-Three build variants: **debug** (unobfuscated, logging on), **release** (obfuscated, no logging), **logRelease** (obfuscated, logging on).
+Three build variants: **debug** (unobfuscated, logging on), **release** (obfuscated, no logging)
 
 ## Android TV Frontend
 
