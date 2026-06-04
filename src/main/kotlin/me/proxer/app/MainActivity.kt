@@ -161,7 +161,14 @@ class MainActivity : DrawerActivity() {
 
         if (requestCode == IntroductionBuilder.INTRODUCTION_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                IntentCompat.getParcelableArrayListExtra(data ?: return, OPTION_RESULT, Option::class.java)?.forEach { option ->
+                val options =
+                    IntentCompat.getParcelableArrayListExtra(
+                        data ?: return,
+                        OPTION_RESULT,
+                        Option::class.java,
+                    )
+
+                options?.forEach { option ->
                     when (option.position) {
                         1 -> {
                             preferenceHelper.areNewsNotificationsEnabled = option.isActivated
@@ -267,8 +274,7 @@ class MainActivity : DrawerActivity() {
 
         return when (actionDrawerItem) {
             null -> {
-                @Suppress("DEPRECATION")
-                val sectionExtra = intent.getSerializableExtra(SECTION_EXTRA) as? DrawerItem
+                val sectionExtra = IntentCompat.getSerializableExtra(intent, SECTION_EXTRA, DrawerItem::class.java)
 
                 sectionExtra ?: preferenceHelper.startPage
             }

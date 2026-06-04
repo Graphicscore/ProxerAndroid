@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
 import androidx.core.app.ShareCompat
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.commitNow
 import com.jakewharton.rxbinding3.view.clicks
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
@@ -82,8 +83,7 @@ class AnimeActivity : DrawerActivity() {
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
                 true -> {
-                    @Suppress("DEPRECATION")
-                    intent.getSerializableExtra(LANGUAGE_EXTRA) as AnimeLanguage
+                    IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)!!
                 }
 
                 false -> {

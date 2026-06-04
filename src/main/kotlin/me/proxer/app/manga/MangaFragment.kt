@@ -148,7 +148,10 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        lastPosition = savedInstanceState?.let { BundleCompat.getParcelable(it, LAST_POSITION_STATE, Parcelable::class.java) }
+        lastPosition =
+            savedInstanceState?.let {
+                BundleCompat.getParcelable(it, LAST_POSITION_STATE, Parcelable::class.java)
+            }
         hasLowMemory = savedInstanceState?.getByte(LOW_MEMORY_STATE) == 1.toByte()
 
         preloader = MangaPreloader()

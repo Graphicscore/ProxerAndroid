@@ -8,6 +8,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import androidx.core.app.ShareCompat
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.Observer
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.google.android.material.tabs.TabLayout
@@ -90,9 +91,8 @@ class MediaActivity : ImageTabsActivity() {
             title = value
         }
 
-    @Suppress("DEPRECATION")
     var category: Category?
-        get() = intent.getSerializableExtra(CATEGORY_EXTRA) as Category?
+        get() = IntentCompat.getSerializableExtra(intent, CATEGORY_EXTRA, Category::class.java)
         set(value) {
             intent.putExtra(CATEGORY_EXTRA, value)
 

@@ -112,9 +112,8 @@ class StreamActivity : BaseActivity() {
     internal val episode: Int
         get() = intent.getIntExtra(EPISODE_EXTRA, -1).let { if (it <= 0) 1 else it }
 
-    @Suppress("DEPRECATION")
     internal val language: AnimeLanguage
-        get() = intent.getSerializableExtra(LANGUAGE_EXTRA) as AnimeLanguage
+        get() = IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)!!
 
     internal val coverUri: Uri?
         get() = IntentCompat.getParcelableExtra(intent, COVER_EXTRA, Uri::class.java)

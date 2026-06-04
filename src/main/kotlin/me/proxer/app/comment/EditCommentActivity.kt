@@ -4,9 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.core.content.IntentCompat
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.IntentCompat
 import androidx.fragment.app.commitNow
 import androidx.lifecycle.Observer
 import com.google.android.material.snackbar.Snackbar

@@ -19,6 +19,7 @@ import android.view.View.SYSTEM_UI_FLAG_VISIBLE
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
+import androidx.core.content.IntentCompat
 import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -109,8 +110,7 @@ class MangaActivity : BaseActivity() {
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
                 true -> {
-                    @Suppress("DEPRECATION")
-                    intent.getSerializableExtra(LANGUAGE_EXTRA) as Language
+                    IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, Language::class.java)!!
                 }
 
                 false -> {

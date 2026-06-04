@@ -1,13 +1,13 @@
 package me.proxer.app.chat.prv.create
 
 import android.os.Bundle
-import androidx.core.os.BundleCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.os.BundleCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
@@ -43,7 +43,9 @@ class CreateConferenceParticipantAdapter(
         get() = ArrayList(data)
 
     init {
-        data = savedInstanceState?.let { BundleCompat.getParcelableArrayList(it, LIST_STATE, Participant::class.java) } ?: emptyList()
+        data = savedInstanceState
+            ?.let { BundleCompat.getParcelableArrayList(it, LIST_STATE, Participant::class.java) }
+            ?: emptyList()
     }
 
     override fun onCreateViewHolder(

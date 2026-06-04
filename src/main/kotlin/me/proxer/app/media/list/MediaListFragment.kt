@@ -108,8 +108,11 @@ class MediaListFragment :
 
     private var sortCriteria: MediaSearchSortCriteria
         get() =
-            BundleCompat.getSerializable(requireArguments(), SORT_CRITERIA_ARGUMENT, MediaSearchSortCriteria::class.java)
-                ?: MediaSearchSortCriteria.RATING
+            BundleCompat.getSerializable(
+                requireArguments(),
+                SORT_CRITERIA_ARGUMENT,
+                MediaSearchSortCriteria::class.java,
+            ) ?: MediaSearchSortCriteria.RATING
         set(value) {
             requireArguments().putSerializable(SORT_CRITERIA_ARGUMENT, value)
 
@@ -146,7 +149,9 @@ class MediaListFragment :
         }
 
     internal var genres: List<LocalTag>
-        get() = BundleCompat.getParcelableArrayList(requireArguments(), GENRES_ARGUMENT, LocalTag::class.java) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), GENRES_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(GENRES_ARGUMENT, ArrayList(value))
 
@@ -154,7 +159,9 @@ class MediaListFragment :
         }
 
     internal var excludedGenres: List<LocalTag>
-        get() = BundleCompat.getParcelableArrayList(requireArguments(), EXCLUDED_GENRES_ARGUMENT, LocalTag::class.java) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), EXCLUDED_GENRES_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(EXCLUDED_GENRES_ARGUMENT, ArrayList(value))
 
@@ -170,7 +177,9 @@ class MediaListFragment :
         }
 
     internal var tags: List<LocalTag>
-        get() = BundleCompat.getParcelableArrayList(requireArguments(), TAGS_ARGUMENT, LocalTag::class.java) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), TAGS_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(TAGS_ARGUMENT, ArrayList(value))
 
@@ -178,7 +187,9 @@ class MediaListFragment :
         }
 
     internal var excludedTags: List<LocalTag>
-        get() = BundleCompat.getParcelableArrayList(requireArguments(), EXCLUDED_TAGS_ARGUMENT, LocalTag::class.java) ?: emptyList()
+        get() =
+            BundleCompat.getParcelableArrayList(requireArguments(), EXCLUDED_TAGS_ARGUMENT, LocalTag::class.java)
+                ?: emptyList()
         set(value) {
             requireArguments().putParcelableArrayList(EXCLUDED_TAGS_ARGUMENT, ArrayList(value))
 
