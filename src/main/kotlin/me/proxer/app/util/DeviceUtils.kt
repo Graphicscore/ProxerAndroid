@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
-import android.util.DisplayMetrics
 import android.view.WindowInsets
 import android.view.WindowManager
 import androidx.core.content.getSystemService
@@ -28,9 +27,7 @@ object DeviceUtils {
 
             windowMetrics.bounds.width() - insets.left - insets.right
         } else {
-            DisplayMetrics()
-                .apply { windowManager.defaultDisplay.getMetrics(this) }
-                .widthPixels
+            context.resources.displayMetrics.widthPixels
         }
     }
 
@@ -43,9 +40,7 @@ object DeviceUtils {
 
             windowMetrics.bounds.height() - insets.top - insets.bottom
         } else {
-            DisplayMetrics()
-                .apply { windowManager.defaultDisplay.getMetrics(this) }
-                .heightPixels
+            context.resources.displayMetrics.heightPixels
         }
     }
 

@@ -11,7 +11,6 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.view.clicks
@@ -124,8 +123,8 @@ internal class BBSpoilerView
                 }
 
             when (isExpanded) {
-                true -> ViewCompat.animate(toggleButton).rotation(180f)
-                false -> ViewCompat.animate(toggleButton).rotation(0f)
+                true -> toggleButton.animate().rotation(180f)
+                false -> toggleButton.animate().rotation(0f)
             }
 
             toggleText.requestLayout()

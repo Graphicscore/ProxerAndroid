@@ -79,9 +79,11 @@ inline fun Context.dip(value: Int): Int = (value * resources.displayMetrics.dens
 
 inline fun Context.dip(value: Float): Int = (value * resources.displayMetrics.density).toInt()
 
-inline fun Context.sp(value: Int): Int = (value * resources.displayMetrics.scaledDensity).toInt()
+inline fun Context.sp(value: Int): Int =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, value.toFloat(), resources.displayMetrics).toInt()
 
-inline fun Context.sp(value: Float): Int = (value * resources.displayMetrics.scaledDensity).toInt()
+inline fun Context.sp(value: Float): Int =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, value, resources.displayMetrics).toInt()
 
 inline fun View.dip(value: Int): Int = context.dip(value)
 

@@ -117,7 +117,7 @@ private val applicationModules =
         single(named(STORAGE_PREFERENCES)) {
             val masterKey =
                 MasterKey
-                    .Builder(androidContext())
+                    .Builder(androidContext(), MasterKey.DEFAULT_MASTER_KEY_ALIAS)
                     .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
                     .build()
 

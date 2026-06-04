@@ -14,7 +14,6 @@ import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.TextView
 import androidx.appcompat.widget.TooltipCompat
-import androidx.core.view.ViewCompat
 import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.core.view.updateLayoutParams
@@ -152,7 +151,7 @@ class ExpandableSelectionView
         }
 
         private fun handleExtension() {
-            ViewCompat.animate(toggleButton).rotation(if (isExtended) 180f else 0f)
+            toggleButton.animate().rotation(if (isExtended) 180f else 0f)
 
             inflationDisposable?.dispose()
             itemContainer.removeAllViews()

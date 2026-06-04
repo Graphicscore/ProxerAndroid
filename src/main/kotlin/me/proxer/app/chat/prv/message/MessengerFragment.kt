@@ -466,7 +466,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
 
         requireContext()
             .getSystemService<InputMethodManager>()
-            ?.showSoftInput(messageInput, InputMethodManager.SHOW_IMPLICIT)
+            ?.showSoftInput(messageInput, 0)
 
         actionMode?.finish()
     }

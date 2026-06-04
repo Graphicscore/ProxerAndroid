@@ -321,23 +321,23 @@ class StreamPlayerManager(
     ): MediaSource {
         val mediaItem = MediaItem.fromUri(uri)
         return when (val streamType = Util.inferContentType(uri)) {
-            C.TYPE_SS -> {
+            C.CONTENT_TYPE_SS -> {
                 SsMediaSource
                     .Factory(DefaultSsChunkSource.Factory(dataSourceFactory), dataSourceFactory)
                     .createMediaSource(mediaItem)
             }
 
-            C.TYPE_DASH -> {
+            C.CONTENT_TYPE_DASH -> {
                 DashMediaSource
                     .Factory(DefaultDashChunkSource.Factory(dataSourceFactory), dataSourceFactory)
                     .createMediaSource(mediaItem)
             }
 
-            C.TYPE_HLS -> {
+            C.CONTENT_TYPE_HLS -> {
                 HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
             }
 
-            C.TYPE_OTHER -> {
+            C.CONTENT_TYPE_OTHER -> {
                 ProgressiveMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
             }
 

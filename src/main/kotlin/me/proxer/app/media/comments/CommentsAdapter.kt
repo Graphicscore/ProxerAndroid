@@ -220,20 +220,20 @@ class CommentsAdapter(
             itemId: String,
             animate: Boolean = false,
         ) {
-            ViewCompat.animate(expand).cancel()
+            expand.animate().cancel()
 
             if (expansionMap.containsKey(itemId)) {
                 comment.maxHeight = Int.MAX_VALUE
 
                 when (animate) {
-                    true -> ViewCompat.animate(expand).rotation(180f)
+                    true -> expand.animate().rotation(180f)
                     false -> expand.rotation = 180f
                 }
             } else {
                 comment.maxHeight = maxHeight
 
                 when (animate) {
-                    true -> ViewCompat.animate(expand).rotation(0f)
+                    true -> expand.animate().rotation(0f)
                     false -> expand.rotation = 0f
                 }
             }

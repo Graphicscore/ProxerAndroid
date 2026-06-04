@@ -24,7 +24,6 @@ import androidx.core.os.bundleOf
 import androidx.core.text.parseAsHtml
 import androidx.core.text.set
 import androidx.core.view.MenuProvider
-import androidx.core.view.ViewCompat
 import androidx.core.view.isVisible
 import androidx.transition.TransitionManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -236,7 +235,7 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
 
                 TransitionManager.beginDelayedTransition(scrollContainer)
 
-                ViewCompat.animate(expandRules).rotation(if (rules.isVisible) 180f else 0f)
+                expandRules.animate().rotation(if (rules.isVisible) 180f else 0f)
             }
 
         rating
@@ -374,7 +373,7 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
 
                 requireContext()
                     .getSystemService<InputMethodManager>()
-                    ?.showSoftInput(editor, InputMethodManager.SHOW_IMPLICIT)
+                    ?.showSoftInput(editor, 0)
             }
         }
     }

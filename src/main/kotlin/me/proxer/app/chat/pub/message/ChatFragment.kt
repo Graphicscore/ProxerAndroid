@@ -8,7 +8,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
-import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.appcompat.view.ActionMode
@@ -426,7 +425,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
         messageInput.setSelection(messageInput.safeText.length)
         messageInput.requestFocus()
 
-        requireContext().getSystemService<InputMethodManager>()?.showSoftInput(messageInput, SHOW_IMPLICIT)
+        requireContext().getSystemService<InputMethodManager>()?.showSoftInput(messageInput, 0)
 
         actionMode?.finish()
     }

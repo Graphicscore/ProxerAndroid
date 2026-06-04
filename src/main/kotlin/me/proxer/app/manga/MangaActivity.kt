@@ -220,8 +220,8 @@ class MangaActivity : BaseActivity() {
                             }
                         }
 
-                    ShareCompat.IntentBuilder
-                        .from(this)
+                    ShareCompat
+                        .IntentBuilder(this)
                         .setText(text)
                         .setType("text/plain")
                         .setChooserTitle(getString(R.string.share_title))
