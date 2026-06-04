@@ -21,7 +21,7 @@ import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_HIDE
 import me.proxer.app.util.data.PreferenceHelper
-import org.koin.androidx.compose.get
+import org.koin.compose.koinInject
 
 @Composable
 fun TvErrorView(
@@ -29,7 +29,7 @@ fun TvErrorView(
     onLoginClick: (() -> Unit)? = null,
     onRetryClick: () -> Unit
 ) {
-    val preferenceHelper: PreferenceHelper = get()
+    val preferenceHelper: PreferenceHelper = koinInject()
     var showAgeConfirmDialog by remember { mutableStateOf(false) }
 
     Column(
