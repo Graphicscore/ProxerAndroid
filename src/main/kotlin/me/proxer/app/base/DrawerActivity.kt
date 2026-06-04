@@ -1,12 +1,11 @@
 package me.proxer.app.base
 
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.WindowManager
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.WindowCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.appbar.AppBarLayout
 import com.uber.autodispose.android.lifecycle.scope
@@ -48,8 +47,7 @@ abstract class DrawerActivity : BaseActivity() {
         setContentView(contentView)
         setSupportActionBar(toolbar)
 
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.statusBarColor = Color.TRANSPARENT
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         actionBarDrawerToggle =
             ActionBarDrawerToggle(

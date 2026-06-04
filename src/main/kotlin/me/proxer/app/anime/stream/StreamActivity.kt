@@ -15,13 +15,6 @@ import android.util.Size
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE
-import android.view.View.SYSTEM_UI_FLAG_VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
@@ -33,7 +26,9 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.content.IntentCompat
 import androidx.core.os.postDelayed
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.media3.cast.CastPlayer
@@ -52,7 +47,6 @@ import com.google.android.gms.cast.framework.IntroductoryOverlay
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.jakewharton.rxbinding3.view.clicks
-import com.jakewharton.rxbinding3.view.systemUiVisibilityChanges
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
@@ -62,6 +56,7 @@ import com.mikepenz.iconics.utils.paddingDp
 import com.mikepenz.iconics.utils.sizeDp
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
+import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.StreamResolutionResult
@@ -169,6 +164,9 @@ class StreamActivity : BaseActivity() {
         }
 
     private val animationTime by unsafeLazy { resources.getInteger(android.R.integer.config_shortAnimTime).toLong() }
+
+    private var isInFullscreenMode = false
+    private val systemBarsVisibilitySubject = PublishSubject.create<Boolean>()
 
     private val hideIndicatorHandler = Handler(Looper.getMainLooper())
     private val adFullscreenHandler = Handler(Looper.getMainLooper())
@@ -453,6 +451,8 @@ class StreamActivity : BaseActivity() {
             },
         )
 
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         // Nobody understands fitsSystemWindows so this can probably be done better, but seems to work for now.
         ViewCompat.setOnApplyWindowInsetsListener(root) { _, insets ->
             val systemInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -467,13 +467,15 @@ class StreamActivity : BaseActivity() {
             insets
         }
 
-        window.decorView
-            .systemUiVisibilityChanges()
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { v, insets ->
+            val systemBarsVisible = insets.isVisible(WindowInsetsCompat.Type.systemBars())
+            systemBarsVisibilitySubject.onNext(systemBarsVisible)
+            ViewCompat.onApplyWindowInsets(v, insets)
+        }
+
+        systemBarsVisibilitySubject
             .autoDisposable(this.scope())
             .subscribe { handleUIChange() }
-
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
 
         toggleFullscreen(true)
     }
@@ -491,10 +493,8 @@ class StreamActivity : BaseActivity() {
     }
 
     private fun handleUIChange() {
-        val isInFullscreenMode = window.decorView.systemUiVisibility and SYSTEM_UI_FLAG_FULLSCREEN != 0
-
         if (playerManager.isPlayingAd.not()) {
-            // If true, no flags for hiding system UI are set. Show the controls.
+            // When in fullscreen, system bars are hidden — keep player controls hidden too.
             if (isInFullscreenMode) {
                 playerView.hideController()
                 toolbar.isVisible = false
@@ -509,24 +509,18 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun toggleFullscreen(fullscreen: Boolean) {
+    private fun toggleFullscreen(wantFullscreen: Boolean) {
         val isInMultiWindowMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
 
-        window.decorView.systemUiVisibility =
-            when {
-                fullscreen && !isInMultiWindowMode -> {
-                    SYSTEM_UI_FLAG_LOW_PROFILE or
-                        SYSTEM_UI_FLAG_FULLSCREEN or
-                        SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                        SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                        SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                        SYSTEM_UI_FLAG_IMMERSIVE
-                }
-
-                else -> {
-                    SYSTEM_UI_FLAG_VISIBLE
-                }
-            }
+        if (wantFullscreen && !isInMultiWindowMode) {
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = true
+        } else {
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = false
+        }
     }
 
     private fun toggleStableControls(stable: Boolean) {

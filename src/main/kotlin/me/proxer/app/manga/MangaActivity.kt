@@ -8,19 +8,15 @@ import android.os.Handler
 import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE
-import android.view.View.SYSTEM_UI_FLAG_VISIBLE
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ShareCompat
 import androidx.core.content.IntentCompat
 import androidx.core.os.postDelayed
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.commitNow
@@ -29,10 +25,10 @@ import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_
 import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_NO_SCROLL
 import com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL
 import com.jakewharton.rxbinding3.view.clicks
-import com.jakewharton.rxbinding3.view.systemUiVisibilityChanges
 import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
+import io.reactivex.subjects.PublishSubject
 import kotterknife.bindView
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
@@ -157,6 +153,9 @@ class MangaActivity : BaseActivity() {
 
     private val fullscreenHandler = Handler(Looper.getMainLooper())
 
+    private var isInFullscreenMode = false
+    private val systemBarsVisibilitySubject = PublishSubject.create<Boolean>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -166,6 +165,14 @@ class MangaActivity : BaseActivity() {
 
         setContentView(R.layout.activity_manga)
         setSupportActionBar(toolbar)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { v, insets ->
+            val systemBarsVisible = insets.isVisible(WindowInsetsCompat.Type.systemBars())
+            systemBarsVisibilitySubject.onNext(systemBarsVisible)
+            ViewCompat.onApplyWindowInsets(v, insets)
+        }
 
         setupToolbar()
         updateTitle()
@@ -246,11 +253,10 @@ class MangaActivity : BaseActivity() {
 
         setFullscreen(true)
 
-        window.decorView
-            .systemUiVisibilityChanges()
+        systemBarsVisibilitySubject
             .autoDisposable(this.scope())
-            .subscribe {
-                if (it and SYSTEM_UI_FLAG_FULLSCREEN == 0) {
+            .subscribe { systemBarsVisible ->
+                if (systemBarsVisible) {
                     setFullscreen(false)
 
                     fullscreenHandler.postDelayed(3000) {
@@ -264,7 +270,6 @@ class MangaActivity : BaseActivity() {
 
     fun onContentHide() {
         fullscreenHandler.removeCallbacksAndMessages(null)
-        window.decorView.setOnSystemUiVisibilityChangeListener(null)
 
         setFullscreen(false)
     }
@@ -272,28 +277,22 @@ class MangaActivity : BaseActivity() {
     fun toggleFullscreen() {
         fullscreenHandler.removeCallbacksAndMessages(null)
 
-        val isFullscreen = window.decorView.systemUiVisibility and SYSTEM_UI_FLAG_FULLSCREEN != 0
-
-        setFullscreen(!isFullscreen)
+        setFullscreen(!isInFullscreenMode)
     }
 
     private fun setFullscreen(fullscreen: Boolean) {
         val isInMultiWindowMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
 
         if (fullscreen && !isInMultiWindowMode) {
-            window.decorView.systemUiVisibility = SYSTEM_UI_FLAG_LOW_PROFILE or
-                SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                SYSTEM_UI_FLAG_FULLSCREEN or
-                SYSTEM_UI_FLAG_IMMERSIVE
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = true
 
             toolbar.isVisible = false
         } else {
-            window.decorView.systemUiVisibility = SYSTEM_UI_FLAG_VISIBLE or
-                SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                SYSTEM_UI_FLAG_IMMERSIVE
+            controller.show(WindowInsetsCompat.Type.systemBars())
+            isInFullscreenMode = false
 
             toolbar.isVisible = true
         }

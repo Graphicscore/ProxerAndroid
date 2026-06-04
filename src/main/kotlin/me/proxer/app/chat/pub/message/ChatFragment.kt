@@ -77,8 +77,6 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
                 mode: ActionMode,
                 menu: Menu,
             ): Boolean {
-                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimary)
-
                 innerAdapter.selectedMessages.let {
                     val user = storageHelper.user
 
@@ -123,8 +121,6 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
 
                 innerAdapter.clearSelection()
                 innerAdapter.notifyDataSetChanged()
-
-                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimaryDark)
             }
         }
 

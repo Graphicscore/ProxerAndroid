@@ -87,8 +87,6 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
                 mode: ActionMode,
                 menu: Menu,
             ): Boolean {
-                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimary)
-
                 innerAdapter.selectedMessages.let {
                     menu.findItem(R.id.reply).isVisible = it.size == 1 && it.first().userId != storageHelper.user?.id
                 }
@@ -129,8 +127,6 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
 
                 innerAdapter.clearSelection()
                 innerAdapter.notifyDataSetChanged()
-
-                requireActivity().window.statusBarColor = requireContext().resolveColor(R.attr.colorPrimaryDark)
             }
         }
 
