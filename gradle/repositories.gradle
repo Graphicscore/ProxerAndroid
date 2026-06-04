@@ -35,7 +35,7 @@ repositories {
     }
 
     maven {
-        url "https://jitpack.io"
+        url = "https://jitpack.io"
         mavenContent { releasesOnly() }
         content { includeGroupByRegex "com\\.github.*" }
     }

@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 buildscript { scriptHandler ->
     apply from: "${projectDir}/gradle/versions.gradle"
     apply from: "${projectDir}/gradle/repositories.gradle", to: scriptHandler
@@ -16,15 +19,17 @@ plugins {
 }
 
 apply from: "${projectDir}/gradle/utils.gradle"
+apply from: "${projectDir}/gradle/repositories.gradle"
+apply from: "${projectDir}/gradle/dependencies.gradle"
 
 android {
-    compileSdk rootProject.ext.compileSdkVersion
-    ndkVersion rootProject.ext.ndkVersion
-    namespace "me.proxer.app"
+    compileSdk = rootProject.ext.compileSdkVersion
+    ndkVersion = rootProject.ext.ndkVersion
+    namespace = "me.proxer.app"
 
     buildFeatures {
-        buildConfig true
-        compose true
+        buildConfig = true
+        compose = true
     }
 
     defaultConfig {
@@ -34,7 +39,7 @@ android {
         versionCode appVersionMajor * 1000000 + appVersionMinor * 10000 + appVersionPatch * 100
         versionName "$appVersionMajor.$appVersionMinor.$appVersionPatch"
 
-        vectorDrawables.useSupportLibrary true
+        vectorDrawables.useSupportLibrary = true
         resConfigs "de"
     }
 
@@ -53,7 +58,7 @@ android {
     }
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
+        coreLibraryDesugaringEnabled = true
         sourceCompatibility javaVersion
         targetCompatibility javaVersion
     }
@@ -77,7 +82,7 @@ android {
         }
 
         debug {
-            multiDexEnabled true
+            multiDexEnabled = true
 
             ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64", "x86" }
 
@@ -87,12 +92,12 @@ android {
         }
 
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled = true
+            shrinkResources = true
             // R8 in AGP 9 applies code optimization and unused-code removal by default; no postprocessing{} block needed
             proguardFiles "config/shrinker/shrinker-rules.pro"
 
-            multiDexEnabled true
+            multiDexEnabled = true
 
             ndk { abiFilters "arm64-v8a", "armeabi-v7a", "x86_64", "x86" }
 
@@ -111,13 +116,13 @@ android {
         checkReleaseBuilds = false
 
         lintConfig = file("$rootDir/config/lint/lint.xml")
-        xmlOutput = file("$buildDir/reports/lint/lint-results.xml")
-        htmlOutput = file("$buildDir/reports/lint/lint-results.html")
+        xmlOutput = file("$layout.buildDirectory/reports/lint/lint-results.xml")
+        htmlOutput = file("$layout.buildDirectory/reports/lint/lint-results.html")
     }
 
     packagingOptions {
         jniLibs {
-            useLegacyPackaging false
+            useLegacyPackaging = false
         }
 
         exclude "META-INF/*.kotlin_module"
@@ -144,19 +149,27 @@ android {
     }
 }
 
-apply from: "${projectDir}/gradle/repositories.gradle"
-apply from: "${projectDir}/gradle/dependencies.gradle"
-
 ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
 }
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-    kotlinOptions {
+kotlin {
+    compilerOptions {
         allWarningsAsErrors = false
-        jvmTarget = javaVersion.toString()
+        jvmTarget = "JVM_$javaVersion"
         freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
+    }
+}
+
+tasks.named("detekt").configure {
+    reports {
+        reports {
+            xml.required.set(true)
+            xml.outputLocation.set(file("$layout.buildDirectory/reports/detekt/detekt.xml"))
+            html.required.set(true)
+            html.outputLocation.set(file("$layout.buildDirectory/reports/detekt/detekt.html"))
+        }
     }
 }
 
@@ -164,18 +177,13 @@ detekt {
     buildUponDefaultConfig = true
     config.from(files("$projectDir/config/detekt/detekt.yml"))
 
-    reports {
-        xml.required.set(true)
-        xml.outputLocation.set(file("$buildDir/reports/detekt/detekt.xml"))
-        html.required.set(true)
-        html.outputLocation.set(file("$buildDir/reports/detekt/detekt.html"))
-    }
+
 }
 
 ktlint {
     version = ktlintVersion
     reporters {
-        reporter org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE
+        reporter ReporterType.CHECKSTYLE
     }
 }
 
@@ -186,5 +194,5 @@ tasks.named("dependencyUpdates").configure {
 }
 
 wrapper {
-    gradleVersion rootProject.ext.gradleVersion
+    gradleVersion = rootProject.ext.gradleVersion
 }
