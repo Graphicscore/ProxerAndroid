@@ -5,8 +5,8 @@ ext {
     appVersionPatch = 0
 
     minSdkVersion = 23
-    targetSdkVersion = 36
-    compileSdkVersion = 36
+    targetSdkVersion = 37
+    compileSdkVersion = 37
     ndkVersion = "29.0.14206865"
 
     // Java
@@ -27,7 +27,7 @@ ext {
     ktlintPluginVersion = "14.2.0"
     ktlintVersion = "1.8.0"
     // Frameworks and compatibility libraries
-    koinVersion = "4.2.1"
+    koinVersion = "3.5.6"
     appcompatVersion = "1.7.1"
     browserVersion = "1.10.0"
     lifecycleVersion = "2.10.0"
