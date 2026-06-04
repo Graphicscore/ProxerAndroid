@@ -94,7 +94,7 @@ ext {
     // Compose
     composeBomVersion = "2026.05.01"
     tvMaterialVersion = "1.1.0"
-    activityComposeVersion = "1.9.3"
+    activityComposeVersion = "1.13.0"
     coilVersion = "2.7.0"
 
     // Debugging
