@@ -57,3 +57,4 @@ fabric.properties
 # Project-specific files:
 secrets.properties
 .tasks.cache.json
+.superpowers/
