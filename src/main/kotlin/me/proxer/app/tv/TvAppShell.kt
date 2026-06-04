@@ -57,7 +57,7 @@ fun TvAppShell(
             )
             TvSection.NEWS -> TvPlaceholderScreen("News")
             TvSection.BOOKMARKS -> TvBookmarksScreen()
-            TvSection.SCHEDULE -> TvPlaceholderScreen("Schedule")
+            TvSection.SCHEDULE -> TvScheduleScreen()
             TvSection.INFO -> TvPlaceholderScreen("Info")
             TvSection.SETTINGS -> TvPlaceholderScreen("Settings")
         }
