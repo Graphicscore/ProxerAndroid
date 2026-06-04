@@ -32,7 +32,11 @@ jobs:
           fi
 
       - id: build
-        name: Build with Gradle
+        name: Build without checks
+        run: ./gradlew build bundle --no-daemon
+
+      - id: build2
+        name: Build with ktlintCheck and detekt
         run: ./gradlew ktlintCheck detekt build bundle --no-daemon
 
       - name: Store reports
