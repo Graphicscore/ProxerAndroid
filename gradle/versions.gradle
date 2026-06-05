@@ -19,7 +19,7 @@ ext {
     androidPluginVersion = "9.2.1"
 
     kspVersion = "2.2.10-2.0.2"
-    kotlinVersion = "2.2.10"
+    kotlinVersion = "2.4.0"
 
     // Utility plugins
     versionsPluginVersion = "0.54.0"
