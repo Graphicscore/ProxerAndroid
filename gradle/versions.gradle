@@ -18,7 +18,7 @@ ext {
     // Core plugins
     androidPluginVersion = "9.2.1"
 
-    kspVersion = "2.2.10-2.0.2"
+    kspVersion = "2.3.9"
     kotlinVersion = "2.2.10"
 
     // Utility plugins
