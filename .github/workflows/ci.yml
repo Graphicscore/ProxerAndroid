@@ -18,10 +18,10 @@ jobs:
             gradle_args: "ktlintCheck --no-daemon"
           - variant: detekt
             gradle_args: "detekt --no-daemon"
-          - variant: bundleDebug
-            gradle_args: "build bundleDebug --no-daemon"
-          - variant: bundleRelease
-            gradle_args: "build bundleRelease --no-daemon"
+          - variant: debug
+            gradle_args: "build assembleDebug --no-daemon"
+          - variant: release
+            gradle_args: "build assembleRelease --no-daemon"
     steps:
       - name: Checkout
         uses: actions/checkout@v6
