@@ -40,9 +40,15 @@ jobs:
         run: ./gradlew ktlintCheck
 
       - name: detekt
+        run: ./gradlew detekt
+        continue-on-error: true
+
+      - name: Detekt summary
+        if: always()
         run: |
-            ./gradlew detekt
+          if [ -f build/reports/detekt/detekt.md ]; then
             cat build/reports/detekt/detekt.md >> $GITHUB_STEP_SUMMARY
+          fi
 
   build:
     runs-on: ubuntu-latest

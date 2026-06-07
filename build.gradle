@@ -166,6 +166,9 @@ detekt {
     buildUponDefaultConfig = true
     config.from(files("$projectDir/config/detekt/detekt.yml"))
     autoCorrect = false
+    reports {
+        md { required = true }
+    }
 }
 
 
