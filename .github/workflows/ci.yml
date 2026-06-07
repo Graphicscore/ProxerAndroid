@@ -40,12 +40,9 @@ jobs:
         run: ./gradlew ktlintCheck
 
       - name: detekt
-        run: ./gradlew detekt
-
-      - name: Create Summary
         run: |
-          if (test -a build/reports/detekt/detekt.md); then cat build/reports/detekt/detekt.md >> $GITHUB_STEP_SUMMARY; fi
-          if (test -a build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.xml); then cat build/reports/ktlint/ktlintMainSourceSetCheck/ktlintMainSourceSetCheck.xml >> $GITHUB_STEP_SUMMARY; fi
+            ./gradlew detekt
+            cat build/reports/detekt/detekt.md >> $GITHUB_STEP_SUMMARY
 
   build:
     runs-on: ubuntu-latest
