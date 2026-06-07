@@ -177,7 +177,6 @@ detekt {
     buildUponDefaultConfig = true
     config.from(files("$projectDir/config/detekt/detekt.yml"))
 
-
 }
 
 ktlint {
