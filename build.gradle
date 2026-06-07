@@ -162,22 +162,12 @@ kotlin {
     }
 }
 
-tasks.named("detekt").configure {
-    reports {
-        reports {
-            xml.required.set(true)
-            xml.outputLocation.set(file("$layout.buildDirectory/reports/detekt/detekt.xml"))
-            html.required.set(true)
-            html.outputLocation.set(file("$layout.buildDirectory/reports/detekt/detekt.html"))
-        }
-    }
-}
-
 detekt {
     buildUponDefaultConfig = true
     config.from(files("$projectDir/config/detekt/detekt.yml"))
-
+    autoCorrect = false
 }
+
 
 ktlint {
     version = ktlintVersion
