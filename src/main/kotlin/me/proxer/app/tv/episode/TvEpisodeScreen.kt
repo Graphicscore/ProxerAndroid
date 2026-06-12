@@ -22,6 +22,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -29,28 +30,28 @@ import androidx.tv.material3.Surface
 import me.proxer.app.media.episode.EpisodeRow
 import me.proxer.app.media.episode.EpisodeViewModel
 import me.proxer.app.tv.TvErrorView
+import me.proxer.app.tv.TvTheme
+import me.proxer.app.tv.fakeEpisodeRow
+import me.proxer.app.util.ErrorUtils
+import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.library.enums.AnimeLanguage
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import androidx.compose.material3.Surface as M3Surface
 
 @Composable
-fun TvEpisodeScreen(
-    entryId: String,
+fun TvEpisodeScreenContent(
     entryName: String,
-    onEpisodeClick: (episode: Int, language: AnimeLanguage) -> Unit,
+    episodes: List<EpisodeRow>?,
+    isLoading: Boolean,
+    error: ErrorUtils.ErrorAction?,
+    onEpisodeClick: (Int, AnimeLanguage) -> Unit,
     onBack: () -> Unit,
+    onRetry: () -> Unit,
+    onAgeConfirmed: () -> Unit = {},
 ) {
-    val viewModel: EpisodeViewModel = koinViewModel { parametersOf(entryId) }
-    val episodes by viewModel.data.observeAsState(emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(false)
-    val error by viewModel.error.observeAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.load()
-    }
-
     Column(
         modifier =
             Modifier
@@ -68,7 +69,7 @@ fun TvEpisodeScreen(
         }
 
         when {
-            isLoading == true && episodes.isNullOrEmpty() -> {
+            isLoading && episodes.isNullOrEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
@@ -77,8 +78,9 @@ fun TvEpisodeScreen(
             error != null -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
-                        error = error!!,
-                        onRetryClick = { viewModel.reload() },
+                        error = error,
+                        onRetryClick = onRetry,
+                        onAgeConfirmed = onAgeConfirmed,
                     )
                 }
             }
@@ -106,6 +108,35 @@ fun TvEpisodeScreen(
             }
         }
     }
+}
+
+@Composable
+fun TvEpisodeScreen(
+    entryId: String,
+    entryName: String,
+    onEpisodeClick: (episode: Int, language: AnimeLanguage) -> Unit,
+    onBack: () -> Unit,
+) {
+    val viewModel: EpisodeViewModel = koinViewModel { parametersOf(entryId) }
+    val preferenceHelper: PreferenceHelper = koinInject()
+    val episodes by viewModel.data.observeAsState(emptyList())
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val error by viewModel.error.observeAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.load()
+    }
+
+    TvEpisodeScreenContent(
+        entryName = entryName,
+        episodes = episodes,
+        isLoading = isLoading ?: false,
+        error = error,
+        onEpisodeClick = onEpisodeClick,
+        onBack = onBack,
+        onRetry = { viewModel.reload() },
+        onAgeConfirmed = { preferenceHelper.isAgeRestrictedMediaAllowed = true },
+    )
 }
 
 @Composable
@@ -165,5 +196,63 @@ private fun TvEpisodeItem(
                 }
             }
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvEpisodeScreenContentPreview() {
+    TvTheme {
+        TvEpisodeScreenContent(
+            entryName = "Attack on Titan",
+            episodes = listOf(
+                fakeEpisodeRow(number = 1, watched = true),
+                fakeEpisodeRow(number = 2, watched = true),
+                fakeEpisodeRow(number = 3, watched = false),
+            ),
+            isLoading = false,
+            error = null,
+            onEpisodeClick = { _, _ -> },
+            onBack = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvEpisodeScreenContentLoadingPreview() {
+    TvTheme {
+        TvEpisodeScreenContent(
+            entryName = "Attack on Titan",
+            episodes = emptyList(),
+            isLoading = true,
+            error = null,
+            onEpisodeClick = { _, _ -> },
+            onBack = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvEpisodeItemUnwatchedPreview() {
+    TvTheme {
+        TvEpisodeItem(
+            episodeRow = fakeEpisodeRow(number = 5, watched = false),
+            onClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvEpisodeItemWatchedPreview() {
+    TvTheme {
+        TvEpisodeItem(
+            episodeRow = fakeEpisodeRow(number = 5, watched = true),
+            onClick = {},
+        )
     }
 }
