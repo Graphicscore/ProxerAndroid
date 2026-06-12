@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -29,4 +30,10 @@ fun TvPlaceholderScreen(sectionName: String) {
             Text("Coming soon", fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
         }
     }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvPlaceholderScreenPreview() {
+    TvTheme { TvPlaceholderScreen(sectionName = "Settings") }
 }

@@ -20,11 +20,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.DrawerValue
 import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
+import androidx.tv.material3.NavigationDrawer
 import androidx.tv.material3.NavigationDrawerItem
 import androidx.tv.material3.NavigationDrawerScope
 import androidx.tv.material3.Text
@@ -154,5 +156,43 @@ private fun NavigationDrawerScope.TvNavItem(
                 color = MaterialTheme.colorScheme.onPrimary,
             )
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true, name = "Logged out")
+@Composable
+private fun TvNavigationDrawerContentLoggedOutPreview() {
+    TvTheme {
+        NavigationDrawer(
+            drawerContent = { drawerValue ->
+                TvNavigationDrawerContent(
+                    currentSection = TvSection.ANIME,
+                    user = null,
+                    drawerValue = drawerValue,
+                    onSectionSelected = {},
+                    onLoginClick = {},
+                    onLogoutClick = {},
+                )
+            },
+        ) {}
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true, name = "Logged in")
+@Composable
+private fun TvNavigationDrawerContentLoggedInPreview() {
+    TvTheme {
+        NavigationDrawer(
+            drawerContent = { drawerValue ->
+                TvNavigationDrawerContent(
+                    currentSection = TvSection.BOOKMARKS,
+                    user = LocalUser(token = "", id = "1", name = "Asteria", image = ""),
+                    drawerValue = drawerValue,
+                    onSectionSelected = {},
+                    onLoginClick = {},
+                    onLogoutClick = {},
+                )
+            },
+        ) {}
     }
 }
