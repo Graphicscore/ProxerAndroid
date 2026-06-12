@@ -1,0 +1,88 @@
+{
+  "planPath": "docs/superpowers/plans/2026-06-12-tv-compose-previews.md",
+  "tasks": [
+    {
+      "id": 2,
+      "subject": "Task 0: Create shared preview data file",
+      "status": "pending",
+      "description": "**Goal:** Provide fake library entity instances used by `@Preview` functions across all TV screens.\n\n**Files:**\n- Create: `src/main/kotlin/me/proxer/app/tv/TvPreviewData.kt`\n\n**Acceptance Criteria:**\n- [ ] File compiles without errors\n- [ ] fakeMediaListEntry, fakeBookmark, fakeCalendarEntry, fakeEpisodeRow, fakeAnimeStream all present\n- [ ] All functions are `internal`\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvPreviewData.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"five fake data helpers present\", \"all internal\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 3,
+      "subject": "Task 1: Refactor TvErrorView — replace koinInject with onAgeConfirmed param",
+      "status": "pending",
+      "description": "**Goal:** Remove koinInject from TvErrorView; add onAgeConfirmed: () -> Unit = {} param; add @Preview functions.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvErrorView.kt`\n\n**Acceptance Criteria:**\n- [ ] No koinInject import or call\n- [ ] onAgeConfirmed param added with default {}\n- [ ] Age dialog confirm calls onAgeConfirmed()\n- [ ] Two @Preview functions\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvErrorView.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"koinInject removed\", \"onAgeConfirmed param added\", \"two @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 4,
+      "subject": "Task 2: Add previews to TvPlaceholderScreen and TvNavigationDrawer",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Add @Preview functions to TvPlaceholderScreen and TvNavigationDrawerContent.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvPlaceholderScreen.kt`\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvNavigationDrawer.kt`\n\n**Acceptance Criteria:**\n- [ ] TvPlaceholderScreen has one @Preview\n- [ ] TvNavigationDrawerContent has logged-out and logged-in @Preview\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvPlaceholderScreen.kt\", \"src/main/kotlin/me/proxer/app/tv/TvNavigationDrawer.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvPlaceholderScreen @Preview\", \"TvNavigationDrawer logged-out and logged-in @Preview\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 5,
+      "subject": "Task 3: Extract TvBrowseScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvBrowseScreen into stateless TvBrowseScreenContent + thin VM wrapper; add previews.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvBrowseScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvBrowseScreenContent extracted\n- [ ] TvBrowseScreen public signature unchanged\n- [ ] onAgeConfirmed wired\n- [ ] Three @Preview functions\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvBrowseScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvBrowseScreenContent extracted\", \"onAgeConfirmed wired\", \"three @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 6,
+      "subject": "Task 4: Extract TvBookmarksScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvBookmarksScreen into stateless TvBookmarksScreenContent + thin VM wrapper; add previews.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvBookmarksScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvBookmarksScreenContent extracted\n- [ ] TvBookmarksScreen public signature unchanged\n- [ ] onAgeConfirmed wired\n- [ ] Three @Preview functions including TvBookmarkCard\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvBookmarksScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvBookmarksScreenContent extracted\", \"onAgeConfirmed wired\", \"TvBookmarkCard preview\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 7,
+      "subject": "Task 5: Extract TvScheduleScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvScheduleScreen; update TvScheduleDayRow to accept onEntryClick; add previews.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/TvScheduleScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvScheduleScreenContent extracted\n- [ ] TvScheduleDayRow uses onEntryClick callback, no LocalContext\n- [ ] TvScheduleScreen public signature unchanged\n- [ ] Three @Preview functions\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/TvScheduleScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvScheduleScreenContent extracted\", \"TvScheduleDayRow onEntryClick callback\", \"three @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 8,
+      "subject": "Task 6: Extract TvLoginScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvLoginScreen (state hoisted) into TvLoginScreenContent + thin VM wrapper; add previews.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/auth/TvLoginScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvLoginScreenContent with hoisted state params\n- [ ] TvLoginScreen public signature unchanged\n- [ ] Three @Preview functions: idle, loading, 2FA\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/auth/TvLoginScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvLoginScreenContent extracted\", \"three @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 9,
+      "subject": "Task 7: Extract TvMediaDetailScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvMediaDetailScreen using flat display params (not Entry?); add previews.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/detail/TvMediaDetailScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvMediaDetailScreenContent with flat params (description, rating, episodeAmount)\n- [ ] TvMediaDetailScreen public signature unchanged\n- [ ] onAgeConfirmed wired\n- [ ] Two @Preview functions: loading, populated\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/detail/TvMediaDetailScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvMediaDetailScreenContent uses flat params\", \"onAgeConfirmed wired\", \"two @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 10,
+      "subject": "Task 8: Extract TvEpisodeScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvEpisodeScreen; add previews for content and TvEpisodeItem (watched + unwatched).\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/episode/TvEpisodeScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvEpisodeScreenContent extracted\n- [ ] TvEpisodeScreen public signature unchanged; onAgeConfirmed wired\n- [ ] Four @Preview functions\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/episode/TvEpisodeScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvEpisodeScreenContent extracted\", \"TvEpisodeItem watched and unwatched previews\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 11,
+      "subject": "Task 9: Extract TvStreamScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvStreamScreen; add previews for content, TvBadge, TvStreamItem.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/stream/TvStreamScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvStreamScreenContent with hasError: Boolean (not ErrorAction?)\n- [ ] All LaunchedEffect blocks stay in TvStreamScreen wrapper\n- [ ] TvStreamScreen public signature unchanged\n- [ ] Five @Preview functions\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/stream/TvStreamScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvStreamScreenContent uses hasError:Boolean\", \"five @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 12,
+      "subject": "Task 10: Extract TvSearchScreenContent and add previews",
+      "status": "pending",
+      "blockedBy": [2, 3],
+      "description": "**Goal:** Split TvSearchScreen (query hoisted to wrapper); add previews for content and TvSearchResultCard.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/tv/search/TvSearchScreen.kt`\n\n**Acceptance Criteria:**\n- [ ] TvSearchScreenContent with query + onQueryChange params\n- [ ] Debounce LaunchedEffect stays in TvSearchScreen wrapper\n- [ ] TvSearchScreen public signature unchanged\n- [ ] Three @Preview functions including TvSearchResultCard\n- [ ] Compiles\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E \"error:|BUILD\"` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/tv/search/TvSearchScreen.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon 2>&1 | grep -E 'error:|BUILD'\", \"acceptanceCriteria\": [\"TvSearchScreenContent extracted with hoisted query\", \"debounce in wrapper\", \"three @Preview functions\", \"compiles\"]}\n```"
+    },
+    {
+      "id": 13,
+      "subject": "Task 11: Final build verification",
+      "status": "pending",
+      "blockedBy": [4, 5, 6, 7, 8, 9, 10, 11, 12],
+      "description": "**Goal:** Confirm all changes compile cleanly.\n\n**Files:** None\n\n**Acceptance Criteria:**\n- [ ] BUILD SUCCESSFUL\n- [ ] Zero error: lines\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon --rerun-tasks 2>&1 | grep -c \"error:\"` → `0`\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon --rerun-tasks 2>&1 | grep -c 'error:'\", \"acceptanceCriteria\": [\"BUILD SUCCESSFUL\", \"zero error: lines\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-06-12T00:00:00Z"
+}
