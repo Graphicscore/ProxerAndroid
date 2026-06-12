@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -31,6 +32,7 @@ import androidx.tv.material3.Surface
 import coil.compose.AsyncImage
 import me.proxer.app.anime.schedule.ScheduleViewModel
 import me.proxer.app.tv.detail.TvMediaDetailActivity
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.toAppString
 import me.proxer.library.entity.media.CalendarEntry
 import me.proxer.library.enums.CalendarDay
@@ -39,17 +41,15 @@ import org.koin.androidx.compose.koinViewModel
 import java.text.DateFormat
 
 @Composable
-fun TvScheduleScreen() {
-    val viewModel: ScheduleViewModel = koinViewModel()
-    val schedule by viewModel.data.observeAsState(emptyMap())
-    val isLoading by viewModel.isLoading.observeAsState(false)
-    val error by viewModel.error.observeAsState()
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) { viewModel.load() }
-
+fun TvScheduleScreenContent(
+    schedule: Map<CalendarDay, List<CalendarEntry>>?,
+    isLoading: Boolean,
+    error: ErrorUtils.ErrorAction?,
+    onEntryClick: (CalendarEntry) -> Unit,
+    onRetry: () -> Unit,
+) {
     when {
-        isLoading == true && schedule.isNullOrEmpty() -> {
+        isLoading && schedule.isNullOrEmpty() -> {
             Box(
                 modifier =
                     Modifier
@@ -70,8 +70,8 @@ fun TvScheduleScreen() {
                 contentAlignment = Alignment.Center,
             ) {
                 TvErrorView(
-                    error = error!!,
-                    onRetryClick = { viewModel.load() },
+                    error = error,
+                    onRetryClick = onRetry,
                 )
             }
         }
@@ -95,15 +95,32 @@ fun TvScheduleScreen() {
                         TvScheduleDayRow(
                             day = day,
                             entries = dayEntries,
-                            onEntryClick = { entry ->
-                                TvMediaDetailActivity.navigateTo(context, entry.entryId, entry.name)
-                            },
+                            onEntryClick = onEntryClick,
                         )
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun TvScheduleScreen() {
+    val viewModel: ScheduleViewModel = koinViewModel()
+    val context = LocalContext.current
+    val schedule by viewModel.data.observeAsState(emptyMap())
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val error by viewModel.error.observeAsState()
+
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    TvScheduleScreenContent(
+        schedule = schedule,
+        isLoading = isLoading ?: false,
+        error = error,
+        onEntryClick = { entry -> TvMediaDetailActivity.navigateTo(context, entry.entryId, entry.name) },
+        onRetry = { viewModel.load() },
+    )
 }
 
 @Composable
@@ -171,5 +188,51 @@ private fun TvScheduleCard(
                 )
             }
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvScheduleScreenContentPreview() {
+    TvTheme {
+        TvScheduleScreenContent(
+            schedule = mapOf(
+                CalendarDay.MONDAY to listOf(fakeCalendarEntry(id = "1", day = CalendarDay.MONDAY)),
+                CalendarDay.WEDNESDAY to listOf(
+                    fakeCalendarEntry(id = "2", day = CalendarDay.WEDNESDAY, name = "Demon Slayer"),
+                    fakeCalendarEntry(id = "3", day = CalendarDay.WEDNESDAY, name = "One Piece"),
+                ),
+            ),
+            isLoading = false,
+            error = null,
+            onEntryClick = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvScheduleDayRowPreview() {
+    TvTheme {
+        TvScheduleDayRow(
+            day = CalendarDay.MONDAY,
+            entries = listOf(
+                fakeCalendarEntry(id = "1"),
+                fakeCalendarEntry(id = "2", name = "Demon Slayer"),
+            ),
+            onEntryClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvScheduleCardPreview() {
+    TvTheme {
+        TvScheduleCard(
+            entry = fakeCalendarEntry(),
+            onClick = {},
+        )
     }
 }
