@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -37,6 +38,8 @@ import androidx.tv.material3.Surface
 import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.anime.resolver.StreamResolutionResult
+import me.proxer.app.tv.TvTheme
+import me.proxer.app.tv.fakeAnimeStream
 import me.proxer.app.util.extension.androidUri
 import me.proxer.app.util.extension.toast
 import me.proxer.library.enums.AnimeLanguage
@@ -123,6 +126,38 @@ fun TvStreamScreen(
         }
     }
 
+    TvStreamScreenContent(
+        entryName = entryName,
+        episode = episode,
+        language = language,
+        streams = streamInfo?.streams ?: emptyList(),
+        isLoading = isLoading ?: false,
+        hasError = error != null,
+        showResolutionError = showResolutionError,
+        resolvingStreamId = resolvingStreamId,
+        onStreamClick = { stream ->
+            resolvingStreamId = stream.id
+            viewModel.resolve(stream)
+        },
+        onBack = onBack,
+        onRetry = { viewModel.reload() },
+    )
+}
+
+@Composable
+fun TvStreamScreenContent(
+    entryName: String,
+    episode: Int,
+    language: AnimeLanguage,
+    streams: List<AnimeStream>,
+    isLoading: Boolean,
+    hasError: Boolean,
+    showResolutionError: Boolean,
+    resolvingStreamId: String?,
+    onStreamClick: (AnimeStream) -> Unit,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+) {
     Column(
         modifier =
             Modifier
@@ -157,23 +192,22 @@ fun TvStreamScreen(
         }
 
         when {
-            isLoading == true && streamInfo == null -> {
+            isLoading && streams.isEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
 
-            error != null -> {
+            hasError -> {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Failed to load streams", color = MaterialTheme.colorScheme.error)
                     Spacer(Modifier.height(8.dp))
-                    Button(onClick = { viewModel.reload() }) { Text("Retry") }
+                    Button(onClick = onRetry) { Text("Retry") }
                 }
             }
 
             else -> {
-                val streams = streamInfo?.streams ?: emptyList()
-                if (streams.isEmpty() && isLoading != true) {
+                if (streams.isEmpty() && !isLoading) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
                             "No streams available",
@@ -190,10 +224,7 @@ fun TvStreamScreen(
                             TvStreamItem(
                                 stream = stream,
                                 isResolving = resolvingStreamId == stream.id,
-                                onClick = {
-                                    resolvingStreamId = stream.id
-                                    viewModel.resolve(stream)
-                                },
+                                onClick = { onStreamClick(stream) },
                             )
                         }
                     }
@@ -259,5 +290,89 @@ private fun TvStreamItem(
                 }
             }
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvStreamScreenContentPreview() {
+    TvTheme {
+        TvStreamScreenContent(
+            entryName = "Attack on Titan",
+            episode = 3,
+            language = AnimeLanguage.ENGLISH_SUB,
+            streams = listOf(
+                fakeAnimeStream(id = "1", hosterName = "Vidoza", isOfficial = true, isSupported = true),
+                fakeAnimeStream(id = "2", hosterName = "Streamtape", isOfficial = false, isSupported = true),
+                fakeAnimeStream(id = "3", hosterName = "ExternalSite", isOfficial = false, isSupported = false),
+            ),
+            isLoading = false,
+            hasError = false,
+            showResolutionError = false,
+            resolvingStreamId = null,
+            onStreamClick = {},
+            onBack = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvStreamScreenContentLoadingPreview() {
+    TvTheme {
+        TvStreamScreenContent(
+            entryName = "Attack on Titan",
+            episode = 3,
+            language = AnimeLanguage.ENGLISH_SUB,
+            streams = emptyList(),
+            isLoading = true,
+            hasError = false,
+            showResolutionError = false,
+            resolvingStreamId = null,
+            onStreamClick = {},
+            onBack = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvStreamScreenContentErrorPreview() {
+    TvTheme {
+        TvStreamScreenContent(
+            entryName = "Attack on Titan",
+            episode = 3,
+            language = AnimeLanguage.ENGLISH_SUB,
+            streams = emptyList(),
+            isLoading = false,
+            hasError = true,
+            showResolutionError = false,
+            resolvingStreamId = null,
+            onStreamClick = {},
+            onBack = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvBadgePreview() {
+    TvTheme {
+        TvBadge(label = "Official", background = Color(0xFF1B5E20))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvStreamItemPreview() {
+    TvTheme {
+        TvStreamItem(
+            stream = fakeAnimeStream(id = "1", hosterName = "Vidoza", isOfficial = true, isSupported = true),
+            isResolving = false,
+            onClick = {},
+        )
     }
 }
