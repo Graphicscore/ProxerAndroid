@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -46,6 +47,9 @@ import kotlinx.coroutines.delay
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
 import me.proxer.app.tv.TvErrorView
+import me.proxer.app.tv.TvTheme
+import me.proxer.app.tv.fakeMediaListEntry
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.enumSetOf
 import me.proxer.library.entity.list.MediaListEntry
 import me.proxer.library.enums.FskConstraint
@@ -57,6 +61,97 @@ import me.proxer.library.enums.TagSpoilerFilter
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+@Composable
+fun TvSearchScreenContent(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    entries: List<MediaListEntry>?,
+    isLoading: Boolean,
+    error: ErrorUtils.ErrorAction?,
+    onMediaClick: (String, String) -> Unit,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit = {},
+) {
+    val gridState = rememberLazyGridState()
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()
+            val total = gridState.layoutInfo.totalItemsCount
+            lastVisible != null && total > 0 && lastVisible.index >= total - 6
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) onLoadMore()
+    }
+
+    Column(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+    ) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                label = { Text("Search anime...") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                colors =
+                    OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                        cursorColor = MaterialTheme.colorScheme.primary,
+                    ),
+            )
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(32.dp))
+            }
+        }
+
+        if (error != null) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                TvErrorView(error = error, onRetryClick = onRetry)
+            }
+        } else {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(5),
+                state = gridState,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items((entries ?: emptyList()).distinctBy { it.id }, key = { it.id }) { entry ->
+                    TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+                }
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    if (isLoading && entries?.isNotEmpty() == true) {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun TvSearchScreen(onMediaClick: (id: String, name: String) -> Unit) {
@@ -83,93 +178,22 @@ fun TvSearchScreen(onMediaClick: (id: String, name: String) -> Unit) {
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
 
-    val gridState = rememberLazyGridState()
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()
-            val total = gridState.layoutInfo.totalItemsCount
-            lastVisible != null && total > 0 && lastVisible.index >= total - 6
-        }
-    }
-
     LaunchedEffect(query) {
         delay(500)
         viewModel.searchQuery = query.takeIf { it.isNotBlank() }
         viewModel.reload()
     }
 
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) viewModel.loadIfPossible()
-    }
-
-    Column(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
-    ) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                label = { Text("Search anime...") },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                colors =
-                    OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                    ),
-            )
-            if (isLoading == true) {
-                CircularProgressIndicator(modifier = Modifier.size(32.dp))
-            }
-        }
-
-        if (error != null) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                TvErrorView(
-                    error = error!!,
-                    onRetryClick = { viewModel.reload() },
-                )
-            }
-        } else {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(5),
-                state = gridState,
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                items((entries ?: emptyList()).distinctBy { it.id }, key = { it.id }) { entry ->
-                    TvSearchResultCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
-                }
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    if (isLoading == true && entries?.isNotEmpty() == true) {
-                        Box(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator(modifier = Modifier.size(32.dp))
-                        }
-                    }
-                }
-            }
-        }
-    }
+    TvSearchScreenContent(
+        query = query,
+        onQueryChange = { query = it },
+        entries = entries,
+        isLoading = isLoading ?: false,
+        error = error,
+        onMediaClick = onMediaClick,
+        onRetry = { viewModel.reload() },
+        onLoadMore = { viewModel.loadIfPossible() },
+    )
 }
 
 @Composable
@@ -206,5 +230,52 @@ private fun TvSearchResultCard(
                         .padding(8.dp),
             )
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvSearchScreenContentWithResultsPreview() {
+    TvTheme {
+        TvSearchScreenContent(
+            query = "attack",
+            onQueryChange = {},
+            entries = listOf(
+                fakeMediaListEntry(id = "1", name = "Attack on Titan"),
+                fakeMediaListEntry(id = "2", name = "Attack on Titan: Final Season"),
+                fakeMediaListEntry(id = "3", name = "Attack on Titan Season 2"),
+            ),
+            isLoading = false,
+            error = null,
+            onMediaClick = { _, _ -> },
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true)
+@Composable
+private fun TvSearchScreenContentLoadingPreview() {
+    TvTheme {
+        TvSearchScreenContent(
+            query = "",
+            onQueryChange = {},
+            entries = emptyList(),
+            isLoading = true,
+            error = null,
+            onMediaClick = { _, _ -> },
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvSearchResultCardPreview() {
+    TvTheme {
+        TvSearchResultCard(
+            entry = fakeMediaListEntry(),
+            onClick = {},
+        )
     }
 }
