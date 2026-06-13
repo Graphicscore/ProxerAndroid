@@ -233,10 +233,12 @@ object ErrorUtils {
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    fun getMessage(error: Throwable): Int =
+    fun getMessage(error: Throwable): Int = getMessage(error, storageHelper.isLoggedIn)
+
+    internal fun getMessage(error: Throwable, isLoggedIn: Boolean): Int =
         when (val innermostError = getInnermostError(error)) {
             is ProxerException -> {
-                getMessageForProxerException(innermostError)
+                getMessageForProxerException(innermostError, isLoggedIn)
             }
 
             is HttpDataSource.InvalidResponseCodeException -> {
@@ -302,9 +304,11 @@ object ErrorUtils {
             it is ProxerException && it.serverErrorType == IP_BLOCKED
         }
 
-    fun handle(error: Throwable): ErrorAction {
+    fun handle(error: Throwable): ErrorAction = handle(error, storageHelper.isLoggedIn)
+
+    internal fun handle(error: Throwable, isLoggedIn: Boolean): ErrorAction {
         val innermostError = getInnermostError(error)
-        val errorMessage = getMessage(innermostError)
+        val errorMessage = getMessage(innermostError, isLoggedIn)
 
         val buttonMessage =
             when (innermostError) {
@@ -383,7 +387,7 @@ object ErrorUtils {
         return ErrorAction(errorMessage, buttonMessage, buttonAction, data)
     }
 
-    private fun getMessageForProxerException(error: ProxerException) =
+    internal fun getMessageForProxerException(error: ProxerException, isLoggedIn: Boolean) =
         when (error.errorType) {
             SERVER -> {
                 when (error.serverErrorType) {
@@ -460,7 +464,7 @@ object ErrorUtils {
                     }
 
                     USER_INSUFFICIENT_PERMISSIONS -> {
-                        when (storageHelper.isLoggedIn) {
+                        when (isLoggedIn) {
                             true -> R.string.error_insufficient_permissions_logged_in
                             false -> R.string.error_insufficient_permissions
                         }
