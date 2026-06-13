@@ -81,10 +81,10 @@ class BBParserTest {
         val tree = BBParser.parse("before [b]middle[/b] after")
         assertEquals(3, tree.children.size)
         assertEquals(TextPrototype, tree.children[0].prototype)
-        assertEquals("before", tree.children[0].args.text.toString().trim())
+        assertEquals("before ", tree.children[0].args.text.toString())
         assertEquals(BoldPrototype, tree.children[1].prototype)
         assertEquals(TextPrototype, tree.children[2].prototype)
-        assertEquals("after", tree.children[2].args.text.toString().trim())
+        assertEquals(" after", tree.children[2].args.text.toString())
     }
 
     @Test fun `unknown tag becomes TextPrototype fallback`() {

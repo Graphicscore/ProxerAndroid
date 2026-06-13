@@ -8,7 +8,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import me.proxer.app.R
 import me.proxer.app.tv.episode.TvEpisodeScreenContent
 import me.proxer.app.util.ErrorUtils
-import me.proxer.library.enums.AnimeLanguage
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
