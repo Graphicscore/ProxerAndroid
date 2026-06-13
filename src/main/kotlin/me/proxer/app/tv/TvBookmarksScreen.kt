@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -36,24 +37,27 @@ import coil.compose.AsyncImage
 import me.proxer.app.bookmark.BookmarkViewModel
 import me.proxer.app.tv.auth.TvLoginActivity
 import me.proxer.app.tv.episode.TvEpisodeActivity
+import me.proxer.app.util.ErrorUtils
+import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.extension.startActivity
 import me.proxer.library.entity.ucp.Bookmark
 import me.proxer.library.enums.Category
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 @Composable
-fun TvBookmarksScreen() {
-    val viewModel: BookmarkViewModel =
-        koinViewModel {
-            parametersOf(null, Category.ANIME, false)
-        }
-    val entries by viewModel.data.observeAsState(emptyList())
-    val isLoading by viewModel.isLoading.observeAsState(false)
-    val error by viewModel.error.observeAsState()
-    val context = LocalContext.current
-
+fun TvBookmarksScreenContent(
+    entries: List<Bookmark>?,
+    isLoading: Boolean,
+    error: ErrorUtils.ErrorAction?,
+    onBookmarkClick: (Bookmark) -> Unit,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+    onLoginClick: () -> Unit = {},
+    onAgeConfirmed: () -> Unit = {},
+) {
     val gridState = rememberLazyGridState()
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -63,14 +67,13 @@ fun TvBookmarksScreen() {
         }
     }
 
-    LaunchedEffect(Unit) { viewModel.load() }
     LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) viewModel.loadIfPossible()
+        if (shouldLoadMore) onLoadMore()
     }
 
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         when {
-            isLoading == true && entries.isNullOrEmpty() -> {
+            isLoading && entries.isNullOrEmpty() -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
@@ -79,9 +82,10 @@ fun TvBookmarksScreen() {
             error != null -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     TvErrorView(
-                        error = error!!,
-                        onLoginClick = { context.startActivity<TvLoginActivity>() },
-                        onRetryClick = { viewModel.load() },
+                        error = error,
+                        onLoginClick = onLoginClick,
+                        onRetryClick = onRetry,
+                        onAgeConfirmed = onAgeConfirmed,
                     )
                 }
             }
@@ -98,13 +102,11 @@ fun TvBookmarksScreen() {
                     items(entries ?: emptyList()) { bookmark ->
                         TvBookmarkCard(
                             bookmark = bookmark,
-                            onClick = {
-                                TvEpisodeActivity.navigateTo(context, bookmark.entryId, bookmark.name, 0)
-                            },
+                            onClick = { onBookmarkClick(bookmark) },
                         )
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        if (isLoading == true && entries?.isNotEmpty() == true) {
+                        if (isLoading && entries?.isNotEmpty() == true) {
                             Box(
                                 modifier =
                                     Modifier
@@ -120,6 +122,32 @@ fun TvBookmarksScreen() {
             }
         }
     }
+}
+
+@Composable
+fun TvBookmarksScreen() {
+    val viewModel: BookmarkViewModel =
+        koinViewModel { parametersOf(null, Category.ANIME, false) }
+    val preferenceHelper: PreferenceHelper = koinInject()
+    val context = LocalContext.current
+    val entries by viewModel.data.observeAsState(emptyList())
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val error by viewModel.error.observeAsState()
+
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    TvBookmarksScreenContent(
+        entries = entries,
+        isLoading = isLoading ?: false,
+        error = error,
+        onBookmarkClick = { bookmark ->
+            TvEpisodeActivity.navigateTo(context, bookmark.entryId, bookmark.name, 0)
+        },
+        onRetry = { viewModel.load() },
+        onLoadMore = { viewModel.loadIfPossible() },
+        onLoginClick = { context.startActivity<TvLoginActivity>() },
+        onAgeConfirmed = { preferenceHelper.isAgeRestrictedMediaAllowed = true },
+    )
 }
 
 @Composable
@@ -162,5 +190,46 @@ private fun TvBookmarkCard(
                 )
             }
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true, name = "Empty")
+@Composable
+private fun TvBookmarksScreenContentEmptyPreview() {
+    TvTheme {
+        TvBookmarksScreenContent(
+            entries = emptyList(),
+            isLoading = false,
+            error = null,
+            onBookmarkClick = {},
+            onRetry = {},
+            onLoadMore = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true, name = "Loading")
+@Composable
+private fun TvBookmarksScreenContentLoadingPreview() {
+    TvTheme {
+        TvBookmarksScreenContent(
+            entries = emptyList(),
+            isLoading = true,
+            error = null,
+            onBookmarkClick = {},
+            onRetry = {},
+            onLoadMore = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvBookmarkCardPreview() {
+    TvTheme {
+        TvBookmarkCard(
+            bookmark = fakeBookmark(),
+            onClick = {},
+        )
     }
 }

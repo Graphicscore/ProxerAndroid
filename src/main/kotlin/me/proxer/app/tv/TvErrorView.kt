@@ -14,22 +14,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_HIDE
-import me.proxer.app.util.data.PreferenceHelper
-import org.koin.compose.koinInject
 
 @Composable
 fun TvErrorView(
     error: ErrorUtils.ErrorAction,
     onLoginClick: (() -> Unit)? = null,
     onRetryClick: () -> Unit,
+    onAgeConfirmed: () -> Unit = {},
 ) {
-    val preferenceHelper: PreferenceHelper = koinInject()
     var showAgeConfirmDialog by remember { mutableStateOf(false) }
 
     Column(
@@ -78,7 +77,7 @@ fun TvErrorView(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        preferenceHelper.isAgeRestrictedMediaAllowed = true
+                        onAgeConfirmed()
                         showAgeConfirmDialog = false
                     },
                 ) {
@@ -90,6 +89,32 @@ fun TvErrorView(
                     Text(stringResource(R.string.cancel))
                 }
             },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvErrorViewRetryPreview() {
+    TvTheme {
+        TvErrorView(
+            error = ErrorUtils.ErrorAction(message = R.string.error_unknown),
+            onRetryClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvErrorViewLoginPreview() {
+    TvTheme {
+        TvErrorView(
+            error = ErrorUtils.ErrorAction(
+                message = R.string.error_unknown,
+                buttonAction = ErrorUtils.ErrorAction.ButtonAction.LOGIN,
+            ),
+            onLoginClick = {},
+            onRetryClick = {},
         )
     }
 }

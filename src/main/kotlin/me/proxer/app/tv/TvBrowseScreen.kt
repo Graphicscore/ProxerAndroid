@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
@@ -38,6 +39,8 @@ import coil.compose.AsyncImage
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.list.MediaListViewModel
 import me.proxer.app.tv.auth.TvLoginActivity
+import me.proxer.app.util.ErrorUtils
+import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.extension.enumSetOf
 import me.proxer.app.util.extension.startActivity
 import me.proxer.library.entity.list.MediaListEntry
@@ -49,11 +52,99 @@ import me.proxer.library.enums.TagRateFilter
 import me.proxer.library.enums.TagSpoilerFilter
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 @Composable
+fun TvBrowseScreenContent(
+    entries: List<MediaListEntry>?,
+    isLoading: Boolean,
+    error: ErrorUtils.ErrorAction?,
+    onMediaClick: (String, String) -> Unit,
+    onSearchClick: () -> Unit,
+    onLoadMore: () -> Unit,
+    onRetry: () -> Unit,
+    onLoginClick: () -> Unit = {},
+    onAgeConfirmed: () -> Unit = {},
+) {
+    val gridState = rememberLazyGridState()
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()
+            val total = gridState.layoutInfo.totalItemsCount
+            lastVisible != null && total > 0 && lastVisible.index >= total - 6
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) onLoadMore()
+    }
+
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Row(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text("ProxerTV", fontSize = 24.sp, color = MaterialTheme.colorScheme.onBackground)
+            OutlinedButton(onClick = onSearchClick) { Text("Search") }
+        }
+
+        when {
+            isLoading && entries.isNullOrEmpty() -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            error != null -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    TvErrorView(
+                        error = error,
+                        onLoginClick = onLoginClick,
+                        onRetryClick = onRetry,
+                        onAgeConfirmed = onAgeConfirmed,
+                    )
+                }
+            }
+
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(5),
+                    state = gridState,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    items(entries ?: emptyList()) { entry ->
+                        TvMediaCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
+                    }
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        if (isLoading && entries?.isNotEmpty() == true) {
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 fun TvBrowseScreen(
-    onMediaClick: (id: String, name: String) -> Unit,
+    onMediaClick: (String, String) -> Unit,
     onSearchClick: () -> Unit,
 ) {
     val viewModel: MediaListViewModel =
@@ -74,88 +165,25 @@ fun TvBrowseScreen(
             )
         }
 
+    val preferenceHelper: PreferenceHelper = koinInject()
+    val context = LocalContext.current
     val entries by viewModel.data.observeAsState(emptyList())
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
 
-    val context = LocalContext.current
+    LaunchedEffect(Unit) { viewModel.load() }
 
-    val gridState = rememberLazyGridState()
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisible = gridState.layoutInfo.visibleItemsInfo.lastOrNull()
-            val total = gridState.layoutInfo.totalItemsCount
-            lastVisible != null && total > 0 && lastVisible.index >= total - 6
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.load()
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) viewModel.loadIfPossible()
-    }
-
-    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        Row(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("ProxerTV", fontSize = 24.sp, color = MaterialTheme.colorScheme.onBackground)
-            OutlinedButton(onClick = onSearchClick) { Text("Search") }
-        }
-
-        when {
-            isLoading == true && entries.isNullOrEmpty() -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-
-            error != null -> {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    TvErrorView(
-                        error = error!!,
-                        onLoginClick = { context.startActivity<TvLoginActivity>() },
-                        onRetryClick = { viewModel.load() },
-                    )
-                }
-            }
-
-            else -> {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(5),
-                    state = gridState,
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    items(entries ?: emptyList()) { entry ->
-                        TvMediaCard(entry = entry, onClick = { onMediaClick(entry.id, entry.name) })
-                    }
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        if (isLoading == true && entries?.isNotEmpty() == true) {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    TvBrowseScreenContent(
+        entries = entries,
+        isLoading = isLoading ?: false,
+        error = error,
+        onMediaClick = onMediaClick,
+        onSearchClick = onSearchClick,
+        onLoadMore = { viewModel.loadIfPossible() },
+        onRetry = { viewModel.load() },
+        onLoginClick = { context.startActivity<TvLoginActivity>() },
+        onAgeConfirmed = { preferenceHelper.isAgeRestrictedMediaAllowed = true },
+    )
 }
 
 @Composable
@@ -196,5 +224,48 @@ fun TvMediaCard(
                 )
             }
         }
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true, name = "Empty")
+@Composable
+private fun TvBrowseScreenContentEmptyPreview() {
+    TvTheme {
+        TvBrowseScreenContent(
+            entries = emptyList(),
+            isLoading = false,
+            error = null,
+            onMediaClick = { _, _ -> },
+            onSearchClick = {},
+            onLoadMore = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(device = "id:tv_1080p", showBackground = true, name = "Loading")
+@Composable
+private fun TvBrowseScreenContentLoadingPreview() {
+    TvTheme {
+        TvBrowseScreenContent(
+            entries = emptyList(),
+            isLoading = true,
+            error = null,
+            onMediaClick = { _, _ -> },
+            onSearchClick = {},
+            onLoadMore = {},
+            onRetry = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TvMediaCardPreview() {
+    TvTheme {
+        TvMediaCard(
+            entry = fakeMediaListEntry(),
+            onClick = {},
+        )
     }
 }
