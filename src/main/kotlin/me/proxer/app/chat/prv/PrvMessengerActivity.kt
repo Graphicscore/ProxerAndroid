@@ -28,32 +28,20 @@ class PrvMessengerActivity : DrawerActivity() {
     companion object {
         private const val CONFERENCE_EXTRA = "conference"
 
-        fun navigateTo(
-            context: Activity,
-            conference: LocalConference,
-            initialMessage: String? = null,
-        ) {
+        fun navigateTo(context: Activity, conference: LocalConference, initialMessage: String? = null) {
             context.startActivity<PrvMessengerActivity>(
                 CONFERENCE_EXTRA to conference,
                 Intent.EXTRA_TEXT to initialMessage,
             )
         }
 
-        fun getIntent(
-            context: Context,
-            conference: LocalConference,
-            initialMessage: String? = null,
-        ): Intent =
+        fun getIntent(context: Context, conference: LocalConference, initialMessage: String? = null): Intent =
             context.intentFor<PrvMessengerActivity>(
                 CONFERENCE_EXTRA to conference,
                 Intent.EXTRA_TEXT to initialMessage,
             )
 
-        fun getIntent(
-            context: Context,
-            conferenceId: String,
-            initialMessage: String? = null,
-        ): Intent =
+        fun getIntent(context: Context, conferenceId: String, initialMessage: String? = null): Intent =
             context.intentFor<PrvMessengerActivity>(
                 ShortcutManagerCompat.EXTRA_SHORTCUT_ID to conferenceId,
                 Intent.EXTRA_TEXT to initialMessage,

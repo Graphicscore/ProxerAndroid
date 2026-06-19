@@ -20,10 +20,7 @@ import me.proxer.library.enums.UserMediaProgress
 /**
  * @author Ruben Gees
  */
-class EditCommentViewModel(
-    private val id: String?,
-    private val entryId: String?,
-) : BaseViewModel<LocalComment>() {
+class EditCommentViewModel(private val id: String?, private val entryId: String?) : BaseViewModel<LocalComment>() {
     companion object {
         private const val MAX_LENGTH = 20_000
 

@@ -124,19 +124,13 @@ class EditCommentActivity : BaseActivity() {
     }
 
     class Contract : ActivityResultContract<Contract.Input, LocalComment?>() {
-        override fun createIntent(
-            context: Context,
-            input: Input,
-        ) = context.intentFor<EditCommentActivity>(
+        override fun createIntent(context: Context, input: Input) = context.intentFor<EditCommentActivity>(
             ID_ARGUMENT to input.id,
             ENTRY_ID_ARGUMENT to input.entryId,
             NAME_ARGUMENT to input.name,
         )
 
-        override fun parseResult(
-            resultCode: Int,
-            intent: Intent?,
-        ): LocalComment? {
+        override fun parseResult(resultCode: Int, intent: Intent?): LocalComment? {
             if (resultCode != Activity.RESULT_OK) {
                 return null
             }
@@ -144,10 +138,6 @@ class EditCommentActivity : BaseActivity() {
             return intent?.let { IntentCompat.getParcelableExtra(it, COMMENT_EXTRA, LocalComment::class.java) }
         }
 
-        data class Input(
-            val id: String? = null,
-            val entryId: String? = null,
-            val name: String? = null,
-        )
+        data class Input(val id: String? = null, val entryId: String? = null, val name: String? = null)
     }
 }

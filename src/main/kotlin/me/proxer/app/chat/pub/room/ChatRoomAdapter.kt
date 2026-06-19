@@ -32,21 +32,14 @@ class ChatRoomAdapter : BaseAdapter<ChatRoom, ViewHolder>() {
     val clickSubject: PublishSubject<ChatRoom> = PublishSubject.create()
     val linkClickSubject: PublishSubject<HttpUrl> = PublishSubject.create()
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_chat_room, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_chat_room, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
-    inner class ViewHolder(
-        view: View,
-    ) : AutoDisposeViewHolder(view) {
+    inner class ViewHolder(view: View) : AutoDisposeViewHolder(view) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val nameView by bindView<TextView>(R.id.name)
         internal val topic by bindView<AppCompatTextView>(R.id.topic)

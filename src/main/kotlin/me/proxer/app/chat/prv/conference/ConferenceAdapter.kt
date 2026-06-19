@@ -44,9 +44,7 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class ConferenceAdapter(
-    private val storageHelper: StorageHelper,
-) : BaseAdapter<ConferenceWithMessage, ViewHolder>() {
+class ConferenceAdapter(private val storageHelper: StorageHelper) : BaseAdapter<ConferenceWithMessage, ViewHolder>() {
     var glide: RequestManager? = null
     val clickSubject: PublishSubject<ConferenceWithMessage> = PublishSubject.create()
 
@@ -56,15 +54,10 @@ class ConferenceAdapter(
 
     override fun getItemId(position: Int): Long = data[position].conference.id
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conference, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_conference, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -74,14 +67,10 @@ class ConferenceAdapter(
         glide = null
     }
 
-    override fun areItemsTheSame(
-        old: ConferenceWithMessage,
-        new: ConferenceWithMessage,
-    ): Boolean = old.conference.id == new.conference.id
+    override fun areItemsTheSame(old: ConferenceWithMessage, new: ConferenceWithMessage): Boolean =
+        old.conference.id == new.conference.id
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val image: ImageView by bindView(R.id.image)
         internal val topic: TextView by bindView(R.id.topic)
@@ -231,10 +220,7 @@ class ConferenceAdapter(
             }
         }
 
-        private fun generateMessageStatusDrawable(
-            context: Context,
-            icon: IIcon,
-        ) = IconicsDrawable(context).apply {
+        private fun generateMessageStatusDrawable(context: Context, icon: IIcon) = IconicsDrawable(context).apply {
             this.icon = icon
             colorInt = context.resolveColor(R.attr.colorIcon)
             sizePx = context.sp(14)

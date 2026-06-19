@@ -11,18 +11,18 @@ exceptions:
     active: false
 
 ktlint:
-  ClassSignature:
-    active: false
-  FunctionSignature:
-    active: false
-  Indentation:
-    active: false
-  MaxLineLength:
-    active: false
+  active: true
+  excludes:
+    - "**/me/zhanghai/**"
+    - "**/com/gojuno/**"
+    - "**/androidx/recyclerview/widget/BindAwareViewHolder.kt"
   MaximumLineLength:
-    active: false
-  NoUnusedImports:
-    active: false
+    active: true
+    maxLineLength: 120
+  FunctionName:
+    active: true
+    excludes:
+      - "**/tv/**"
 
 naming:
   FunctionNaming:

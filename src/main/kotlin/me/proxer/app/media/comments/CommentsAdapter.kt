@@ -40,10 +40,8 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class CommentsAdapter(
-    savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper,
-) : BaseAdapter<ParsedComment, ViewHolder>() {
+class CommentsAdapter(savedInstanceState: Bundle?, private val storageHelper: StorageHelper) :
+    BaseAdapter<ParsedComment, ViewHolder>() {
     private companion object {
         private const val EXPANDED_STATE = "comments_expanded"
     }
@@ -67,15 +65,10 @@ class CommentsAdapter(
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         layoutManager = recyclerView.layoutManager
@@ -96,9 +89,7 @@ class CommentsAdapter(
         outState.putParcelable(EXPANDED_STATE, expansionMap)
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
@@ -216,10 +207,7 @@ class CommentsAdapter(
                 }
         }
 
-        private fun handleExpansion(
-            itemId: String,
-            animate: Boolean = false,
-        ) {
+        private fun handleExpansion(itemId: String, animate: Boolean = false) {
             expand.animate().cancel()
 
             if (expansionMap.containsKey(itemId)) {
@@ -246,22 +234,17 @@ class CommentsAdapter(
             }
         }
 
-        private fun bindRatingRow(
-            container: ViewGroup,
-            ratingBar: RatingBar,
-            rating: Float,
-        ) = if (rating <= 0) {
+        private fun bindRatingRow(container: ViewGroup, ratingBar: RatingBar, rating: Float) = if (rating <= 0) {
             container.isGone = true
         } else {
             container.isVisible = true
             ratingBar.rating = rating
         }
 
-        private fun bindExpandButton(maxHeight: Int) =
-            when (comment.height < maxHeight) {
-                true -> expand.isGone = true
-                false -> expand.isVisible = true
-            }
+        private fun bindExpandButton(maxHeight: Int) = when (comment.height < maxHeight) {
+            true -> expand.isGone = true
+            false -> expand.isVisible = true
+        }
 
         private fun bindImage(item: ParsedComment) {
             if (item.image.isBlank()) {

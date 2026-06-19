@@ -38,10 +38,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class MessengerWorker(
-    context: Context,
-    workerParams: WorkerParameters,
-) : Worker(context, workerParams) {
+class MessengerWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     companion object {
         const val CONFERENCES_ON_PAGE = 48
         const val MESSAGES_ON_PAGE = 30
@@ -61,11 +58,10 @@ class MessengerWorker(
         private val storageHelper by safeInject<StorageHelper>()
         private val preferenceHelper by safeInject<PreferenceHelper>()
 
-        fun enqueueSynchronizationIfPossible() =
-            when {
-                canSchedule() -> enqueueSynchronization()
-                else -> cancel()
-            }
+        fun enqueueSynchronizationIfPossible() = when {
+            canSchedule() -> enqueueSynchronization()
+            else -> cancel()
+        }
 
         fun enqueueSynchronization() = doEnqueue()
 
@@ -93,10 +89,7 @@ class MessengerWorker(
             }
         }
 
-        private fun doEnqueue(
-            startTime: Long? = null,
-            conferenceId: Long? = null,
-        ) {
+        private fun doEnqueue(startTime: Long? = null, conferenceId: Long? = null) {
             val workRequest =
                 OneTimeWorkRequestBuilder<MessengerWorker>()
                     .setConstraints(
@@ -115,13 +108,11 @@ class MessengerWorker(
             workManager.beginUniqueWork(NAME, ExistingWorkPolicy.REPLACE, workRequest).enqueue()
         }
 
-        private fun canSchedule() =
-            preferenceHelper.areChatNotificationsEnabled ||
-                bus.post(ConferenceFragmentPingEvent()) || bus.post(MessengerFragmentPingEvent())
+        private fun canSchedule() = preferenceHelper.areChatNotificationsEnabled ||
+            bus.post(ConferenceFragmentPingEvent()) || bus.post(MessengerFragmentPingEvent())
 
-        private fun canShowNotification() =
-            preferenceHelper.areChatNotificationsEnabled &&
-                !bus.post(ConferenceFragmentPingEvent()) && !bus.post(MessengerFragmentPingEvent())
+        private fun canShowNotification() = preferenceHelper.areChatNotificationsEnabled &&
+            !bus.post(ConferenceFragmentPingEvent()) && !bus.post(MessengerFragmentPingEvent())
     }
 
     private val conferenceId: Long
@@ -300,64 +291,62 @@ class MessengerWorker(
         return fetchedMessages
     }
 
-    private fun sendMessages() =
-        messengerDao.getMessagesToSend().apply {
-            forEachIndexed { index, (messageId, conferenceId, _, _, message) ->
-                val result =
-                    try {
-                        api.messenger
-                            .sendMessage(conferenceId.toString(), message)
-                            .build()
-                            .also { currentCall = it }
-                            .execute()
-                    } catch (error: ProxerException) {
-                        if (error.cause?.stackTrace?.find { it.methodName.contains("read") } != null) {
-                            Timber.w("Error while sending message. Removing it to avoid sending duplicate.")
+    private fun sendMessages() = messengerDao.getMessagesToSend().apply {
+        forEachIndexed { index, (messageId, conferenceId, _, _, message) ->
+            val result =
+                try {
+                    api.messenger
+                        .sendMessage(conferenceId.toString(), message)
+                        .build()
+                        .also { currentCall = it }
+                        .execute()
+                } catch (error: ProxerException) {
+                    if (error.cause?.stackTrace?.find { it.methodName.contains("read") } != null) {
+                        Timber.w("Error while sending message. Removing it to avoid sending duplicate.")
 
-                            // The message was sent, but we did not receive a proper api answer due to slow network, return
-                            // non-null to handle it like the non-empty result case.
-                            "error"
-                        } else {
-                            // The message was most likely not sent, but the previous ones are. Delete them to avoid resending.
-                            messengerDatabase.runInTransaction {
-                                for (i in 0 until index) {
-                                    messengerDao.deleteMessageToSend(get(i).id)
-                                }
+                        // The message was sent, but we did not receive a proper api answer due to slow network, return
+                        // non-null to handle it like the non-empty result case.
+                        "error"
+                    } else {
+                        // The message was most likely not sent, but the previous ones are. Delete them to avoid resending.
+                        messengerDatabase.runInTransaction {
+                            for (i in 0 until index) {
+                                messengerDao.deleteMessageToSend(get(i).id)
                             }
-
-                            throw error
                         }
-                    }
 
-                // Per documentation: The api may return some String in case something went wrong.
-                if (result != null) {
-                    // Delete all messages we have correctly sent already.
-                    messengerDatabase.runInTransaction {
-                        for (i in 0..index) {
-                            messengerDao.deleteMessageToSend(get(i).id)
-                        }
+                        throw error
                     }
-
-                    throw ChatSendMessageException(
-                        ProxerException(
-                            ProxerException.ErrorType.SERVER,
-                            ProxerException.ServerErrorType.MESSAGES_INVALID_MESSAGE,
-                            result,
-                        ),
-                        messageId,
-                    )
                 }
+
+            // Per documentation: The api may return some String in case something went wrong.
+            if (result != null) {
+                // Delete all messages we have correctly sent already.
+                messengerDatabase.runInTransaction {
+                    for (i in 0..index) {
+                        messengerDao.deleteMessageToSend(get(i).id)
+                    }
+                }
+
+                throw ChatSendMessageException(
+                    ProxerException(
+                        ProxerException.ErrorType.SERVER,
+                        ProxerException.ServerErrorType.MESSAGES_INVALID_MESSAGE,
+                        result,
+                    ),
+                    messageId,
+                )
             }
         }
+    }
 
-    private fun markConferencesAsRead(conferenceToMarkAsRead: List<LocalConference>) =
-        conferenceToMarkAsRead.forEach {
-            api.messenger
-                .markConferenceAsRead(it.id.toString())
-                .build()
-                .also { call -> currentCall = call }
-                .execute()
-        }
+    private fun markConferencesAsRead(conferenceToMarkAsRead: List<LocalConference>) = conferenceToMarkAsRead.forEach {
+        api.messenger
+            .markConferenceAsRead(it.id.toString())
+            .build()
+            .also { call -> currentCall = call }
+            .execute()
+    }
 
     private fun fetchConferences(): Collection<Conference> {
         val changedConferences = LinkedHashSet<Conference>()
@@ -467,16 +456,15 @@ class MessengerWorker(
         return newMessages.filter { it.id.toLong() > mostRecentMessageIdBeforeUpdate } to false
     }
 
-    private fun fetchMoreMessages(conferenceId: Long) =
-        api.messenger
-            .messages()
-            .conferenceId(conferenceId.toString())
-            .messageId(messengerDao.findOldestMessageForConference(conferenceId)?.id?.toString() ?: "0")
-            .markAsRead(false)
-            .build()
-            .also { currentCall = it }
-            .safeExecute()
-            .asReversed()
+    private fun fetchMoreMessages(conferenceId: Long) = api.messenger
+        .messages()
+        .conferenceId(conferenceId.toString())
+        .messageId(messengerDao.findOldestMessageForConference(conferenceId)?.id?.toString() ?: "0")
+        .markAsRead(false)
+        .build()
+        .also { currentCall = it }
+        .safeExecute()
+        .asReversed()
 
     private fun showNotification(context: Context) {
         val unreadMap =

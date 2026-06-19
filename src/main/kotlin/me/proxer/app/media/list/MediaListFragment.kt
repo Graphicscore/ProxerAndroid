@@ -74,10 +74,9 @@ class MediaListFragment :
         private const val TAG_SPOILER_FILTER_ARGUMENT = "tag_spoiler_filter"
         private const val HIDE_FINISHED_ARGUMENT = "hide_finished"
 
-        fun newInstance(category: Category) =
-            MediaListFragment().apply {
-                arguments = bundleOf(CATEGORY_ARGUMENT to category)
-            }
+        fun newInstance(category: Category) = MediaListFragment().apply {
+            arguments = bundleOf(CATEGORY_ARGUMENT to category)
+        }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -266,20 +265,14 @@ class MediaListFragment :
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

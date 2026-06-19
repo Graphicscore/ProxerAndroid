@@ -78,10 +78,7 @@ class NotificationViewModel : PagedViewModel<ProxerNotification>() {
 
     override fun refresh() = reload()
 
-    override fun areItemsTheSame(
-        old: ProxerNotification,
-        new: ProxerNotification,
-    ): Boolean = old == new
+    override fun areItemsTheSame(old: ProxerNotification, new: ProxerNotification): Boolean = old == new
 
     fun addItemToDelete(item: ProxerNotification) {
         deletionQueue.add(item)
@@ -138,11 +135,10 @@ class NotificationViewModel : PagedViewModel<ProxerNotification>() {
         }
     }
 
-    private fun readSingle() =
-        api.notifications
-            .notifications()
-            .page(page - firstPageItemAmount / itemsOnPage)
-            .filter(NotificationFilter.READ)
-            .limit(itemsOnPage)
-            .buildSingle()
+    private fun readSingle() = api.notifications
+        .notifications()
+        .page(page - firstPageItemAmount / itemsOnPage)
+        .filter(NotificationFilter.READ)
+        .limit(itemsOnPage)
+        .buildSingle()
 }

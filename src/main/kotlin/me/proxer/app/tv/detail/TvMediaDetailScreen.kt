@@ -53,10 +53,10 @@ fun TvMediaDetailScreenContent(
 ) {
     Row(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
         horizontalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         AsyncImage(
@@ -64,17 +64,17 @@ fun TvMediaDetailScreenContent(
             contentDescription = entryName,
             contentScale = ContentScale.Crop,
             modifier =
-                Modifier
-                    .width(240.dp)
-                    .fillMaxHeight(),
+            Modifier
+                .width(240.dp)
+                .fillMaxHeight(),
         )
 
         Column(
             modifier =
-                Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .verticalScroll(rememberScrollState()),
+            Modifier
+                .weight(1f)
+                .fillMaxHeight()
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OutlinedButton(onClick = onBack) { Text("← Back") }

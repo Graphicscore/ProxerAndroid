@@ -156,32 +156,31 @@ class MaterialDrawerWrapper(
         }
     }
 
-    fun onBackPressed() =
-        when {
-            headerView.selectionListShown -> {
-                headerView.selectionListShown = false
+    fun onBackPressed() = when {
+        headerView.selectionListShown -> {
+            headerView.selectionListShown = false
 
-                // Return true (handled) if the drawer is open.
-                // Otherwise return false to let the caller handle the back press.
-                crossfader?.isCrossFaded == true || sliderView.drawerLayout?.isOpen == true
-            }
-
-            crossfader?.isCrossFaded == true -> {
-                crossfader.crossFade()
-
-                true
-            }
-
-            sliderView.drawerLayout?.isOpen == true -> {
-                sliderView.drawerLayout?.close()
-
-                true
-            }
-
-            else -> {
-                false
-            }
+            // Return true (handled) if the drawer is open.
+            // Otherwise return false to let the caller handle the back press.
+            crossfader?.isCrossFaded == true || sliderView.drawerLayout?.isOpen == true
         }
+
+        crossfader?.isCrossFaded == true -> {
+            crossfader.crossFade()
+
+            true
+        }
+
+        sliderView.drawerLayout?.isOpen == true -> {
+            sliderView.drawerLayout?.close()
+
+            true
+        }
+
+        else -> {
+            false
+        }
+    }
 
     fun saveInstanceState(outState: Bundle) {
         sliderView.saveInstanceState(outState)
@@ -189,10 +188,7 @@ class MaterialDrawerWrapper(
         crossfader?.saveInstanceState(outState)
     }
 
-    fun select(
-        item: DrawerItem,
-        fireOnClick: Boolean = true,
-    ) {
+    fun select(item: DrawerItem, fireOnClick: Boolean = true) {
         if (item.id >= 10) {
             sliderView.setStickyFooterSelection(sliderView.getStickyFooterPositionByIdentifier(item.id), fireOnClick)
         } else {
@@ -205,121 +201,116 @@ class MaterialDrawerWrapper(
         headerView.profiles = generateProfiles(context).toMutableList()
     }
 
-    private fun generateProfiles(context: Context): Array<IProfile> =
-        storageHelper.user.let {
-            when (it) {
-                null -> {
-                    arrayOf(
-                        ProfileDrawerItem().apply {
-                            nameRes = R.string.section_guest
-                            iconRes = R.mipmap.ic_launcher
-                            identifier = ProfileItem.GUEST.id
-                        },
-                        ProfileSettingDrawerItem().apply {
-                            nameRes = R.string.section_login
-                            iconicsIcon = CommunityMaterial.Icon.cmd_account_key
-                            identifier = ProfileItem.LOGIN.id
-                        },
-                    )
-                }
+    private fun generateProfiles(context: Context): Array<IProfile> = storageHelper.user.let {
+        when (it) {
+            null -> {
+                arrayOf(
+                    ProfileDrawerItem().apply {
+                        nameRes = R.string.section_guest
+                        iconRes = R.mipmap.ic_launcher
+                        identifier = ProfileItem.GUEST.id
+                    },
+                    ProfileSettingDrawerItem().apply {
+                        nameRes = R.string.section_login
+                        iconicsIcon = CommunityMaterial.Icon.cmd_account_key
+                        identifier = ProfileItem.LOGIN.id
+                    },
+                )
+            }
 
-                else -> {
-                    arrayOf(
-                        ProfileDrawerItem().apply {
-                            nameText = it.name
-                            descriptionRes = R.string.section_user_subtitle
-                            identifier = ProfileItem.USER.id
+            else -> {
+                arrayOf(
+                    ProfileDrawerItem().apply {
+                        nameText = it.name
+                        descriptionRes = R.string.section_user_subtitle
+                        identifier = ProfileItem.USER.id
 
-                            if (it.image.isBlank()) {
-                                iconDrawable =
-                                    IconicsDrawable(context, CommunityMaterial.Icon.cmd_account).apply {
-                                        backgroundColorInt = context.resolveColor(R.attr.colorPrimary)
-                                        colorInt = context.resolveColor(R.attr.colorOnPrimary)
-                                        sizeDp = 48
-                                    }
-                            } else {
-                                iconUrl = ProxerUrls.userImage(it.image).toString()
-                            }
-                        },
-                        ProfileSettingDrawerItem().apply {
-                            nameRes = R.string.section_notifications
-                            iconicsIcon = CommunityMaterial.Icon.cmd_bell_outline
-                            identifier = ProfileItem.NOTIFICATIONS.id
-                        },
-                        ProfileSettingDrawerItem().apply {
-                            nameRes = R.string.section_profile_settings
-                            iconicsIcon = CommunityMaterial.Icon.cmd_account_settings
-                            identifier = ProfileItem.PROFILE_SETTINGS.id
-                        },
-                        ProfileSettingDrawerItem().apply {
-                            nameRes = R.string.section_logout
-                            iconicsIcon = CommunityMaterial.Icon.cmd_account_remove
-                            identifier = ProfileItem.LOGOUT.id
-                        },
-                    )
-                }
+                        if (it.image.isBlank()) {
+                            iconDrawable =
+                                IconicsDrawable(context, CommunityMaterial.Icon.cmd_account).apply {
+                                    backgroundColorInt = context.resolveColor(R.attr.colorPrimary)
+                                    colorInt = context.resolveColor(R.attr.colorOnPrimary)
+                                    sizeDp = 48
+                                }
+                        } else {
+                            iconUrl = ProxerUrls.userImage(it.image).toString()
+                        }
+                    },
+                    ProfileSettingDrawerItem().apply {
+                        nameRes = R.string.section_notifications
+                        iconicsIcon = CommunityMaterial.Icon.cmd_bell_outline
+                        identifier = ProfileItem.NOTIFICATIONS.id
+                    },
+                    ProfileSettingDrawerItem().apply {
+                        nameRes = R.string.section_profile_settings
+                        iconicsIcon = CommunityMaterial.Icon.cmd_account_settings
+                        identifier = ProfileItem.PROFILE_SETTINGS.id
+                    },
+                    ProfileSettingDrawerItem().apply {
+                        nameRes = R.string.section_logout
+                        iconicsIcon = CommunityMaterial.Icon.cmd_account_remove
+                        identifier = ProfileItem.LOGOUT.id
+                    },
+                )
             }
         }
+    }
 
-    private fun generateDrawerItems() =
-        arrayOf(
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_news
-                iconicsIcon = CommunityMaterial.Icon3.cmd_newspaper
-                identifier = DrawerItem.NEWS.id
-                isSelectable = isMain
-            },
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_chat
-                iconicsIcon = CommunityMaterial.Icon3.cmd_message_text
-                identifier = DrawerItem.CHAT.id
-                isSelectable = isMain
-            },
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_bookmarks
-                iconicsIcon = CommunityMaterial.Icon.cmd_bookmark
-                identifier = DrawerItem.BOOKMARKS.id
-                isSelectable = isMain
-            },
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_anime
-                iconicsIcon = CommunityMaterial.Icon3.cmd_television
-                identifier = DrawerItem.ANIME.id
-                isSelectable = isMain
-            },
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_schedule
-                iconicsIcon = CommunityMaterial.Icon.cmd_calendar
-                identifier = DrawerItem.SCHEDULE.id
-                isSelectable = isMain
-            },
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_manga
-                iconicsIcon = CommunityMaterial.Icon.cmd_book_open_page_variant
-                identifier = DrawerItem.MANGA.id
-                isSelectable = isMain
-            },
-        )
+    private fun generateDrawerItems() = arrayOf(
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_news
+            iconicsIcon = CommunityMaterial.Icon3.cmd_newspaper
+            identifier = DrawerItem.NEWS.id
+            isSelectable = isMain
+        },
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_chat
+            iconicsIcon = CommunityMaterial.Icon3.cmd_message_text
+            identifier = DrawerItem.CHAT.id
+            isSelectable = isMain
+        },
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_bookmarks
+            iconicsIcon = CommunityMaterial.Icon.cmd_bookmark
+            identifier = DrawerItem.BOOKMARKS.id
+            isSelectable = isMain
+        },
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_anime
+            iconicsIcon = CommunityMaterial.Icon3.cmd_television
+            identifier = DrawerItem.ANIME.id
+            isSelectable = isMain
+        },
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_schedule
+            iconicsIcon = CommunityMaterial.Icon.cmd_calendar
+            identifier = DrawerItem.SCHEDULE.id
+            isSelectable = isMain
+        },
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_manga
+            iconicsIcon = CommunityMaterial.Icon.cmd_book_open_page_variant
+            identifier = DrawerItem.MANGA.id
+            isSelectable = isMain
+        },
+    )
 
-    private fun generateStickyDrawerItems() =
-        arrayOf(
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_info
-                iconicsIcon = CommunityMaterial.Icon2.cmd_information_outline
-                isSelectable = isMain
-                identifier = DrawerItem.INFO.id
-            },
-            PrimaryDrawerItem().apply {
-                nameRes = R.string.section_settings
-                iconicsIcon = CommunityMaterial.Icon.cmd_cog
-                isSelectable = isMain
-                identifier = DrawerItem.SETTINGS.id
-            },
-        )
+    private fun generateStickyDrawerItems() = arrayOf(
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_info
+            iconicsIcon = CommunityMaterial.Icon2.cmd_information_outline
+            isSelectable = isMain
+            identifier = DrawerItem.INFO.id
+        },
+        PrimaryDrawerItem().apply {
+            nameRes = R.string.section_settings
+            iconicsIcon = CommunityMaterial.Icon.cmd_cog
+            isSelectable = isMain
+            identifier = DrawerItem.SETTINGS.id
+        },
+    )
 
-    enum class DrawerItem(
-        val id: Long,
-    ) {
+    enum class DrawerItem(val id: Long) {
         NEWS(0L),
         CHAT(1L),
         MESSENGER(1L),
@@ -338,9 +329,7 @@ class MaterialDrawerWrapper(
         }
     }
 
-    enum class ProfileItem(
-        val id: Long,
-    ) {
+    enum class ProfileItem(val id: Long) {
         GUEST(100L),
         LOGIN(101L),
         USER(102L),
@@ -356,9 +345,7 @@ class MaterialDrawerWrapper(
         }
     }
 
-    private class CrossfaderWrapper(
-        private val crossfader: Crossfader<*>,
-    ) : ICrossfader {
+    private class CrossfaderWrapper(private val crossfader: Crossfader<*>) : ICrossfader {
         override val isCrossfaded get() = crossfader.isCrossFaded
 
         override fun crossfade() = crossfader.crossFade()

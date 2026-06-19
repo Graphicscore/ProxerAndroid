@@ -1,6 +1,5 @@
 package me.proxer.app.manga
 
-import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -53,9 +52,7 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class MangaAdapter(
-    var isVertical: Boolean,
-) : BaseAdapter<Page, MangaViewHolder>() {
+class MangaAdapter(var isVertical: Boolean) : BaseAdapter<Page, MangaViewHolder>() {
     private companion object {
         private const val VIEW_TYPE_IMAGE = 1
         private const val VIEW_TYPE_GIF = 2
@@ -77,10 +74,7 @@ class MangaAdapter(
 
     override fun getItemId(position: Int) = data[position].decodedName.hashCode().toLong()
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ) = when (viewType) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         VIEW_TYPE_IMAGE -> {
             ImageViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.item_manga_page, parent, false),
@@ -98,10 +92,7 @@ class MangaAdapter(
         }
     }
 
-    override fun onBindViewHolder(
-        holder: MangaViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: MangaViewHolder, position: Int) = holder.bind(data[position])
 
     override fun getItemViewType(position: Int): Int =
         when (data[position].decodedName.endsWith(".gif", ignoreCase = true)) {
@@ -138,9 +129,7 @@ class MangaAdapter(
         this.id = chapter.id
     }
 
-    abstract inner class MangaViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    abstract inner class MangaViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal abstract val image: View
 
         internal val errorIndicator: ImageView by bindView(R.id.errorIndicator)
@@ -213,9 +202,7 @@ class MangaAdapter(
         }
     }
 
-    inner class ImageViewHolder(
-        itemView: View,
-    ) : MangaViewHolder(itemView) {
+    inner class ImageViewHolder(itemView: View) : MangaViewHolder(itemView) {
         override val image: SubsamplingScaleImageView by bindView(R.id.image)
 
         internal var glideTarget: GlideFileTarget? = null
@@ -276,10 +263,7 @@ class MangaAdapter(
         }
 
         internal inner class GlideFileTarget : OriginalSizeGlideTarget<File>() {
-            override fun onResourceReady(
-                resource: File,
-                transition: Transition<in File>?,
-            ) {
+            override fun onResourceReady(resource: File, transition: Transition<in File>?) {
                 Single
                     .fromCallable { ImageSource.uri(resource.path) }
                     .subscribeOn(Schedulers.io())
@@ -294,9 +278,7 @@ class MangaAdapter(
         }
     }
 
-    inner class GifViewHolder(
-        itemView: View,
-    ) : MangaViewHolder(itemView) {
+    inner class GifViewHolder(itemView: View) : MangaViewHolder(itemView) {
         override val image: ImageView by bindView(R.id.image)
 
         override fun bind(item: Page) {

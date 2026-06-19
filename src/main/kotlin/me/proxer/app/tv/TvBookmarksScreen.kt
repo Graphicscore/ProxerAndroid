@@ -109,9 +109,9 @@ fun TvBookmarksScreenContent(
                         if (isLoading && entries?.isNotEmpty() == true) {
                             Box(
                                 modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator()
@@ -151,10 +151,7 @@ fun TvBookmarksScreen() {
 }
 
 @Composable
-private fun TvBookmarkCard(
-    bookmark: Bookmark,
-    onClick: () -> Unit,
-) {
+private fun TvBookmarkCard(bookmark: Bookmark, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.width(180.dp).height(270.dp),
@@ -165,16 +162,16 @@ private fun TvBookmarkCard(
                 contentDescription = bookmark.name,
                 contentScale = ContentScale.Crop,
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
             Column(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(8.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(8.dp),
             ) {
                 Text(
                     text = bookmark.name,

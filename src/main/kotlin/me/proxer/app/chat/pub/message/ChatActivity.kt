@@ -21,12 +21,7 @@ class ChatActivity : DrawerActivity() {
         private const val CHAT_ROOM_NAME_EXTRA = "chat_room_name"
         private const val CHAT_ROOM_IS_READ_ONLY_EXTRA = "chat_room_is_read_only"
 
-        fun navigateTo(
-            context: Activity,
-            chatRoomId: String,
-            chatRoomName: String,
-            chatRoomIsReadOnly: Boolean,
-        ) {
+        fun navigateTo(context: Activity, chatRoomId: String, chatRoomName: String, chatRoomIsReadOnly: Boolean) {
             context.startActivity<ChatActivity>(
                 CHAT_ROOM_ID_EXTRA to chatRoomId,
                 CHAT_ROOM_NAME_EXTRA to chatRoomName,

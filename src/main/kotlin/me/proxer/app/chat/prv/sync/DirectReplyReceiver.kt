@@ -21,10 +21,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
 
         private const val CONFERENCE_ID_EXTRA = "conference_id"
 
-        fun getPendingIntent(
-            context: Context,
-            conferenceId: Long,
-        ): PendingIntent {
+        fun getPendingIntent(context: Context, conferenceId: Long): PendingIntent {
             val intent =
                 Intent(context, DirectReplyReceiver::class.java)
                     .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
@@ -37,10 +34,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
     private val messengerDao by safeInject<MessengerDao>()
     private val storageHelper by safeInject<StorageHelper>()
 
-    override fun onReceive(
-        context: Context,
-        intent: Intent,
-    ) {
+    override fun onReceive(context: Context, intent: Intent) {
         val conferenceId = intent.getLongExtra(CONFERENCE_ID_EXTRA, -1)
 
         Completable
@@ -64,8 +58,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
             .subscribeAndLogErrors()
     }
 
-    private fun getMessageText(intent: Intent) =
-        requireNotNull(RemoteInput.getResultsFromIntent(intent))
-            .getSafeCharSequence(REMOTE_REPLY_EXTRA)
-            .toString()
+    private fun getMessageText(intent: Intent) = requireNotNull(RemoteInput.getResultsFromIntent(intent))
+        .getSafeCharSequence(REMOTE_REPLY_EXTRA)
+        .toString()
 }

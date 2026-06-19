@@ -26,11 +26,7 @@ class ImageDetailActivity : BaseActivity() {
     companion object {
         private const val URL_EXTRA = "url"
 
-        fun navigateTo(
-            context: Activity,
-            url: HttpUrl,
-            imageView: ImageView? = null,
-        ) {
+        fun navigateTo(context: Activity, url: HttpUrl, imageView: ImageView? = null) {
             context.intentFor<ImageDetailActivity>(URL_EXTRA to url.toString()).let {
                 ActivityUtils.navigateToWithImageTransition(it, context, imageView)
             }

@@ -26,10 +26,9 @@ import kotlin.properties.Delegates
  */
 class HistoryFragment : PagedContentFragment<LocalUserHistoryEntry>() {
     companion object {
-        fun newInstance() =
-            HistoryFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = HistoryFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val emptyDataMessage = R.string.error_no_data_history
@@ -94,10 +93,7 @@ class HistoryFragment : PagedContentFragment<LocalUserHistoryEntry>() {
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)

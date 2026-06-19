@@ -52,9 +52,9 @@ fun TvScheduleScreenContent(
         isLoading && schedule.isNullOrEmpty() -> {
             Box(
                 modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator()
@@ -64,9 +64,9 @@ fun TvScheduleScreenContent(
         error != null -> {
             Box(
                 modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
                 contentAlignment = Alignment.Center,
             ) {
                 TvErrorView(
@@ -84,9 +84,9 @@ fun TvScheduleScreenContent(
 
             LazyColumn(
                 modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background),
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
                 contentPadding = PaddingValues(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
             ) {
@@ -124,11 +124,7 @@ fun TvScheduleScreen() {
 }
 
 @Composable
-private fun TvScheduleDayRow(
-    day: CalendarDay,
-    entries: List<CalendarEntry>,
-    onEntryClick: (CalendarEntry) -> Unit,
-) {
+private fun TvScheduleDayRow(day: CalendarDay, entries: List<CalendarEntry>, onEntryClick: (CalendarEntry) -> Unit) {
     val context = LocalContext.current
     Column(modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -149,10 +145,7 @@ private fun TvScheduleDayRow(
 }
 
 @Composable
-private fun TvScheduleCard(
-    entry: CalendarEntry,
-    onClick: () -> Unit,
-) {
+private fun TvScheduleCard(entry: CalendarEntry, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.width(160.dp).height(220.dp),
@@ -163,16 +156,16 @@ private fun TvScheduleCard(
                 contentDescription = entry.name,
                 contentScale = ContentScale.Crop,
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
             Column(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(8.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(8.dp),
             ) {
                 Text(
                     text = entry.name,

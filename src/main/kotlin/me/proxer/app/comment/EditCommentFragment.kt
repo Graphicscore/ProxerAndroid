@@ -1,6 +1,5 @@
 package me.proxer.app.comment
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -54,10 +53,9 @@ import org.koin.core.parameter.parametersOf
  */
 class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_edit_comment) {
     companion object {
-        fun newInstance() =
-            EditCommentFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = EditCommentFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val hostingActivity: EditCommentActivity
@@ -104,10 +102,7 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
     private val entryId: String?
         get() = hostingActivity.entryId
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         initUI()
@@ -115,10 +110,7 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),
@@ -348,10 +340,7 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
             }
     }
 
-    private fun insertTag(
-        tag: String,
-        value: String = "",
-    ) {
+    private fun insertTag(tag: String, value: String = "") {
         val startTag = "[$tag${if (value.isNotEmpty()) "=$value" else ""}]"
         val endTag = "[/$tag]"
 
@@ -378,29 +367,26 @@ class EditCommentFragment : BaseContentFragment<LocalComment>(R.layout.fragment_
         }
     }
 
-    private fun getRatingTitle(rating: Int) =
-        when (rating) {
-            1 -> R.string.fragment_edit_comment_rating_title_1
-            2 -> R.string.fragment_edit_comment_rating_title_2
-            3 -> R.string.fragment_edit_comment_rating_title_3
-            4 -> R.string.fragment_edit_comment_rating_title_4
-            5 -> R.string.fragment_edit_comment_rating_title_5
-            6 -> R.string.fragment_edit_comment_rating_title_6
-            7 -> R.string.fragment_edit_comment_rating_title_7
-            8 -> R.string.fragment_edit_comment_rating_title_8
-            9 -> R.string.fragment_edit_comment_rating_title_9
-            10 -> R.string.fragment_edit_comment_rating_title_10
-            else -> R.string.fragment_edit_comment_rating_title_0
-        }
+    private fun getRatingTitle(rating: Int) = when (rating) {
+        1 -> R.string.fragment_edit_comment_rating_title_1
+        2 -> R.string.fragment_edit_comment_rating_title_2
+        3 -> R.string.fragment_edit_comment_rating_title_3
+        4 -> R.string.fragment_edit_comment_rating_title_4
+        5 -> R.string.fragment_edit_comment_rating_title_5
+        6 -> R.string.fragment_edit_comment_rating_title_6
+        7 -> R.string.fragment_edit_comment_rating_title_7
+        8 -> R.string.fragment_edit_comment_rating_title_8
+        9 -> R.string.fragment_edit_comment_rating_title_9
+        10 -> R.string.fragment_edit_comment_rating_title_10
+        else -> R.string.fragment_edit_comment_rating_title_0
+    }
 
-    private fun getColorString(
-        @ColorRes color: Int,
-    ): String = "#${Integer.toHexString(ContextCompat.getColor(requireContext(), color) and 0x00ffffff)}"
+    private fun getColorString(@ColorRes color: Int): String =
+        "#${Integer.toHexString(ContextCompat.getColor(requireContext(), color) and 0x00ffffff)}"
 
-    private fun generateEmptyDrawable() =
-        IconicsDrawable(requireContext()).apply {
-            icon = CommunityMaterial.Icon3.cmd_thought_bubble
-            colorInt = requireContext().resolveColor(R.attr.colorIcon)
-            sizeDp = 128
-        }
+    private fun generateEmptyDrawable() = IconicsDrawable(requireContext()).apply {
+        icon = CommunityMaterial.Icon3.cmd_thought_bubble
+        colorInt = requireContext().resolveColor(R.attr.colorIcon)
+        sizeDp = 128
+    }
 }

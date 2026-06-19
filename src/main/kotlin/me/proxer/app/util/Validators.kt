@@ -8,10 +8,7 @@ import me.proxer.app.util.data.StorageHelper
 /**
  * @author Ruben Gees
  */
-class Validators(
-    private val storageHelper: StorageHelper,
-    private val preferenceHelper: PreferenceHelper,
-) {
+class Validators(private val storageHelper: StorageHelper, private val preferenceHelper: PreferenceHelper) {
     fun validateLogin() {
         if (!storageHelper.isLoggedIn) {
             throw NotLoggedInException()

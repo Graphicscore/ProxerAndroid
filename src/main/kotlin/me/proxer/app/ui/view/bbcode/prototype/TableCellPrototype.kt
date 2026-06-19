@@ -18,16 +18,9 @@ object TableCellPrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *td( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *td *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ) = BBTree(this, parent)
+    override fun construct(code: String, parent: BBTree) = BBTree(this, parent)
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
 
         return when (childViews.size) {

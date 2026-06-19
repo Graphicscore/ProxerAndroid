@@ -18,10 +18,8 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class CommentsViewModel(
-    private val entryId: String,
-    sortCriteria: CommentSortCriteria,
-) : PagedViewModel<ParsedComment>() {
+class CommentsViewModel(private val entryId: String, sortCriteria: CommentSortCriteria) :
+    PagedViewModel<ParsedComment>() {
     override val itemsOnPage = 10
 
     override val dataSingle: Single<List<ParsedComment>>

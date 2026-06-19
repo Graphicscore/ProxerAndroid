@@ -3,10 +3,7 @@ package me.proxer.app.settings.theme
 /**
  * @author Ruben Gees
  */
-data class ThemeContainer(
-    val theme: Theme,
-    val variant: ThemeVariant,
-) {
+data class ThemeContainer(val theme: Theme, val variant: ThemeVariant) {
     companion object {
         private const val DELIMITER = "_"
 

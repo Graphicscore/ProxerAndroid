@@ -8,9 +8,7 @@ import me.proxer.library.entity.info.Relation
 /**
  * @author Ruben Gees
  */
-class RelationViewModel(
-    private val entryId: String,
-) : BaseContentViewModel<List<Relation>>() {
+class RelationViewModel(private val entryId: String) : BaseContentViewModel<List<Relation>>() {
     override val endpoint: Endpoint<List<Relation>>
         get() =
             api.info

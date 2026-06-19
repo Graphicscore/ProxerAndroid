@@ -10,7 +10,6 @@ pluginManagement { scriptHandler ->
 
         id "com.github.ben-manes.versions" version "${versionsPluginVersion}"
         id "dev.detekt" version "${detektPluginVersion}"
-        id "org.jlleitschuh.gradle.ktlint" version "${ktlintPluginVersion}"
     }
 
     resolutionStrategy {

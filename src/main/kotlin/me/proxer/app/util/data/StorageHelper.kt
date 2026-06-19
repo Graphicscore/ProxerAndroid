@@ -140,84 +140,53 @@ class StorageHelper(
             sharedPreferences.edit { putLong(LAST_AD_ALERT_DATE, value.toEpochMilli()) }
         }
 
-    fun incrementChatInterval() =
-        chatInterval.let {
-            if (it < MAX_CHAT_INTERVAL) {
-                sharedPreferences.edit { putLong(CHAT_INTERVAL, (it * 1.5f).toLong()) }
-            }
+    fun incrementChatInterval() = chatInterval.let {
+        if (it < MAX_CHAT_INTERVAL) {
+            sharedPreferences.edit { putLong(CHAT_INTERVAL, (it * 1.5f).toLong()) }
         }
+    }
 
-    fun reset() =
-        sharedPreferences.edit {
-            sharedPreferences.all.forEach { (key) -> remove(key) }
-        }
+    fun reset() = sharedPreferences.edit {
+        sharedPreferences.all.forEach { (key) -> remove(key) }
+    }
 
-    fun resetChatInterval() =
-        sharedPreferences.edit {
-            putLong(CHAT_INTERVAL, DEFAULT_CHAT_INTERVAL)
-        }
+    fun resetChatInterval() = sharedPreferences.edit {
+        putLong(CHAT_INTERVAL, DEFAULT_CHAT_INTERVAL)
+    }
 
-    fun putMessageDraft(
-        id: String,
-        draft: String,
-    ) = sharedPreferences.edit {
+    fun putMessageDraft(id: String, draft: String) = sharedPreferences.edit {
         putString("$MESSAGE_DRAFT_PREFIX$id", draft)
     }
 
     fun getMessageDraft(id: String): String? = sharedPreferences.getString("$MESSAGE_DRAFT_PREFIX$id", null)
 
-    fun deleteMessageDraft(id: String) =
-        sharedPreferences.edit {
-            remove("$MESSAGE_DRAFT_PREFIX$id")
-        }
+    fun deleteMessageDraft(id: String) = sharedPreferences.edit {
+        remove("$MESSAGE_DRAFT_PREFIX$id")
+    }
 
-    fun putCommentDraft(
-        entryId: String,
-        draft: String,
-    ) = sharedPreferences.edit {
+    fun putCommentDraft(entryId: String, draft: String) = sharedPreferences.edit {
         putString("$COMMENT_DRAFT_PREFIX$entryId", draft)
     }
 
     fun getCommentDraft(entryId: String): String? = sharedPreferences.getString("$COMMENT_DRAFT_PREFIX$entryId", null)
 
-    fun deleteCommentDraft(entryId: String) =
-        sharedPreferences.edit {
-            remove("$COMMENT_DRAFT_PREFIX$entryId")
-        }
+    fun deleteCommentDraft(entryId: String) = sharedPreferences.edit {
+        remove("$COMMENT_DRAFT_PREFIX$entryId")
+    }
 
-    fun putLastMangaPage(
-        id: String,
-        chapter: Int,
-        language: Language,
-        page: Int,
-    ) {
+    fun putLastMangaPage(id: String, chapter: Int, language: Language, page: Int) {
         sharedPreferences.edit { putInt("${LAST_MANGA_PAGE_PREFIX}_${id}_${chapter}_$language", page) }
     }
 
-    fun getLastMangaPage(
-        id: String,
-        chapter: Int,
-        language: Language,
-    ): Int? =
-        sharedPreferences
-            .getInt("${LAST_MANGA_PAGE_PREFIX}_${id}_${chapter}_$language", -1)
-            .let { if (it == -1) null else it }
+    fun getLastMangaPage(id: String, chapter: Int, language: Language): Int? = sharedPreferences
+        .getInt("${LAST_MANGA_PAGE_PREFIX}_${id}_${chapter}_$language", -1)
+        .let { if (it == -1) null else it }
 
-    fun putLastAnimePosition(
-        id: String,
-        episode: Int,
-        language: AnimeLanguage,
-        position: Long,
-    ) {
+    fun putLastAnimePosition(id: String, episode: Int, language: AnimeLanguage, position: Long) {
         sharedPreferences.edit { putLong("${LAST_ANIME_POSITION_PREFIX}_${id}_${episode}_$language", position) }
     }
 
-    fun getLastAnimePosition(
-        id: String,
-        episode: Int,
-        language: AnimeLanguage,
-    ): Long? =
-        sharedPreferences
-            .getLong("${LAST_ANIME_POSITION_PREFIX}_${id}_${episode}_$language", -1)
-            .let { if (it == -1L) null else it }
+    fun getLastAnimePosition(id: String, episode: Int, language: AnimeLanguage): Long? = sharedPreferences
+        .getLong("${LAST_ANIME_POSITION_PREFIX}_${id}_${episode}_$language", -1)
+        .let { if (it == -1L) null else it }
 }

@@ -16,10 +16,7 @@ class ConferenceInfoActivity : DrawerActivity() {
     companion object {
         private const val CONFERENCE_EXTRA = "conference"
 
-        fun navigateTo(
-            context: Activity,
-            conference: LocalConference,
-        ) {
+        fun navigateTo(context: Activity, conference: LocalConference) {
             context.startActivity<ConferenceInfoActivity>(CONFERENCE_EXTRA to conference)
         }
     }

@@ -25,10 +25,7 @@ object NewsNotifications {
 
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    fun showOrUpdate(
-        context: Context,
-        news: Collection<NewsArticle>,
-    ) {
+    fun showOrUpdate(context: Context, news: Collection<NewsArticle>) {
         when (val notification = buildNewsNotification(context, news)) {
             null -> NotificationManagerCompat.from(context).cancel(ID)
             else -> NotificationManagerCompat.from(context).notify(ID, notification)
@@ -37,10 +34,7 @@ object NewsNotifications {
 
     fun cancel(context: Context) = NotificationManagerCompat.from(context).cancel(ID)
 
-    private fun buildNewsNotification(
-        context: Context,
-        news: Collection<NewsArticle>,
-    ): Notification? {
+    private fun buildNewsNotification(context: Context, news: Collection<NewsArticle>): Notification? {
         if (news.isEmpty()) {
             return null
         }

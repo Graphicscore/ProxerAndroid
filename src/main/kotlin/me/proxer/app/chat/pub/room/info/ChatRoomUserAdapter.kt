@@ -50,18 +50,11 @@ class ChatRoomUserAdapter : BaseAdapter<ChatRoomUser, ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder =
-        ViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_chat_room_participant, parent, false),
-        )
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
+        LayoutInflater.from(parent.context).inflate(R.layout.item_chat_room_participant, parent, false),
+    )
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -71,9 +64,7 @@ class ChatRoomUserAdapter : BaseAdapter<ChatRoomUser, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val image: ImageView by bindView(R.id.image)
         internal val username: TextView by bindView(R.id.username)
         internal val status: TextView by bindView(R.id.status)
@@ -126,12 +117,11 @@ class ChatRoomUserAdapter : BaseAdapter<ChatRoomUser, ViewHolder>() {
             }
         }
 
-        private fun generateModeratorDrawable(context: Context) =
-            IconicsDrawable(context).apply {
-                icon = CommunityMaterial.Icon3.cmd_star
-                colorInt = context.resolveColor(R.attr.colorSecondary)
-                paddingDp = 8
-                sizeDp = 32
-            }
+        private fun generateModeratorDrawable(context: Context) = IconicsDrawable(context).apply {
+            icon = CommunityMaterial.Icon3.cmd_star
+            colorInt = context.resolveColor(R.attr.colorSecondary)
+            paddingDp = 8
+            sizeDp = 32
+        }
     }
 }

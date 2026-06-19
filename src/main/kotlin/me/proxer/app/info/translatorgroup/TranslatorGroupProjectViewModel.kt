@@ -7,9 +7,8 @@ import me.proxer.library.entity.list.TranslatorGroupProject
 /**
  * @author Ruben Gees
  */
-class TranslatorGroupProjectViewModel(
-    private val translatorGroupId: String,
-) : PagedContentViewModel<TranslatorGroupProject>() {
+class TranslatorGroupProjectViewModel(private val translatorGroupId: String) :
+    PagedContentViewModel<TranslatorGroupProject>() {
     override val itemsOnPage = 30
 
     override val endpoint: PagingLimitEndpoint<List<TranslatorGroupProject>>

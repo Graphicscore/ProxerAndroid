@@ -38,9 +38,7 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class EpisodeAdapter(
-    savedInstanceState: Bundle?,
-) : BaseAdapter<EpisodeRow, ViewHolder>() {
+class EpisodeAdapter(savedInstanceState: Bundle?) : BaseAdapter<EpisodeRow, ViewHolder>() {
     private companion object {
         private const val EXPANDED_STATE = "episode_expanded"
     }
@@ -60,15 +58,10 @@ class EpisodeAdapter(
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_episode, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun getItemId(position: Int) = data[position].number.toLong()
 
@@ -82,16 +75,11 @@ class EpisodeAdapter(
             .forEach { glide?.clear(it) }
     }
 
-    override fun areItemsTheSame(
-        old: EpisodeRow,
-        new: EpisodeRow,
-    ) = old.number == new.number
+    override fun areItemsTheSame(old: EpisodeRow, new: EpisodeRow) = old.number == new.number
 
     override fun saveInstanceState(outState: Bundle) = outState.putParcelable(EXPANDED_STATE, expansionMap)
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val title: TextView by bindView(R.id.title)
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val watched: ImageView by bindView(R.id.watched)
@@ -161,10 +149,7 @@ class EpisodeAdapter(
             }
         }
 
-        private fun bindHosterImages(
-            hosterImages: List<String>?,
-            hostersView: ViewGroup,
-        ) {
+        private fun bindHosterImages(hosterImages: List<String>?, hostersView: ViewGroup) {
             if (hosterImages == null || hosterImages.isEmpty()) {
                 hostersView.removeAllViews()
 

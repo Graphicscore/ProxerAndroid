@@ -39,15 +39,10 @@ class ScheduleAdapter : BaseAdapter<Pair<CalendarDay, List<CalendarEntry>>, View
 
     override fun getItemId(position: Int) = data[position].let { (day, _) -> day.ordinal.toLong() }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_day, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_day, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
@@ -64,9 +59,7 @@ class ScheduleAdapter : BaseAdapter<Pair<CalendarDay, List<CalendarEntry>>, View
         glide = null
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : RecyclerView.ViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         internal val weekDay by bindView<TextView>(R.id.weekDay)
         internal val childRecyclerView by bindView<RecyclerView>(R.id.childRecyclerView)
 

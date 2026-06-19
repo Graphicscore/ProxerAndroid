@@ -24,10 +24,9 @@ import java.util.Locale
  */
 class ProfileSettingsFragment : XpPreferenceFragment() {
     companion object {
-        fun newInstance() =
-            ProfileSettingsFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = ProfileSettingsFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     private val viewModel by activityViewModel<ProfileSettingsViewModel>()
@@ -49,20 +48,14 @@ class ProfileSettingsFragment : XpPreferenceFragment() {
     private val gallery by bindPreference<ListPreference>("gallery")
     private val article by bindPreference<ListPreference>("article")
 
-    override fun onCreatePreferences2(
-        savedInstanceState: Bundle?,
-        rootKey: String?,
-    ) {
+    override fun onCreatePreferences2(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.profile_preferences)
 
         // Hide this setting until it are actually implemented.
         bannerAdsEnabled.isVisible = false
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.data.observe(
@@ -162,13 +155,12 @@ class ProfileSettingsFragment : XpPreferenceFragment() {
             }
         }
 
-    private fun normalizeAdInterval(source: Int): Int =
-        resources
-            .getStringArray(R.array.profile_settings_video_ads_interval_values)
-            .map { it.toInt() }
-            .sortedDescending()
-            .find { source >= it }
-            ?: 0
+    private fun normalizeAdInterval(source: Int): Int = resources
+        .getStringArray(R.array.profile_settings_video_ads_interval_values)
+        .map { it.toInt() }
+        .sortedDescending()
+        .find { source >= it }
+        ?: 0
 
     private fun updateVideoAdsIntervalSummary() {
         val value = videoAdsInterval.value ?: "0"

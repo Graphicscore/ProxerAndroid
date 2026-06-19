@@ -38,11 +38,7 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class StreamPlayerManager(
-    context: StreamActivity,
-    rawClient: OkHttpClient,
-    private val adTag: Uri?,
-) {
+class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, private val adTag: Uri?) {
     private companion object {
         private const val WAS_PLAYING_EXTRA = "was_playing"
         private const val LAST_POSITION_EXTRA = "last_position"
@@ -96,10 +92,7 @@ class StreamPlayerManager(
                 }
             }
 
-            override fun onPlayWhenReadyChanged(
-                playWhenReady: Boolean,
-                reason: Int,
-            ) {
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
                 if (currentPlayer.playbackState == Player.STATE_READY) {
                     playerStateSubject.onNext(
                         when (playWhenReady) {
@@ -272,30 +265,26 @@ class StreamPlayerManager(
         currentPlayer.playWhenReady = true
     }
 
-    private fun buildClient(rawClient: OkHttpClient): OkHttpClient =
-        referer.let { referer ->
-            if (referer == null) {
-                rawClient
-            } else {
-                rawClient
-                    .newBuilder()
-                    .addInterceptor {
-                        val requestWithReferer =
-                            it
-                                .request()
-                                .newBuilder()
-                                .header("Referer", referer)
-                                .build()
+    private fun buildClient(rawClient: OkHttpClient): OkHttpClient = referer.let { referer ->
+        if (referer == null) {
+            rawClient
+        } else {
+            rawClient
+                .newBuilder()
+                .addInterceptor {
+                    val requestWithReferer =
+                        it
+                            .request()
+                            .newBuilder()
+                            .header("Referer", referer)
+                            .build()
 
-                        it.proceed(requestWithReferer)
-                    }.build()
-            }
+                    it.proceed(requestWithReferer)
+                }.build()
         }
+    }
 
-    private fun buildLocalMediaSourceWithAds(
-        client: OkHttpClient,
-        uri: Uri,
-    ): MediaSource {
+    private fun buildLocalMediaSourceWithAds(client: OkHttpClient, uri: Uri): MediaSource {
         val context = requireNotNull(weakContext.get())
         val okHttpDataSourceFactory = OkHttpDataSource.Factory(client).setUserAgent(USER_AGENT)
         val localMediaSource = buildLocalMediaSource(okHttpDataSourceFactory, uri)
@@ -316,10 +305,7 @@ class StreamPlayerManager(
         }
     }
 
-    private fun buildLocalMediaSource(
-        dataSourceFactory: DataSource.Factory,
-        uri: Uri,
-    ): MediaSource {
+    private fun buildLocalMediaSource(dataSourceFactory: DataSource.Factory, uri: Uri): MediaSource {
         val mediaItem = MediaItem.fromUri(uri)
         return when (val streamType = Util.inferContentType(uri)) {
             C.CONTENT_TYPE_SS -> {
@@ -348,12 +334,7 @@ class StreamPlayerManager(
         }
     }
 
-    private fun buildCastMediaItem(
-        name: String?,
-        episode: Int?,
-        coverUri: Uri?,
-        uri: Uri,
-    ): MediaItem {
+    private fun buildCastMediaItem(name: String?, episode: Int?, coverUri: Uri?, uri: Uri): MediaItem {
         val metadata =
             MediaMetadata
                 .Builder()
@@ -367,26 +348,24 @@ class StreamPlayerManager(
             .build()
     }
 
-    private fun buildLocalPlayer(context: StreamActivity): ExoPlayer =
-        ExoPlayer.Builder(context).build().apply {
-            val audioAttributes =
-                AudioAttributes
-                    .Builder()
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .setUsage(C.USAGE_MEDIA)
-                    .build()
+    private fun buildLocalPlayer(context: StreamActivity): ExoPlayer = ExoPlayer.Builder(context).build().apply {
+        val audioAttributes =
+            AudioAttributes
+                .Builder()
+                .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                .setUsage(C.USAGE_MEDIA)
+                .build()
 
-            setWakeMode(C.WAKE_MODE_NETWORK)
-            setHandleAudioBecomingNoisy(true)
-            setAudioAttributes(audioAttributes, true)
-        }
+        setWakeMode(C.WAKE_MODE_NETWORK)
+        setHandleAudioBecomingNoisy(true)
+        setAudioAttributes(audioAttributes, true)
+    }
 
     @Suppress("DEPRECATION")
-    private fun buildCastPlayer(context: StreamActivity): CastPlayer? =
-        context
-            .getSafeCastContext()
-            ?.let { CastPlayer(it) }
-            ?.apply { setSessionAvailabilityListener(castSessionAvailabilityListener) }
+    private fun buildCastPlayer(context: StreamActivity): CastPlayer? = context
+        .getSafeCastContext()
+        ?.let { CastPlayer(it) }
+        ?.apply { setSessionAvailabilityListener(castSessionAvailabilityListener) }
 
     enum class PlayerState {
         PLAYING,

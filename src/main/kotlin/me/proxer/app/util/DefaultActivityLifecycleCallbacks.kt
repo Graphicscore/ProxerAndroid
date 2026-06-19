@@ -8,10 +8,7 @@ import android.os.Bundle
  * @author Ruben Gees
  */
 interface DefaultActivityLifecycleCallbacks : Application.ActivityLifecycleCallbacks {
-    override fun onActivityCreated(
-        activity: Activity,
-        savedInstanceState: Bundle?,
-    ) = Unit
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
 
     override fun onActivityStarted(activity: Activity) = Unit
 
@@ -23,8 +20,5 @@ interface DefaultActivityLifecycleCallbacks : Application.ActivityLifecycleCallb
 
     override fun onActivityDestroyed(activity: Activity) = Unit
 
-    override fun onActivitySaveInstanceState(
-        activity: Activity,
-        outState: Bundle,
-    ) = Unit
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
 }

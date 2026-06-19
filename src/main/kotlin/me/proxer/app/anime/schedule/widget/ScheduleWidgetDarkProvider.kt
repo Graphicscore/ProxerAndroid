@@ -8,11 +8,7 @@ import android.content.Context
  * @author Ruben Gees
  */
 class ScheduleWidgetDarkProvider : AppWidgetProvider() {
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray,
-    ) {
+    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         ScheduleWidgetUpdateWorker.enqueueWork()
     }
 }

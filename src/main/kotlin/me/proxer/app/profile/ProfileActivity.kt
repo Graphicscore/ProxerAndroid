@@ -249,24 +249,20 @@ class ProfileActivity : ImageTabsActivity() {
     private inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
         override fun getItemCount() = 7
 
-        override fun createFragment(position: Int) =
-            when (position) {
-                0 -> ProfileInfoFragment.newInstance()
-                1 -> ProfileAboutFragment.newInstance()
-                2 -> TopTenFragment.newInstance()
-                3 -> ProfileMediaListFragment.newInstance(Category.ANIME)
-                4 -> ProfileMediaListFragment.newInstance(Category.MANGA)
-                5 -> ProfileCommentFragment.newInstance()
-                6 -> HistoryFragment.newInstance()
-                else -> error("Unknown index passed: $position")
-            }
+        override fun createFragment(position: Int) = when (position) {
+            0 -> ProfileInfoFragment.newInstance()
+            1 -> ProfileAboutFragment.newInstance()
+            2 -> TopTenFragment.newInstance()
+            3 -> ProfileMediaListFragment.newInstance(Category.ANIME)
+            4 -> ProfileMediaListFragment.newInstance(Category.MANGA)
+            5 -> ProfileCommentFragment.newInstance()
+            6 -> HistoryFragment.newInstance()
+            else -> error("Unknown index passed: $position")
+        }
     }
 
     private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
-        override fun onConfigureTab(
-            tab: TabLayout.Tab,
-            position: Int,
-        ) {
+        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
             tab.text =
                 when (position) {
                     0 -> getString(R.string.section_profile_info)

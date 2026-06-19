@@ -23,9 +23,7 @@ import me.proxer.library.entity.info.MediaUserInfo
 /**
  * @author Ruben Gees
  */
-class MediaInfoViewModel(
-    private val entryId: String,
-) : BaseViewModel<Entry>() {
+class MediaInfoViewModel(private val entryId: String) : BaseViewModel<Entry>() {
     override val dataSingle: Single<Entry>
         get() =
             Single
@@ -167,10 +165,7 @@ class MediaInfoViewModel(
                 )
     }
 
-    private fun applyMediaUserInfoChanges(
-        data: MediaUserInfo,
-        updateType: UserInfoUpdateType,
-    ) = data.let {
+    private fun applyMediaUserInfoChanges(data: MediaUserInfo, updateType: UserInfoUpdateType) = data.let {
         val isNoted =
             when (updateType) {
                 UserInfoUpdateType.FINISHED -> false

@@ -15,10 +15,7 @@ object TwitterPrototype : TextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *tweet( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *tweet *", REGEX_OPTIONS)
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val id = text.trim()
 
         return when (val url = "https://twitter.com/i/web/status/$id".toHttpUrlOrNull()) {

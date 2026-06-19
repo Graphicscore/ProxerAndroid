@@ -24,11 +24,7 @@ object CodePrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *code( .*?)?", BBPrototype.REGEX_OPTIONS)
     override val endRegex = Regex("/ *code *", BBPrototype.REGEX_OPTIONS)
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
 
         applyToViews(childViews) { view: TextView ->

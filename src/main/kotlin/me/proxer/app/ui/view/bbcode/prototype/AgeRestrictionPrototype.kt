@@ -29,11 +29,7 @@ object AgeRestrictionPrototype : AutoClosingPrototype {
 
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
 
         return when {

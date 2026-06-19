@@ -54,11 +54,10 @@ class BBArgs : LinkedHashMap<String, Any?> {
         putAll(args)
     }
 
-    operator fun plus(other: BBArgs) =
-        BBArgs().also {
-            it.putAll(this)
-            it.putAll(other)
-        }
+    operator fun plus(other: BBArgs) = BBArgs().also {
+        it.putAll(this)
+        it.putAll(other)
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

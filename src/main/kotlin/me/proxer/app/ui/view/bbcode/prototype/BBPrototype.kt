@@ -24,24 +24,14 @@ interface BBPrototype {
 
     val canHaveChildren get() = true
 
-    fun fromCode(
-        code: String,
-        parent: BBTree,
-    ) = when (startRegex.matches(code)) {
+    fun fromCode(code: String, parent: BBTree) = when (startRegex.matches(code)) {
         true -> construct(code, parent)
         false -> null
     }
 
-    fun construct(
-        code: String,
-        parent: BBTree,
-    ) = BBTree(this, parent)
+    fun construct(code: String, parent: BBTree) = BBTree(this, parent)
 
-    fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         val currentTextViews = mutableListOf<TextView>()
@@ -93,11 +83,7 @@ interface BBPrototype {
         return result
     }
 
-    private fun mergeAndTrim(
-        views: List<TextView>,
-        padStart: Boolean,
-        padEnd: Boolean,
-    ): TextView {
+    private fun mergeAndTrim(views: List<TextView>, padStart: Boolean, padEnd: Boolean): TextView {
         val current = views.first()
         val currentText = current.text.toSpannableStringBuilder()
 

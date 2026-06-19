@@ -42,13 +42,12 @@ abstract class ReportDialog : BaseDialog() {
     private val id: String
         get() = requireArguments().getSafeString(ID_ARGUMENT)
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        MaterialDialog(requireContext())
-            .noAutoDismiss()
-            .title(R.string.dialog_chat_report_title)
-            .positiveButton(R.string.dialog_chat_report_positive) { validateAndSendReport() }
-            .negativeButton(R.string.cancel) { dismiss() }
-            .customView(R.layout.dialog_chat_report, scrollable = true)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
+        .noAutoDismiss()
+        .title(R.string.dialog_chat_report_title)
+        .positiveButton(R.string.dialog_chat_report_positive) { validateAndSendReport() }
+        .negativeButton(R.string.cancel) { dismiss() }
+        .customView(R.layout.dialog_chat_report, scrollable = true)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -106,23 +105,19 @@ abstract class ReportDialog : BaseDialog() {
         }
     }
 
-    private fun validateInput(message: String) =
-        when {
-            message.isBlank() -> {
-                setError(messageContainer, getString(R.string.dialog_chat_error_message))
+    private fun validateInput(message: String) = when {
+        message.isBlank() -> {
+            setError(messageContainer, getString(R.string.dialog_chat_error_message))
 
-                false
-            }
-
-            else -> {
-                true
-            }
+            false
         }
 
-    private fun setError(
-        container: TextInputLayout,
-        errorText: String?,
-    ) {
+        else -> {
+            true
+        }
+    }
+
+    private fun setError(container: TextInputLayout, errorText: String?) {
         container.isErrorEnabled = errorText != null
         container.error = errorText
     }

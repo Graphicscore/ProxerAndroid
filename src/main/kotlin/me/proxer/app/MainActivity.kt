@@ -51,19 +51,12 @@ class MainActivity : DrawerActivity() {
         private const val SECTION_EXTRA = "section"
         private const val SECTION_ACTION_PREFIX = "me.proxer.app.intent.action."
 
-        fun navigateToSection(
-            context: Context,
-            section: DrawerItem,
-        ) = context
+        fun navigateToSection(context: Context, section: DrawerItem) = context
             .startActivity(getSectionIntent(context, section))
 
-        fun getSectionIntent(
-            context: Context,
-            section: DrawerItem,
-        ): Intent =
-            context
-                .intentFor<MainActivity>(SECTION_EXTRA to section)
-                .setAction(SECTION_ACTION_PREFIX + section.name)
+        fun getSectionIntent(context: Context, section: DrawerItem): Intent = context
+            .intentFor<MainActivity>(SECTION_EXTRA to section)
+            .setAction(SECTION_ACTION_PREFIX + section.name)
     }
 
     override val contentView = R.layout.activity_main
@@ -152,11 +145,7 @@ class MainActivity : DrawerActivity() {
         }
     }
 
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?,
-    ) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == IntroductionBuilder.INTRODUCTION_REQUEST_CODE) {
@@ -220,10 +209,7 @@ class MainActivity : DrawerActivity() {
         }
     }
 
-    private fun setFragment(
-        fragment: Fragment,
-        newTitle: Int,
-    ) {
+    private fun setFragment(fragment: Fragment, newTitle: Int) {
         title = getString(newTitle)
 
         supportFragmentManager.commitNow {
@@ -285,8 +271,7 @@ class MainActivity : DrawerActivity() {
         }
     }
 
-    override fun handleDrawerItemClick(item: DrawerItem) =
-        // || item == drawer.currentItem
+    override fun handleDrawerItemClick(item: DrawerItem) = // || item == drawer.currentItem
         when (isRootActivity) {
             true -> setFragment(item)
             false -> super.handleDrawerItemClick(item)

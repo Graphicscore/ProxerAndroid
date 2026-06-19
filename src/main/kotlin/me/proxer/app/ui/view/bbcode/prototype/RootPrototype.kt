@@ -22,11 +22,7 @@ object RootPrototype : BBPrototype {
 
     override val endRegex = Regex("x^")
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val views = super.makeViews(parent, children, args)
 
         val result =
@@ -50,10 +46,7 @@ object RootPrototype : BBPrototype {
         return applyOnViews(result, args)
     }
 
-    fun applyOnViews(
-        views: List<View>,
-        args: BBArgs,
-    ) = applyToAllViews(views) { view: View ->
+    fun applyOnViews(views: List<View>, args: BBArgs) = applyToAllViews(views) { view: View ->
         if (view is BetterLinkGifAwareEmojiTextView && args.enableEmoticons) {
             val glide = args.glide
 

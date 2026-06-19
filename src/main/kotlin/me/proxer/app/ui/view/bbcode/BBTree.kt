@@ -18,10 +18,7 @@ class BBTree(
 ) {
     fun endsWith(code: String) = prototype.endRegex.matches(code)
 
-    fun makeViews(
-        parent: BBCodeView,
-        args: BBArgs,
-    ) = prototype.makeViews(parent, children, args + this.args)
+    fun makeViews(parent: BBCodeView, args: BBArgs) = prototype.makeViews(parent, children, args + this.args)
 
     fun optimize(args: BBArgs = BBArgs()) = recursiveOptimize(args).first()
 
@@ -89,9 +86,8 @@ class BBTree(
         return result
     }
 
-    private fun getRecursiveChildren(current: List<BBTree>): List<BBTree> =
-        current
-            .plus(current.flatMap { getRecursiveChildren(it.children) })
+    private fun getRecursiveChildren(current: List<BBTree>): List<BBTree> = current
+        .plus(current.flatMap { getRecursiveChildren(it.children) })
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -29,9 +29,8 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-abstract class PagedContentFragment<T>(
-    @LayoutRes contentLayoutId: Int = R.layout.fragment_paged,
-) : BaseContentFragment<List<T>>(contentLayoutId) {
+abstract class PagedContentFragment<T>(@LayoutRes contentLayoutId: Int = R.layout.fragment_paged) :
+    BaseContentFragment<List<T>>(contentLayoutId) {
     abstract override val viewModel: PagedViewModel<T>
 
     override val isSwipeToRefreshEnabled = true
@@ -62,10 +61,7 @@ abstract class PagedContentFragment<T>(
 
     private val adapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
-            override fun onItemRangeInserted(
-                positionStart: Int,
-                itemCount: Int,
-            ) {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 if (isAtTop() && positionStart == 0) {
                     recyclerView.doAfterAnimations {
                         if (view != null) recyclerView.smoothScrollToPosition(0)
@@ -74,10 +70,7 @@ abstract class PagedContentFragment<T>(
             }
         }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter = EasyHeaderFooterAdapter(innerAdapter)

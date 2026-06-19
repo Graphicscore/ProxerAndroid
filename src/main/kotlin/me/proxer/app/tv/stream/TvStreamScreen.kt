@@ -50,13 +50,7 @@ import timber.log.Timber
 import androidx.compose.material3.Surface as M3Surface
 
 @Composable
-fun TvStreamScreen(
-    entryId: String,
-    episode: Int,
-    language: AnimeLanguage,
-    entryName: String,
-    onBack: () -> Unit,
-) {
+fun TvStreamScreen(entryId: String, episode: Int, language: AnimeLanguage, entryName: String, onBack: () -> Unit) {
     val viewModel: AnimeViewModel = koinViewModel { parametersOf(entryId, language, episode) }
     val streamInfo by viewModel.data.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
@@ -163,10 +157,10 @@ fun TvStreamScreenContent(
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -238,10 +232,7 @@ fun TvStreamScreenContent(
 }
 
 @Composable
-private fun TvBadge(
-    label: String,
-    background: Color,
-) {
+private fun TvBadge(label: String, background: Color) {
     M3Surface(color = background, shape = RoundedCornerShape(4.dp)) {
         Text(
             label,
@@ -253,24 +244,20 @@ private fun TvBadge(
 }
 
 @Composable
-private fun TvStreamItem(
-    stream: AnimeStream,
-    isResolving: Boolean,
-    onClick: () -> Unit,
-) {
+private fun TvStreamItem(stream: AnimeStream, isResolving: Boolean, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(80.dp),
+        Modifier
+            .fillMaxWidth()
+            .height(80.dp),
     ) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .padding(horizontal = 16.dp),
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {

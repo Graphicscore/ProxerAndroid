@@ -36,11 +36,7 @@ class TvMediaDetailActivity : ComponentActivity() {
         private const val ID_EXTRA = "id"
         private const val NAME_EXTRA = "name"
 
-        fun navigateTo(
-            context: Context,
-            id: String,
-            name: String,
-        ) {
+        fun navigateTo(context: Context, id: String, name: String) {
             context.startActivity<TvMediaDetailActivity>(ID_EXTRA to id, NAME_EXTRA to name)
         }
     }

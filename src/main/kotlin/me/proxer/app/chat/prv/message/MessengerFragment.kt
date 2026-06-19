@@ -2,7 +2,6 @@
 
 package me.proxer.app.chat.prv.message
 
-import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Bundle
@@ -66,10 +65,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
         private const val CONFERENCE_ARGUEMNT = "conference"
         private const val INITIAL_MESSAGE_ARGUEMNT = "initial_meesage"
 
-        fun newInstance(
-            conference: LocalConference,
-            initialMessage: String? = null,
-        ) = MessengerFragment().apply {
+        fun newInstance(conference: LocalConference, initialMessage: String? = null) = MessengerFragment().apply {
             arguments =
                 bundleOf(
                     CONFERENCE_ARGUEMNT to conference,
@@ -85,10 +81,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
 
     private val actionModeCallback: ActionMode.Callback =
         object : ActionMode.Callback {
-            override fun onPrepareActionMode(
-                mode: ActionMode,
-                menu: Menu,
-            ): Boolean {
+            override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
                 innerAdapter.selectedMessages.let {
                     menu.findItem(R.id.reply).isVisible = it.size == 1 && it.first().userId != storageHelper.user?.id
                 }
@@ -96,10 +89,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
                 return false
             }
 
-            override fun onActionItemClicked(
-                mode: ActionMode,
-                item: MenuItem,
-            ): Boolean {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
                 when (item.itemId) {
                     R.id.copy -> handleCopyClick()
                     R.id.reply -> handleReplyClick()
@@ -109,10 +99,7 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
                 return true
             }
 
-            override fun onCreateActionMode(
-                mode: ActionMode,
-                menu: Menu,
-            ): Boolean {
+            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
                 IconicsMenuInflaterUtil.inflate(
                     mode.menuInflater,
                     requireContext(),
@@ -210,18 +197,12 @@ class MessengerFragment : PagedContentFragment<LocalMessage>(R.layout.fragment_m
             .subscribe { ProfileActivity.navigateTo(requireActivity(), username = it) }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

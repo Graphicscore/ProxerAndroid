@@ -20,10 +20,8 @@ import me.proxer.library.enums.Category
 /**
  * @author Ruben Gees
  */
-class TopTenViewModel(
-    private val userId: String?,
-    private val username: String?,
-) : BaseViewModel<ZippedTopTenResult>() {
+class TopTenViewModel(private val userId: String?, private val username: String?) :
+    BaseViewModel<ZippedTopTenResult>() {
     override val dataSingle: Single<ZippedTopTenResult>
         get() =
             Single
@@ -81,10 +79,7 @@ class TopTenViewModel(
         }
     }
 
-    private fun partialSingle(
-        includeHentai: Boolean,
-        category: Category,
-    ) = api.user
+    private fun partialSingle(includeHentai: Boolean, category: Category) = api.user
         .topTen(userId, username)
         .includeHentai(includeHentai)
         .category(category)
@@ -135,8 +130,5 @@ class TopTenViewModel(
         }
     }
 
-    data class ZippedTopTenResult(
-        val animeEntries: List<LocalTopTenEntry>,
-        val mangaEntries: List<LocalTopTenEntry>,
-    )
+    data class ZippedTopTenResult(val animeEntries: List<LocalTopTenEntry>, val mangaEntries: List<LocalTopTenEntry>)
 }

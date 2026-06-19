@@ -9,16 +9,12 @@ import org.threeten.bp.Instant
  * @author Ruben Gees
  */
 class InstantJsonAdapter : JsonAdapter<Instant>() {
-    override fun fromJson(reader: JsonReader): Instant? =
-        when (reader.peek()) {
-            JsonReader.Token.NULL -> null
-            else -> Instant.ofEpochMilli(reader.nextLong())
-        }
+    override fun fromJson(reader: JsonReader): Instant? = when (reader.peek()) {
+        JsonReader.Token.NULL -> null
+        else -> Instant.ofEpochMilli(reader.nextLong())
+    }
 
-    override fun toJson(
-        writer: JsonWriter,
-        value: Instant?,
-    ) {
+    override fun toJson(writer: JsonWriter, value: Instant?) {
         when (value) {
             null -> writer.nullValue()
             else -> writer.value(value.toEpochMilli())

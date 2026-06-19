@@ -166,10 +166,7 @@ class MessengerAdapter(
         return result
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): MessageViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
 
         return when (MessageType.from(viewType)) {
@@ -199,10 +196,7 @@ class MessengerAdapter(
         }
     }
 
-    override fun onBindViewHolder(
-        holder: MessageViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val margins = getMarginsForPosition(position)
         val context = holder.itemView.context
 
@@ -242,15 +236,9 @@ class MessengerAdapter(
         messageSelectionSubject.onNext(messageSelectionMap.size)
     }
 
-    override fun areItemsTheSame(
-        old: LocalMessage,
-        new: LocalMessage,
-    ) = old.id == new.id
+    override fun areItemsTheSame(old: LocalMessage, new: LocalMessage) = old.id == new.id
 
-    override fun areContentsTheSame(
-        old: LocalMessage,
-        new: LocalMessage,
-    ) = old.userId == new.userId &&
+    override fun areContentsTheSame(old: LocalMessage, new: LocalMessage) = old.userId == new.userId &&
         old.action == new.action && old.date == new.date && old.message == new.message
 
     override fun saveInstanceState(outState: Bundle) {
@@ -298,9 +286,7 @@ class MessengerAdapter(
         return marginTop to if (position == 0) 0 else marginBottom
     }
 
-    open inner class MessageViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    open inner class MessageViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val root: ViewGroup by bindView(R.id.root)
         internal val container: CardView by bindView(R.id.container)
         internal val text: BBCodeView by bindView(R.id.text)
@@ -316,11 +302,7 @@ class MessengerAdapter(
             )
         }
 
-        internal open fun bind(
-            message: LocalMessage,
-            marginTop: Int,
-            marginBottom: Int,
-        ) {
+        internal open fun bind(message: LocalMessage, marginTop: Int, marginBottom: Int) {
             container
                 .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
@@ -341,10 +323,7 @@ class MessengerAdapter(
             applyMargins(marginTop, marginBottom)
         }
 
-        internal open fun onContainerClick(
-            v: View,
-            message: LocalMessage,
-        ) {
+        internal open fun onContainerClick(v: View, message: LocalMessage) {
             val id = message.id.toString()
 
             if (isSelecting) {
@@ -365,10 +344,7 @@ class MessengerAdapter(
             layoutManager?.requestSimpleAnimationsInNextLayout()
         }
 
-        internal open fun onContainerLongClick(
-            v: View,
-            message: LocalMessage,
-        ) {
+        internal open fun onContainerLongClick(v: View, message: LocalMessage) {
             val id = message.id.toString()
 
             if (!isSelecting) {
@@ -391,11 +367,10 @@ class MessengerAdapter(
             time.text = message.date.toLocalDateTime().distanceInWordsToNow(time.context)
         }
 
-        internal open fun applySendStatus(message: LocalMessage) =
-            when (message.id < 0) {
-                true -> sendStatus?.isVisible = true
-                false -> sendStatus?.isGone = true
-            }
+        internal open fun applySendStatus(message: LocalMessage) = when (message.id < 0) {
+            true -> sendStatus?.isVisible = true
+            false -> sendStatus?.isGone = true
+        }
 
         internal open fun applySelection(message: LocalMessage) {
             container.setCardBackgroundColor(
@@ -412,10 +387,7 @@ class MessengerAdapter(
             time.isVisible = timeDisplayMap[message.id.toString()] == true
         }
 
-        internal open fun applyMargins(
-            marginTop: Int,
-            marginBottom: Int,
-        ) {
+        internal open fun applyMargins(marginTop: Int, marginBottom: Int) {
             root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = marginTop
                 bottomMargin = marginBottom
@@ -423,9 +395,7 @@ class MessengerAdapter(
         }
     }
 
-    internal inner class MessageTitleViewHolder(
-        itemView: View,
-    ) : MessageViewHolder(itemView) {
+    internal inner class MessageTitleViewHolder(itemView: View) : MessageViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
@@ -435,11 +405,7 @@ class MessengerAdapter(
             image.isGone = true
         }
 
-        override fun bind(
-            message: LocalMessage,
-            marginTop: Int,
-            marginBottom: Int,
-        ) {
+        override fun bind(message: LocalMessage, marginTop: Int, marginBottom: Int) {
             super.bind(message, marginTop, marginBottom)
 
             titleContainer
@@ -453,13 +419,8 @@ class MessengerAdapter(
         }
     }
 
-    internal inner class ActionViewHolder(
-        itemView: View,
-    ) : MessageViewHolder(itemView) {
-        override fun onContainerClick(
-            v: View,
-            message: LocalMessage,
-        ) {
+    internal inner class ActionViewHolder(itemView: View) : MessageViewHolder(itemView) {
+        override fun onContainerClick(v: View, message: LocalMessage) {
             val id = message.id.toString()
 
             timeDisplayMap.putOrRemove(id)
@@ -469,10 +430,7 @@ class MessengerAdapter(
             layoutManager?.requestSimpleAnimationsInNextLayout()
         }
 
-        override fun onContainerLongClick(
-            v: View,
-            message: LocalMessage,
-        ) = Unit
+        override fun onContainerLongClick(v: View, message: LocalMessage) = Unit
 
         override fun onContainerLongClickHandled(v: View) = false
 
@@ -483,9 +441,7 @@ class MessengerAdapter(
         }
     }
 
-    private enum class MessageType(
-        val type: Int,
-    ) {
+    private enum class MessageType(val type: Int) {
         INNER(0),
         SINGLE(1),
         TOP(2),

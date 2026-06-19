@@ -63,13 +63,12 @@ class LoginDialog : BaseDialog() {
         setLikelyUrl(ProxerUrls.registerWeb())
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        MaterialDialog(requireContext())
-            .noAutoDismiss()
-            .title(R.string.dialog_login_title)
-            .positiveButton(R.string.dialog_login_positive) { validateAndLogin() }
-            .negativeButton(R.string.cancel) { it.dismiss() }
-            .customView(R.layout.dialog_login, scrollable = true)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
+        .noAutoDismiss()
+        .title(R.string.dialog_login_title)
+        .positiveButton(R.string.dialog_login_positive) { validateAndLogin() }
+        .negativeButton(R.string.cancel) { it.dismiss() }
+        .customView(R.layout.dialog_login, scrollable = true)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)
@@ -170,10 +169,7 @@ class LoginDialog : BaseDialog() {
         }
     }
 
-    private fun validateInput(
-        username: String,
-        password: String,
-    ) = when {
+    private fun validateInput(username: String, password: String) = when {
         username.isBlank() -> {
             setError(usernameContainer, getString(R.string.dialog_login_error_username))
 
@@ -191,18 +187,14 @@ class LoginDialog : BaseDialog() {
         }
     }
 
-    private fun setError(
-        container: TextInputLayout,
-        errorText: String?,
-    ) {
+    private fun setError(container: TextInputLayout, errorText: String?) {
         container.isErrorEnabled = errorText != null
         container.error = errorText
     }
 
-    private fun generateInfoDrawable() =
-        IconicsDrawable(requireContext()).apply {
-            icon = CommunityMaterial.Icon2.cmd_information_outline
-            colorInt = requireContext().resolveColor(R.attr.colorIcon)
-            sizeDp = 20
-        }
+    private fun generateInfoDrawable() = IconicsDrawable(requireContext()).apply {
+        icon = CommunityMaterial.Icon2.cmd_information_outline
+        colorInt = requireContext().resolveColor(R.attr.colorIcon)
+        sizeDp = 20
+    }
 }

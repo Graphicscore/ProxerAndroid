@@ -105,11 +105,7 @@ abstract class BaseDialog :
     override fun setLikelyUrl(url: HttpUrl): Boolean =
         customTabsHelper.mayLaunchUrl(url.androidUri(), bundleOf(), emptyList())
 
-    override fun showPage(
-        url: HttpUrl,
-        forceBrowser: Boolean,
-        skipCheck: Boolean,
-    ) {
+    override fun showPage(url: HttpUrl, forceBrowser: Boolean, skipCheck: Boolean) {
         customTabsHelper.fallbackHandleLink(requireActivity(), url, forceBrowser, skipCheck)
     }
 

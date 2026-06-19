@@ -27,24 +27,14 @@ class NotificationAdapter : BaseAdapter<ProxerNotification, ViewHolder>() {
     val clickSubject: PublishSubject<ProxerNotification> = PublishSubject.create()
     val deleteClickSubject: PublishSubject<ProxerNotification> = PublishSubject.create()
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_notification, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_notification, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
-    override fun areItemsTheSame(
-        old: ProxerNotification,
-        new: ProxerNotification,
-    ): Boolean = old == new
+    override fun areItemsTheSame(old: ProxerNotification, new: ProxerNotification): Boolean = old == new
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val text: TextView by bindView(R.id.text)
         internal val date: TextView by bindView(R.id.date)

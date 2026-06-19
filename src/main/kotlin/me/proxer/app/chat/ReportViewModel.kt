@@ -26,10 +26,7 @@ abstract class ReportViewModel : ViewModel() {
         super.onCleared()
     }
 
-    fun sendReport(
-        messageId: String,
-        message: String,
-    ) {
+    fun sendReport(messageId: String, message: String) {
         if (isLoading.value != true) {
             dataDisposable?.dispose()
             dataDisposable =
@@ -51,8 +48,5 @@ abstract class ReportViewModel : ViewModel() {
         }
     }
 
-    protected abstract fun reportSingle(
-        id: String,
-        message: String,
-    ): Single<*>
+    protected abstract fun reportSingle(id: String, message: String): Single<*>
 }

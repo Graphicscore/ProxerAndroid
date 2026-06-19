@@ -18,30 +18,29 @@ object ProxerStreamResolver : StreamResolver() {
 
     override val name = "Proxer-Stream"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> =
-        api.anime
-            .vastLink(id)
-            .buildSingle()
-            .flatMap { (link, adTag) ->
-                client
-                    .newCall(
-                        Request
-                            .Builder()
-                            .get()
-                            .url(link.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
-                            .header("User-Agent", USER_AGENT)
-                            .header("Connection", "close")
-                            .build(),
-                    ).toBodySingle()
-                    .map {
-                        val regexResult = regex.find(it) ?: throw StreamResolutionException()
+    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime
+        .vastLink(id)
+        .buildSingle()
+        .flatMap { (link, adTag) ->
+            client
+                .newCall(
+                    Request
+                        .Builder()
+                        .get()
+                        .url(link.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
+                        .header("User-Agent", USER_AGENT)
+                        .header("Connection", "close")
+                        .build(),
+                ).toBodySingle()
+                .map {
+                    val regexResult = regex.find(it) ?: throw StreamResolutionException()
 
-                        val url = regexResult.groupValues[2].toHttpUrlOrNull() ?: throw StreamResolutionException()
-                        val type = regexResult.groupValues[1]
+                    val url = regexResult.groupValues[2].toHttpUrlOrNull() ?: throw StreamResolutionException()
+                    val type = regexResult.groupValues[1]
 
-                        val adTagUri = if (adTag.isNotBlank()) Uri.parse(adTag) else null
+                    val adTagUri = if (adTag.isNotBlank()) Uri.parse(adTag) else null
 
-                        StreamResolutionResult.Video(url, type, adTag = adTagUri)
-                    }
-            }
+                    StreamResolutionResult.Video(url, type, adTag = adTagUri)
+                }
+        }
 }

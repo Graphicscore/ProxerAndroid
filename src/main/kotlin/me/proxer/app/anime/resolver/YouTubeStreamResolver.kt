@@ -11,9 +11,8 @@ import me.proxer.app.util.extension.toPrefixedUrlOrNull
 object YouTubeStreamResolver : StreamResolver() {
     override val name = "YouTube"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> =
-        api.anime
-            .link(id)
-            .buildSingle()
-            .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
+    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime
+        .link(id)
+        .buildSingle()
+        .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
 }

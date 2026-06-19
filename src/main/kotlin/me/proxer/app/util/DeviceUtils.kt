@@ -44,20 +44,14 @@ object DeviceUtils {
         }
     }
 
-    fun getVerticalMargin(
-        context: Context,
-        withItems: Boolean = true,
-    ) = context.resources.getDimensionPixelSize(
+    fun getVerticalMargin(context: Context, withItems: Boolean = true) = context.resources.getDimensionPixelSize(
         when (withItems) {
             true -> R.dimen.screen_vertical_margin_with_items
             false -> R.dimen.screen_vertical_margin
         },
     )
 
-    fun getHorizontalMargin(
-        context: Context,
-        withItems: Boolean = true,
-    ) = context.resources.getDimensionPixelSize(
+    fun getHorizontalMargin(context: Context, withItems: Boolean = true) = context.resources.getDimensionPixelSize(
         when (withItems) {
             true -> R.dimen.screen_horizontal_margin_with_items
             false -> R.dimen.screen_horizontal_margin
