@@ -46,6 +46,7 @@ import me.proxer.library.enums.AnimeLanguage
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import timber.log.Timber
 import androidx.compose.material3.Surface as M3Surface
 
 @Composable
@@ -95,6 +96,7 @@ fun TvStreamScreen(
                 try {
                     context.startActivity(result.makeIntent())
                 } catch (e: Exception) {
+                    Timber.w(e, "No app found to open stream link")
                     context.toast("No app found to open this link", Toast.LENGTH_SHORT)
                 }
             }
@@ -103,6 +105,7 @@ fun TvStreamScreen(
                 try {
                     result.navigate(context)
                 } catch (e: Exception) {
+                    Timber.w(e, "No app found to handle stream")
                     context.toast("No app found to handle this stream", Toast.LENGTH_SHORT)
                 }
             }

@@ -184,7 +184,8 @@ private fun TvMediaDetailScreenContentPopulatedPreview() {
         TvMediaDetailScreenContent(
             entryId = "1",
             entryName = "Attack on Titan",
-            description = "In a world where humanity lives inside cities surrounded by enormous walls due to the Titans, gigantic humanoid beings who devour humans seemingly without reason.",
+            description = "In a world where humanity lives behind enormous walls, " +
+                "gigantic humanoid Titans threaten those outside.",
             rating = 9.2f,
             episodeAmount = 25,
             isLoading = false,

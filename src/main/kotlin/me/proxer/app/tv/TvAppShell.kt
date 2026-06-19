@@ -22,7 +22,6 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun TvAppShell(
     onMediaClick: (id: String, name: String) -> Unit,
-    onSearchClick: () -> Unit,
 ) {
     val viewModel: TvShellViewModel = koinViewModel()
     val user by viewModel.user.observeAsState()

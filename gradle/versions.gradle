@@ -23,7 +23,7 @@ ext {
 
     // Utility plugins
     versionsPluginVersion = "0.54.0"
-    detektPluginVersion = "1.23.8"
+    detektPluginVersion = "2.0.0-alpha.5"
     ktlintPluginVersion = "14.2.0"
     ktlintVersion = "1.8.0"
     // Frameworks and compatibility libraries
