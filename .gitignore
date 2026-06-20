@@ -58,3 +58,4 @@ fabric.properties
 secrets.properties
 .tasks.cache.json
 .superpowers/
+.claude/worktrees/
