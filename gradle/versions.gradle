@@ -25,7 +25,7 @@ ext {
     versionsPluginVersion = "0.54.0"
     detektPluginVersion = "2.0.0-alpha.5"
     // Frameworks and compatibility libraries
-    koinVersion = "4.2.1"
+    koinVersion = "4.2.2"
     appcompatVersion = "1.7.1"
     browserVersion = "1.10.0"
     lifecycleVersion = "2.10.0"
