@@ -28,7 +28,7 @@ ext {
     koinVersion = "4.2.1"
     appcompatVersion = "1.7.1"
     browserVersion = "1.10.0"
-    lifecycleVersion = "2.10.0"
+    lifecycleVersion = "2.11.0"
     roomVersion = "2.8.4"
     workVersion = "2.11.2"
     coreKtxVersion = "1.19.0"
