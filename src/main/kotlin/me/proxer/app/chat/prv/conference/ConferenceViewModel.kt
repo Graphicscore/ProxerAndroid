@@ -17,9 +17,7 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class ConferenceViewModel(
-    searchQuery: String,
-) : BaseViewModel<List<ConferenceWithMessage>>() {
+class ConferenceViewModel(searchQuery: String) : BaseViewModel<List<ConferenceWithMessage>>() {
     override val data = MediatorLiveData<List<ConferenceWithMessage>?>()
 
     override val dataSingle: Single<List<ConferenceWithMessage>>

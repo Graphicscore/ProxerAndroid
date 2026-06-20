@@ -143,23 +143,18 @@ class MediaListViewModel(
                 }
     }
 
-    private fun tagSingle(): Single<List<Tag>> =
-        Single.zip(
-            api.list.tagList().buildSingle(),
-            api.list
-                .tagList()
-                .type(TagType.H_TAG)
-                .buildSingle(),
-            { first: List<Tag>, second: List<Tag> -> first + second },
-        )
-
-    private fun shouldUpdateTags() =
-        preferenceHelper.lastTagUpdateDate
-            .toLocalDate()
-            .isBefore(LocalDate.now().minusDays(15))
-
-    private data class TagContainer(
-        val genreTags: List<LocalTag>,
-        val entryTags: List<LocalTag>,
+    private fun tagSingle(): Single<List<Tag>> = Single.zip(
+        api.list.tagList().buildSingle(),
+        api.list
+            .tagList()
+            .type(TagType.H_TAG)
+            .buildSingle(),
+        { first: List<Tag>, second: List<Tag> -> first + second },
     )
+
+    private fun shouldUpdateTags() = preferenceHelper.lastTagUpdateDate
+        .toLocalDate()
+        .isBefore(LocalDate.now().minusDays(15))
+
+    private data class TagContainer(val genreTags: List<LocalTag>, val entryTags: List<LocalTag>)
 }

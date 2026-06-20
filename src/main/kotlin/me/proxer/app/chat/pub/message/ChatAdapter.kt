@@ -44,10 +44,8 @@ import okhttp3.HttpUrl
 /**
  * @author Ruben Gees
  */
-class ChatAdapter(
-    savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper,
-) : BaseAdapter<ParsedChatMessage, MessageViewHolder>() {
+class ChatAdapter(savedInstanceState: Bundle?, private val storageHelper: StorageHelper) :
+    BaseAdapter<ParsedChatMessage, MessageViewHolder>() {
     private companion object {
         private const val IS_SELECTING_STATE = "chat_is_selecting"
         private const val TIME_DISPLAY_STATE = "chat_time_display"
@@ -160,10 +158,7 @@ class ChatAdapter(
         return result
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): MessageViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageViewHolder {
         val inflater = LayoutInflater.from(parent.context)
 
         return when (MessageType.from(viewType)) {
@@ -187,10 +182,7 @@ class ChatAdapter(
         }
     }
 
-    override fun onBindViewHolder(
-        holder: MessageViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val margins = getMarginsForPosition(position)
         val context = holder.itemView.context
 
@@ -277,9 +269,7 @@ class ChatAdapter(
         return marginTop to if (position == 0) 0 else marginBottom
     }
 
-    open inner class MessageViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    open inner class MessageViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val root: ViewGroup by bindView(R.id.root)
         internal val container: CardView by bindView(R.id.container)
         internal val text: BBCodeView by bindView(R.id.text)
@@ -295,11 +285,7 @@ class ChatAdapter(
             )
         }
 
-        internal open fun bind(
-            message: ParsedChatMessage,
-            marginTop: Int,
-            marginBottom: Int,
-        ) {
+        internal open fun bind(message: ParsedChatMessage, marginTop: Int, marginBottom: Int) {
             container
                 .clicks()
                 .mapBindingAdapterPosition({ bindingAdapterPosition }) { data[it] }
@@ -320,10 +306,7 @@ class ChatAdapter(
             applyMargins(marginTop, marginBottom)
         }
 
-        internal open fun onContainerClick(
-            v: View,
-            message: ParsedChatMessage,
-        ) {
+        internal open fun onContainerClick(v: View, message: ParsedChatMessage) {
             if (isSelecting) {
                 messageSelectionMap.putOrRemove(message.id)
 
@@ -342,10 +325,7 @@ class ChatAdapter(
             layoutManager?.requestSimpleAnimationsInNextLayout()
         }
 
-        internal open fun onContainerLongClick(
-            v: View,
-            message: ParsedChatMessage,
-        ) {
+        internal open fun onContainerLongClick(v: View, message: ParsedChatMessage) {
             if (!isSelecting) {
                 isSelecting = true
 
@@ -366,11 +346,10 @@ class ChatAdapter(
             time.text = message.date.distanceInWordsToNow(time.context)
         }
 
-        internal open fun applySendStatus(message: ParsedChatMessage) =
-            when (message.id.toLong() < 0) {
-                true -> sendStatus?.isVisible = true
-                false -> sendStatus?.isGone = true
-            }
+        internal open fun applySendStatus(message: ParsedChatMessage) = when (message.id.toLong() < 0) {
+            true -> sendStatus?.isVisible = true
+            false -> sendStatus?.isGone = true
+        }
 
         internal open fun applySelection(message: ParsedChatMessage) {
             container.setCardBackgroundColor(
@@ -387,10 +366,7 @@ class ChatAdapter(
             time.isVisible = timeDisplayMap[message.id] == true
         }
 
-        internal open fun applyMargins(
-            marginTop: Int,
-            marginBottom: Int,
-        ) {
+        internal open fun applyMargins(marginTop: Int, marginBottom: Int) {
             root.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                 topMargin = marginTop
                 bottomMargin = marginBottom
@@ -398,18 +374,12 @@ class ChatAdapter(
         }
     }
 
-    internal inner class MessageTitleViewHolder(
-        itemView: View,
-    ) : MessageViewHolder(itemView) {
+    internal inner class MessageTitleViewHolder(itemView: View) : MessageViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
 
-        override fun bind(
-            message: ParsedChatMessage,
-            marginTop: Int,
-            marginBottom: Int,
-        ) {
+        override fun bind(message: ParsedChatMessage, marginTop: Int, marginBottom: Int) {
             super.bind(message, marginTop, marginBottom)
 
             titleContainer
@@ -436,9 +406,7 @@ class ChatAdapter(
         }
     }
 
-    private enum class MessageType(
-        val type: Int,
-    ) {
+    private enum class MessageType(val type: Int) {
         INNER(0),
         SINGLE(1),
         TOP(2),

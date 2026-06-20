@@ -20,16 +20,11 @@ object DividerPrototype : BBPrototype {
 
     override val canHaveChildren get() = false
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> =
-        listOf(
-            View(parent.context).apply {
-                layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, dip(2))
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> = listOf(
+        View(parent.context).apply {
+            layoutParams = ViewGroup.MarginLayoutParams(MATCH_PARENT, dip(2))
 
-                setBackgroundColor(parent.context.resolveColor(R.attr.colorDivider))
-            },
-        )
+            setBackgroundColor(parent.context.resolveColor(R.attr.colorDivider))
+        },
+    )
 }

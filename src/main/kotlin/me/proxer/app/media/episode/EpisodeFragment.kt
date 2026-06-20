@@ -52,10 +52,9 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
     companion object {
         private const val LANGUAGES_EXTRA = "languages"
 
-        fun newInstance() =
-            EpisodeFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = EpisodeFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -134,10 +133,7 @@ class EpisodeFragment : BaseContentFragment<List<EpisodeRow>>(R.layout.fragment_
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

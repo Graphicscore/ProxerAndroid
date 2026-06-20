@@ -48,10 +48,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class ScheduleWidgetUpdateWorker(
-    context: Context,
-    workerParams: WorkerParameters,
-) : Worker(context, workerParams) {
+class ScheduleWidgetUpdateWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     companion object {
         private const val NAME = "ScheduleWidgetUpdateWorker"
 
@@ -231,12 +228,7 @@ class ScheduleWidgetUpdateWorker(
         }
     }
 
-    private fun bindErrorLayout(
-        appWidgetManager: AppWidgetManager,
-        id: Int,
-        errorAction: ErrorAction,
-        dark: Boolean,
-    ) {
+    private fun bindErrorLayout(appWidgetManager: AppWidgetManager, id: Int, errorAction: ErrorAction, dark: Boolean) {
         val views =
             RemoteViews(
                 BuildConfig.APPLICATION_ID,
@@ -264,11 +256,7 @@ class ScheduleWidgetUpdateWorker(
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindLoadingLayout(
-        appWidgetManager: AppWidgetManager,
-        id: Int,
-        dark: Boolean,
-    ) {
+    private fun bindLoadingLayout(appWidgetManager: AppWidgetManager, id: Int, dark: Boolean) {
         val views =
             RemoteViews(
                 BuildConfig.APPLICATION_ID,
@@ -283,10 +271,7 @@ class ScheduleWidgetUpdateWorker(
         appWidgetManager.updateAppWidget(id, views)
     }
 
-    private fun bindBaseLayout(
-        id: Int,
-        views: RemoteViews,
-    ) {
+    private fun bindBaseLayout(id: Int, views: RemoteViews) {
         val intent = MainActivity.getSectionIntent(applicationContext, MaterialDrawerWrapper.DrawerItem.SCHEDULE)
         val pendingIntent = PendingIntent.getActivity(applicationContext, 0, intent, FLAG_UPDATE_CURRENT)
 

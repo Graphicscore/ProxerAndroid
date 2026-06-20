@@ -14,10 +14,7 @@ import me.proxer.library.enums.Medium
 import org.threeten.bp.Instant
 import java.util.Date
 
-internal fun fakeMediaListEntry(
-    id: String = "1",
-    name: String = "Attack on Titan",
-) = MediaListEntry(
+internal fun fakeMediaListEntry(id: String = "1", name: String = "Attack on Titan") = MediaListEntry(
     id = id,
     name = name,
     genres = emptySet(),
@@ -68,10 +65,7 @@ internal fun fakeCalendarEntry(
     ratingAmount = 100,
 )
 
-internal fun fakeEpisodeRow(
-    number: Int = 1,
-    watched: Boolean = false,
-) = EpisodeRow(
+internal fun fakeEpisodeRow(number: Int = 1, watched: Boolean = false) = EpisodeRow(
     category = Category.ANIME,
     userProgress = if (watched) number else null,
     episodeAmount = 24,

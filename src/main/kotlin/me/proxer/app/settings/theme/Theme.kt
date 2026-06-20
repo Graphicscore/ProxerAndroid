@@ -47,8 +47,7 @@ enum class Theme(
     @ColorInt
     fun colorOnSecondary(context: Context): Int = context.resolveColor(R.attr.colorOnSecondary, nativeTheme(context))
 
-    private fun nativeTheme(context: Context) =
-        context.resources.newTheme().apply {
-            applyStyle(main, true)
-        }
+    private fun nativeTheme(context: Context) = context.resources.newTheme().apply {
+        applyStyle(main, true)
+    }
 }

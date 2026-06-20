@@ -18,9 +18,8 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-abstract class BaseFragment(
-    @LayoutRes contentLayoutId: Int,
-) : Fragment(contentLayoutId),
+abstract class BaseFragment(@LayoutRes contentLayoutId: Int) :
+    Fragment(contentLayoutId),
     CustomTabsAware {
     protected val bus by safeInject<RxBus>()
     protected val storageHelper by safeInject<StorageHelper>()
@@ -46,11 +45,7 @@ abstract class BaseFragment(
     override fun setLikelyUrl(url: HttpUrl): Boolean =
         customTabsHelper.mayLaunchUrl(url.androidUri(), bundleOf(), emptyList())
 
-    override fun showPage(
-        url: HttpUrl,
-        forceBrowser: Boolean,
-        skipCheck: Boolean,
-    ) {
+    override fun showPage(url: HttpUrl, forceBrowser: Boolean, skipCheck: Boolean) {
         customTabsHelper.fallbackHandleLink(requireActivity(), url, forceBrowser, skipCheck)
     }
 }

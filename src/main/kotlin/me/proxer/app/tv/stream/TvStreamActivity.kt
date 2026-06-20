@@ -44,13 +44,7 @@ class TvStreamActivity : ComponentActivity() {
         private const val LANGUAGE_EXTRA = "language"
         private const val NAME_EXTRA = "name"
 
-        fun navigateTo(
-            context: Context,
-            id: String,
-            episode: Int,
-            language: AnimeLanguage,
-            name: String,
-        ) {
+        fun navigateTo(context: Context, id: String, episode: Int, language: AnimeLanguage, name: String) {
             context.startActivity<TvStreamActivity>(
                 ID_EXTRA to id,
                 EPISODE_EXTRA to episode,

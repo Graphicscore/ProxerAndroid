@@ -24,10 +24,9 @@ import kotlin.properties.Delegates
  */
 class NewsFragment : PagedContentFragment<NewsArticle>() {
     companion object {
-        fun newInstance() =
-            NewsFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = NewsFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val emptyDataMessage = R.string.error_no_data_news
@@ -60,10 +59,7 @@ class NewsFragment : PagedContentFragment<NewsArticle>() {
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)

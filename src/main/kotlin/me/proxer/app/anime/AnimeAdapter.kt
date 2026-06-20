@@ -45,10 +45,8 @@ import org.threeten.bp.temporal.ChronoUnit
 /**
  * @author Ruben Gees
  */
-class AnimeAdapter(
-    savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper,
-) : BaseAdapter<AnimeStream, RecyclerView.ViewHolder>() {
+class AnimeAdapter(savedInstanceState: Bundle?, private val storageHelper: StorageHelper) :
+    BaseAdapter<AnimeStream, RecyclerView.ViewHolder>() {
     private companion object {
         private const val EXPANDED_ITEM_STATE = "anime_stream_expanded_id"
         private const val STREAM_VIEW_TYPE = 100
@@ -77,10 +75,7 @@ class AnimeAdapter(
 
     override fun getItemId(position: Int) = data[position].id.toLong()
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ) = when (viewType) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = when (viewType) {
         STREAM_VIEW_TYPE -> {
             StreamViewHolder(
                 LayoutInflater.from(parent.context).inflate(R.layout.item_stream, parent, false),
@@ -98,10 +93,7 @@ class AnimeAdapter(
         }
     }
 
-    override fun onBindViewHolder(
-        holder: RecyclerView.ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
             is StreamViewHolder -> holder.bind(data[position])
             is MessageViewHolder -> holder.bind(data[position])
@@ -138,9 +130,7 @@ class AnimeAdapter(
         super.swapDataAndNotifyWithDiffing(newData)
     }
 
-    inner class StreamViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class StreamViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val nameContainer: ViewGroup by bindView(R.id.nameContainer)
         internal val name: TextView by bindView(R.id.name)
         internal val image: ImageView by bindView(R.id.image)
@@ -267,10 +257,7 @@ class AnimeAdapter(
             }
         }
 
-        private fun bindPlayAndInfo(
-            item: AnimeStream,
-            isLoginRequired: Boolean,
-        ) {
+        private fun bindPlayAndInfo(item: AnimeStream, isLoginRequired: Boolean) {
             if (item.isSupported) {
                 if (isLoginRequired) {
                     play.setText(R.string.error_action_login)
@@ -326,16 +313,13 @@ class AnimeAdapter(
                 sizeDp = 28
             }
 
-        private fun generateInfoDrawable(icon: IIcon): IconicsDrawable =
-            IconicsDrawable(info.context, icon).apply {
-                colorInt = info.context.resolveColor(R.attr.colorIcon)
-                sizeDp = 26
-            }
+        private fun generateInfoDrawable(icon: IIcon): IconicsDrawable = IconicsDrawable(info.context, icon).apply {
+            colorInt = info.context.resolveColor(R.attr.colorIcon)
+            sizeDp = 26
+        }
     }
 
-    inner class MessageViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class MessageViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val message: BetterLinkTextView by bindView(R.id.message)
 
         fun bind(item: AnimeStream) {

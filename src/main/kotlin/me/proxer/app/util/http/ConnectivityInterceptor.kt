@@ -14,16 +14,14 @@ import okhttp3.Response
 /**
  * @author Ruben Gees
  */
-class ConnectivityInterceptor(
-    context: Context,
-) : Interceptor {
+class ConnectivityInterceptor(context: Context) : Interceptor {
     private val connectivityManager = requireNotNull(context.getSystemService<ConnectivityManager>())
 
     private val hasConnectionSettings =
         (
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                 Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY).resolveActivity(context.packageManager) != null
-        ) ||
+            ) ||
             Intent(Settings.ACTION_WIRELESS_SETTINGS).resolveActivity(context.packageManager) != null
 
     override fun intercept(chain: Interceptor.Chain): Response {

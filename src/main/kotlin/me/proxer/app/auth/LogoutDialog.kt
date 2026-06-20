@@ -29,12 +29,11 @@ class LogoutDialog : BaseDialog() {
     private val content: TextView by bindView(R.id.content)
     private val progress: ProgressBar by bindView(R.id.progress)
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        MaterialDialog(requireContext())
-            .noAutoDismiss()
-            .positiveButton(R.string.dialog_logout_positive) { viewModel.logout() }
-            .negativeButton(R.string.cancel) { dismiss() }
-            .customView(R.layout.dialog_logout, scrollable = true)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
+        .noAutoDismiss()
+        .positiveButton(R.string.dialog_logout_positive) { viewModel.logout() }
+        .negativeButton(R.string.cancel) { dismiss() }
+        .customView(R.layout.dialog_logout, scrollable = true)
 
     override fun onDialogCreated(savedInstanceState: Bundle?) {
         super.onDialogCreated(savedInstanceState)

@@ -46,21 +46,13 @@ inline fun <reified T : Any> Context.intentFor(vararg params: Pair<String, Any?>
 inline fun <reified T : Activity> Context.startActivity(vararg params: Pair<String, Any?>) =
     startActivity(intentFor<T>(*params))
 
-inline fun Context.toast(
-    message: Int,
-    duration: Int = Toast.LENGTH_LONG,
-): Toast =
-    Toast
-        .makeText(this, message, duration)
-        .apply { show() }
+inline fun Context.toast(message: Int, duration: Int = Toast.LENGTH_LONG): Toast = Toast
+    .makeText(this, message, duration)
+    .apply { show() }
 
-inline fun Context.toast(
-    message: String,
-    duration: Int = Toast.LENGTH_LONG,
-): Toast =
-    Toast
-        .makeText(this, message, duration)
-        .apply { show() }
+inline fun Context.toast(message: String, duration: Int = Toast.LENGTH_LONG): Toast = Toast
+    .makeText(this, message, duration)
+    .apply { show() }
 
 val ViewGroup.recursiveChildren: Sequence<View>
     get() =

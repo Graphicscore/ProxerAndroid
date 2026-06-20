@@ -42,15 +42,10 @@ class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_bookmark, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_bookmark, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -60,19 +55,11 @@ class BookmarkAdapter : BaseAdapter<Bookmark, BookmarkAdapter.ViewHolder>() {
         glide = null
     }
 
-    override fun areItemsTheSame(
-        old: Bookmark,
-        new: Bookmark,
-    ) = old.entryId == new.entryId
+    override fun areItemsTheSame(old: Bookmark, new: Bookmark) = old.entryId == new.entryId
 
-    override fun areContentsTheSame(
-        old: Bookmark,
-        new: Bookmark,
-    ) = old.id == new.id
+    override fun areContentsTheSame(old: Bookmark, new: Bookmark) = old.id == new.id
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val title: TextView by bindView(R.id.title)
         internal val medium: TextView by bindView(R.id.medium)

@@ -9,43 +9,37 @@ import me.proxer.app.R
 import me.proxer.app.util.DeviceUtils
 
 class CrossfadingDrawerLayout
-    @JvmOverloads
-    constructor(
-        context: Context,
-        attrs: AttributeSet? = null,
-        defStyleAttr: Int = 0,
-    ) : DrawerLayout(context, attrs, defStyleAttr) {
-        var crossfader: Crossfader<*>? = null
+@JvmOverloads
+constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0,
+) : DrawerLayout(context, attrs, defStyleAttr) {
+    var crossfader: Crossfader<*>? = null
 
-        private val isTablet = DeviceUtils.isTablet(context)
+    private val isTablet = DeviceUtils.isTablet(context)
 
-        override fun onFinishInflate() {
-            super.onFinishInflate()
+    override fun onFinishInflate() {
+        super.onFinishInflate()
 
-            if (isTablet) {
-                findViewById<MaterialDrawerSliderView>(R.id.slider)?.let { removeView(it) }
-            }
-        }
-
-        override fun openDrawer(
-            gravity: Int,
-            animate: Boolean,
-        ) {
-            if (isTablet) {
-                crossfader?.crossFade()
-            } else {
-                super.openDrawer(gravity, animate)
-            }
-        }
-
-        override fun closeDrawer(
-            gravity: Int,
-            animate: Boolean,
-        ) {
-            if (isTablet) {
-                crossfader?.crossFade()
-            } else {
-                super.closeDrawer(gravity, animate)
-            }
+        if (isTablet) {
+            findViewById<MaterialDrawerSliderView>(R.id.slider)?.let { removeView(it) }
         }
     }
+
+    override fun openDrawer(gravity: Int, animate: Boolean) {
+        if (isTablet) {
+            crossfader?.crossFade()
+        } else {
+            super.openDrawer(gravity, animate)
+        }
+    }
+
+    override fun closeDrawer(gravity: Int, animate: Boolean) {
+        if (isTablet) {
+            crossfader?.crossFade()
+        } else {
+            super.closeDrawer(gravity, animate)
+        }
+    }
+}

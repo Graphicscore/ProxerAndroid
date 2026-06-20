@@ -20,13 +20,12 @@ object NetflixStreamResolver : StreamResolver() {
 
     private val packageManager by safeInject<PackageManager>()
 
-    override fun resolve(id: String): Single<StreamResolutionResult> =
-        Single
-            .fromCallable {
-                if (!packageManager.isPackageInstalled(NETFLIX_PACKAGE)) {
-                    throw AppRequiredException(name, NETFLIX_PACKAGE)
-                }
-            }.flatMap { api.anime.link(id).buildSingle() }
-            .map { it.toPrefixedUrlOrNull() ?: throw StreamResolutionException() }
-            .map { StreamResolutionResult.App(it.androidUri()) }
+    override fun resolve(id: String): Single<StreamResolutionResult> = Single
+        .fromCallable {
+            if (!packageManager.isPackageInstalled(NETFLIX_PACKAGE)) {
+                throw AppRequiredException(name, NETFLIX_PACKAGE)
+            }
+        }.flatMap { api.anime.link(id).buildSingle() }
+        .map { it.toPrefixedUrlOrNull() ?: throw StreamResolutionException() }
+        .map { StreamResolutionResult.App(it.androidUri()) }
 }

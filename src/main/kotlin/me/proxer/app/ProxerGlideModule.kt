@@ -33,10 +33,7 @@ class ProxerGlideModule : AppGlideModule() {
     private val client by safeInject<OkHttpClient>()
     private val preferenceHelper by safeInject<PreferenceHelper>()
 
-    override fun applyOptions(
-        context: Context,
-        builder: GlideBuilder,
-    ) {
+    override fun applyOptions(context: Context, builder: GlideBuilder) {
         val cacheDir =
             when (!Environment.isExternalStorageEmulated() && preferenceHelper.shouldCacheExternally) {
                 true -> context.externalCacheDir ?: context.cacheDir
@@ -54,11 +51,7 @@ class ProxerGlideModule : AppGlideModule() {
         builder.setDiskCache(DiskLruCacheFactory(cacheDir.path, CACHE_DIR, CACHE_SIZE))
     }
 
-    override fun registerComponents(
-        context: Context,
-        glide: Glide,
-        registry: Registry,
-    ) {
+    override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         registry.replace(GlideUrl::class.java, InputStream::class.java, OkHttpUrlLoader.Factory(client))
     }
 

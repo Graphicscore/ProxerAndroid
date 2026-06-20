@@ -25,9 +25,7 @@ import me.proxer.app.util.extension.subscribeAndLogErrors
 /**
  * @author Ruben Gees
  */
-class MessengerViewModel(
-    initialConference: LocalConference,
-) : PagedViewModel<LocalMessage>() {
+class MessengerViewModel(initialConference: LocalConference) : PagedViewModel<LocalMessage>() {
     override val itemsOnPage = MessengerWorker.MESSAGES_ON_PAGE
 
     override var hasReachedEnd

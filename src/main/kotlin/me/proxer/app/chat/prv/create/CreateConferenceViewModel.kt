@@ -100,20 +100,13 @@ class CreateConferenceViewModel : ViewModel() {
         super.onCleared()
     }
 
-    fun createGroup(
-        topic: String,
-        firstMessage: String,
-        participants: List<Participant>,
-    ) = createConference(
+    fun createGroup(topic: String, firstMessage: String, participants: List<Participant>) = createConference(
         api
             .messenger
             .createConferenceGroup(topic, firstMessage, participants.map { it.username }),
     )
 
-    fun createChat(
-        firstMessage: String,
-        participant: Participant,
-    ) = createConference(
+    fun createChat(firstMessage: String, participant: Participant) = createConference(
         api
             .messenger
             .createConference(firstMessage, participant.username),

@@ -27,9 +27,7 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-abstract class BaseContentFragment<T>(
-    @LayoutRes contentLayoutId: Int,
-) : BaseFragment(contentLayoutId) {
+abstract class BaseContentFragment<T>(@LayoutRes contentLayoutId: Int) : BaseFragment(contentLayoutId) {
     private companion object {
         private const val IS_SOLVING_CAPTCHA_ARGUMENT = "is_solving_captcha"
     }
@@ -50,10 +48,7 @@ abstract class BaseContentFragment<T>(
         get() = requireArguments().getBoolean(IS_SOLVING_CAPTCHA_ARGUMENT, false)
         set(value) = requireArguments().putBoolean(IS_SOLVING_CAPTCHA_ARGUMENT, value)
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val schemeColors =

@@ -34,9 +34,8 @@ import me.proxer.app.base.AutoDisposeViewHolder.ViewHolderEvent.UNBIND
  * [LifecycleScopeProvider]. This could be useful for cases where you have subscriptions that should be
  * disposed upon unbinding or otherwise aren't overwritten in future binds.
  */
-abstract class AutoDisposeViewHolder(
-    itemView: View,
-) : BindAwareViewHolder(itemView),
+abstract class AutoDisposeViewHolder(itemView: View) :
+    BindAwareViewHolder(itemView),
     LifecycleScopeProvider<ViewHolderEvent> {
     private val lifecycleEvents by lazy { BehaviorSubject.create<ViewHolderEvent>() }
 

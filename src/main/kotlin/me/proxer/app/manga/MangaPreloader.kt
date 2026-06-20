@@ -53,11 +53,7 @@ class MangaPreloader {
         preloadTargets.clear()
     }
 
-    private fun recursivePreload(
-        links: Map<String, String?>,
-        next: String,
-        failures: Int = 0,
-    ) {
+    private fun recursivePreload(links: Map<String, String?>, next: String, failures: Int = 0) {
         Timber.d("Preloading $next")
 
         val target = GlidePreloadTarget(links, next, failures)
@@ -76,10 +72,7 @@ class MangaPreloader {
         private val next: String,
         private val failures: Int,
     ) : OriginalSizeGlideTarget<File>() {
-        override fun onResourceReady(
-            resource: File,
-            transition: Transition<in File>?,
-        ) {
+        override fun onResourceReady(resource: File, transition: Transition<in File>?) {
             val afterNext = links[next]
 
             if (afterNext != null) {

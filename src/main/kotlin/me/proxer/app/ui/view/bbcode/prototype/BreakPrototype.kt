@@ -12,8 +12,5 @@ object BreakPrototype : BBPrototype {
 
     override val canHaveChildren get() = false
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree = TextPrototype.construct("\n", parent)
+    override fun construct(code: String, parent: BBTree): BBTree = TextPrototype.construct("\n", parent)
 }

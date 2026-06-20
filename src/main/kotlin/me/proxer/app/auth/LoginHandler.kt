@@ -1,6 +1,5 @@
 package me.proxer.app.auth
 
-import android.annotation.SuppressLint
 import android.content.Context
 import androidx.core.content.pm.ShortcutManagerCompat
 import io.reactivex.Completable

@@ -63,10 +63,9 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         private const val LAST_POSITION_STATE = "fragment_manga_last_position"
         private const val LOW_MEMORY_STATE = "fragment_manga_low_memory"
 
-        fun newInstance() =
-            MangaFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = MangaFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val viewModel by activityViewModel<MangaViewModel> { parametersOf(id, language, episode) }
@@ -240,29 +239,19 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
         viewModel.setEpisode(episode, false)
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         header = inflater.inflate(R.layout.layout_media_control, container, false) as MediaControlView
         footer = inflater.inflate(R.layout.layout_media_control, container, false) as MediaControlView
 
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),
@@ -281,35 +270,34 @@ class MangaFragment : BaseContentFragment<MangaChapterInfo>(R.layout.fragment_ma
                     }
                 }
 
-                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
-                    when (menuItem.itemId) {
-                        R.id.toggle_orientation -> {
-                            readerOrientation =
-                                when (readerOrientation) {
-                                    MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
-                                    MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
-                                    MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
-                                }
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+                    R.id.toggle_orientation -> {
+                        readerOrientation =
+                            when (readerOrientation) {
+                                MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
+                                MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
+                                MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
+                            }
 
-                            bindOrientationOptionsItem()
-                            bindHeaderAndFooterHeight()
-                            bindLayoutManager()
+                        bindOrientationOptionsItem()
+                        bindHeaderAndFooterHeight()
+                        bindLayoutManager()
 
-                            hostingActivity.multilineSnackbar(
-                                when (readerOrientation) {
-                                    MangaReaderOrientation.LEFT_TO_RIGHT -> R.string.fragment_manga_left_to_right
-                                    MangaReaderOrientation.RIGHT_TO_LEFT -> R.string.fragment_manga_right_to_left
-                                    MangaReaderOrientation.VERTICAL -> R.string.fragment_manga_vertical
-                                },
-                            )
+                        hostingActivity.multilineSnackbar(
+                            when (readerOrientation) {
+                                MangaReaderOrientation.LEFT_TO_RIGHT -> R.string.fragment_manga_left_to_right
+                                MangaReaderOrientation.RIGHT_TO_LEFT -> R.string.fragment_manga_right_to_left
+                                MangaReaderOrientation.VERTICAL -> R.string.fragment_manga_vertical
+                            },
+                        )
 
-                            true
-                        }
-
-                        else -> {
-                            false
-                        }
+                        true
                     }
+
+                    else -> {
+                        false
+                    }
+                }
             },
             viewLifecycleOwner,
         )

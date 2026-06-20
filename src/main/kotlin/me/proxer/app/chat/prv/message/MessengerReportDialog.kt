@@ -12,10 +12,7 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  */
 class MessengerReportDialog : ReportDialog() {
     companion object {
-        fun show(
-            activity: AppCompatActivity,
-            conferenceId: String,
-        ) = MessengerReportDialog()
+        fun show(activity: AppCompatActivity, conferenceId: String) = MessengerReportDialog()
             .apply {
                 arguments = bundleOf(ID_ARGUMENT to conferenceId)
             }.show(activity.supportFragmentManager, "messenger_report_dialog")

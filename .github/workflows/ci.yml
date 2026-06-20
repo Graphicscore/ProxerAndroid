@@ -36,9 +36,6 @@ jobs:
             echo "PROXER_API_KEY=dummy_build_key" > secrets.properties
           fi
 
-      - name: ktlint
-        run: ./gradlew ktlintCheck
-
       - name: detekt
         run: ./gradlew detekt
         continue-on-error: true

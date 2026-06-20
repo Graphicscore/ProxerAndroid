@@ -11,43 +11,23 @@ import javax.net.SocketFactory
 class TaggedSocketFactory : SocketFactory() {
     private val delegate = getDefault()
 
-    override fun createSocket(): Socket =
-        delegate
-            .createSocket()
-            .also { TrafficStats.setThreadStatsTag(1) }
+    override fun createSocket(): Socket = delegate
+        .createSocket()
+        .also { TrafficStats.setThreadStatsTag(1) }
 
-    override fun createSocket(
-        host: String?,
-        port: Int,
-    ): Socket =
-        delegate
-            .createSocket(host, port)
-            .also { TrafficStats.setThreadStatsTag(1) }
+    override fun createSocket(host: String?, port: Int): Socket = delegate
+        .createSocket(host, port)
+        .also { TrafficStats.setThreadStatsTag(1) }
 
-    override fun createSocket(
-        host: String?,
-        port: Int,
-        localHost: InetAddress?,
-        localPort: Int,
-    ): Socket =
-        delegate
-            .createSocket(host, port, localHost, localPort)
-            .also { TrafficStats.setThreadStatsTag(1) }
+    override fun createSocket(host: String?, port: Int, localHost: InetAddress?, localPort: Int): Socket = delegate
+        .createSocket(host, port, localHost, localPort)
+        .also { TrafficStats.setThreadStatsTag(1) }
 
-    override fun createSocket(
-        host: InetAddress?,
-        port: Int,
-    ): Socket =
-        delegate
-            .createSocket(host, port)
-            .also { TrafficStats.setThreadStatsTag(1) }
+    override fun createSocket(host: InetAddress?, port: Int): Socket = delegate
+        .createSocket(host, port)
+        .also { TrafficStats.setThreadStatsTag(1) }
 
-    override fun createSocket(
-        address: InetAddress?,
-        port: Int,
-        localAddress: InetAddress?,
-        localPort: Int,
-    ): Socket =
+    override fun createSocket(address: InetAddress?, port: Int, localAddress: InetAddress?, localPort: Int): Socket =
         delegate
             .createSocket(address, port, localAddress, localPort)
             .also { TrafficStats.setThreadStatsTag(1) }

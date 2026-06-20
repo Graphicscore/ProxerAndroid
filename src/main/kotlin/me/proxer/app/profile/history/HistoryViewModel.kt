@@ -10,10 +10,8 @@ import me.proxer.app.util.extension.toLocalEntryUcp
 /**
  * @author Ruben Gees
  */
-class HistoryViewModel(
-    private val userId: String?,
-    private val username: String?,
-) : PagedViewModel<LocalUserHistoryEntry>() {
+class HistoryViewModel(private val userId: String?, private val username: String?) :
+    PagedViewModel<LocalUserHistoryEntry>() {
     override val itemsOnPage = 50
 
     override val dataSingle: Single<List<LocalUserHistoryEntry>>

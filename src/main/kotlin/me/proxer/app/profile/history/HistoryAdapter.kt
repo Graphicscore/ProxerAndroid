@@ -36,15 +36,10 @@ class HistoryAdapter : BaseAdapter<LocalUserHistoryEntry, ViewHolder>() {
         setHasStableIds(false)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_history_entry, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_history_entry, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -54,9 +49,7 @@ class HistoryAdapter : BaseAdapter<LocalUserHistoryEntry, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val title: TextView by bindView(R.id.title)
         internal val medium: TextView by bindView(R.id.medium)

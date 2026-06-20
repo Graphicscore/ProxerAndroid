@@ -14,10 +14,7 @@ object PollPrototype : TextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *poll( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *poll *", REGEX_OPTIONS)
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val id = text.trim()
         val url =
             ProxerUrls.webBase

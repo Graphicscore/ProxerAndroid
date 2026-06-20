@@ -13,10 +13,7 @@ object SubscriptPrototype : TextMutatorPrototype {
     override val startRegex = Regex(" *sub( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *sub *", REGEX_OPTIONS)
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ) = text.apply {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs) = text.apply {
         this[0..length] = SubscriptSpan()
     }
 }

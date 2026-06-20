@@ -23,11 +23,7 @@ object AttachmentPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototy
     override val startRegex = Regex(" *attachment( *=\"?.+?\"?)?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *attachment *", REGEX_OPTIONS)
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         if (childViews.isEmpty()) {
@@ -56,10 +52,7 @@ object AttachmentPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototy
         }
     }
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val url = constructUrl(args.safeUserId, text)
 
         return text
@@ -80,10 +73,7 @@ object AttachmentPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototy
 
     private fun isImage(attachment: CharSequence) = imageExtensions.any { attachment.endsWith(it, true) }
 
-    private fun constructUrl(
-        userId: String,
-        attachment: CharSequence,
-    ) = ProxerUrls.webBase
+    private fun constructUrl(userId: String, attachment: CharSequence) = ProxerUrls.webBase
         .newBuilder()
         .addPathSegments("media/kunena/attachments/$userId/${attachment.replace(whitespaceRegex, "")}")
         .build()

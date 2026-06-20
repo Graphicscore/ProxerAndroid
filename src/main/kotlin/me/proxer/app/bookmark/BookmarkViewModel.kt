@@ -18,11 +18,8 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class BookmarkViewModel(
-    searchQuery: String?,
-    category: Category?,
-    filterAvailable: Boolean,
-) : PagedContentViewModel<Bookmark>() {
+class BookmarkViewModel(searchQuery: String?, category: Category?, filterAvailable: Boolean) :
+    PagedContentViewModel<Bookmark>() {
     override val itemsOnPage = 30
 
     override val endpoint: PagingLimitEndpoint<List<Bookmark>>
@@ -140,8 +137,7 @@ class BookmarkViewModel(
         }
     }
 
-    private fun bookmarkSingle(bookmark: Bookmark) =
-        api.ucp
-            .setBookmark(bookmark.entryId, bookmark.episode, bookmark.language, bookmark.category)
-            .buildSingle()
+    private fun bookmarkSingle(bookmark: Bookmark) = api.ucp
+        .setBookmark(bookmark.entryId, bookmark.episode, bookmark.language, bookmark.category)
+        .buildSingle()
 }

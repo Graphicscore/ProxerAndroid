@@ -11,9 +11,8 @@ import me.proxer.app.util.extension.toPrefixedUrlOrNull
 object SteamStreamResolver : StreamResolver() {
     override val name = "Steam"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> =
-        api.anime
-            .link(id)
-            .buildSingle()
-            .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
+    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime
+        .link(id)
+        .buildSingle()
+        .map { StreamResolutionResult.Link(it.toPrefixedUrlOrNull() ?: throw StreamResolutionException()) }
 }

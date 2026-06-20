@@ -54,10 +54,9 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         private const val SHOW_UNRATED_TAGS_ARGUMENT = "show_unrated_tags"
         private const val SHOW_SPOILER_TAGS_ARGUMENT = "show_spoiler_tags"
 
-        fun newInstance() =
-            MediaInfoFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = MediaInfoFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val hostingActivity: MediaActivity
@@ -106,10 +105,7 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
 
     private val description: TextView by bindView(R.id.description)
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         updateUnratedButton()
@@ -209,22 +205,21 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         description.text = entry.description
     }
 
-    private fun bindRating(result: Entry) =
-        if (result.rating > 0) {
-            ratingContainer.isVisible = true
-            rating.rating = result.rating / 2.0f
-            ratingAmount.isVisible = true
-            ratingAmount.text =
-                requireContext().resources.getQuantityString(
-                    R.plurals.fragment_media_info_rate_count,
-                    result.ratingAmount,
-                    result.rating,
-                    result.ratingAmount,
-                )
-        } else {
-            ratingContainer.isGone = true
-            ratingAmount.isGone = true
-        }
+    private fun bindRating(result: Entry) = if (result.rating > 0) {
+        ratingContainer.isVisible = true
+        rating.rating = result.rating / 2.0f
+        ratingAmount.isVisible = true
+        ratingAmount.text =
+            requireContext().resources.getQuantityString(
+                R.plurals.fragment_media_info_rate_count,
+                result.ratingAmount,
+                result.rating,
+                result.ratingAmount,
+            )
+    } else {
+        ratingContainer.isGone = true
+        ratingAmount.isGone = true
+    }
 
     private fun bindSynonyms(result: Entry) {
         result.synonyms.forEach {
@@ -308,11 +303,7 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         }
     }
 
-    private fun constructInfoTableRow(
-        title: String,
-        content: String,
-        isSelectable: Boolean = false,
-    ): View {
+    private fun constructInfoTableRow(title: String, content: String, isSelectable: Boolean = false): View {
         val tableRow = LayoutInflater.from(context).inflate(R.layout.layout_media_info_row, infoTable, false)
         val titleView = tableRow.findViewById<TextView>(R.id.title)
         val contentView = tableRow.findViewById<TextView>(R.id.content)
@@ -433,39 +424,37 @@ class MediaInfoFragment : BaseContentFragment<Entry>(R.layout.fragment_media_inf
         }
     }
 
-    private fun bindTranslatorGroups(result: Entry) =
-        if (result.translatorGroups.isEmpty()) {
-            translatorGroupsTitle.isGone = true
-            translatorGroups.isGone = true
-        } else {
-            bindChips(
-                translatorGroups,
-                result.translatorGroups,
-                mapFunction = { it.name },
-                onClick = { TranslatorGroupActivity.navigateTo(requireActivity(), it.id, it.name) },
-            )
-        }
+    private fun bindTranslatorGroups(result: Entry) = if (result.translatorGroups.isEmpty()) {
+        translatorGroupsTitle.isGone = true
+        translatorGroups.isGone = true
+    } else {
+        bindChips(
+            translatorGroups,
+            result.translatorGroups,
+            mapFunction = { it.name },
+            onClick = { TranslatorGroupActivity.navigateTo(requireActivity(), it.id, it.name) },
+        )
+    }
 
-    private fun bindIndustries(result: Entry) =
-        if (result.industries.isEmpty()) {
-            industriesTitle.isGone = true
-            industries.isGone = true
-        } else {
-            bindChips(
-                industries,
-                result.industries,
-                mapFunction = {
-                    if (it.type == IndustryType.UNKNOWN) {
-                        it.name
-                    } else {
-                        "${it.name} (${it.type.toAppString(requireContext())})"
-                    }
-                },
-                onClick = {
-                    IndustryActivity.navigateTo(requireActivity(), it.id, it.name)
-                },
-            )
-        }
+    private fun bindIndustries(result: Entry) = if (result.industries.isEmpty()) {
+        industriesTitle.isGone = true
+        industries.isGone = true
+    } else {
+        bindChips(
+            industries,
+            result.industries,
+            mapFunction = {
+                if (it.type == IndustryType.UNKNOWN) {
+                    it.name
+                } else {
+                    "${it.name} (${it.type.toAppString(requireContext())})"
+                }
+            },
+            onClick = {
+                IndustryActivity.navigateTo(requireActivity(), it.id, it.name)
+            },
+        )
+    }
 
     private fun <T> bindChips(
         layout: FlexboxLayout,

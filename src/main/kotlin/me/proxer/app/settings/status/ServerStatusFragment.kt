@@ -24,10 +24,9 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
  */
 class ServerStatusFragment : BaseContentFragment<List<ServerStatus>>(R.layout.fragment_server_status) {
     companion object {
-        fun newInstance() =
-            ServerStatusFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = ServerStatusFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val isSwipeToRefreshEnabled = true
@@ -43,10 +42,7 @@ class ServerStatusFragment : BaseContentFragment<List<ServerStatus>>(R.layout.fr
     private val overallStatus: TextView by bindView(R.id.overallStatus)
     private val recyclerView: RecyclerView by bindView(R.id.recyclerView)
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         recyclerView.setHasFixedSize(true)

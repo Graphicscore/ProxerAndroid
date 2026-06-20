@@ -31,19 +31,12 @@ class DiscussionAdapter : BaseAdapter<ForumDiscussion, ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_discussion, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_discussion, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val subject: TextView by bindView(R.id.subject)
         internal val metaInfo: AppCompatTextView by bindView(R.id.metaInfo)

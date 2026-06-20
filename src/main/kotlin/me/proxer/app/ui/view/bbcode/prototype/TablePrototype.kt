@@ -19,11 +19,7 @@ object TablePrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *table( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *table *", REGEX_OPTIONS)
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = CenterPrototype.makeViews(parent, children.filter { it.prototype == TableRowPrototype }, args)
 
         return when (childViews.size) {

@@ -37,10 +37,7 @@ data class SimpleCalendarEntry(
         Instant.ofEpochMilli(parcel.readLong()),
     )
 
-    override fun writeToParcel(
-        parcel: Parcel,
-        flags: Int,
-    ) {
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
         parcel.writeString(entryId)
         parcel.writeString(name)

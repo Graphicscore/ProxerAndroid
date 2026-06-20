@@ -50,10 +50,9 @@ class SettingsFragment :
     XpPreferenceFragment(),
     OnSharedPreferenceChangeListener {
     companion object {
-        fun newInstance() =
-            SettingsFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = SettingsFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     private val hostingActivity: BaseActivity
@@ -70,10 +69,7 @@ class SettingsFragment :
     private val notificationsInterval by bindPreference<ListPreference>(NOTIFICATIONS_INTERVAL)
     private val developerOptions by bindPreference<PreferenceCategory>("developer_options")
 
-    override fun onCreatePreferences2(
-        savedInstanceState: Bundle?,
-        rootKey: String?,
-    ) {
+    override fun onCreatePreferences2(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.preferences)
 
         if (
@@ -88,10 +84,7 @@ class SettingsFragment :
         }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         storageHelper.isLoggedInObservable
@@ -153,10 +146,7 @@ class SettingsFragment :
         super.onDestroyView()
     }
 
-    override fun onSharedPreferenceChanged(
-        sharedPreferences: SharedPreferences?,
-        key: String?,
-    ) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (key == null) return
         when (key) {
             AGE_CONFIRMATION -> {
@@ -196,12 +186,12 @@ class SettingsFragment :
             R.string.fragment_settings_restart_message,
             actionMessage = R.string.fragment_settings_restart_action,
             actionCallback =
-                View.OnClickListener {
-                    val intent = packageManager.getLaunchIntentForPackage(BuildConfig.APPLICATION_ID)?.clearTop()
+            View.OnClickListener {
+                val intent = packageManager.getLaunchIntentForPackage(BuildConfig.APPLICATION_ID)?.clearTop()
 
-                    if (intent != null) startActivity(intent)
-                    exitProcess(0)
-                },
+                if (intent != null) startActivity(intent)
+                exitProcess(0)
+            },
         )
     }
 }

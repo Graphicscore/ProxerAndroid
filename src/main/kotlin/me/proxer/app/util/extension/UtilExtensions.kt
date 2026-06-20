@@ -50,34 +50,24 @@ import java.util.regex.Pattern.quote
 
 val MENTIONS_REGEX = Regex("@(?:.*?)(?:(?:(?! )(?!${quote(".")} )(?!${quote(".")}\n)(?!\n)).)*").toPattern()
 
-inline fun <reified T : Enum<T>> enumSetOf(collection: Collection<T>): EnumSet<T> =
-    when (collection.isEmpty()) {
-        true -> EnumSet.noneOf(T::class.java)
-        false -> EnumSet.copyOf(collection)
-    }
+inline fun <reified T : Enum<T>> enumSetOf(collection: Collection<T>): EnumSet<T> = when (collection.isEmpty()) {
+    true -> EnumSet.noneOf(T::class.java)
+    false -> EnumSet.copyOf(collection)
+}
 
-inline fun <reified T : Enum<T>> enumSetOf(vararg items: T): EnumSet<T> =
-    when (items.isEmpty()) {
-        true -> EnumSet.noneOf(T::class.java)
-        false -> EnumSet.copyOf(items.toSet())
-    }
+inline fun <reified T : Enum<T>> enumSetOf(vararg items: T): EnumSet<T> = when (items.isEmpty()) {
+    true -> EnumSet.noneOf(T::class.java)
+    false -> EnumSet.copyOf(items.toSet())
+}
 
 inline fun <T> unsafeLazy(noinline initializer: () -> T) = lazy(LazyThreadSafetyMode.NONE, initializer)
 
-inline fun Context.getQuantityString(
-    id: Int,
-    quantity: Int,
-): String =
-    resources
-        .getQuantityString(id, quantity, quantity)
+inline fun Context.getQuantityString(id: Int, quantity: Int): String = resources
+    .getQuantityString(id, quantity, quantity)
 
 inline fun Fragment.dip(value: Int) = requireContext().dip(value)
 
-inline fun CharSequence.linkify(
-    web: Boolean = true,
-    mentions: Boolean = true,
-    vararg custom: Regex,
-): Spannable {
+inline fun CharSequence.linkify(web: Boolean = true, mentions: Boolean = true, vararg custom: Regex): Spannable {
     val spannable = this as? Spannable ?: SpannableString(this)
 
     if (web) LinkifyCompat.addLinks(spannable, Linkify.WEB_URLS)
@@ -90,67 +80,54 @@ inline fun CharSequence.linkify(
     return spannable
 }
 
-fun PackageManager.isPackageInstalled(packageName: String) =
-    try {
-        getApplicationInfo(packageName, 0).enabled
-    } catch (error: PackageManager.NameNotFoundException) {
-        false
-    }
+fun PackageManager.isPackageInstalled(packageName: String) = try {
+    getApplicationInfo(packageName, 0).enabled
+} catch (error: PackageManager.NameNotFoundException) {
+    false
+}
 
-inline fun RequestManager.defaultLoad(
-    view: ImageView,
-    url: HttpUrl,
-): Target<Drawable> =
-    load(url.toString())
-        .transition(DrawableTransitionOptions.withCrossFade())
-        .logErrors()
-        .into(view)
+inline fun RequestManager.defaultLoad(view: ImageView, url: HttpUrl): Target<Drawable> = load(url.toString())
+    .transition(DrawableTransitionOptions.withCrossFade())
+    .logErrors()
+    .into(view)
 
-inline fun <T> RequestBuilder<T>.logErrors(): RequestBuilder<T> =
-    this.addListener(
-        object : SimpleGlideRequestListener<T>() {
-            override fun onLoadFailed(
-                error: GlideException?,
-                model: Any?,
-                target: Target<T>,
-                isFirstResource: Boolean,
-            ): Boolean {
-                if (error != null) Timber.e(error)
+inline fun <T> RequestBuilder<T>.logErrors(): RequestBuilder<T> = this.addListener(
+    object : SimpleGlideRequestListener<T>() {
+        override fun onLoadFailed(
+            error: GlideException?,
+            model: Any?,
+            target: Target<T>,
+            isFirstResource: Boolean,
+        ): Boolean {
+            if (error != null) Timber.e(error)
 
-                return false
-            }
-        },
-    )
+            return false
+        }
+    },
+)
 
 inline fun HttpUrl.androidUri(): Uri = Uri.parse(toString())
 
-fun String.toPrefixedUrlOrNull(): HttpUrl? =
-    when {
-        this.startsWith("http://") || this.startsWith("https://") -> {
-            this.toHttpUrlOrNull()
-        }
-
-        else -> {
-            when {
-                this.startsWith("//") -> "http:$this"
-                else -> "http://$this"
-            }.toHttpUrlOrNull()
-        }
+fun String.toPrefixedUrlOrNull(): HttpUrl? = when {
+    this.startsWith("http://") || this.startsWith("https://") -> {
+        this.toHttpUrlOrNull()
     }
+
+    else -> {
+        when {
+            this.startsWith("//") -> "http:$this"
+            else -> "http://$this"
+        }.toHttpUrlOrNull()
+    }
+}
 
 fun String.toPrefixedHttpUrl() = toPrefixedUrlOrNull() ?: throw ProxerException(ProxerException.ErrorType.PARSING)
 
-inline fun <T : Enum<T>> Bundle.putEnumSet(
-    key: String,
-    set: EnumSet<T>,
-) {
+inline fun <T : Enum<T>> Bundle.putEnumSet(key: String, set: EnumSet<T>) {
     putIntArray(key, set.map { it.ordinal }.toIntArray())
 }
 
-inline fun <reified T : Enum<T>> Bundle.getEnumSet(
-    key: String,
-    klass: Class<T>,
-): EnumSet<T> {
+inline fun <reified T : Enum<T>> Bundle.getEnumSet(key: String, klass: Class<T>): EnumSet<T> {
     val values = getIntArray(key)?.map { klass.enumConstants?.get(it) }?.filterNotNull()
 
     return when {
@@ -235,10 +212,7 @@ private fun CustomTabsHelperFragment.fallbackHandleLink(
     }
 }
 
-fun CustomTabsHelperFragment.openHttpPage(
-    activity: Activity,
-    url: HttpUrl,
-) {
+fun CustomTabsHelperFragment.openHttpPage(activity: Activity, url: HttpUrl) {
     val colorScheme =
         when (getKoin().get<PreferenceHelper>().themeContainer.variant) {
             ThemeVariant.LIGHT -> CustomTabsIntent.COLOR_SCHEME_LIGHT

@@ -19,22 +19,14 @@ class CreateConferenceActivity : DrawerActivity() {
         private const val IS_GROUP_EXTRA = "is_group"
         private const val INITIAL_PARTICIPANT_EXTRA = "initial_participant"
 
-        fun navigateTo(
-            context: Activity,
-            isGroup: Boolean = false,
-            initialParticipant: Participant? = null,
-        ) {
+        fun navigateTo(context: Activity, isGroup: Boolean = false, initialParticipant: Participant? = null) {
             context.startActivity<CreateConferenceActivity>(
                 IS_GROUP_EXTRA to isGroup,
                 INITIAL_PARTICIPANT_EXTRA to initialParticipant,
             )
         }
 
-        fun getIntent(
-            context: Activity,
-            isGroup: Boolean = false,
-            initialParticipant: Participant? = null,
-        ): Intent =
+        fun getIntent(context: Activity, isGroup: Boolean = false, initialParticipant: Participant? = null): Intent =
             context.intentFor<CreateConferenceActivity>(
                 IS_GROUP_EXTRA to isGroup,
                 INITIAL_PARTICIPANT_EXTRA to initialParticipant,

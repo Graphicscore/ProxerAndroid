@@ -20,10 +20,7 @@ import me.proxer.app.util.extension.startActivity
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
-fun TvAppShell(
-    onMediaClick: (id: String, name: String) -> Unit,
-    onSearchClick: () -> Unit,
-) {
+fun TvAppShell(onMediaClick: (id: String, name: String) -> Unit) {
     val viewModel: TvShellViewModel = koinViewModel()
     val user by viewModel.user.observeAsState()
     val logoutError by viewModel.logoutError.observeAsState()

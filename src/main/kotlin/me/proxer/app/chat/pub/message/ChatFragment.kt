@@ -1,6 +1,5 @@
 package me.proxer.app.chat.pub.message
 
-import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Bundle
@@ -56,10 +55,9 @@ import kotlin.properties.Delegates
  */
 class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_chat) {
     companion object {
-        fun newInstance() =
-            ChatFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = ChatFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<ChatViewModel> { parametersOf(chatRoomId) }
@@ -72,10 +70,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
 
     private val actionModeCallback: ActionMode.Callback =
         object : ActionMode.Callback {
-            override fun onPrepareActionMode(
-                mode: ActionMode,
-                menu: Menu,
-            ): Boolean {
+            override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
                 innerAdapter.selectedMessages.let {
                     val user = storageHelper.user
 
@@ -86,10 +81,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
                 return false
             }
 
-            override fun onActionItemClicked(
-                mode: ActionMode,
-                item: MenuItem,
-            ): Boolean {
+            override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
                 when (item.itemId) {
                     R.id.copy -> handleCopyClick()
                     R.id.reply -> handleReplyClick()
@@ -100,10 +92,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
                 return true
             }
 
-            override fun onCreateActionMode(
-                mode: ActionMode,
-                menu: Menu,
-            ): Boolean {
+            override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
                 IconicsMenuInflaterUtil.inflate(
                     mode.menuInflater,
                     requireContext(),
@@ -203,10 +192,7 @@ class ChatFragment : PagedContentFragment<ParsedChatMessage>(R.layout.fragment_c
             .subscribe { ProfileActivity.navigateTo(requireActivity(), username = it) }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Call getter as soon as possible to make keyboard detection work properly.

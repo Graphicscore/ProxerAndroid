@@ -15,11 +15,10 @@ import java.util.Date
 
 private val zeroDate = Date(0)
 
-fun Date.distanceInWordsToNow(context: Context): String =
-    when (zeroDate) {
-        this -> context.getString(R.string.time_unknown)
-        else -> toLocalDateTimeBP().distanceInWordsToNow(context)
-    }
+fun Date.distanceInWordsToNow(context: Context): String = when (zeroDate) {
+    this -> context.getString(R.string.time_unknown)
+    else -> toLocalDateTimeBP().distanceInWordsToNow(context)
+}
 
 fun LocalDateTime.formattedDistanceTo(other: LocalDateTime): String {
     val duration = Duration.between(this, other)

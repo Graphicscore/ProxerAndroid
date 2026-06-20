@@ -18,38 +18,37 @@ object ProxerStreamCFResolver : StreamResolver() {
 
     override val name = "Proxer-Stream (CF)"
 
-    override fun resolve(id: String): Single<StreamResolutionResult> =
-        api.anime
-            .vastLink(id)
-            .buildSingle()
-            .flatMap { (link, adTag) ->
-                client
-                    .newCall(
-                        Request
-                            .Builder()
-                            .get()
-                            .url(link.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
-                            .header("User-Agent", MainApplication.USER_AGENT)
-                            .header("Connection", "close")
-                            .build(),
-                    ).toBodySingle()
-                    .map {
-                        val regexResult = regex.find(it) ?: throw StreamResolutionException()
+    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime
+        .vastLink(id)
+        .buildSingle()
+        .flatMap { (link, adTag) ->
+            client
+                .newCall(
+                    Request
+                        .Builder()
+                        .get()
+                        .url(link.toPrefixedUrlOrNull() ?: throw StreamResolutionException())
+                        .header("User-Agent", MainApplication.USER_AGENT)
+                        .header("Connection", "close")
+                        .build(),
+                ).toBodySingle()
+                .map {
+                    val regexResult = regex.find(it) ?: throw StreamResolutionException()
 
-                        val streamId = regexResult.groupValues[1]
-                        val url =
-                            "https://videodelivery.net/$streamId/manifest/video.mpd".toHttpUrlOrNull()
-                                ?: throw StreamResolutionException()
+                    val streamId = regexResult.groupValues[1]
+                    val url =
+                        "https://videodelivery.net/$streamId/manifest/video.mpd".toHttpUrlOrNull()
+                            ?: throw StreamResolutionException()
 
-                        val adTagUri = if (adTag.isNotBlank()) Uri.parse(adTag) else null
+                    val adTagUri = if (adTag.isNotBlank()) Uri.parse(adTag) else null
 
-                        StreamResolutionResult.Video(
-                            url,
-                            // Technically this should be application/dash+xml,
-                            // but other applications do not seem to support that.
-                            "application/x-mpegURL",
-                            adTag = adTagUri,
-                        )
-                    }
-            }
+                    StreamResolutionResult.Video(
+                        url,
+                        // Technically this should be application/dash+xml,
+                        // but other applications do not seem to support that.
+                        "application/x-mpegURL",
+                        adTag = adTagUri,
+                    )
+                }
+        }
 }

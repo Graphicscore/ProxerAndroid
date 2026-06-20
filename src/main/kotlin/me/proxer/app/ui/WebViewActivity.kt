@@ -1,6 +1,5 @@
 package me.proxer.app.ui
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.view.MenuItem
@@ -23,10 +22,7 @@ class WebViewActivity : AppCompatActivity() {
     companion object {
         private const val URL_EXTRA = "url"
 
-        fun navigateTo(
-            context: Activity,
-            url: String,
-        ) = context.startActivity<WebViewActivity>(URL_EXTRA to url)
+        fun navigateTo(context: Activity, url: String) = context.startActivity<WebViewActivity>(URL_EXTRA to url)
     }
 
     private val url: String

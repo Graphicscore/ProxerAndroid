@@ -7,10 +7,8 @@ import me.proxer.library.entity.user.UserAbout
 /**
  * @author Ruben Gees
  */
-class ProfileAboutViewModel(
-    private val userId: String?,
-    private val username: String?,
-) : BaseContentViewModel<UserAbout>() {
+class ProfileAboutViewModel(private val userId: String?, private val username: String?) :
+    BaseContentViewModel<UserAbout>() {
     override val endpoint: Endpoint<UserAbout>
         get() = api.user.about(userId, username)
 }

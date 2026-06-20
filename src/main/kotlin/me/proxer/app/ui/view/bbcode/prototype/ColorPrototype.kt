@@ -20,10 +20,7 @@ object ColorPrototype : TextMutatorPrototype {
     override val startRegex = Regex(" *color *= *\"?.*?\"?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *color *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val value = BBUtils.cutAttribute(code, attributeRegex) ?: ""
 
         val color =
@@ -36,10 +33,7 @@ object ColorPrototype : TextMutatorPrototype {
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(COLOR_ARGUMENT to color)))
     }
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder =
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder =
         when (val color = args[COLOR_ARGUMENT] as Int?) {
             null -> {
                 text

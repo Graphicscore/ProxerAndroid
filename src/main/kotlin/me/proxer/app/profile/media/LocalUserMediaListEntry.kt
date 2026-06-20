@@ -69,15 +69,15 @@ open class LocalUserMediaListEntry(
         override val episode: Int,
         override val rating: Int,
     ) : LocalUserMediaListEntry(
-            id,
-            name,
-            episodeAmount,
-            medium,
-            state,
-            commentId,
-            commentContent,
-            mediaProgress,
-            episode,
-            rating,
-        )
+        id,
+        name,
+        episodeAmount,
+        medium,
+        state,
+        commentId,
+        commentContent,
+        mediaProgress,
+        episode,
+        rating,
+    )
 }

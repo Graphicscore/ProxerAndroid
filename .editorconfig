@@ -19,6 +19,3 @@ indent_size = 2
 [*.md]
 trim_trailing_whitespace = false
 
-[src/main/kotlin/me/proxer/app/tv/**]
-ktlint_standard_function-naming = disabled
-

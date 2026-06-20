@@ -1,5 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 buildscript { scriptHandler ->
     apply from: "${projectDir}/gradle/versions.gradle"
@@ -14,8 +13,7 @@ plugins {
     id "com.mikepenz.aboutlibraries.plugin"
 
     id "com.github.ben-manes.versions"
-    id "io.gitlab.arturbosch.detekt"
-    id "org.jlleitschuh.gradle.ktlint"
+    id "dev.detekt"
 }
 
 apply from: "${projectDir}/gradle/utils.gradle"
@@ -166,23 +164,14 @@ detekt {
     buildUponDefaultConfig = true
     config.from(files("$projectDir/config/detekt/detekt.yml"))
     autoCorrect = false
+}
+
+tasks.withType(dev.detekt.gradle.Detekt).configureEach {
     reports {
-        md { required = true }
+        markdown { required = true }
     }
 }
 
-
-ktlint {
-    version = ktlintVersion
-    reporters {
-        reporter ReporterType.CHECKSTYLE
-    }
-    filter {
-        exclude("**/me/zhanghai/**")
-        exclude("**/com/gojuno/**")
-        exclude("**/androidx/recyclerview/widget/BindAwareViewHolder.kt")
-    }
-}
 
 tasks.named("dependencyUpdates").configure {
     rejectVersionIf {

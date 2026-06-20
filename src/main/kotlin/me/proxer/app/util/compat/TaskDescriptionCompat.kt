@@ -14,10 +14,7 @@ import me.proxer.app.R
  * @author Ruben Gees
  */
 object TaskDescriptionCompat {
-    fun setTaskDescription(
-        activity: Activity,
-        @ColorInt primaryColor: Int,
-    ) {
+    fun setTaskDescription(activity: Activity, @ColorInt primaryColor: Int) {
         val activityInfo =
             activity.packageManager.getActivityInfo(
                 activity.componentName,

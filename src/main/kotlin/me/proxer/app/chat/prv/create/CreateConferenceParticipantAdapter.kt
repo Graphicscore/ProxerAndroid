@@ -29,9 +29,7 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class CreateConferenceParticipantAdapter(
-    savedInstanceState: Bundle?,
-) : BaseAdapter<Participant, ViewHolder>() {
+class CreateConferenceParticipantAdapter(savedInstanceState: Bundle?) : BaseAdapter<Participant, ViewHolder>() {
     private companion object {
         private const val LIST_STATE = "create_chat_participant_list"
     }
@@ -48,15 +46,10 @@ class CreateConferenceParticipantAdapter(
             ?: emptyList()
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_participant, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_participant, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -76,9 +69,7 @@ class CreateConferenceParticipantAdapter(
 
     operator fun contains(username: String) = data.find { it.username.equals(username, ignoreCase = true) } != null
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val image: ImageView by bindView(R.id.image)
         internal val username: TextView by bindView(R.id.username)
         internal val delete: ImageButton by bindView(R.id.delete)

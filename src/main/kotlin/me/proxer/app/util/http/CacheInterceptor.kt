@@ -129,18 +129,16 @@ class CacheInterceptor : Interceptor {
         }
     }
 
-    private fun shouldEnableCache(response: Response): Boolean =
-        response.isSuccessful &&
-            response.request.method.equals("GET", true) &&
-            isSuccessfulBody(response)
+    private fun shouldEnableCache(response: Response): Boolean = response.isSuccessful &&
+        response.request.method.equals("GET", true) &&
+        isSuccessfulBody(response)
 
-    private fun shouldDisableCache(response: Response) =
-        response.header("Cache-Control") == null ||
-            excludedFileTypes.any {
-                response.request.url
-                    .toString()
-                    .endsWith(it)
-            }
+    private fun shouldDisableCache(response: Response) = response.header("Cache-Control") == null ||
+        excludedFileTypes.any {
+            response.request.url
+                .toString()
+                .endsWith(it)
+        }
 
     private fun isSuccessfulBody(response: Response): Boolean {
         val url = response.request.url.toString()
@@ -171,19 +169,18 @@ class CacheInterceptor : Interceptor {
             .build()
     }
 
-    private inline fun <R> Response.peekBodyAndUseEncoded(block: (BufferedSource) -> R) =
-        this
-            .body
-            ?.source()
-            ?.peek()
-            ?.let {
-                when {
-                    this.hasContentEncoding("gzip") -> GzipSource(it)
-                    this.hasContentEncoding("br") -> BrotliInputStream(it.inputStream()).source()
-                    else -> it
-                }
-            }?.buffer()
-            ?.use(block)
+    private inline fun <R> Response.peekBodyAndUseEncoded(block: (BufferedSource) -> R) = this
+        .body
+        ?.source()
+        ?.peek()
+        ?.let {
+            when {
+                this.hasContentEncoding("gzip") -> GzipSource(it)
+                this.hasContentEncoding("br") -> BrotliInputStream(it.inputStream()).source()
+                else -> it
+            }
+        }?.buffer()
+        ?.use(block)
 
     private class CacheInfo(
         private val applicableCallback: (Response) -> Boolean,

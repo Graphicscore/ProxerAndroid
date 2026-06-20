@@ -7,7 +7,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
-import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import io.reactivex.Maybe
 import me.proxer.app.auth.LocalUser
@@ -24,11 +23,7 @@ import org.threeten.bp.Instant
 @Dao
 abstract class MessengerDao {
     @Transaction
-    open fun insertMessageToSend(
-        user: LocalUser,
-        text: String,
-        conferenceId: Long,
-    ): LocalMessage {
+    open fun insertMessageToSend(user: LocalUser, text: String, conferenceId: Long): LocalMessage {
         val message =
             LocalMessage(
                 calculateNextMessageToSendId(),
@@ -134,16 +129,10 @@ abstract class MessengerDao {
     abstract fun getUnsentMessagesLiveDataForConference(conferenceId: Long): LiveData<List<LocalMessage>>
 
     @Query("SELECT COUNT(*) FROM messages WHERE conferenceId = :conferenceId AND id = :lastReadMessageId")
-    abstract fun getUnreadMessageAmountForConference(
-        conferenceId: Long,
-        lastReadMessageId: Long,
-    ): Int
+    abstract fun getUnreadMessageAmountForConference(conferenceId: Long, lastReadMessageId: Long): Int
 
     @Query("SELECT * FROM messages WHERE conferenceId = :conferenceId AND id >= 0 ORDER BY id DESC LIMIT :amount")
-    abstract fun getMostRecentMessagesForConference(
-        conferenceId: Long,
-        amount: Int,
-    ): List<LocalMessage>
+    abstract fun getMostRecentMessagesForConference(conferenceId: Long, amount: Int): List<LocalMessage>
 
     @Query("SELECT * FROM messages WHERE conferenceId = :conferenceId AND id >= 0 ORDER BY id DESC LIMIT 1")
     abstract fun findMostRecentMessageForConference(conferenceId: Long): LocalMessage?

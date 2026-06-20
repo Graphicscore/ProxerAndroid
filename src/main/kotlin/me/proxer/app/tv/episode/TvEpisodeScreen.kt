@@ -54,10 +54,10 @@ fun TvEpisodeScreenContent(
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(24.dp),
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(24.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -140,10 +140,7 @@ fun TvEpisodeScreen(
 }
 
 @Composable
-private fun TvEpisodeItem(
-    episodeRow: EpisodeRow,
-    onClick: () -> Unit,
-) {
+private fun TvEpisodeItem(episodeRow: EpisodeRow, onClick: () -> Unit) {
     val isWatched = episodeRow.userProgress != null && episodeRow.userProgress >= episodeRow.number
     Surface(
         onClick = onClick,
@@ -151,21 +148,21 @@ private fun TvEpisodeItem(
     ) {
         Box(
             modifier =
-                Modifier
-                    .fillMaxSize()
-                    .background(
-                        if (isWatched) {
-                            MaterialTheme.colorScheme.surface.copy(green = 0.18f)
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        },
-                    ),
+            Modifier
+                .fillMaxSize()
+                .background(
+                    if (isWatched) {
+                        MaterialTheme.colorScheme.surface.copy(green = 0.18f)
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    },
+                ),
         ) {
             Row(
                 modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {

@@ -10,10 +10,8 @@ import me.saket.bettermovementmethod.BetterLinkMovementMethod
 /**
  * @author Ruben Gees
  */
-class TextViewLinkClickObservable(
-    private val view: TextView,
-    private val handled: (String) -> Boolean,
-) : Observable<String>() {
+class TextViewLinkClickObservable(private val view: TextView, private val handled: (String) -> Boolean) :
+    Observable<String>() {
     override fun subscribeActual(observer: Observer<in String>) {
         if (!observer.checkMainThread()) {
             return
@@ -38,28 +36,24 @@ class TextViewLinkClickObservable(
         private val observer: Observer<in String>,
     ) : MainThreadDisposable(),
         BetterLinkMovementMethod.OnLinkClickListener {
-        override fun onClick(
-            textView: TextView,
-            url: String,
-        ): Boolean =
-            if (!isDisposed) {
-                try {
-                    if (handled.invoke(url)) {
-                        observer.onNext(url)
+        override fun onClick(textView: TextView, url: String): Boolean = if (!isDisposed) {
+            try {
+                if (handled.invoke(url)) {
+                    observer.onNext(url)
 
-                        true
-                    } else {
-                        false
-                    }
-                } catch (e: Exception) {
-                    observer.onError(e)
-                    dispose()
-
+                    true
+                } else {
                     false
                 }
-            } else {
+            } catch (e: Exception) {
+                observer.onError(e)
+                dispose()
+
                 false
             }
+        } else {
+            false
+        }
 
         override fun onDispose() {
             view.movementMethod.let {
