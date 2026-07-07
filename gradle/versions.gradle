@@ -90,7 +90,7 @@ ext {
     betterLinkMovementMethodVersion = "2.2.0"
     jsoupVersion = "1.22.2"
     // Compose
-    composeBomVersion = "2026.06.00"
+    composeBomVersion = "2026.06.01"
     tvMaterialVersion = "1.1.0"
     activityComposeVersion = "1.13.0"
     coilVersion = "2.7.0"
