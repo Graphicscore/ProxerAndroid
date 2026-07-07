@@ -1,0 +1,65 @@
+package me.proxer.app.ui.compose
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import me.proxer.app.R
+import me.proxer.app.util.ErrorUtils.ErrorAction
+import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT
+import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_HIDE
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ContentScreen(
+    isLoading: Boolean,
+    error: ErrorAction?,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+    isSwipeToRefreshEnabled: Boolean = false,
+    onRefresh: () -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    PullToRefreshBox(
+        isRefreshing = isLoading && isSwipeToRefreshEnabled,
+        onRefresh = onRefresh,
+        modifier = modifier.fillMaxSize(),
+    ) {
+        when {
+            isLoading && !isSwipeToRefreshEnabled -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            error != null -> {
+                Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(stringResource(error.message))
+                        if (error.buttonMessage != ACTION_MESSAGE_HIDE) {
+                            Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp)) {
+                                val label = when (error.buttonMessage) {
+                                    ACTION_MESSAGE_DEFAULT -> stringResource(R.string.error_action_retry)
+                                    else -> stringResource(error.buttonMessage)
+                                }
+                                Text(label)
+                            }
+                        }
+                    }
+                }
+            }
+            else -> content()
+        }
+    }
+}

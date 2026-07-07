@@ -304,7 +304,7 @@ object ErrorUtils {
 
     internal fun handle(error: Throwable, isLoggedIn: Boolean): ErrorAction {
         val innermostError = getInnermostError(error)
-        val errorMessage = getMessage(innermostError, isLoggedIn)
+        val errorMessage = getMessage(innermostError)
 
         val buttonMessage =
             when (innermostError) {
