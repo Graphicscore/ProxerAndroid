@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Environment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -155,7 +156,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
             onDismissRequest = { showStartPageDialog = false },
             title = { Text(stringResource(R.string.preference_start_page_title)) },
             text = {
-                androidx.compose.foundation.layout.Column(
+                Column(
                     Modifier.verticalScroll(rememberScrollState()),
                 ) {
                     startPageItems.forEachIndexed { i, item ->
@@ -194,7 +195,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
             onDismissRequest = { showNotificationsIntervalDialog = false },
             title = { Text(stringResource(R.string.preference_notifications_interval_title)) },
             text = {
-                androidx.compose.foundation.layout.Column(
+                Column(
                     Modifier.verticalScroll(rememberScrollState()),
                 ) {
                     notificationIntervalTitles.forEachIndexed { i, title ->
@@ -233,7 +234,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
             onDismissRequest = { showHttpLogLevelDialog = false },
             title = { Text(stringResource(R.string.preference_developer_options_http_log_level_title)) },
             text = {
-                androidx.compose.foundation.layout.Column(
+                Column(
                     Modifier.verticalScroll(rememberScrollState()),
                 ) {
                     httpLogLevelTitles.forEachIndexed { i, title ->
@@ -286,7 +287,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     headlineContent = { Text(stringResource(R.string.section_profile_settings)) },
                     supportingContent = { Text(stringResource(R.string.preference_profile_summary)) },
                     modifier = Modifier.clickable(enabled = isLoggedIn) {
-                        ProfileSettingsActivity.navigateTo(context as AppCompatActivity)
+                        ProfileSettingsActivity.navigateTo(context as android.app.Activity)
                     },
                 )
             }
