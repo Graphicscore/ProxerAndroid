@@ -2,72 +2,34 @@ package me.proxer.app.profile.settings
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.View
-import androidx.fragment.app.commitNow
-import androidx.lifecycle.Observer
-import com.google.android.material.snackbar.Snackbar
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
-import me.proxer.app.R
-import me.proxer.app.base.DrawerActivity
-import me.proxer.app.util.extension.multilineSnackbar
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.startActivity
-import org.koin.androidx.viewmodel.ext.android.viewModel
 
 /**
  * @author Ruben Gees
  */
-class ProfileSettingsActivity : DrawerActivity() {
+class ProfileSettingsActivity : BaseActivity() {
     companion object {
         fun navigateTo(context: Activity) = context.startActivity<ProfileSettingsActivity>()
     }
 
-    override val contentView: Int
-        get() = R.layout.activity_profile_settings
-
-    private val viewModel by viewModel<ProfileSettingsViewModel>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        title = getString(R.string.section_profile_settings)
-
-        viewModel.error.observe(
-            this,
-            Observer {
-                it?.let {
-                    multilineSnackbar(
-                        getString(R.string.error_refresh, getString(it.message)),
-                        Snackbar.LENGTH_LONG,
-                        it.buttonMessage,
-                        it.toClickListener(this) ?: View.OnClickListener { viewModel.refresh() },
-                    )
-                }
-            },
-        )
-
-        viewModel.updateError.observe(
-            this,
-            Observer {
-                it?.let {
-                    multilineSnackbar(
-                        getString(R.string.error_set_user_info, getString(it.message)),
-                        Snackbar.LENGTH_LONG,
-                        it.buttonMessage,
-                        it.toClickListener(this) ?: View.OnClickListener { viewModel.retryUpdate() },
-                    )
-                }
-            },
-        )
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         storageHelper.isLoggedInObservable
             .filter { it.not() }
             .autoDisposable(this.scope())
             .subscribe { finish() }
 
-        if (savedInstanceState == null) {
-            supportFragmentManager.commitNow {
-                replace(R.id.container, ProfileSettingsFragment.newInstance())
+        setContent {
+            ProxerTheme {
+                ProfileSettingsScreen(onBack = { finish() })
             }
         }
     }

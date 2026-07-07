@@ -105,8 +105,11 @@ class PreferenceHelper(
             .publish()
             .autoConnect()
 
-    val areBookmarksAutomatic
+    var areBookmarksAutomatic
         get() = sharedPreferences.getBoolean(AUTO_BOOKMARK, false)
+        set(value) {
+            sharedPreferences.edit { putBoolean(AUTO_BOOKMARK, value) }
+        }
 
     var shouldCheckCellular
         get() = sharedPreferences.getBoolean(CHECK_CELLULAR, true)
@@ -114,11 +117,14 @@ class PreferenceHelper(
             sharedPreferences.edit { putBoolean(CHECK_CELLULAR, value) }
         }
 
-    val startPage
+    var startPage
         get() =
             DrawerItem.fromIdOrDefault(
                 sharedPreferences.getSafeString(START_PAGE, "0").toLongOrNull(),
             )
+        set(value) {
+            sharedPreferences.edit { putString(START_PAGE, value.id.toString()) }
+        }
 
     var areNewsNotificationsEnabled
         get() = sharedPreferences.getBoolean(NOTIFICATIONS_NEWS, false)
@@ -132,11 +138,17 @@ class PreferenceHelper(
             sharedPreferences.edit { putBoolean(NOTIFICATIONS_ACCOUNT, value) }
         }
 
-    val areChatNotificationsEnabled
+    var areChatNotificationsEnabled
         get() = sharedPreferences.getBoolean(NOTIFICATIONS_CHAT, true)
+        set(value) {
+            sharedPreferences.edit { putBoolean(NOTIFICATIONS_CHAT, value) }
+        }
 
-    val notificationsInterval
+    var notificationsInterval
         get() = sharedPreferences.getSafeString(NOTIFICATIONS_INTERVAL, "30").toLong()
+        set(value) {
+            sharedPreferences.edit { putString(NOTIFICATIONS_INTERVAL, value.toString()) }
+        }
 
     var mangaReaderOrientation
         get() =
@@ -181,11 +193,23 @@ class PreferenceHelper(
                 else -> error("Unknown http log level saved in shared preferences")
             }
 
-    val shouldLogHttpVerbose
-        get() = sharedPreferences.getBoolean(HTTP_VERBOSE, false)
+    var httpLogLevelIndex: Int
+        get() = sharedPreferences.getString(HTTP_LOG_LEVEL, "0")?.toIntOrNull() ?: 0
+        set(value) {
+            sharedPreferences.edit { putString(HTTP_LOG_LEVEL, value.toString()) }
+        }
 
-    val shouldRedactToken
+    var shouldLogHttpVerbose
+        get() = sharedPreferences.getBoolean(HTTP_VERBOSE, false)
+        set(value) {
+            sharedPreferences.edit { putBoolean(HTTP_VERBOSE, value) }
+        }
+
+    var shouldRedactToken
         get() = sharedPreferences.getBoolean(HTTP_REDACT_TOKEN, false)
+        set(value) {
+            sharedPreferences.edit { putBoolean(HTTP_REDACT_TOKEN, value) }
+        }
 
     fun incrementLaunches() = sharedPreferences.edit { putInt(LAUNCHES, sharedPreferences.getInt(LAUNCHES, 0) + 1) }
 }
