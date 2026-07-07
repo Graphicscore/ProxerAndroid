@@ -33,10 +33,8 @@ class MediaListSearchBottomSheet private constructor(
     private val viewModel: MediaListViewModel,
 ) {
     companion object {
-        fun bindTo(
-            fragment: MediaListFragment,
-            viewModel: MediaListViewModel,
-        ) = MediaListSearchBottomSheet(fragment, viewModel)
+        fun bindTo(fragment: MediaListFragment, viewModel: MediaListViewModel) =
+            MediaListSearchBottomSheet(fragment, viewModel)
     }
 
     private val bottomSheetBehaviour = BottomSheetBehavior.from(fragment.searchBottomSheet)
@@ -211,12 +209,11 @@ class MediaListSearchBottomSheet private constructor(
             }
     }
 
-    fun onBackPressed() =
-        if (bottomSheetBehaviour.state != STATE_COLLAPSED) {
-            bottomSheetBehaviour.state = STATE_COLLAPSED
+    fun onBackPressed() = if (bottomSheetBehaviour.state != STATE_COLLAPSED) {
+        bottomSheetBehaviour.state = STATE_COLLAPSED
 
-            true
-        } else {
-            false
-        }
+        true
+    } else {
+        false
+    }
 }

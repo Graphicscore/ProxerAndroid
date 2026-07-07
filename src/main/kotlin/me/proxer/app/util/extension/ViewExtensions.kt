@@ -51,26 +51,23 @@ inline fun ViewGroup.enableLayoutAnimationsSafely() {
     this.layoutTransition = LayoutTransition().apply { setAnimateParentHierarchy(false) }
 }
 
-fun RecyclerView.isAtCompleteTop() =
-    when (val layoutManager = this.safeLayoutManager) {
-        is StaggeredGridLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPositions(null).contains(0)
-        is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition() == 0
-        else -> false
-    }
+fun RecyclerView.isAtCompleteTop() = when (val layoutManager = this.safeLayoutManager) {
+    is StaggeredGridLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPositions(null).contains(0)
+    is LinearLayoutManager -> layoutManager.findFirstCompletelyVisibleItemPosition() == 0
+    else -> false
+}
 
-fun RecyclerView.isAtTop() =
-    when (val layoutManager = this.safeLayoutManager) {
-        is StaggeredGridLayoutManager -> layoutManager.findFirstVisibleItemPositions(null).contains(0)
-        is LinearLayoutManager -> layoutManager.findFirstVisibleItemPosition() == 0
-        else -> false
-    }
+fun RecyclerView.isAtTop() = when (val layoutManager = this.safeLayoutManager) {
+    is StaggeredGridLayoutManager -> layoutManager.findFirstVisibleItemPositions(null).contains(0)
+    is LinearLayoutManager -> layoutManager.findFirstVisibleItemPosition() == 0
+    else -> false
+}
 
-fun RecyclerView.scrollToTop() =
-    when (val layoutManager = safeLayoutManager) {
-        is StaggeredGridLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
-        is LinearLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
-        else -> error("Unsupported layout manager: ${layoutManager.javaClass.name}")
-    }
+fun RecyclerView.scrollToTop() = when (val layoutManager = safeLayoutManager) {
+    is StaggeredGridLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
+    is LinearLayoutManager -> layoutManager.scrollToPositionWithOffset(0, 0)
+    else -> error("Unsupported layout manager: ${layoutManager.javaClass.name}")
+}
 
 fun RecyclerView.doAfterAnimations(action: () -> Unit) {
     postDelayed(10) {

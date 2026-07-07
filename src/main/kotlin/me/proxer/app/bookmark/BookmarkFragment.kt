@@ -50,10 +50,9 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
         private const val CATEGORY_ARGUMENT = "category"
         private const val FILTER_AVAILABLE_ARGUMENT = "filter_available"
 
-        fun newInstance() =
-            BookmarkFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = BookmarkFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val emptyDataMessage
@@ -144,18 +143,12 @@ class BookmarkFragment : PagedContentFragment<Bookmark>() {
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

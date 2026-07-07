@@ -108,27 +108,24 @@ abstract class DrawerActivity : BaseActivity() {
         actionBarDrawerToggle.syncState()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when {
-            actionBarDrawerToggle.onOptionsItemSelected(item) -> true
-            else -> super.onOptionsItemSelected(item)
-        }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when {
+        actionBarDrawerToggle.onOptionsItemSelected(item) -> true
+        else -> super.onOptionsItemSelected(item)
+    }
 
     protected open fun handleDrawerItemClick(item: MaterialDrawerWrapper.DrawerItem) {
         MainActivity.navigateToSection(this, item)
     }
 
-    protected open fun handleAccountItemClick(item: ProfileItem) =
-        when (item) {
-            ProfileItem.GUEST, ProfileItem.LOGIN -> LoginDialog.show(this)
-            ProfileItem.LOGOUT -> LogoutDialog.show(this)
-            ProfileItem.USER -> showProfilePage()
-            ProfileItem.NOTIFICATIONS -> NotificationActivity.navigateTo(this)
-            ProfileItem.PROFILE_SETTINGS -> ProfileSettingsActivity.navigateTo(this)
-        }
+    protected open fun handleAccountItemClick(item: ProfileItem) = when (item) {
+        ProfileItem.GUEST, ProfileItem.LOGIN -> LoginDialog.show(this)
+        ProfileItem.LOGOUT -> LogoutDialog.show(this)
+        ProfileItem.USER -> showProfilePage()
+        ProfileItem.NOTIFICATIONS -> NotificationActivity.navigateTo(this)
+        ProfileItem.PROFILE_SETTINGS -> ProfileSettingsActivity.navigateTo(this)
+    }
 
-    private fun showProfilePage() =
-        storageHelper.user?.let { (_, id, name, image) ->
-            ProfileActivity.navigateTo(this, id, name, image, null)
-        }
+    private fun showProfilePage() = storageHelper.user?.let { (_, id, name, image) ->
+        ProfileActivity.navigateTo(this, id, name, image, null)
+    }
 }

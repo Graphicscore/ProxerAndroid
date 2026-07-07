@@ -1,6 +1,5 @@
 package me.proxer.app.anime.stream
 
-import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -16,7 +15,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -339,11 +337,10 @@ class StreamActivity : BaseActivity() {
         fastForwardIndicator.updateLayoutParams<ViewGroup.MarginLayoutParams> { marginEnd = indicatorMargin }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when (item.itemId) {
-            R.id.action_open_in_other_app -> openInOtherApp()
-            else -> super.onOptionsItemSelected(item)
-        }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+        R.id.action_open_in_other_app -> openInOtherApp()
+        else -> super.onOptionsItemSelected(item)
+    }
 
     override fun onStart() {
         super.onStart()
@@ -393,10 +390,7 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    override fun onMultiWindowModeChanged(
-        isInMultiWindowMode: Boolean,
-        newConfig: Configuration,
-    ) {
+    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
 
         handleUIChange()
@@ -436,10 +430,7 @@ class StreamActivity : BaseActivity() {
                             playerView.defaultArtwork = null
                         }
 
-                        override fun onResourceReady(
-                            resource: Drawable,
-                            transition: Transition<in Drawable>?,
-                        ) {
+                        override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
                             playerView.defaultArtwork = resource
                         }
                     },
@@ -603,10 +594,7 @@ class StreamActivity : BaseActivity() {
         animationHandler.removeCallbacksAndMessages(null)
     }
 
-    private fun updateIndicator(
-        view: TextView,
-        animate: Boolean = true,
-    ) {
+    private fun updateIndicator(view: TextView, animate: Boolean = true) {
         val previousDuration = view.text.toString().toIntOrNull()
         val wasVisible = view.isVisible
 
@@ -634,10 +622,7 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun updateControl(
-        value: Int,
-        icon: IIcon,
-    ) {
+    private fun updateControl(value: Int, icon: IIcon) {
         hideControlHandler.removeCallbacksAndMessages(null)
 
         controlProgress.isVisible = true
@@ -658,35 +643,32 @@ class StreamActivity : BaseActivity() {
         }
     }
 
-    private fun generateIndicatorIcon(icon: IIcon) =
-        IconicsDrawable(this, icon).apply {
-            colorRes = android.R.color.white
-            paddingDp = 4
-            sizeDp = 36
-        }
+    private fun generateIndicatorIcon(icon: IIcon) = IconicsDrawable(this, icon).apply {
+        colorRes = android.R.color.white
+        paddingDp = 4
+        sizeDp = 36
+    }
 
-    private fun openInOtherApp(): Boolean =
-        try {
-            val intent =
-                StreamResolutionResult
-                    .Video(uri.toString().toHttpUrl(), mimeType, referer)
-                    .makeIntent(this)
-                    .newTask()
+    private fun openInOtherApp(): Boolean = try {
+        val intent =
+            StreamResolutionResult
+                .Video(uri.toString().toHttpUrl(), mimeType, referer)
+                .makeIntent(this)
+                .newTask()
 
-            startActivity(intent)
-            finish()
+        startActivity(intent)
+        finish()
 
-            true
-        } catch (ignored: ActivityNotFoundException) {
-            toast(R.string.activity_stream_open_no_app)
+        true
+    } catch (ignored: ActivityNotFoundException) {
+        toast(R.string.activity_stream_open_no_app)
 
-            false
-        }
+        false
+    }
 
-    private fun generateControllerIcon(icon: IIcon) =
-        IconicsDrawable(this, icon).apply {
-            colorRes = android.R.color.white
-            paddingDp = 8
-            sizeDp = 44
-        }
+    private fun generateControllerIcon(icon: IIcon) = IconicsDrawable(this, icon).apply {
+        colorRes = android.R.color.white
+        paddingDp = 8
+        sizeDp = 44
+    }
 }

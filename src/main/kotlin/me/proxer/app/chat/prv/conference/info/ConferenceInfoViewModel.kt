@@ -7,9 +7,7 @@ import me.proxer.library.entity.messenger.ConferenceInfo
 /**
  * @author Ruben Gees
  */
-class ConferenceInfoViewModel(
-    private val conferenceId: String,
-) : BaseContentViewModel<ConferenceInfo>() {
+class ConferenceInfoViewModel(private val conferenceId: String) : BaseContentViewModel<ConferenceInfo>() {
     override val endpoint: Endpoint<ConferenceInfo>
         get() = api.messenger.conferenceInfo(conferenceId)
 }

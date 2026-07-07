@@ -45,10 +45,7 @@ object MessengerNotifications {
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    fun showOrUpdate(
-        context: Context,
-        conferenceMap: LocalConferenceMap,
-    ) {
+    fun showOrUpdate(context: Context, conferenceMap: LocalConferenceMap) {
         val notifications =
             conferenceMap.entries
                 .asSequence()
@@ -72,10 +69,7 @@ object MessengerNotifications {
 
     fun cancel(context: Context) = NotificationManagerCompat.from(context).cancel(ID)
 
-    private fun buildChatSummaryNotification(
-        context: Context,
-        conferenceMap: LocalConferenceMap,
-    ): Notification? {
+    private fun buildChatSummaryNotification(context: Context, conferenceMap: LocalConferenceMap): Notification? {
         val filteredConferenceMap = conferenceMap.filter { (_, messages) -> messages.isNotEmpty() }
 
         if (filteredConferenceMap.isEmpty()) {
@@ -126,31 +120,28 @@ object MessengerNotifications {
             .build()
     }
 
-    private fun buildSummaryStyle(
-        title: String,
-        content: String,
-        filteredConferenceMap: LocalConferenceMap,
-    ) = NotificationCompat
-        .InboxStyle()
-        .setBigContentTitle(title)
-        .setSummaryText(content)
-        .also {
-            filteredConferenceMap.forEach { (conference, messages) ->
-                messages.firstOrNull()?.also { message ->
-                    val sender =
-                        when {
-                            conference.isGroup -> "${conference.topic}: ${message.username} "
-                            else -> "${conference.topic} "
-                        }
+    private fun buildSummaryStyle(title: String, content: String, filteredConferenceMap: LocalConferenceMap) =
+        NotificationCompat
+            .InboxStyle()
+            .setBigContentTitle(title)
+            .setSummaryText(content)
+            .also {
+                filteredConferenceMap.forEach { (conference, messages) ->
+                    messages.firstOrNull()?.also { message ->
+                        val sender =
+                            when {
+                                conference.isGroup -> "${conference.topic}: ${message.username} "
+                                else -> "${conference.topic} "
+                            }
 
-                    it.addLine(
-                        SpannableString(sender + message.message).apply {
-                            this[0..sender.length] = StyleSpan(Typeface.BOLD)
-                        },
-                    )
+                        it.addLine(
+                            SpannableString(sender + message.message).apply {
+                                this[0..sender.length] = StyleSpan(Typeface.BOLD)
+                            },
+                        )
+                    }
                 }
             }
-        }
 
     private fun buildIndividualChatNotification(
         context: Context,
@@ -221,10 +212,7 @@ object MessengerNotifications {
             ).build()
     }
 
-    private fun buildConferenceIcon(
-        context: Context,
-        conference: LocalConference,
-    ) = when {
+    private fun buildConferenceIcon(context: Context, conference: LocalConference) = when {
         conference.image.isNotBlank() -> Utils.getCircleBitmapFromUrl(context, ProxerUrls.userImage(conference.image))
         else -> buildGenericIcon(context, conference.isGroup)
     }
@@ -276,10 +264,7 @@ object MessengerNotifications {
             }
     }
 
-    private fun buildGenericIcon(
-        context: Context,
-        isGroup: Boolean,
-    ) = IconicsDrawable(context)
+    private fun buildGenericIcon(context: Context, isGroup: Boolean) = IconicsDrawable(context)
         .apply {
             icon =
                 when (isGroup) {

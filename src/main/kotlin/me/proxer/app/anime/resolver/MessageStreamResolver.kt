@@ -11,9 +11,8 @@ object MessageStreamResolver : StreamResolver() {
     override val name = "Nachricht"
     override val resolveEarly = true
 
-    override fun resolve(id: String): Single<StreamResolutionResult> =
-        api.anime
-            .link(id)
-            .buildSingle()
-            .map { StreamResolutionResult.Message(it.trim().parseAsHtml().trim()) }
+    override fun resolve(id: String): Single<StreamResolutionResult> = api.anime
+        .link(id)
+        .buildSingle()
+        .map { StreamResolutionResult.Message(it.trim().parseAsHtml().trim()) }
 }

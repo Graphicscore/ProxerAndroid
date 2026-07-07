@@ -13,21 +13,17 @@ class MessengerReportViewModel : ReportViewModel() {
     private val messengerDao by safeInject<MessengerDao>()
     private val messengerDatabase by safeInject<MessengerDatabase>()
 
-    override fun reportSingle(
-        id: String,
-        message: String,
-    ): Single<Unit> =
-        api.messenger
-            .report(id, message)
-            .buildSingle()
-            .map {
-                messengerDatabase.runInTransaction {
-                    val conference = messengerDao.getConference(id.toLong())
+    override fun reportSingle(id: String, message: String): Single<Unit> = api.messenger
+        .report(id, message)
+        .buildSingle()
+        .map {
+            messengerDatabase.runInTransaction {
+                val conference = messengerDao.getConference(id.toLong())
 
-                    if (!conference.isGroup) {
-                        messengerDao.deleteMessagesByConferenceId(id)
-                        messengerDao.deleteConferenceById(id)
-                    }
+                if (!conference.isGroup) {
+                    messengerDao.deleteMessagesByConferenceId(id)
+                    messengerDao.deleteConferenceById(id)
                 }
             }
+        }
 }

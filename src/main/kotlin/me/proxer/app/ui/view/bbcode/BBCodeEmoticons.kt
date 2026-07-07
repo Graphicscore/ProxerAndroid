@@ -74,10 +74,7 @@ object BBCodeEmoticons {
 
     private val emoticonRegex = Regex(emoticons.joinToString(separator = "|") { quote(it.pattern) })
 
-    fun replaceWithGifs(
-        view: BetterLinkGifAwareEmojiTextView,
-        glide: RequestManager,
-    ) {
+    fun replaceWithGifs(view: BetterLinkGifAwareEmojiTextView, glide: RequestManager) {
         val text = view.text.toSpannableStringBuilder()
         val foundEmoticons = emoticonRegex.findAll(text).toList()
 
@@ -93,10 +90,7 @@ object BBCodeEmoticons {
         }
     }
 
-    private data class BBCodeEmoticon(
-        val pattern: String,
-        val id: Int,
-    )
+    private data class BBCodeEmoticon(val pattern: String, val id: Int)
 
     private class GifGlideTarget(
         view: TextView,
@@ -106,10 +100,7 @@ object BBCodeEmoticons {
     ) : OriginalSizeGlideTarget<GifDrawable>() {
         private var view: TextView? = view
 
-        override fun onResourceReady(
-            resource: GifDrawable,
-            transition: Transition<in GifDrawable>?,
-        ) {
+        override fun onResourceReady(resource: GifDrawable, transition: Transition<in GifDrawable>?) {
             view?.also { safeView ->
                 resource.callback = safeView
 

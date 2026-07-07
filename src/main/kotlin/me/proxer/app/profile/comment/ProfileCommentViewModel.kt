@@ -19,11 +19,8 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class ProfileCommentViewModel(
-    private val userId: String?,
-    private val username: String?,
-    category: Category?,
-) : PagedViewModel<ParsedUserComment>() {
+class ProfileCommentViewModel(private val userId: String?, private val username: String?, category: Category?) :
+    PagedViewModel<ParsedUserComment>() {
     override val itemsOnPage = 10
 
     override val dataSingle: Single<List<ParsedUserComment>>

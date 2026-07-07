@@ -22,10 +22,7 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class MediaControlView(
-    context: Context,
-    attrs: AttributeSet?,
-) : FrameLayout(context, attrs) {
+class MediaControlView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
     val uploaderClickSubject: PublishSubject<Uploader> = PublishSubject.create()
     val translatorGroupClickSubject: PublishSubject<SimpleTranslatorGroup> = PublishSubject.create()
     val episodeSwitchSubject: PublishSubject<Int> = PublishSubject.create()
@@ -166,20 +163,11 @@ class MediaControlView(
             }.connect()
     }
 
-    data class Uploader(
-        val id: String,
-        val name: String,
-    )
+    data class Uploader(val id: String, val name: String)
 
-    data class SimpleTranslatorGroup(
-        val id: String,
-        val name: String,
-    )
+    data class SimpleTranslatorGroup(val id: String, val name: String)
 
-    data class SimpleEpisodeInfo(
-        val amount: Int,
-        val current: Int,
-    )
+    data class SimpleEpisodeInfo(val amount: Int, val current: Int)
 
     interface TextResourceResolver {
         fun next(): String

@@ -24,11 +24,7 @@ object WikiPrototype : AutoClosingPrototype {
 
     private val api by safeInject<ProxerApi>()
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val link =
             children
                 .firstOrNull()

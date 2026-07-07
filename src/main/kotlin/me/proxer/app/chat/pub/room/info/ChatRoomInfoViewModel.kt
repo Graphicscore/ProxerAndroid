@@ -14,9 +14,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class ChatRoomInfoViewModel(
-    private val chatRoomId: String,
-) : BaseContentViewModel<List<ChatRoomUser>>() {
+class ChatRoomInfoViewModel(private val chatRoomId: String) : BaseContentViewModel<List<ChatRoomUser>>() {
     override val endpoint: Endpoint<List<ChatRoomUser>>
         get() = api.chat.roomUsers(chatRoomId)
 

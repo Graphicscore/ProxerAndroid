@@ -12,15 +12,13 @@ import me.proxer.app.base.BaseDialog
  */
 class AgeConfirmationDialog : BaseDialog() {
     companion object {
-        fun show(activity: AppCompatActivity) =
-            AgeConfirmationDialog()
-                .show(activity.supportFragmentManager, "age_confirmation_dialog")
+        fun show(activity: AppCompatActivity) = AgeConfirmationDialog()
+            .show(activity.supportFragmentManager, "age_confirmation_dialog")
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        MaterialDialog(requireContext())
-            .message(R.string.dialog_age_confirmation_content)
-            .positiveButton(R.string.dialog_age_confirmation_positive) {
-                preferenceHelper.isAgeRestrictedMediaAllowed = true
-            }.negativeButton(R.string.cancel)
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
+        .message(R.string.dialog_age_confirmation_content)
+        .positiveButton(R.string.dialog_age_confirmation_positive) {
+            preferenceHelper.isAgeRestrictedMediaAllowed = true
+        }.negativeButton(R.string.cancel)
 }

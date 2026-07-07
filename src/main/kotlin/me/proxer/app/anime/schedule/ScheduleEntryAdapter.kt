@@ -71,15 +71,10 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_entry, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_schedule_entry, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
 
         cachedViewHolders += holder
@@ -123,9 +118,7 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val image by bindView<ImageView>(R.id.image)
         internal val title by bindView<TextView>(R.id.title)
@@ -261,9 +254,7 @@ class ScheduleEntryAdapter : BaseAdapter<CalendarEntry, ViewHolder>() {
             }
         }
 
-        private inner class AiringInfoUpdateConsumer(
-            private val item: CalendarEntry,
-        ) : Consumer<Long> {
+        private inner class AiringInfoUpdateConsumer(private val item: CalendarEntry) : Consumer<Long> {
             override fun accept(t: Long?) {
                 val now = LocalDateTime.now()
 

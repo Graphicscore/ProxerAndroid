@@ -70,11 +70,10 @@ abstract class ImageTabsActivity : DrawerActivity() {
         super.onDestroy()
     }
 
-    override fun onBackPressed() =
-        when (isHeaderImageVisible && headerImage.drawable != null) {
-            true -> super.onBackPressed()
-            false -> finish()
-        }
+    override fun onBackPressed() = when (isHeaderImageVisible && headerImage.drawable != null) {
+        true -> super.onBackPressed()
+        false -> finish()
+    }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
@@ -93,19 +92,18 @@ abstract class ImageTabsActivity : DrawerActivity() {
         appbar.setExpanded(false)
     }
 
-    fun headerHeightChanges(): Observable<Float> =
-        appbar
-            .offsetChanges()
-            .map { verticalOffset ->
-                val overallHeight = collapsingToolbar.height
-                val toolbarHeight = toolbar.height
-                val toolbarTranslation = IntArray(2).apply { toolbar.getLocationOnScreen(this) }[1]
-                val tabLayoutHeight = tabs.height
+    fun headerHeightChanges(): Observable<Float> = appbar
+        .offsetChanges()
+        .map { verticalOffset ->
+            val overallHeight = collapsingToolbar.height
+            val toolbarHeight = toolbar.height
+            val toolbarTranslation = IntArray(2).apply { toolbar.getLocationOnScreen(this) }[1]
+            val tabLayoutHeight = tabs.height
 
-                val collapsedHeight = overallHeight - toolbarHeight - toolbarTranslation - tabLayoutHeight
+            val collapsedHeight = overallHeight - toolbarHeight - toolbarTranslation - tabLayoutHeight
 
-                (-collapsedHeight - verticalOffset).toFloat()
-            }
+            (-collapsedHeight - verticalOffset).toFloat()
+        }
 
     protected open fun setupImage() {
         ViewCompat.setTransitionName(headerImage, ActivityUtils.getTransitionName(this))

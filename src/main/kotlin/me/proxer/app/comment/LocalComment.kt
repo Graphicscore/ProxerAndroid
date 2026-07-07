@@ -42,10 +42,7 @@ data class LocalComment(
 
     val parsedContent = content.toSimpleBBTree()
 
-    override fun writeToParcel(
-        parcel: Parcel,
-        flags: Int,
-    ) {
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
         parcel.writeString(entryId)
         parcel.writeString(ProxerUtils.getSafeApiEnumName(mediaProgress))

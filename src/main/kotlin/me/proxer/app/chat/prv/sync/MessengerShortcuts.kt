@@ -97,10 +97,7 @@ object MessengerShortcuts {
         }
     }
 
-    private fun getConferenceIcon(
-        context: Context,
-        conference: LocalConference,
-    ) = when {
+    private fun getConferenceIcon(context: Context, conference: LocalConference) = when {
         conference.image.isNotBlank() -> {
             Utils.getCircleBitmapFromUrl(
                 context,

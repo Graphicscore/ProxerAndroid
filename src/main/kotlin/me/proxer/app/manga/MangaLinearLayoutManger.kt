@@ -8,10 +8,8 @@ import me.proxer.app.util.DeviceUtils
 /**
  * @author Ruben Gees
  */
-class MangaLinearLayoutManger(
-    context: Context,
-    readerOrientation: MangaReaderOrientation,
-) : LinearLayoutManager(
+class MangaLinearLayoutManger(context: Context, readerOrientation: MangaReaderOrientation) :
+    LinearLayoutManager(
         context,
         if (readerOrientation == MangaReaderOrientation.VERTICAL) VERTICAL else HORIZONTAL,
         readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT,

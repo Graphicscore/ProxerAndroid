@@ -22,21 +22,14 @@ import me.proxer.app.util.extension.setIconicsImage
  * @author Ruben Gees
  */
 class ServerStatusAdapter : BaseAdapter<ServerStatus, ViewHolder>() {
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_server_status, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_server_status, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
-    class ViewHolder(
-        itemView: View,
-    ) : RecyclerView.ViewHolder(itemView) {
+    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         internal val icon: ImageView by bindView(R.id.icon)
         internal val name: TextView by bindView(R.id.name)
         internal val status: ImageView by bindView(R.id.status)

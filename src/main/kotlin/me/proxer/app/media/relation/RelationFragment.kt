@@ -27,10 +27,9 @@ import kotlin.properties.Delegates
  */
 class RelationFragment : BaseContentFragment<List<Relation>>(R.layout.fragment_relation) {
     companion object {
-        fun newInstance() =
-            RelationFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = RelationFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<RelationViewModel> { parametersOf(id) }
@@ -67,10 +66,7 @@ class RelationFragment : BaseContentFragment<List<Relation>>(R.layout.fragment_r
         super.onDestroyView()
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

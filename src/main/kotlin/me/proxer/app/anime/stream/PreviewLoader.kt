@@ -20,17 +20,10 @@ import me.proxer.app.MainApplication.Companion.USER_AGENT
  * @author Ruben Gees
  */
 object PreviewLoader {
-    fun loadFrames(
-        requests: Observable<Long>,
-        sizeCallback: () -> Size,
-        metaData: PreviewMetaData,
-    ): Flowable<Bitmap> {
+    fun loadFrames(requests: Observable<Long>, sizeCallback: () -> Size, metaData: PreviewMetaData): Flowable<Bitmap> {
         val mediaMetadataRetriever = MediaMetadataRetriever()
 
-        fun getFrameAtTime(
-            timeUs: Long,
-            size: Size,
-        ): Bitmap? =
+        fun getFrameAtTime(timeUs: Long, size: Size): Bitmap? =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 mediaMetadataRetriever.getScaledFrameAtTime(timeUs, 0, size.width, size.height)
             } else {
@@ -58,23 +51,18 @@ object PreviewLoader {
             .doOnTerminate { mediaMetadataRetriever.release() }
     }
 
-    data class PreviewMetaData(
-        val uri: Uri,
-        val referer: String?,
-        val isProxerStream: Boolean,
-    )
+    data class PreviewMetaData(val uri: Uri, val referer: String?, val isProxerStream: Boolean)
 
-    private fun makeHeaders(metaData: PreviewMetaData) =
-        emptyMap<String, String>()
-            .let {
-                when {
-                    metaData.referer != null -> it.plus("Referer" to metaData.referer)
-                    else -> it
-                }
-            }.let {
-                when {
-                    metaData.isProxerStream -> it.plus("User-Agent" to USER_AGENT)
-                    else -> it.plus("User-Agent" to GENERIC_USER_AGENT)
-                }
+    private fun makeHeaders(metaData: PreviewMetaData) = emptyMap<String, String>()
+        .let {
+            when {
+                metaData.referer != null -> it.plus("Referer" to metaData.referer)
+                else -> it
             }
+        }.let {
+            when {
+                metaData.isProxerStream -> it.plus("User-Agent" to USER_AGENT)
+                else -> it.plus("User-Agent" to GENERIC_USER_AGENT)
+            }
+        }
 }

@@ -27,10 +27,9 @@ import kotlin.properties.Delegates
  */
 class RecommendationFragment : BaseContentFragment<List<Recommendation>>(R.layout.fragment_recommendation) {
     companion object {
-        fun newInstance() =
-            RecommendationFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = RecommendationFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<RecommendationViewModel> { parametersOf(id) }
@@ -73,10 +72,7 @@ class RecommendationFragment : BaseContentFragment<List<Recommendation>>(R.layou
         super.onDestroyView()
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

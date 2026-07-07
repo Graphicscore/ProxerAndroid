@@ -15,10 +15,7 @@ object FacebookPrototype : TextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *facebook_link( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *facebook_link *", REGEX_OPTIONS)
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val url = text.trim().toString()
 
         return when (val parsedUrl = url.toPrefixedUrlOrNull()) {

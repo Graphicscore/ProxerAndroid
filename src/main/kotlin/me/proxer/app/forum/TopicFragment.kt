@@ -30,10 +30,9 @@ import kotlin.properties.Delegates
  */
 class TopicFragment : PagedContentFragment<ParsedPost>() {
     companion object {
-        fun newInstance() =
-            TopicFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = TopicFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val isSwipeToRefreshEnabled = false
@@ -74,18 +73,12 @@ class TopicFragment : PagedContentFragment<ParsedPost>() {
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

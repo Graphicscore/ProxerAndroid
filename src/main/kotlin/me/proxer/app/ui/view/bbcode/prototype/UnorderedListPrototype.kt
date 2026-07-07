@@ -20,11 +20,7 @@ object UnorderedListPrototype : BBPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *ul( .*?)?", BBPrototype.REGEX_OPTIONS)
     override val endRegex = Regex("/ *ul *", BBPrototype.REGEX_OPTIONS)
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = children.filter { it.prototype == ListItemPrototype }.flatMap { it.makeViews(parent, args) }
 
         return listOf(

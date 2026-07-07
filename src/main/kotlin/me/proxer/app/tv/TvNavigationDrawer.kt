@@ -45,9 +45,9 @@ fun NavigationDrawerScope.TvNavigationDrawerContent(
 ) {
     Column(
         modifier =
-            Modifier
-                .fillMaxHeight()
-                .padding(vertical = 8.dp),
+        Modifier
+            .fillMaxHeight()
+            .padding(vertical = 8.dp),
     ) {
         // Profile header as a NavigationDrawerItem
         if (user != null) {

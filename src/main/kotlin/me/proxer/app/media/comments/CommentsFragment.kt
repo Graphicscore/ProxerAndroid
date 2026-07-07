@@ -51,10 +51,9 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
     companion object {
         private const val SORT_CRITERIA_ARGUMENT = "sort_criteria"
 
-        fun newInstance() =
-            CommentsFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = CommentsFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val emptyDataMessage = R.string.error_no_data_comments
@@ -138,18 +137,12 @@ class CommentsFragment : PagedContentFragment<ParsedComment>(R.layout.fragment_c
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

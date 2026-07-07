@@ -31,10 +31,7 @@ class ParcelableStringBooleanMap : Parcelable {
         }
     }
 
-    override fun writeToParcel(
-        dest: Parcel,
-        flags: Int,
-    ) {
+    override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeInt(size)
 
         entries.forEach {
@@ -49,10 +46,7 @@ class ParcelableStringBooleanMap : Parcelable {
 
     fun containsKey(key: String) = internalMap.containsKey(key)
 
-    fun put(
-        key: String,
-        value: Boolean,
-    ) = internalMap.put(key, value)
+    fun put(key: String, value: Boolean) = internalMap.put(key, value)
 
     fun remove(key: String) = internalMap.remove(key)
 

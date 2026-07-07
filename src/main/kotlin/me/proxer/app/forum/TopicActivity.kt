@@ -33,12 +33,7 @@ class TopicActivity : DrawerActivity() {
         private const val TOUZAI_PATH = "/touzai"
         private const val TOUZAI_CATEGORY = "310"
 
-        fun navigateTo(
-            context: Activity,
-            id: String,
-            categoryId: String,
-            topic: String? = null,
-        ) {
+        fun navigateTo(context: Activity, id: String, categoryId: String, topic: String? = null) {
             context.startActivity<TopicActivity>(
                 ID_EXTRA to id,
                 CATEGORY_ID_EXTRA to categoryId,
@@ -46,12 +41,7 @@ class TopicActivity : DrawerActivity() {
             )
         }
 
-        fun getIntent(
-            context: Context,
-            id: String,
-            categoryId: String,
-            topic: String? = null,
-        ): Intent =
+        fun getIntent(context: Context, id: String, categoryId: String, topic: String? = null): Intent =
             context.intentFor<TopicActivity>(
                 ID_EXTRA to id,
                 CATEGORY_ID_EXTRA to categoryId,

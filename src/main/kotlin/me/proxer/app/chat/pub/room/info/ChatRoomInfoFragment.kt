@@ -22,10 +22,9 @@ import kotlin.properties.Delegates
  */
 class ChatRoomInfoFragment : BaseContentFragment<List<ChatRoomUser>>(R.layout.fragment_chat_room_info) {
     companion object {
-        fun newInstance() =
-            ChatRoomInfoFragment().apply {
-                this.arguments = bundleOf()
-            }
+        fun newInstance() = ChatRoomInfoFragment().apply {
+            this.arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<ChatRoomInfoViewModel> { parametersOf(chatRoomId) }
@@ -62,10 +61,7 @@ class ChatRoomInfoFragment : BaseContentFragment<List<ChatRoomUser>>(R.layout.fr
             .subscribe { showPage(it) }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

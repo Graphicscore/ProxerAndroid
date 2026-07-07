@@ -16,10 +16,7 @@ class MessengerNotificationReadReceiver : BroadcastReceiver() {
     companion object {
         private const val CONFERENCE_ID_EXTRA = "conference_id"
 
-        fun getPendingIntent(
-            context: Context,
-            conferenceId: Long,
-        ): PendingIntent {
+        fun getPendingIntent(context: Context, conferenceId: Long): PendingIntent {
             val intent =
                 Intent(context, MessengerNotificationReadReceiver::class.java)
                     .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
@@ -31,10 +28,7 @@ class MessengerNotificationReadReceiver : BroadcastReceiver() {
 
     private val messengerDao by safeInject<MessengerDao>()
 
-    override fun onReceive(
-        context: Context,
-        intent: Intent,
-    ) {
+    override fun onReceive(context: Context, intent: Intent) {
         val conferenceId = intent.getLongExtra(CONFERENCE_ID_EXTRA, -1L)
 
         Completable

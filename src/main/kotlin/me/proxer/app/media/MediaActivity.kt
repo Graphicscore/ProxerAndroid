@@ -63,12 +63,7 @@ class MediaActivity : ImageTabsActivity() {
             }
         }
 
-        fun getIntent(
-            context: Context,
-            id: String,
-            name: String? = null,
-            category: Category? = null,
-        ): Intent =
+        fun getIntent(context: Context, id: String, name: String? = null, category: Category? = null): Intent =
             context.intentFor<MediaActivity>(
                 ID_EXTRA to id,
                 NAME_EXTRA to name,
@@ -176,71 +171,64 @@ class MediaActivity : ImageTabsActivity() {
     }
 
     private inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
-        override fun getItemCount(): Int =
-            when {
-                viewModel.data.value != null || preferenceHelper.isAgeRestrictedMediaAllowed -> {
-                    when (category) {
-                        Category.ANIME, Category.MANGA -> 6
-                        Category.NOVEL -> 5
-                        null -> 1
-                    }
-                }
-
-                else -> {
-                    1
+        override fun getItemCount(): Int = when {
+            viewModel.data.value != null || preferenceHelper.isAgeRestrictedMediaAllowed -> {
+                when (category) {
+                    Category.ANIME, Category.MANGA -> 6
+                    Category.NOVEL -> 5
+                    null -> 1
                 }
             }
 
-        override fun createFragment(position: Int) =
-            when (category) {
-                Category.ANIME, Category.MANGA -> {
-                    when (position) {
-                        0 -> MediaInfoFragment.newInstance()
-                        1 -> CommentsFragment.newInstance()
-                        2 -> EpisodeFragment.newInstance()
-                        3 -> RelationFragment.newInstance()
-                        4 -> RecommendationFragment.newInstance()
-                        5 -> DiscussionFragment.newInstance()
-                        else -> error("Unknown index passed: $position")
-                    }
-                }
+            else -> {
+                1
+            }
+        }
 
-                Category.NOVEL -> {
-                    when (position) {
-                        0 -> MediaInfoFragment.newInstance()
-                        1 -> CommentsFragment.newInstance()
-                        2 -> RelationFragment.newInstance()
-                        3 -> RecommendationFragment.newInstance()
-                        4 -> DiscussionFragment.newInstance()
-                        else -> error("Unknown index passed: $position")
-                    }
-                }
-
-                null -> {
-                    MediaInfoFragment.newInstance()
+        override fun createFragment(position: Int) = when (category) {
+            Category.ANIME, Category.MANGA -> {
+                when (position) {
+                    0 -> MediaInfoFragment.newInstance()
+                    1 -> CommentsFragment.newInstance()
+                    2 -> EpisodeFragment.newInstance()
+                    3 -> RelationFragment.newInstance()
+                    4 -> RecommendationFragment.newInstance()
+                    5 -> DiscussionFragment.newInstance()
+                    else -> error("Unknown index passed: $position")
                 }
             }
 
-        override fun getItemId(position: Int) =
-            when (category) {
-                Category.ANIME, Category.MANGA -> position.toLong()
-                Category.NOVEL -> position.toLong()
-                null -> -1L
+            Category.NOVEL -> {
+                when (position) {
+                    0 -> MediaInfoFragment.newInstance()
+                    1 -> CommentsFragment.newInstance()
+                    2 -> RelationFragment.newInstance()
+                    3 -> RecommendationFragment.newInstance()
+                    4 -> DiscussionFragment.newInstance()
+                    else -> error("Unknown index passed: $position")
+                }
             }
 
-        override fun containsItem(itemId: Long) =
-            when (category) {
-                Category.ANIME, Category.MANGA -> itemId in 0..5
-                Category.NOVEL -> itemId in 0..4
-                null -> itemId == -1L
+            null -> {
+                MediaInfoFragment.newInstance()
             }
+        }
+
+        override fun getItemId(position: Int) = when (category) {
+            Category.ANIME, Category.MANGA -> position.toLong()
+            Category.NOVEL -> position.toLong()
+            null -> -1L
+        }
+
+        override fun containsItem(itemId: Long) = when (category) {
+            Category.ANIME, Category.MANGA -> itemId in 0..5
+            Category.NOVEL -> itemId in 0..4
+            null -> itemId == -1L
+        }
     }
 
     private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
-        override fun onConfigureTab(
-            tab: TabLayout.Tab,
-            position: Int,
-        ) {
+        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
             tab.text =
                 when (category) {
                     Category.ANIME, Category.MANGA -> {

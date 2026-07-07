@@ -49,14 +49,13 @@ sealed class StreamResolutionResult {
             language: AnimeLanguage? = null,
             coverUri: Uri? = null,
             forceInternal: Boolean = false,
-        ): Intent =
-            intent
-                .apply { if (forceInternal) component = ComponentName(context, StreamActivity::class.java) }
-                .apply { if (id != null) putExtra(ID_EXTRA, id) }
-                .apply { if (name != null) putExtra(NAME_EXTRA, name) }
-                .apply { if (episode != null) putExtra(EPISODE_EXTRA, episode) }
-                .apply { if (language != null) putExtra(LANGUAGE_EXTRA, language) }
-                .apply { if (coverUri != null) putExtra(COVER_EXTRA, coverUri) }
+        ): Intent = intent
+            .apply { if (forceInternal) component = ComponentName(context, StreamActivity::class.java) }
+            .apply { if (id != null) putExtra(ID_EXTRA, id) }
+            .apply { if (name != null) putExtra(NAME_EXTRA, name) }
+            .apply { if (episode != null) putExtra(EPISODE_EXTRA, episode) }
+            .apply { if (language != null) putExtra(LANGUAGE_EXTRA, language) }
+            .apply { if (coverUri != null) putExtra(COVER_EXTRA, coverUri) }
 
         fun play(
             context: Context,
@@ -71,9 +70,7 @@ sealed class StreamResolutionResult {
         }
     }
 
-    class Link(
-        private val url: HttpUrl,
-    ) : StreamResolutionResult() {
+    class Link(private val url: HttpUrl) : StreamResolutionResult() {
         fun show(customTabsAware: CustomTabsAware) {
             customTabsAware.showPage(url, skipCheck = true)
         }
@@ -81,9 +78,7 @@ sealed class StreamResolutionResult {
         fun makeIntent(): Intent = Intent(Intent.ACTION_VIEW, url.androidUri())
     }
 
-    class App(
-        uri: Uri,
-    ) : StreamResolutionResult() {
+    class App(uri: Uri) : StreamResolutionResult() {
         private val intent =
             Intent(Intent.ACTION_VIEW)
                 .setData(uri)
@@ -94,7 +89,5 @@ sealed class StreamResolutionResult {
         }
     }
 
-    class Message(
-        val message: CharSequence,
-    ) : StreamResolutionResult()
+    class Message(val message: CharSequence) : StreamResolutionResult()
 }

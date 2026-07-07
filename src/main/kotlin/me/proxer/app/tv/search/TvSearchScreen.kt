@@ -1,6 +1,5 @@
 package me.proxer.app.tv.search
 
-import android.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +19,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -88,15 +86,15 @@ fun TvSearchScreenContent(
 
     Column(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background),
+        Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
     ) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -108,11 +106,11 @@ fun TvSearchScreenContent(
                 modifier = Modifier.weight(1f),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 colors =
-                    OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                        cursorColor = MaterialTheme.colorScheme.primary,
-                    ),
+                OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                ),
             )
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.size(32.dp))
@@ -139,9 +137,9 @@ fun TvSearchScreenContent(
                     if (isLoading && entries?.isNotEmpty() == true) {
                         Box(
                             modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             contentAlignment = Alignment.Center,
                         ) {
                             CircularProgressIndicator(modifier = Modifier.size(32.dp))
@@ -197,16 +195,13 @@ fun TvSearchScreen(onMediaClick: (id: String, name: String) -> Unit) {
 }
 
 @Composable
-private fun TvSearchResultCard(
-    entry: MediaListEntry,
-    onClick: () -> Unit,
-) {
+private fun TvSearchResultCard(entry: MediaListEntry, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier =
-            Modifier
-                .width(180.dp)
-                .height(270.dp),
+        Modifier
+            .width(180.dp)
+            .height(270.dp),
     ) {
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             AsyncImage(
@@ -214,9 +209,9 @@ private fun TvSearchResultCard(
                 contentDescription = entry.name,
                 contentScale = ContentScale.Crop,
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
             Text(
                 text = entry.name,
@@ -225,9 +220,9 @@ private fun TvSearchResultCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier =
-                    Modifier
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(8.dp),
+                Modifier
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(8.dp),
             )
         }
     }

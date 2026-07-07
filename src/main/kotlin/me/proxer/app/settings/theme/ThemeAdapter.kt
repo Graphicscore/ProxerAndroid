@@ -16,9 +16,7 @@ import me.proxer.app.util.extension.mapBindingAdapterPosition
 /**
  * @author Ruben Gees
  */
-class ThemeAdapter(
-    currentThemeContainer: ThemeContainer,
-) : BaseAdapter<Theme, ViewHolder>() {
+class ThemeAdapter(currentThemeContainer: ThemeContainer) : BaseAdapter<Theme, ViewHolder>() {
     val selected: Theme
         get() = data[selectedIndex]
 
@@ -31,23 +29,16 @@ class ThemeAdapter(
         selectedIndex = data.indexOfFirst { it == currentThemeContainer.theme }
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_theme, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_theme, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
     override fun swapDataAndNotifyWithDiffing(newData: List<Theme>): Unit = throw UnsupportedOperationException()
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val themeButton by bindView<ImageButton>(R.id.themeButton)
 
         fun bind(item: Theme) {

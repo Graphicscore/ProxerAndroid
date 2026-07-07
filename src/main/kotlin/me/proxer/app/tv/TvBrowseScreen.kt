@@ -83,9 +83,9 @@ fun TvBrowseScreenContent(
     Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
         Row(
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -127,9 +127,9 @@ fun TvBrowseScreenContent(
                         if (isLoading && entries?.isNotEmpty() == true) {
                             Box(
                                 modifier =
-                                    Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 CircularProgressIndicator()
@@ -143,10 +143,7 @@ fun TvBrowseScreenContent(
 }
 
 @Composable
-fun TvBrowseScreen(
-    onMediaClick: (String, String) -> Unit,
-    onSearchClick: () -> Unit,
-) {
+fun TvBrowseScreen(onMediaClick: (String, String) -> Unit, onSearchClick: () -> Unit) {
     val viewModel: MediaListViewModel =
         koinViewModel {
             parametersOf(
@@ -187,16 +184,13 @@ fun TvBrowseScreen(
 }
 
 @Composable
-fun TvMediaCard(
-    entry: MediaListEntry,
-    onClick: () -> Unit,
-) {
+fun TvMediaCard(entry: MediaListEntry, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier =
-            Modifier
-                .width(180.dp)
-                .height(270.dp),
+        Modifier
+            .width(180.dp)
+            .height(270.dp),
     ) {
         Column {
             AsyncImage(
@@ -204,16 +198,16 @@ fun TvMediaCard(
                 contentDescription = entry.name,
                 contentScale = ContentScale.Crop,
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
             )
             Box(
                 modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .padding(8.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(8.dp),
             ) {
                 Text(
                     text = entry.name,

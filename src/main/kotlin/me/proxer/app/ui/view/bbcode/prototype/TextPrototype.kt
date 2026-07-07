@@ -1,6 +1,5 @@
 package me.proxer.app.ui.view.bbcode.prototype
 
-import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.os.Build
@@ -50,23 +49,16 @@ object TextPrototype : BBPrototype, ContentPrototype {
 
     override val endRegex = Regex("x^")
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree = BBTree(this, parent, args = BBArgs(text = code.toSpannableStringBuilder().linkify()))
+    override fun construct(code: String, parent: BBTree): BBTree =
+        BBTree(this, parent, args = BBArgs(text = code.toSpannableStringBuilder().linkify()))
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> = listOf(makeView(parent, args))
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> =
+        listOf(makeView(parent, args))
 
     override fun isBlank(args: BBArgs): Boolean = args.text?.isBlank() != false
 
-    fun makeView(
-        parent: BBCodeView,
-        args: BBArgs,
-    ): TextView = applyOnView(parent, BetterLinkGifAwareEmojiTextView(parent.context), args)
+    fun makeView(parent: BBCodeView, args: BBArgs): TextView =
+        applyOnView(parent, BetterLinkGifAwareEmojiTextView(parent.context), args)
 
     fun applyOnView(
         parent: BBCodeView,
@@ -88,10 +80,7 @@ object TextPrototype : BBPrototype, ContentPrototype {
         return view
     }
 
-    private fun applyStyle(
-        args: BBArgs,
-        view: BetterLinkGifAwareEmojiTextView,
-    ) {
+    private fun applyStyle(args: BBArgs, view: BetterLinkGifAwareEmojiTextView) {
         (args[TEXT_APPEARANCE_ARGUMENT] as? Int).let {
             if (it == null) {
                 TextViewCompat.setTextAppearance(view, R.style.TextAppearance_AppCompat_Small)
@@ -104,10 +93,7 @@ object TextPrototype : BBPrototype, ContentPrototype {
         (args[TEXT_SIZE_ARGUMENT] as? Float)?.let { view.setTextSize(COMPLEX_UNIT_PX, it) }
     }
 
-    private fun setListeners(
-        parent: BBCodeView,
-        view: BetterLinkGifAwareEmojiTextView,
-    ) {
+    private fun setListeners(parent: BBCodeView, view: BetterLinkGifAwareEmojiTextView) {
         view
             .linkClicks(validLinkPredicate)
             .autoDisposable(ViewScopeProvider.from(parent))

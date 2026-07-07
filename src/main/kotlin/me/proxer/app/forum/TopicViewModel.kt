@@ -13,10 +13,7 @@ import me.proxer.app.util.extension.toTopicMetaData
 /**
  * @author Ruben Gees
  */
-class TopicViewModel(
-    private val id: String,
-    private val resources: Resources,
-) : PagedViewModel<ParsedPost>() {
+class TopicViewModel(private val id: String, private val resources: Resources) : PagedViewModel<ParsedPost>() {
     override val itemsOnPage = 10
 
     override val dataSingle: Single<List<ParsedPost>>

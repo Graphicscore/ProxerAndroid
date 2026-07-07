@@ -49,20 +49,13 @@ object ImagePrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *img *=? *\"?.*?\"?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *img *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val width = BBUtils.cutAttribute(code, widthAttributeRegex)?.toIntOrNull()
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(WIDTH_ARGUMENT to width)))
     }
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         val url = (childViews.firstOrNull() as? TextView)?.text.toString().trim()
@@ -100,52 +93,48 @@ object ImagePrototype : AutoClosingPrototype {
         )
     }
 
-    private fun loadImage(
-        glide: RequestManager,
-        view: ImageView,
-        url: HttpUrl?,
-        heightMap: MutableMap<String, Int>?,
-    ) = glide
-        .load(url.toString())
-        .centerInside()
-        .listener(
-            object : SimpleGlideRequestListener<Drawable>() {
-                override fun onResourceReady(
-                    resource: Drawable,
-                    model: Any,
-                    target: Target<Drawable>,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean,
-                ): Boolean {
-                    if (model is String) {
-                        heightMap?.put(model, resource.intrinsicHeight)
+    private fun loadImage(glide: RequestManager, view: ImageView, url: HttpUrl?, heightMap: MutableMap<String, Int>?) =
+        glide
+            .load(url.toString())
+            .centerInside()
+            .listener(
+                object : SimpleGlideRequestListener<Drawable>() {
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean,
+                    ): Boolean {
+                        if (model is String) {
+                            heightMap?.put(model, resource.intrinsicHeight)
+                        }
+
+                        if (target is ImageViewTarget && target.view.layoutParams.height <= 0) {
+                            findHost(target.view)?.heightChanges?.onNext(Unit)
+                        }
+
+                        return false
                     }
 
-                    if (target is ImageViewTarget && target.view.layoutParams.height <= 0) {
-                        findHost(target.view)?.heightChanges?.onNext(Unit)
+                    override fun onLoadFailed(
+                        error: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>,
+                        isFirstResource: Boolean,
+                    ): Boolean {
+                        view.setTag(R.id.error_tag, true)
+
+                        return false
                     }
-
-                    return false
-                }
-
-                override fun onLoadFailed(
-                    error: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>,
-                    isFirstResource: Boolean,
-                ): Boolean {
-                    view.setTag(R.id.error_tag, true)
-
-                    return false
-                }
-            },
-        ).error(
-            IconicsDrawable(view.context, CommunityMaterial.Icon3.cmd_refresh).apply {
-                colorInt = view.context.resolveColor(R.attr.colorIcon)
-                sizeDp = 32
-            },
-        ).logErrors()
-        .into(view)
+                },
+            ).error(
+                IconicsDrawable(view.context, CommunityMaterial.Icon3.cmd_refresh).apply {
+                    colorInt = view.context.resolveColor(R.attr.colorIcon)
+                    sizeDp = 32
+                },
+            ).logErrors()
+            .into(view)
 
     private fun findHost(view: View): BBCodeView? {
         var current = view.parent

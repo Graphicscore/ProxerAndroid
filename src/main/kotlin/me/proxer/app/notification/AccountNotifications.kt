@@ -25,10 +25,7 @@ object AccountNotifications {
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    fun showOrUpdate(
-        context: Context,
-        notifications: Collection<ProxerNotification>,
-    ) {
+    fun showOrUpdate(context: Context, notifications: Collection<ProxerNotification>) {
         when (val notification = buildNotification(context, notifications)) {
             null -> NotificationManagerCompat.from(context).cancel(ID)
             else -> NotificationManagerCompat.from(context).notify(ID, notification)
@@ -37,10 +34,7 @@ object AccountNotifications {
 
     fun cancel(context: Context) = NotificationManagerCompat.from(context).cancel(ID)
 
-    private fun buildNotification(
-        context: Context,
-        notifications: Collection<ProxerNotification>,
-    ): Notification? {
+    private fun buildNotification(context: Context, notifications: Collection<ProxerNotification>): Notification? {
         if (notifications.isEmpty()) {
             return null
         }

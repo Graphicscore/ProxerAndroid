@@ -51,10 +51,9 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
         private const val SEARCH_QUERY_ARGUMENT = "search_query"
         private const val INITIAL_MESSAGE_ARGUMENT = "initial_message"
 
-        fun newInstance(initialMessage: String? = null) =
-            ConferenceFragment().apply {
-                arguments = bundleOf(INITIAL_MESSAGE_ARGUMENT to initialMessage)
-            }
+        fun newInstance(initialMessage: String? = null) = ConferenceFragment().apply {
+            arguments = bundleOf(INITIAL_MESSAGE_ARGUMENT to initialMessage)
+        }
     }
 
     override val viewModel by viewModel<ConferenceViewModel> { parametersOf(searchQuery ?: "") }
@@ -78,27 +77,14 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
         object : RecyclerView.AdapterDataObserver() {
             override fun onChanged() = scrollToTopIfRequested()
 
-            override fun onItemRangeChanged(
-                positionStart: Int,
-                itemCount: Int,
-            ) = scrollToTopIfRequested()
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int) = scrollToTopIfRequested()
 
-            override fun onItemRangeChanged(
-                positionStart: Int,
-                itemCount: Int,
-                payload: Any?,
-            ) = scrollToTopIfRequested()
+            override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) =
+                scrollToTopIfRequested()
 
-            override fun onItemRangeRemoved(
-                positionStart: Int,
-                itemCount: Int,
-            ) = scrollToTopIfRequested()
+            override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) = scrollToTopIfRequested()
 
-            override fun onItemRangeMoved(
-                fromPosition: Int,
-                toPosition: Int,
-                itemCount: Int,
-            ) {
+            override fun onItemRangeMoved(fromPosition: Int, toPosition: Int, itemCount: Int) {
                 if (shouldScrollToTop) {
                     scrollToTopIfRequested()
                 } else if (recyclerView.isAtTop() && toPosition == 0) {
@@ -106,10 +92,7 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
                 }
             }
 
-            override fun onItemRangeInserted(
-                positionStart: Int,
-                itemCount: Int,
-            ) {
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
                 if (shouldScrollToTop) {
                     scrollToTopIfRequested()
                 } else if (recyclerView.isAtTop() && positionStart == 0) {
@@ -155,18 +138,12 @@ class ConferenceFragment : BaseContentFragment<List<ConferenceWithMessage>>(R.la
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     if (initialMessage == null) {
                         IconicsMenuInflaterUtil.inflate(
                             menuInflater,

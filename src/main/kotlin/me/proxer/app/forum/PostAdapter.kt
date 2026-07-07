@@ -40,15 +40,10 @@ class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
     private val heightMap = ConcurrentHashMap<String, Int>()
     private var layoutManager: LayoutManager? = null
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_post, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(data[position])
     }
 
@@ -68,9 +63,7 @@ class PostAdapter : BaseAdapter<ParsedPost, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val userContainer by bindView<ViewGroup>(R.id.userContainer)
         internal val image by bindView<ImageView>(R.id.image)
         internal val user by bindView<TextView>(R.id.user)

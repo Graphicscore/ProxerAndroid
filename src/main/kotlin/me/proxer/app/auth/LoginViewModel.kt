@@ -42,11 +42,7 @@ class LoginViewModel : ViewModel() {
         super.onCleared()
     }
 
-    fun login(
-        username: String,
-        password: String,
-        secretKey: String?,
-    ) {
+    fun login(username: String, password: String, secretKey: String?) {
         if (isLoading.value != true) {
             dataDisposable?.dispose()
             dataDisposable =

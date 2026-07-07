@@ -22,20 +22,13 @@ object SpoilerPrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *spoiler( *=\"?.+?\"?)?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *spoiler *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val title = BBUtils.cutAttribute(code, attributeRegex)
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(TITLE_ARGUMENT to title)))
     }
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
         val title = args[TITLE_ARGUMENT] as String?
         val shouldExpand = args[SPOILER_EXPAND_ARGUMENT] as Boolean? ?: false

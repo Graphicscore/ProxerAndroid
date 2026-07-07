@@ -76,10 +76,10 @@ fun TvLoginScreenContent(
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = if (isTwoFa) ImeAction.Next else ImeAction.Done,
-                    ),
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = if (isTwoFa) ImeAction.Next else ImeAction.Done,
+                ),
                 enabled = !isLoading,
             )
 

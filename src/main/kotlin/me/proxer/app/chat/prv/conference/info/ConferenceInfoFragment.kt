@@ -25,10 +25,9 @@ import kotlin.properties.Delegates
  */
 class ConferenceInfoFragment : BaseContentFragment<ConferenceInfo>(R.layout.fragment_conference_info) {
     companion object {
-        fun newInstance() =
-            ConferenceInfoFragment().apply {
-                this.arguments = bundleOf()
-            }
+        fun newInstance() = ConferenceInfoFragment().apply {
+            this.arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<ConferenceInfoViewModel> { parametersOf(id.toString()) }
@@ -66,10 +65,7 @@ class ConferenceInfoFragment : BaseContentFragment<ConferenceInfo>(R.layout.frag
             .subscribe { showPage(it) }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         adapter.glide = Glide.with(this)

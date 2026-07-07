@@ -233,76 +233,72 @@ object ErrorUtils {
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    fun getMessage(error: Throwable): Int = getMessage(error, storageHelper.isLoggedIn)
+    fun getMessage(error: Throwable): Int = when (val innermostError = getInnermostError(error)) {
+        is ProxerException -> {
+            getMessageForProxerException(innermostError)
+        }
 
-    internal fun getMessage(error: Throwable, isLoggedIn: Boolean): Int =
-        when (val innermostError = getInnermostError(error)) {
-            is ProxerException -> {
-                getMessageForProxerException(innermostError, isLoggedIn)
-            }
-
-            is HttpDataSource.InvalidResponseCodeException -> {
-                when (innermostError.responseCode) {
-                    404 -> R.string.error_video_deleted
-                    503 -> R.string.error_video_service_unavailable
-                    in 400 until 600 -> R.string.error_video_unknown
-                    else -> R.string.error_unknown
-                }
-            }
-
-            is SocketTimeoutException -> {
-                R.string.error_timeout
-            }
-
-            is SSLPeerUnverifiedException -> {
-                R.string.error_ssl
-            }
-
-            is NotConnectedException -> {
-                R.string.error_no_network
-            }
-
-            is IOException -> {
-                R.string.error_io
-            }
-
-            is NotLoggedInException -> {
-                R.string.error_login_required
-            }
-
-            is AgeConfirmationRequiredException -> {
-                R.string.error_age_confirmation_needed
-            }
-
-            is StreamResolutionException -> {
-                R.string.error_stream_resolution
-            }
-
-            is MangaNotAvailableException -> {
-                R.string.error_manga_not_available
-            }
-
-            is MangaLinkException -> {
-                R.string.error_manga_link
-            }
-
-            is CommentTooLongException -> {
-                R.string.error_comment_too_long
-            }
-
-            is CommentInvalidProgressException -> {
-                R.string.error_comment_invalid_progress
-            }
-
-            else -> {
-                R.string.error_unknown
+        is HttpDataSource.InvalidResponseCodeException -> {
+            when (innermostError.responseCode) {
+                404 -> R.string.error_video_deleted
+                503 -> R.string.error_video_service_unavailable
+                in 400 until 600 -> R.string.error_video_unknown
+                else -> R.string.error_unknown
             }
         }
 
-    fun isIpBlockedError(error: Throwable) =
-        getInnermostError(error).let {
-            it is ProxerException && it.serverErrorType == IP_BLOCKED
+        is SocketTimeoutException -> {
+            R.string.error_timeout
         }
+
+        is SSLPeerUnverifiedException -> {
+            R.string.error_ssl
+        }
+
+        is NotConnectedException -> {
+            R.string.error_no_network
+        }
+
+        is IOException -> {
+            R.string.error_io
+        }
+
+        is NotLoggedInException -> {
+            R.string.error_login_required
+        }
+
+        is AgeConfirmationRequiredException -> {
+            R.string.error_age_confirmation_needed
+        }
+
+        is StreamResolutionException -> {
+            R.string.error_stream_resolution
+        }
+
+        is MangaNotAvailableException -> {
+            R.string.error_manga_not_available
+        }
+
+        is MangaLinkException -> {
+            R.string.error_manga_link
+        }
+
+        is CommentTooLongException -> {
+            R.string.error_comment_too_long
+        }
+
+        is CommentInvalidProgressException -> {
+            R.string.error_comment_invalid_progress
+        }
+
+        else -> {
+            R.string.error_unknown
+        }
+    }
+
+    fun isIpBlockedError(error: Throwable) = getInnermostError(error).let {
+        it is ProxerException && it.serverErrorType == IP_BLOCKED
+    }
 
     fun handle(error: Throwable): ErrorAction = handle(error, storageHelper.isLoggedIn)
 
@@ -387,202 +383,200 @@ object ErrorUtils {
         return ErrorAction(errorMessage, buttonMessage, buttonAction, data)
     }
 
-    internal fun getMessageForProxerException(error: ProxerException, isLoggedIn: Boolean) =
-        when (error.errorType) {
-            SERVER -> {
-                when (error.serverErrorType) {
-                    IP_BLOCKED -> {
-                        R.string.error_captcha
-                    }
+    private fun getMessageForProxerException(error: ProxerException) = when (error.errorType) {
+        SERVER -> {
+            when (error.serverErrorType) {
+                IP_BLOCKED -> {
+                    R.string.error_captcha
+                }
 
-                    RATE_LIMIT -> {
-                        R.string.error_rate_limit
-                    }
+                RATE_LIMIT -> {
+                    R.string.error_rate_limit
+                }
 
-                    INVALID_TOKEN -> {
-                        R.string.error_invalid_token
-                    }
+                INVALID_TOKEN -> {
+                    R.string.error_invalid_token
+                }
 
-                    LOGIN_INVALID_CREDENTIALS -> {
-                        R.string.error_login_credentials
-                    }
+                LOGIN_INVALID_CREDENTIALS -> {
+                    R.string.error_login_credentials
+                }
 
-                    INFO_ENTRY_ALREADY_IN_LIST -> {
-                        R.string.error_already_in_list
-                    }
+                INFO_ENTRY_ALREADY_IN_LIST -> {
+                    R.string.error_already_in_list
+                }
 
-                    INFO_EXCEEDED_MAXIMUM_ENTRIES -> {
-                        R.string.error_list_full
-                    }
+                INFO_EXCEEDED_MAXIMUM_ENTRIES -> {
+                    R.string.error_list_full
+                }
 
-                    MANGA_INVALID_CHAPTER -> {
-                        R.string.error_invalid_chapter
-                    }
+                MANGA_INVALID_CHAPTER -> {
+                    R.string.error_invalid_chapter
+                }
 
-                    ANIME_INVALID_EPISODE -> {
-                        R.string.error_invalid_episode
-                    }
+                ANIME_INVALID_EPISODE -> {
+                    R.string.error_invalid_episode
+                }
 
-                    MESSAGES_INVALID_REPORT_INPUT -> {
-                        R.string.error_invalid_input
-                    }
+                MESSAGES_INVALID_REPORT_INPUT -> {
+                    R.string.error_invalid_input
+                }
 
-                    MESSAGES_INVALID_MESSAGE -> {
-                        R.string.error_invalid_input
-                    }
+                MESSAGES_INVALID_MESSAGE -> {
+                    R.string.error_invalid_input
+                }
 
-                    MESSAGES_INVALID_USER -> {
-                        R.string.error_cant_add_user_to_conference
-                    }
+                MESSAGES_INVALID_USER -> {
+                    R.string.error_cant_add_user_to_conference
+                }
 
-                    MESSAGES_MISSING_USER -> {
-                        R.string.error_invalid_users_for_conference
-                    }
+                MESSAGES_MISSING_USER -> {
+                    R.string.error_invalid_users_for_conference
+                }
 
-                    MESSAGES_EXCEEDED_MAXIMUM_USERS -> {
-                        R.string.error_conference_full
-                    }
+                MESSAGES_EXCEEDED_MAXIMUM_USERS -> {
+                    R.string.error_conference_full
+                }
 
-                    MESSAGES_INVALID_TOPIC -> {
-                        R.string.error_invalid_topic
-                    }
+                MESSAGES_INVALID_TOPIC -> {
+                    R.string.error_invalid_topic
+                }
 
-                    LIST_TOP_ACCESS_RESET -> {
-                        R.string.error_list_top_access_reset
-                    }
+                LIST_TOP_ACCESS_RESET -> {
+                    R.string.error_list_top_access_reset
+                }
 
-                    USER_2FA_SECRET_REQUIRED -> {
-                        R.string.error_login_two_factor_authentication
-                    }
+                USER_2FA_SECRET_REQUIRED -> {
+                    R.string.error_login_two_factor_authentication
+                }
 
-                    USER_ACCOUNT_EXPIRED -> {
-                        R.string.error_account_expired
-                    }
+                USER_ACCOUNT_EXPIRED -> {
+                    R.string.error_account_expired
+                }
 
-                    USER_ACCOUNT_BLOCKED -> {
-                        R.string.error_account_blocked
-                    }
+                USER_ACCOUNT_BLOCKED -> {
+                    R.string.error_account_blocked
+                }
 
-                    USER_INSUFFICIENT_PERMISSIONS -> {
-                        when (isLoggedIn) {
-                            true -> R.string.error_insufficient_permissions_logged_in
-                            false -> R.string.error_insufficient_permissions
-                        }
-                    }
-
-                    CHAT_SEVEN_DAY_PROTECTION -> {
-                        R.string.error_chat_seven_days
-                    }
-
-                    CHAT_USER_ON_BLACKLIST -> {
-                        R.string.error_chat_blacklist
-                    }
-
-                    CHAT_INVALID_PERMISSIONS, CHAT_NO_PERMISSIONS -> {
-                        R.string.error_chat_no_permissions
-                    }
-
-                    FORUM_INVALID_PERMISSIONS -> {
-                        R.string.error_forum_no_permissions
-                    }
-
-                    COMMENT_INSUFFICIENT_PERMISSIONS -> {
-                        R.string.error_comment_no_permissions
-                    }
-
-                    WIKI_INVALID_PERMISSIONS -> {
-                        R.string.error_wiki_no_permissions
-                    }
-
-                    COMMENT_NOT_ACTIVE_YET -> {
-                        R.string.error_comment_not_active_yet
-                    }
-
-                    IP_AUTHENTICATION_REQUIRED -> {
-                        R.string.error_login_ip_authentication
-                    }
-
-                    MEDIA_REMOVED_DUE_TO_COPYRIGHT -> {
-                        R.string.error_media_removed_due_to_copyright
-                    }
-
-                    INTERNAL -> {
-                        R.string.error_internal
-                    }
-
-                    in apiErrors -> {
-                        R.string.error_api
-                    }
-
-                    in maintenanceErrors -> {
-                        R.string.error_maintenance
-                    }
-
-                    in loginErrors -> {
-                        R.string.error_login
-                    }
-
-                    in clientErrors -> {
-                        R.string.error_client
-                    }
-
-                    in invalidIdErrors -> {
-                        R.string.error_invalid_id
-                    }
-
-                    in unsupportedErrors -> {
-                        R.string.error_unsupported_code
-                    }
-
-                    else -> {
-                        R.string.error_unknown
+                USER_INSUFFICIENT_PERMISSIONS -> {
+                    when (storageHelper.isLoggedIn) {
+                        true -> R.string.error_insufficient_permissions_logged_in
+                        false -> R.string.error_insufficient_permissions
                     }
                 }
-            }
 
-            IO -> {
-                R.string.error_io
-            }
+                CHAT_SEVEN_DAY_PROTECTION -> {
+                    R.string.error_chat_seven_days
+                }
 
-            TIMEOUT -> {
-                R.string.error_timeout
-            }
+                CHAT_USER_ON_BLACKLIST -> {
+                    R.string.error_chat_blacklist
+                }
 
-            PARSING -> {
-                R.string.error_parsing
-            }
+                CHAT_INVALID_PERMISSIONS, CHAT_NO_PERMISSIONS -> {
+                    R.string.error_chat_no_permissions
+                }
 
-            UNKNOWN, CANCELLED -> {
-                R.string.error_unknown
+                FORUM_INVALID_PERMISSIONS -> {
+                    R.string.error_forum_no_permissions
+                }
+
+                COMMENT_INSUFFICIENT_PERMISSIONS -> {
+                    R.string.error_comment_no_permissions
+                }
+
+                WIKI_INVALID_PERMISSIONS -> {
+                    R.string.error_wiki_no_permissions
+                }
+
+                COMMENT_NOT_ACTIVE_YET -> {
+                    R.string.error_comment_not_active_yet
+                }
+
+                IP_AUTHENTICATION_REQUIRED -> {
+                    R.string.error_login_ip_authentication
+                }
+
+                MEDIA_REMOVED_DUE_TO_COPYRIGHT -> {
+                    R.string.error_media_removed_due_to_copyright
+                }
+
+                INTERNAL -> {
+                    R.string.error_internal
+                }
+
+                in apiErrors -> {
+                    R.string.error_api
+                }
+
+                in maintenanceErrors -> {
+                    R.string.error_maintenance
+                }
+
+                in loginErrors -> {
+                    R.string.error_login
+                }
+
+                in clientErrors -> {
+                    R.string.error_client
+                }
+
+                in invalidIdErrors -> {
+                    R.string.error_invalid_id
+                }
+
+                in unsupportedErrors -> {
+                    R.string.error_unsupported_code
+                }
+
+                else -> {
+                    R.string.error_unknown
+                }
             }
         }
 
-    private fun getInnermostError(error: Throwable): Throwable =
-        when (error) {
-            is ProxerException -> {
-                when (error.errorType) {
-                    IO -> error.cause?.let { getInnermostError(it) } ?: error
-                    UNKNOWN -> error.cause?.let { getInnermostError(it) } ?: error
-                    else -> error
-                }
-            }
+        IO -> {
+            R.string.error_io
+        }
 
-            is PartialException -> {
-                error.innerError
-            }
+        TIMEOUT -> {
+            R.string.error_timeout
+        }
 
-            is ChatException -> {
-                error.innerError
-            }
+        PARSING -> {
+            R.string.error_parsing
+        }
 
-            is PlaybackException -> {
-                error.cause?.let { getInnermostError(it) } ?: error
-            }
+        UNKNOWN, CANCELLED -> {
+            R.string.error_unknown
+        }
+    }
 
-            else -> {
-                error
+    private fun getInnermostError(error: Throwable): Throwable = when (error) {
+        is ProxerException -> {
+            when (error.errorType) {
+                IO -> error.cause?.let { getInnermostError(it) } ?: error
+                UNKNOWN -> error.cause?.let { getInnermostError(it) } ?: error
+                else -> error
             }
         }
+
+        is PartialException -> {
+            error.innerError
+        }
+
+        is ChatException -> {
+            error.innerError
+        }
+
+        is PlaybackException -> {
+            error.cause?.let { getInnermostError(it) } ?: error
+        }
+
+        else -> {
+            error
+        }
+    }
 
     open class ErrorAction(
         val message: Int,
@@ -595,59 +589,57 @@ object ErrorUtils {
             const val ACTION_MESSAGE_HIDE = -2
         }
 
-        fun toClickListener(activity: BaseActivity) =
-            when (buttonAction) {
-                CAPTCHA -> {
-                    View.OnClickListener {
-                        activity.showPage(ProxerUrls.captchaWeb(Utils.getIpAddress(), Device.MOBILE), skipCheck = true)
-                    }
-                }
-
-                NETWORK_SETTINGS -> {
-                    View.OnClickListener {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            activity.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
-                        } else {
-                            activity.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
-                        }
-                    }
-                }
-
-                LOGIN -> {
-                    View.OnClickListener { LoginDialog.show(activity) }
-                }
-
-                AGE_CONFIRMATION -> {
-                    View.OnClickListener { AgeConfirmationDialog.show(activity) }
-                }
-
-                OPEN_LINK -> {
-                    data[LINK_DATA_KEY].let { link ->
-                        when (link) {
-                            is HttpUrl -> View.OnClickListener { activity.showPage(link, skipCheck = true) }
-                            else -> null
-                        }
-                    }
-                }
-
-                else -> {
-                    null
+        fun toClickListener(activity: BaseActivity) = when (buttonAction) {
+            CAPTCHA -> {
+                View.OnClickListener {
+                    activity.showPage(ProxerUrls.captchaWeb(Utils.getIpAddress(), Device.MOBILE), skipCheck = true)
                 }
             }
 
-        fun toIntent() =
-            when (buttonAction) {
-                CAPTCHA -> {
-                    Intent(
-                        Intent.ACTION_VIEW,
-                        ProxerUrls.captchaWeb(Utils.getIpAddress(), Device.MOBILE).androidUri(),
-                    )
-                }
-
-                else -> {
-                    null
+            NETWORK_SETTINGS -> {
+                View.OnClickListener {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        activity.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
+                    } else {
+                        activity.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
+                    }
                 }
             }
+
+            LOGIN -> {
+                View.OnClickListener { LoginDialog.show(activity) }
+            }
+
+            AGE_CONFIRMATION -> {
+                View.OnClickListener { AgeConfirmationDialog.show(activity) }
+            }
+
+            OPEN_LINK -> {
+                data[LINK_DATA_KEY].let { link ->
+                    when (link) {
+                        is HttpUrl -> View.OnClickListener { activity.showPage(link, skipCheck = true) }
+                        else -> null
+                    }
+                }
+            }
+
+            else -> {
+                null
+            }
+        }
+
+        fun toIntent() = when (buttonAction) {
+            CAPTCHA -> {
+                Intent(
+                    Intent.ACTION_VIEW,
+                    ProxerUrls.captchaWeb(Utils.getIpAddress(), Device.MOBILE).androidUri(),
+                )
+            }
+
+            else -> {
+                null
+            }
+        }
 
         enum class ButtonAction { CAPTCHA, NETWORK_SETTINGS, LOGIN, AGE_CONFIRMATION, OPEN_LINK, BOOKMARK }
     }

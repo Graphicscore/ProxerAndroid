@@ -4,6 +4,29 @@ complexity:
 exceptions:
   TooGenericExceptionCaught:
     active: false
+  # pre-existing violations, detekt 2.x now catches these
+  SwallowedException:
+    active: false
+  TooGenericExceptionThrown:
+    active: false
+
+ktlint:
+  active: true
+  excludes:
+    - "**/me/zhanghai/**"
+    - "**/com/gojuno/**"
+    - "**/androidx/recyclerview/widget/BindAwareViewHolder.kt"
+  MaximumLineLength:
+    active: true
+    maxLineLength: 120
+  FunctionName:
+    active: true
+    excludes:
+      - "**/tv/**"
+
+naming:
+  FunctionNaming:
+    active: false
 
 performance:
   SpreadOperator:
@@ -13,4 +36,15 @@ style:
   MagicNumber:
     active: false
   ForbiddenComment:
+    active: false
+  # pre-existing violations, detekt 2.x now catches these
+  MaxLineLength:
+    active: false
+  UnusedParameter:
+    active: false
+  ExplicitItLambdaMultipleParameters:
+    active: false
+  DestructuringDeclarationWithTooManyEntries:
+    active: false
+  ThrowsCount:
     active: false

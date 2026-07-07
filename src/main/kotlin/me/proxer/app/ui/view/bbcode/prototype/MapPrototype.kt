@@ -26,19 +26,13 @@ object MapPrototype : TextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *map( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *map *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val zoom = BBUtils.cutAttribute(code, zoomAttributeRegex)?.toIntOrNull()
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(ZOOM_ARGUMENT to zoom)))
     }
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val zoom = args[ZOOM_ARGUMENT] as Int?
 
         val zoomUriPart = if (zoom != null) "&z=$zoom" else ""
@@ -51,9 +45,7 @@ object MapPrototype : TextMutatorPrototype, AutoClosingPrototype {
         }
     }
 
-    private class UriClickableSpan(
-        private val uri: Uri,
-    ) : ClickableSpan() {
+    private class UriClickableSpan(private val uri: Uri) : ClickableSpan() {
         override fun onClick(widget: View) {
             try {
                 widget.context.startActivity(Intent(Intent.ACTION_VIEW, uri))

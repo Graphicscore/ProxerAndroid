@@ -31,11 +31,8 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class AnimeViewModel(
-    private val entryId: String,
-    private val language: AnimeLanguage,
-    episode: Int,
-) : BaseViewModel<AnimeStreamInfo>() {
+class AnimeViewModel(private val entryId: String, private val language: AnimeLanguage, episode: Int) :
+    BaseViewModel<AnimeStreamInfo>() {
     private companion object {
         private val streamComparator = compareBy<AnimeStream, Int?>(nullsLast()) { it.resolutionResult?.let { 0 } }
     }
@@ -140,10 +137,9 @@ class AnimeViewModel(
 
     fun markAsFinished() = updateUserState(api.info.markAsFinished(entryId))
 
-    fun bookmark(episode: Int) =
-        updateUserState(
-            api.ucp.setBookmark(entryId, episode, language.toMediaLanguage(), Category.ANIME),
-        )
+    fun bookmark(episode: Int) = updateUserState(
+        api.ucp.setBookmark(entryId, episode, language.toMediaLanguage(), Category.ANIME),
+    )
 
     private fun entrySingle(): Single<EntryCore> {
         val safeCachedEntryCore = cachedEntryCore
@@ -154,27 +150,26 @@ class AnimeViewModel(
         }.doOnSuccess { cachedEntryCore = it }
     }
 
-    private fun streamSingle(entry: EntryCore) =
-        api.anime
-            .streams(entryId, episode, language)
-            .includeProxerStreams(true)
-            .buildPartialErrorSingle(entry)
-            .map { it.filterNot { stream -> StreamResolverFactory.resolverFor(stream.hosterName)?.ignore == true } }
-            .map { it.groupBy { stream -> stream.hoster }.map { (_, streams) -> streams.shuffled().first() } }
-            .toObservable()
-            .flatMapIterable { it }
-            .flatMapSingle { stream ->
-                val resolver = StreamResolverFactory.resolverFor(stream.hosterName)
+    private fun streamSingle(entry: EntryCore) = api.anime
+        .streams(entryId, episode, language)
+        .includeProxerStreams(true)
+        .buildPartialErrorSingle(entry)
+        .map { it.filterNot { stream -> StreamResolverFactory.resolverFor(stream.hosterName)?.ignore == true } }
+        .map { it.groupBy { stream -> stream.hoster }.map { (_, streams) -> streams.shuffled().first() } }
+        .toObservable()
+        .flatMapIterable { it }
+        .flatMapSingle { stream ->
+            val resolver = StreamResolverFactory.resolverFor(stream.hosterName)
 
-                if (resolver != null && resolver.resolveEarly) {
-                    resolver.resolve(stream.id).map { resolutionResult ->
-                        stream.toAnimeStream(true, resolutionResult)
-                    }
-                } else {
-                    Single.just(stream.toAnimeStream(resolver != null))
+            if (resolver != null && resolver.resolveEarly) {
+                resolver.resolve(stream.id).map { resolutionResult ->
+                    stream.toAnimeStream(true, resolutionResult)
                 }
-            }.sorted(streamComparator)
-            .toList()
+            } else {
+                Single.just(stream.toAnimeStream(resolver != null))
+            }
+        }.sorted(streamComparator)
+        .toList()
 
     private fun updateUserState(endpoint: Endpoint<Unit?>) {
         userStateDisposable?.dispose()

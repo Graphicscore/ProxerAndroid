@@ -17,11 +17,7 @@ object ListItemPrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *li( .*?)?", BBPrototype.REGEX_OPTIONS)
     override val endRegex = Regex("/ *li *", BBPrototype.REGEX_OPTIONS)
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
 
         return when (childViews.size) {

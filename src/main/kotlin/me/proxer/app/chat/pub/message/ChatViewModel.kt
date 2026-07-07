@@ -24,9 +24,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class ChatViewModel(
-    private val chatRoomId: String,
-) : PagedViewModel<ParsedChatMessage>() {
+class ChatViewModel(private val chatRoomId: String) : PagedViewModel<ParsedChatMessage>() {
     override val itemsOnPage = 50
 
     override val dataSingle: Single<List<ParsedChatMessage>>
@@ -269,10 +267,9 @@ class ChatViewModel(
         }
     }
 
-    private fun findFirstRemoteId(data: List<ParsedChatMessage>): String? =
-        data
-            .dropWhile {
-                it.id.toLong() < 0
-            }.firstOrNull()
-            ?.id
+    private fun findFirstRemoteId(data: List<ParsedChatMessage>): String? = data
+        .dropWhile {
+            it.id.toLong() < 0
+        }.firstOrNull()
+        ?.id
 }

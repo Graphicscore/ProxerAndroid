@@ -11,9 +11,7 @@ import me.proxer.library.ProxerCall
 /**
  * @author Ruben Gees
  */
-class ProxerCallSingle<T : Any>(
-    private val originalCall: ProxerCall<T>,
-) : Single<T>() {
+class ProxerCallSingle<T : Any>(private val originalCall: ProxerCall<T>) : Single<T>() {
     override fun subscribeActual(observer: SingleObserver<in T>) {
         val call = originalCall.clone()
         val disposable = CallDisposable(call)
@@ -50,9 +48,7 @@ class ProxerCallSingle<T : Any>(
         }
     }
 
-    private class CallDisposable(
-        private val call: ProxerCall<*>,
-    ) : Disposable {
+    private class CallDisposable(private val call: ProxerCall<*>) : Disposable {
         @Volatile
         private var isDisposed: Boolean = false
 

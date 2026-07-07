@@ -1,7 +1,6 @@
 package me.proxer.app.profile
 
 import com.gojuno.koptional.None
-import com.gojuno.koptional.Optional
 import com.gojuno.koptional.toNullable
 import com.gojuno.koptional.toOptional
 import io.reactivex.Single
@@ -14,10 +13,7 @@ import me.proxer.library.entity.user.UserInfo
 /**
  * @author Ruben Gees
  */
-class ProfileViewModel(
-    private val userId: String?,
-    private val username: String?,
-) : BaseViewModel<UserInfoWrapper>() {
+class ProfileViewModel(private val userId: String?, private val username: String?) : BaseViewModel<UserInfoWrapper>() {
     override val dataSingle: Single<UserInfoWrapper>
         get() =
             Single
@@ -45,8 +41,5 @@ class ProfileViewModel(
         disposables += storageHelper.isLoggedInObservable.subscribe { reload() }
     }
 
-    data class UserInfoWrapper(
-        val info: UserInfo,
-        val watchedEpisodes: Int?,
-    )
+    data class UserInfoWrapper(val info: UserInfo, val watchedEpisodes: Int?)
 }

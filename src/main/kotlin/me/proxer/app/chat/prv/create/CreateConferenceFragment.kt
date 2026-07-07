@@ -56,10 +56,9 @@ import kotlin.properties.Delegates
  */
 class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conference) {
     companion object {
-        fun newInstance() =
-            CreateConferenceFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = CreateConferenceFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val hostingActivity: CreateConferenceActivity
@@ -148,11 +147,7 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
             }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         addParticipantFooter =
             inflater.inflate(
                 R.layout.item_create_conference_add_participant,
@@ -170,10 +165,7 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         // Call getter as soon as possible to make keyboard detection work properly.
@@ -416,45 +408,44 @@ class CreateConferenceFragment : BaseFragment(R.layout.fragment_create_conferenc
         }
     }
 
-    private fun validateAndAddUser(): Boolean =
-        participantInput.text.toString().trim().let {
-            when {
-                it.isBlank() -> {
-                    participantInputContainer.isErrorEnabled = true
-                    participantInputContainer.error = requireContext().getString(R.string.error_input_empty)
+    private fun validateAndAddUser(): Boolean = participantInput.text.toString().trim().let {
+        when {
+            it.isBlank() -> {
+                participantInputContainer.isErrorEnabled = true
+                participantInputContainer.error = requireContext().getString(R.string.error_input_empty)
 
+                false
+            }
+
+            innerAdapter.contains(it) -> {
+                participantInputContainer.isErrorEnabled = true
+                participantInputContainer.error = requireContext().getString(R.string.error_duplicate_participant)
+
+                false
+            }
+
+            it.equals(storageHelper.user?.name, ignoreCase = true) -> {
+                participantInputContainer.isErrorEnabled = true
+                participantInputContainer.error = requireContext().getString(R.string.error_self_participant)
+
+                false
+            }
+
+            else -> {
+                innerAdapter.add(Participant(it, ""))
+
+                participantInput.text.clear()
+
+                if (!isGroup && innerAdapter.itemCount >= 1) {
+                    adapter.footer = null
+
+                    true
+                } else {
                     false
-                }
-
-                innerAdapter.contains(it) -> {
-                    participantInputContainer.isErrorEnabled = true
-                    participantInputContainer.error = requireContext().getString(R.string.error_duplicate_participant)
-
-                    false
-                }
-
-                it.equals(storageHelper.user?.name, ignoreCase = true) -> {
-                    participantInputContainer.isErrorEnabled = true
-                    participantInputContainer.error = requireContext().getString(R.string.error_self_participant)
-
-                    false
-                }
-
-                else -> {
-                    innerAdapter.add(Participant(it, ""))
-
-                    participantInput.text.clear()
-
-                    if (!isGroup && innerAdapter.itemCount >= 1) {
-                        adapter.footer = null
-
-                        true
-                    } else {
-                        false
-                    }
                 }
             }
         }
+    }
 
     private fun updateIcons() {
         val emojiButtonIcon: IIcon =

@@ -1,6 +1,5 @@
 package me.proxer.app.util.logging
 
-import android.annotation.SuppressLint
 import android.os.Environment
 import android.os.Environment.DIRECTORY_DOWNLOADS
 import android.util.Log
@@ -31,17 +30,9 @@ class TimberFileTree : Timber.Tree() {
 
     private val resolvedLogsDirectory get() = File(downloadsDirectory, LOGS_DIRECTORY).also { it.mkdirs() }
 
-    override fun isLoggable(
-        tag: String?,
-        priority: Int,
-    ) = priority >= Log.INFO
+    override fun isLoggable(tag: String?, priority: Int) = priority >= Log.INFO
 
-    override fun log(
-        priority: Int,
-        tag: String?,
-        message: String,
-        t: Throwable?,
-    ) {
+    override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
         if (!resolvedLogsDirectory.canWrite()) {
             return
         }
@@ -57,10 +48,7 @@ class TimberFileTree : Timber.Tree() {
             )
     }
 
-    private fun internalLog(
-        tag: String?,
-        message: String,
-    ) {
+    private fun internalLog(tag: String?, message: String) {
         val currentLogFiles = resolvedLogsDirectory.listFiles() ?: emptyArray()
         val currentDateTime = LocalDateTime.now()
         val rotationThresholdDate = currentDateTime.toLocalDate().minusDays(ROTATION_THRESHOLD)

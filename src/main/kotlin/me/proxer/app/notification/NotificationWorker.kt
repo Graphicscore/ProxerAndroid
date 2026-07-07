@@ -27,10 +27,7 @@ import java.util.concurrent.TimeUnit
 /**
  * @author Ruben Gees
  */
-class NotificationWorker(
-    context: Context,
-    workerParams: WorkerParameters,
-) : Worker(context, workerParams) {
+class NotificationWorker(context: Context, workerParams: WorkerParameters) : Worker(context, workerParams) {
     companion object {
         private const val NAME = "NotificationWorker"
 
@@ -80,49 +77,45 @@ class NotificationWorker(
         currentCall?.cancel()
     }
 
-    override fun doWork() =
-        try {
-            val notificationInfo =
-                when (storageHelper.isLoggedIn) {
-                    true -> {
-                        api.notifications
-                            .notificationInfo()
-                            .build()
-                            .also { currentCall = it }
-                            .execute()
-                    }
-
-                    false -> {
-                        null
-                    }
+    override fun doWork() = try {
+        val notificationInfo =
+            when (storageHelper.isLoggedIn) {
+                true -> {
+                    api.notifications
+                        .notificationInfo()
+                        .build()
+                        .also { currentCall = it }
+                        .execute()
                 }
 
-            val areNewsNotificationsEnabled = preferenceHelper.areNewsNotificationsEnabled
-            val areAccountNotificationsEnabled = preferenceHelper.areAccountNotificationsEnabled
-
-            if (!isStopped && areNewsNotificationsEnabled && notificationInfo != null) {
-                fetchNews(applicationContext, notificationInfo)
+                false -> {
+                    null
+                }
             }
 
-            if (!isStopped && areAccountNotificationsEnabled && notificationInfo != null) {
-                fetchAccountNotifications(applicationContext, notificationInfo)
-            }
+        val areNewsNotificationsEnabled = preferenceHelper.areNewsNotificationsEnabled
+        val areAccountNotificationsEnabled = preferenceHelper.areAccountNotificationsEnabled
 
-            Result.success()
-        } catch (error: Throwable) {
-            Timber.e(error)
-
-            if (WorkerUtils.shouldRetryForError(error)) {
-                Result.retry()
-            } else {
-                Result.failure()
-            }
+        if (!isStopped && areNewsNotificationsEnabled && notificationInfo != null) {
+            fetchNews(applicationContext, notificationInfo)
         }
 
-    private fun fetchNews(
-        context: Context,
-        notificationInfo: NotificationInfo?,
-    ) {
+        if (!isStopped && areAccountNotificationsEnabled && notificationInfo != null) {
+            fetchAccountNotifications(applicationContext, notificationInfo)
+        }
+
+        Result.success()
+    } catch (error: Throwable) {
+        Timber.e(error)
+
+        if (WorkerUtils.shouldRetryForError(error)) {
+            Result.retry()
+        } else {
+            Result.failure()
+        }
+    }
+
+    private fun fetchNews(context: Context, notificationInfo: NotificationInfo?) {
         val lastNewsDate = preferenceHelper.lastNewsDate
         val newNews =
             when (notificationInfo?.newsAmount) {
@@ -154,10 +147,7 @@ class NotificationWorker(
         }
     }
 
-    private fun fetchAccountNotifications(
-        context: Context,
-        notificationInfo: NotificationInfo,
-    ) {
+    private fun fetchAccountNotifications(context: Context, notificationInfo: NotificationInfo) {
         val lastNotificationsDate = storageHelper.lastNotificationsDate
         val newNotifications =
             when (notificationInfo.notificationAmount) {

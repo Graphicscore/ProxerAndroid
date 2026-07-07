@@ -42,10 +42,9 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
     companion object {
         private const val ZERO_DATE = "0000-00-00"
 
-        fun newInstance() =
-            ProfileAboutFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = ProfileAboutFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val hostingActivity: ProfileActivity
@@ -66,10 +65,7 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
     private val aboutContainer by bindView<ViewGroup>(R.id.aboutContainer)
     private val about by bindView<ProxerWebView>(R.id.about)
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         about.showPageSubject
@@ -156,19 +152,13 @@ class ProfileAboutFragment : BaseContentFragment<UserAbout>(R.layout.fragment_ab
         addTableRowIfNotBlank(getString(R.string.fragment_about_deviantart), data.deviantart)
     }
 
-    private fun addTableRowIfNotBlank(
-        title: String,
-        content: String,
-    ) {
+    private fun addTableRowIfNotBlank(title: String, content: String) {
         val view = if (content.isNotBlank()) constructTableRow(title, content) else null
 
         if (view != null) generalTable.addView(view)
     }
 
-    private fun constructTableRow(
-        title: String,
-        content: String,
-    ): View {
+    private fun constructTableRow(title: String, content: String): View {
         val tableRow = LayoutInflater.from(context).inflate(R.layout.layout_about_row, generalTable, false)
         val titleView = tableRow.findViewById<TextView>(R.id.title)
         val contentView = tableRow.findViewById<TextView>(R.id.content)

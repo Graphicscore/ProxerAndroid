@@ -102,10 +102,7 @@ object BBParser {
 
     fun parseSimple(input: String): BBTree = parse(input, simplePrototypes)
 
-    fun parse(
-        input: String,
-        prototypes: Set<BBPrototype> = defaultPrototypes,
-    ): BBTree {
+    fun parse(input: String, prototypes: Set<BBPrototype> = defaultPrototypes): BBTree {
         val trimmedInput = input.trim()
         val result = BBTree(RootPrototype, null)
         val parts = constructRegex(prototypes).findAll(trimmedInput)
@@ -173,24 +170,19 @@ object BBParser {
         return result
     }
 
-    private fun constructRegex(prototypes: Set<BBPrototype>) =
-        regexCache.getOrPut(prototypes) {
-            val prototypeRegex =
-                prototypes.joinToString("|") {
-                    when (it.canHaveChildren) {
-                        true -> it.startRegex.pattern + "|" + it.endRegex.pattern
-                        false -> it.startRegex.pattern
-                    }
+    private fun constructRegex(prototypes: Set<BBPrototype>) = regexCache.getOrPut(prototypes) {
+        val prototypeRegex =
+            prototypes.joinToString("|") {
+                when (it.canHaveChildren) {
+                    true -> it.startRegex.pattern + "|" + it.endRegex.pattern
+                    false -> it.startRegex.pattern
                 }
+            }
 
-            Regex("${quote("[")}(($prototypeRegex)?)${quote("]")}", REGEX_OPTIONS)
-        }
+        Regex("${quote("[")}(($prototypeRegex)?)${quote("]")}", REGEX_OPTIONS)
+    }
 
-    private fun findFittingTree(
-        tree: BBTree,
-        endTag: String,
-        finishedList: List<BBTree>,
-    ): BBTree? {
+    private fun findFittingTree(tree: BBTree, endTag: String, finishedList: List<BBTree>): BBTree? {
         var currentTree = tree.parent
 
         while (true) {
@@ -204,10 +196,7 @@ object BBParser {
         }
     }
 
-    private fun findNextUnfinishedTree(
-        tree: BBTree,
-        finishedList: List<BBTree>,
-    ): BBTree {
+    private fun findNextUnfinishedTree(tree: BBTree, finishedList: List<BBTree>): BBTree {
         var currentTree = tree
 
         while (true) {

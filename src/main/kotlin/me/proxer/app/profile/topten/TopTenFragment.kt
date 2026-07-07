@@ -33,10 +33,9 @@ import kotlin.properties.Delegates
  */
 class TopTenFragment : BaseContentFragment<ZippedTopTenResult>(R.layout.fragment_top_ten) {
     companion object {
-        fun newInstance() =
-            TopTenFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = TopTenFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<TopTenViewModel> { parametersOf(userId, username) }
@@ -84,10 +83,7 @@ class TopTenFragment : BaseContentFragment<ZippedTopTenResult>(R.layout.fragment
             .subscribe { viewModel.addItemToDelete(it) }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val spanCount = DeviceUtils.calculateSpanAmount(requireActivity()) + 1

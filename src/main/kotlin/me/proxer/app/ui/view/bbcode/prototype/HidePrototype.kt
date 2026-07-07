@@ -29,11 +29,7 @@ object HidePrototype : AutoClosingPrototype {
 
     private val storageHelper by safeInject<StorageHelper>()
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
 
         return when {

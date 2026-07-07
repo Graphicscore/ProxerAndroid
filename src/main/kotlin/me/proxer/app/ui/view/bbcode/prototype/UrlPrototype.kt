@@ -30,21 +30,14 @@ object UrlPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *url *= *.+?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *url *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val url = BBUtils.cutAttribute(code, attributeRegex)?.trim() ?: ""
         val parsedUrl = url.toPrefixedUrlOrNull() ?: invalidUrl
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(URL_ARGUMENT to parsedUrl)))
     }
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
         val url = args[URL_ARGUMENT] as HttpUrl
 
@@ -64,10 +57,7 @@ object UrlPrototype : ConditionalTextMutatorPrototype, AutoClosingPrototype {
         }
     }
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val url = args[URL_ARGUMENT] as HttpUrl
 
         return text.linkifyUrl(url)

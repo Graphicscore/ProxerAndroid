@@ -75,30 +75,24 @@ abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
         super.reload()
     }
 
-    protected open fun areItemsTheSame(
-        old: T,
-        new: T,
-    ) = when {
+    protected open fun areItemsTheSame(old: T, new: T) = when {
         old is ProxerIdItem && new is ProxerIdItem -> old.id == new.id
         else -> old == new
     }
 
-    protected open fun mergeNewDataWithExistingData(
-        existingData: List<T>,
-        newData: List<T>,
-        currentPage: Int,
-    ) = when (currentPage) {
-        0 -> {
-            newData +
+    protected open fun mergeNewDataWithExistingData(existingData: List<T>, newData: List<T>, currentPage: Int) =
+        when (currentPage) {
+            0 -> {
+                newData +
+                    existingData.filter { oldItem ->
+                        newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
+                    }
+            }
+
+            else -> {
                 existingData.filter { oldItem ->
                     newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
-                }
+                } + newData
+            }
         }
-
-        else -> {
-            existingData.filter { oldItem ->
-                newData.find { newItem -> areItemsTheSame(oldItem, newItem) } == null
-            } + newData
-        }
-    }
 }

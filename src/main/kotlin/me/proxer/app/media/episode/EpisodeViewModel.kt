@@ -15,9 +15,7 @@ import me.proxer.library.enums.MediaLanguage
 /**
  * @author Ruben Gees
  */
-class EpisodeViewModel(
-    private val entryId: String,
-) : BaseViewModel<List<EpisodeRow>>() {
+class EpisodeViewModel(private val entryId: String) : BaseViewModel<List<EpisodeRow>>() {
     override val dataSingle: Single<List<EpisodeRow>>
         get() =
             Single
@@ -49,11 +47,7 @@ class EpisodeViewModel(
         super.onCleared()
     }
 
-    fun bookmark(
-        episode: Int,
-        language: MediaLanguage,
-        category: Category,
-    ) {
+    fun bookmark(episode: Int, language: MediaLanguage, category: Category) {
         bookmarkDisposable?.dispose()
         bookmarkDisposable =
             Single

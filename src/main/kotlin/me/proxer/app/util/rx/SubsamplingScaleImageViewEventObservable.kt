@@ -10,9 +10,7 @@ import me.proxer.app.util.rx.SubsamplingScaleImageViewEventObservable.Event
 /**
  * @author Ruben Gees
  */
-class SubsamplingScaleImageViewEventObservable(
-    private val view: SubsamplingScaleImageView,
-) : Observable<Event>() {
+class SubsamplingScaleImageViewEventObservable(private val view: SubsamplingScaleImageView) : Observable<Event>() {
     override fun subscribeActual(observer: Observer<in Event>) {
         if (!observer.checkMainThread()) {
             return
@@ -32,15 +30,11 @@ class SubsamplingScaleImageViewEventObservable(
 
         object PreviewReleased : Event()
 
-        class Error(
-            val error: Exception,
-        ) : Event()
+        class Error(val error: Exception) : Event()
     }
 
-    internal class Listener(
-        private val view: SubsamplingScaleImageView,
-        private val observer: Observer<in Event>,
-    ) : MainThreadDisposable(),
+    internal class Listener(private val view: SubsamplingScaleImageView, private val observer: Observer<in Event>) :
+        MainThreadDisposable(),
         SubsamplingScaleImageView.OnImageEventListener {
         override fun onReady() {
             if (!isDisposed) {

@@ -50,34 +50,33 @@ inline fun SubsamplingScaleImageView.events(): Observable<SubsamplingScaleImageV
 inline fun DefaultTimeBar.loadRequests(): Observable<Long> = PreviewTimeBarRequestObservable(this)
 
 @CheckResult
-inline fun RecyclerView.endScrolls(threshold: Int = 5): Observable<Unit> =
-    scrollEvents()
-        .filter {
-            safeLayoutManager.let { safeLayoutManager ->
-                val pastVisibleItems =
-                    when (safeLayoutManager) {
-                        is StaggeredGridLayoutManager -> {
-                            val visibleItemPositions =
-                                IntArray(safeLayoutManager.spanCount).apply {
-                                    safeLayoutManager.findFirstVisibleItemPositions(this)
-                                }
-
-                            when (visibleItemPositions.isNotEmpty()) {
-                                true -> visibleItemPositions[0]
-                                false -> 0
+inline fun RecyclerView.endScrolls(threshold: Int = 5): Observable<Unit> = scrollEvents()
+    .filter {
+        safeLayoutManager.let { safeLayoutManager ->
+            val pastVisibleItems =
+                when (safeLayoutManager) {
+                    is StaggeredGridLayoutManager -> {
+                        val visibleItemPositions =
+                            IntArray(safeLayoutManager.spanCount).apply {
+                                safeLayoutManager.findFirstVisibleItemPositions(this)
                             }
-                        }
 
-                        is LinearLayoutManager -> {
-                            safeLayoutManager.findFirstVisibleItemPosition()
-                        }
-
-                        else -> {
-                            0
+                        when (visibleItemPositions.isNotEmpty()) {
+                            true -> visibleItemPositions[0]
+                            false -> 0
                         }
                     }
 
-                safeLayoutManager.itemCount > 0 &&
-                    safeLayoutManager.childCount + pastVisibleItems >= safeLayoutManager.itemCount - threshold
-            }
-        }.map { Unit }
+                    is LinearLayoutManager -> {
+                        safeLayoutManager.findFirstVisibleItemPosition()
+                    }
+
+                    else -> {
+                        0
+                    }
+                }
+
+            safeLayoutManager.itemCount > 0 &&
+                safeLayoutManager.childCount + pastVisibleItems >= safeLayoutManager.itemCount - threshold
+        }
+    }.map { Unit }

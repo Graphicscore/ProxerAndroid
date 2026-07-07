@@ -39,10 +39,7 @@ data class LocalTag(
         parcel.readByte() != 0.toByte(),
     )
 
-    override fun writeToParcel(
-        parcel: Parcel,
-        flags: Int,
-    ) {
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(id)
         parcel.writeInt(type.ordinal)
         parcel.writeString(name)

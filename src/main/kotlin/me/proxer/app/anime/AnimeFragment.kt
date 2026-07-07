@@ -52,10 +52,9 @@ import kotlin.properties.Delegates
  */
 class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_anime) {
     companion object {
-        fun newInstance() =
-            AnimeFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = AnimeFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val viewModel by viewModel<AnimeViewModel> { parametersOf(id, language, episode) }
@@ -164,11 +163,7 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         header = inflater.inflate(R.layout.layout_media_control, container, false) as MediaControlView
 
         header.textResolver =
@@ -203,10 +198,7 @@ class AnimeFragment : BaseContentFragment<AnimeStreamInfo>(R.layout.fragment_ani
         return super.onCreateView(inflater, container, savedInstanceState)
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         innerAdapter.glide = Glide.with(this)

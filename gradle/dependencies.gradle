@@ -114,7 +114,8 @@ dependencies {
     implementation "io.insert-koin:koin-androidx-compose:$koinVersion"
     implementation "io.coil-kt:coil-compose:$coilVersion"
     debugImplementation "androidx.compose.ui:ui-tooling"
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
+
+    detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:$detektPluginVersion")
 
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"

@@ -26,10 +26,9 @@ import kotlin.properties.Delegates
  */
 class NotificationFragment : PagedContentFragment<ProxerNotification>() {
     companion object {
-        fun newInstance() =
-            NotificationFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = NotificationFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val isSwipeToRefreshEnabled = true
@@ -61,18 +60,12 @@ class NotificationFragment : PagedContentFragment<ProxerNotification>() {
         }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

@@ -23,19 +23,13 @@ object VideoPrototype : TextMutatorPrototype, AutoClosingPrototype {
     override val startRegex = Regex(" *video( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *video *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val type = BBUtils.cutAttribute(code, attributeRegex)
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(TYPE_ARGUMENT to type)))
     }
 
-    override fun mutate(
-        text: SpannableStringBuilder,
-        args: BBArgs,
-    ): SpannableStringBuilder {
+    override fun mutate(text: SpannableStringBuilder, args: BBArgs): SpannableStringBuilder {
         val type = args[TYPE_ARGUMENT] as String?
         val urlOrId = text.trim()
 

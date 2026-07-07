@@ -39,10 +39,9 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
         private const val CATEGORY_ARGUMENT = "category"
         private const val FILTER_ARGUMENT = "filter"
 
-        fun newInstance(category: Category) =
-            ProfileMediaListFragment().apply {
-                arguments = bundleOf(CATEGORY_ARGUMENT to category)
-            }
+        fun newInstance(category: Category) = ProfileMediaListFragment().apply {
+            arguments = bundleOf(CATEGORY_ARGUMENT to category)
+        }
     }
 
     override val emptyDataMessage = R.string.error_no_data_user_media_list
@@ -102,18 +101,12 @@ class ProfileMediaListFragment : PagedContentFragment<LocalUserMediaListEntry>()
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     val menuResource =
                         when (category) {
                             Category.ANIME -> R.menu.fragment_user_media_list_anime

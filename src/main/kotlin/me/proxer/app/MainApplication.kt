@@ -1,6 +1,5 @@
 package me.proxer.app
 
-import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Intent
 import android.graphics.Bitmap
@@ -116,10 +115,7 @@ class MainApplication : Application() {
         ProviderInstaller.installIfNeededAsync(
             this,
             object : ProviderInstaller.ProviderInstallListener {
-                override fun onProviderInstallFailed(
-                    errorCode: Int,
-                    recoveryIntent: Intent?,
-                ) {
+                override fun onProviderInstallFailed(errorCode: Int, recoveryIntent: Intent?) {
                     GoogleApiAvailability.getInstance().apply {
                         Timber.e("Error installing security patches with error code $errorCode")
 

@@ -39,10 +39,9 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
     companion object {
         private const val CATEGORY_ARGUMENT = "category"
 
-        fun newInstance() =
-            ProfileCommentFragment().apply {
-                arguments = bundleOf()
-            }
+        fun newInstance() = ProfileCommentFragment().apply {
+            arguments = bundleOf()
+        }
     }
 
     override val emptyDataMessage = R.string.error_no_data_comments
@@ -114,18 +113,12 @@ class ProfileCommentFragment : PagedContentFragment<ParsedUserComment>() {
             }
     }
 
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         requireActivity().addMenuProvider(
             object : MenuProvider {
-                override fun onCreateMenu(
-                    menu: Menu,
-                    menuInflater: MenuInflater,
-                ) {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
                     IconicsMenuInflaterUtil.inflate(
                         menuInflater,
                         requireContext(),

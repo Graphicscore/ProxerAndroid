@@ -35,9 +35,7 @@ import me.proxer.library.util.ProxerUrls
 /**
  * @author Ruben Gees
  */
-class NewsAdapter(
-    savedInstanceState: Bundle?,
-) : BaseAdapter<NewsArticle, NewsAdapter.ViewHolder>() {
+class NewsAdapter(savedInstanceState: Bundle?) : BaseAdapter<NewsArticle, NewsAdapter.ViewHolder>() {
     private companion object {
         private const val EXPANDED_STATE = "news_expansion_map"
     }
@@ -59,17 +57,11 @@ class NewsAdapter(
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ) = ViewHolder(
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
         LayoutInflater.from(parent.context).inflate(R.layout.item_news, parent, false),
     )
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         layoutManager = recyclerView.layoutManager
@@ -84,10 +76,7 @@ class NewsAdapter(
         glide = null
     }
 
-    override fun areContentsTheSame(
-        old: NewsArticle,
-        new: NewsArticle,
-    ) = old.date == new.date &&
+    override fun areContentsTheSame(old: NewsArticle, new: NewsArticle) = old.date == new.date &&
         old.category == new.category &&
         old.image == new.image &&
         old.subject == new.subject &&
@@ -95,9 +84,7 @@ class NewsAdapter(
 
     override fun saveInstanceState(outState: Bundle) = outState.putParcelable(EXPANDED_STATE, expansionMap)
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val expand: ImageButton by bindView(R.id.expand)
         internal val description: AppCompatTextView by bindView(R.id.description)
@@ -149,10 +136,7 @@ class NewsAdapter(
                 }
         }
 
-        private fun handleExpansion(
-            itemId: String,
-            animate: Boolean = false,
-        ) {
+        private fun handleExpansion(itemId: String, animate: Boolean = false) {
             expand.animate().cancel()
 
             if (expansionMap.containsKey(itemId)) {

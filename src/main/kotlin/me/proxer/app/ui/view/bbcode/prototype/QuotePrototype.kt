@@ -26,20 +26,13 @@ object QuotePrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *quote( *=\"?.+?\"?)?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *quote *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val quote = BBUtils.cutAttribute(code, quoteAttributeRegex)
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(QUOTE_ARGUMENT to quote)))
     }
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = super.makeViews(parent, children, args)
         val quote = args[QUOTE_ARGUMENT] as String?
         val result = mutableListOf<View>()

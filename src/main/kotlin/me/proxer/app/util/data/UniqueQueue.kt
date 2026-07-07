@@ -43,19 +43,17 @@ class UniqueQueue<T> : Queue<T> {
         return previousSize != internalList.size
     }
 
-    override fun poll(): T? =
-        iterator().let { iterator ->
-            when {
-                iterator.hasNext() -> iterator.next().apply { iterator.remove() }
-                else -> null
-            }
+    override fun poll(): T? = iterator().let { iterator ->
+        when {
+            iterator.hasNext() -> iterator.next().apply { iterator.remove() }
+            else -> null
         }
+    }
 
-    override fun remove(): T =
-        iterator().let { iterator ->
-            when {
-                iterator.hasNext() -> iterator.next().apply { iterator.remove() }
-                else -> throw NoSuchElementException()
-            }
+    override fun remove(): T = iterator().let { iterator ->
+        when {
+            iterator.hasNext() -> iterator.next().apply { iterator.remove() }
+            else -> throw NoSuchElementException()
         }
+    }
 }

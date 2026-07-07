@@ -38,7 +38,5 @@ inline fun Bundle.getSafeString(key: String) = requireNotNull(getString(key)) { 
 
 inline fun Parcel.readStringSafely() = requireNotNull(readString()) { "No value available at this position" }
 
-inline fun SharedPreferences.getSafeString(
-    key: String,
-    default: String? = null,
-) = requireNotNull(getString(key, default)) { "No value found for key $key" }
+inline fun SharedPreferences.getSafeString(key: String, default: String? = null) =
+    requireNotNull(getString(key, default)) { "No value found for key $key" }

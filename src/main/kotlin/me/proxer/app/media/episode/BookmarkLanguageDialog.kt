@@ -36,10 +36,7 @@ class BookmarkLanguageDialog : BaseDialog() {
 
         private const val LANGUAGES_ARGUMENT = "languages"
 
-        fun show(
-            activity: FragmentActivity,
-            languages: Set<MediaLanguage>,
-        ) {
+        fun show(activity: FragmentActivity, languages: Set<MediaLanguage>) {
             val stringLanguages = languages.map { ProxerUtils.getSafeApiEnumName(it) }
 
             BookmarkLanguageDialog()
@@ -70,31 +67,21 @@ class BookmarkLanguageDialog : BaseDialog() {
             .customListAdapter(adapter)
     }
 
-    private class LanguageAdapter(
-        private val languages: List<MediaLanguage>,
-    ) : RecyclerView.Adapter<LanguageAdapter.ViewHolder>() {
+    private class LanguageAdapter(private val languages: List<MediaLanguage>) :
+        RecyclerView.Adapter<LanguageAdapter.ViewHolder>() {
         val clickSubject: PublishSubject<MediaLanguage> = PublishSubject.create()
 
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int,
-        ): ViewHolder =
-            ViewHolder(
-                LayoutInflater.from(parent.context).inflate(R.layout.item_bookmark_language, parent, false),
-            )
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder = ViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.item_bookmark_language, parent, false),
+        )
 
-        override fun onBindViewHolder(
-            holder: ViewHolder,
-            position: Int,
-        ) {
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             holder.bind(languages[position])
         }
 
         override fun getItemCount(): Int = languages.size
 
-        inner class ViewHolder(
-            itemView: View,
-        ) : AutoDisposeViewHolder(itemView) {
+        inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
             internal val container: ViewGroup by bindView(R.id.container)
             internal val image: ImageView by bindView(R.id.image)
             internal val text: TextView by bindView(R.id.text)

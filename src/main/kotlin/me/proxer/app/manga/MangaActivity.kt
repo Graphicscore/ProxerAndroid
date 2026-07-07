@@ -235,10 +235,7 @@ class MangaActivity : BaseActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onMultiWindowModeChanged(
-        isInMultiWindowMode: Boolean,
-        newConfig: Configuration,
-    ) {
+    override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig)
 
         if (!isInMultiWindowMode) {

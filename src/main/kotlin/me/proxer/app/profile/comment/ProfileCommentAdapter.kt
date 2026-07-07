@@ -36,10 +36,8 @@ import me.proxer.app.util.extension.unsafeLazy
 /**
  * @author Ruben Gees
  */
-class ProfileCommentAdapter(
-    savedInstanceState: Bundle?,
-    private val storageHelper: StorageHelper,
-) : BaseAdapter<ParsedUserComment, ViewHolder>() {
+class ProfileCommentAdapter(savedInstanceState: Bundle?, private val storageHelper: StorageHelper) :
+    BaseAdapter<ParsedUserComment, ViewHolder>() {
     private companion object {
         private const val EXPANDED_STATE = "profile_comment_expanded"
     }
@@ -62,15 +60,10 @@ class ProfileCommentAdapter(
         setHasStableIds(true)
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_comment, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         layoutManager = recyclerView.layoutManager
@@ -89,9 +82,7 @@ class ProfileCommentAdapter(
         outState.putParcelable(EXPANDED_STATE, expansionMap)
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val titleContainer: ViewGroup by bindView(R.id.titleContainer)
         internal val image: ImageView by bindView(R.id.image)
         internal val title: TextView by bindView(R.id.title)
@@ -202,10 +193,7 @@ class ProfileCommentAdapter(
                 }
         }
 
-        private fun handleExpansion(
-            itemId: String,
-            animate: Boolean = false,
-        ) {
+        private fun handleExpansion(itemId: String, animate: Boolean = false) {
             expand.animate().cancel()
 
             if (expansionMap.containsKey(itemId)) {
@@ -232,11 +220,7 @@ class ProfileCommentAdapter(
             }
         }
 
-        private fun bindRatingRow(
-            container: ViewGroup,
-            ratingBar: RatingBar,
-            rating: Float,
-        ) = when (rating <= 0) {
+        private fun bindRatingRow(container: ViewGroup, ratingBar: RatingBar, rating: Float) = when (rating <= 0) {
             true -> {
                 container.isGone = true
             }
@@ -247,10 +231,9 @@ class ProfileCommentAdapter(
             }
         }
 
-        private fun bindExpandButton(maxHeight: Int) =
-            when (comment.height < maxHeight) {
-                true -> expand.isGone = true
-                false -> expand.isVisible = true
-            }
+        private fun bindExpandButton(maxHeight: Int) = when (comment.height < maxHeight) {
+            true -> expand.isGone = true
+            false -> expand.isVisible = true
+        }
     }
 }

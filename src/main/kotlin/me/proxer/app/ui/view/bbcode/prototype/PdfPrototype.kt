@@ -49,20 +49,13 @@ object PdfPrototype : AutoClosingPrototype {
     override val startRegex = Regex(" *pdf *=? *\"?.*?\"?( .*?)?", REGEX_OPTIONS)
     override val endRegex = Regex("/ *pdf *", REGEX_OPTIONS)
 
-    override fun construct(
-        code: String,
-        parent: BBTree,
-    ): BBTree {
+    override fun construct(code: String, parent: BBTree): BBTree {
         val width = BBUtils.cutAttribute(code, widthAttributeRegex)?.toIntOrNull()
 
         return BBTree(this, parent, args = BBArgs(custom = arrayOf(WIDTH_ARGUMENT to width)))
     }
 
-    override fun makeViews(
-        parent: BBCodeView,
-        children: List<BBTree>,
-        args: BBArgs,
-    ): List<View> {
+    override fun makeViews(parent: BBCodeView, children: List<BBTree>, args: BBArgs): List<View> {
         val childViews = children.flatMap { it.makeViews(parent, args) }
 
         return when {
@@ -205,10 +198,7 @@ object PdfPrototype : AutoClosingPrototype {
             }
         }
 
-        override fun onResourceReady(
-            resource: File,
-            transition: Transition<in File>?,
-        ) {
+        override fun onResourceReady(resource: File, transition: Transition<in File>?) {
             view?.also { safeView ->
                 regionDecoder =
                     AndroidPdfRegionDecoder(0, resource, 8f).also {

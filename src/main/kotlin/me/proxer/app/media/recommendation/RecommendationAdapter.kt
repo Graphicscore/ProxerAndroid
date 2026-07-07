@@ -50,15 +50,10 @@ class RecommendationAdapter : BaseAdapter<Recommendation, ViewHolder>() {
 
     override fun getItemId(position: Int) = data[position].id.toLong()
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int,
-    ): ViewHolder = ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_recommendation, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
+        ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_recommendation, parent, false))
 
-    override fun onBindViewHolder(
-        holder: ViewHolder,
-        position: Int,
-    ) = holder.bind(data[position])
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) = holder.bind(data[position])
 
     override fun onViewRecycled(holder: ViewHolder) {
         glide?.clear(holder.image)
@@ -68,9 +63,7 @@ class RecommendationAdapter : BaseAdapter<Recommendation, ViewHolder>() {
         glide = null
     }
 
-    inner class ViewHolder(
-        itemView: View,
-    ) : AutoDisposeViewHolder(itemView) {
+    inner class ViewHolder(itemView: View) : AutoDisposeViewHolder(itemView) {
         internal val container: ViewGroup by bindView(R.id.container)
         internal val title: TextView by bindView(R.id.title)
         internal val medium: TextView by bindView(R.id.medium)
@@ -141,32 +134,30 @@ class RecommendationAdapter : BaseAdapter<Recommendation, ViewHolder>() {
             glide?.defaultLoad(image, ProxerUrls.entryImage(item.id))
         }
 
-        private fun generateUpvotesImage(userVoted: Boolean = false) =
-            IconicsDrawable(upvotesImage.context).apply {
-                icon = CommunityMaterial.Icon3.cmd_thumb_up
+        private fun generateUpvotesImage(userVoted: Boolean = false) = IconicsDrawable(upvotesImage.context).apply {
+            icon = CommunityMaterial.Icon3.cmd_thumb_up
 
-                colorInt =
-                    when (userVoted) {
-                        true -> ContextCompat.getColor(upvotesImage.context, R.color.green_500)
-                        false -> upvotesImage.context.resolveColor(R.attr.colorIcon)
-                    }
+            colorInt =
+                when (userVoted) {
+                    true -> ContextCompat.getColor(upvotesImage.context, R.color.green_500)
+                    false -> upvotesImage.context.resolveColor(R.attr.colorIcon)
+                }
 
-                paddingDp = 4
-                sizeDp = 32
-            }
+            paddingDp = 4
+            sizeDp = 32
+        }
 
-        private fun generateDownvotesImage(userVoted: Boolean = false) =
-            IconicsDrawable(downvotesImage.context).apply {
-                icon = CommunityMaterial.Icon3.cmd_thumb_down
+        private fun generateDownvotesImage(userVoted: Boolean = false) = IconicsDrawable(downvotesImage.context).apply {
+            icon = CommunityMaterial.Icon3.cmd_thumb_down
 
-                colorInt =
-                    when (userVoted) {
-                        true -> ContextCompat.getColor(upvotesImage.context, R.color.red_500)
-                        false -> upvotesImage.context.resolveColor(R.attr.colorIcon)
-                    }
+            colorInt =
+                when (userVoted) {
+                    true -> ContextCompat.getColor(upvotesImage.context, R.color.red_500)
+                    false -> upvotesImage.context.resolveColor(R.attr.colorIcon)
+                }
 
-                paddingDp = 4
-                sizeDp = 32
-            }
+            paddingDp = 4
+            sizeDp = 32
+        }
     }
 }
