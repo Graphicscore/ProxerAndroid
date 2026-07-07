@@ -39,6 +39,8 @@ android {
 
         vectorDrawables.useSupportLibrary = true
         resConfigs "de"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     sourceSets {
@@ -52,6 +54,14 @@ android {
 
         release {
             java.srcDirs += "src/release/kotlin"
+        }
+
+        test {
+            java.srcDirs += "src/test/kotlin"
+        }
+
+        androidTest {
+            java.srcDirs += "src/androidTest/kotlin"
         }
     }
 

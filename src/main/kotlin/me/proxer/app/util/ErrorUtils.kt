@@ -300,9 +300,11 @@ object ErrorUtils {
         it is ProxerException && it.serverErrorType == IP_BLOCKED
     }
 
-    fun handle(error: Throwable): ErrorAction {
+    fun handle(error: Throwable): ErrorAction = handle(error, storageHelper.isLoggedIn)
+
+    internal fun handle(error: Throwable, isLoggedIn: Boolean): ErrorAction {
         val innermostError = getInnermostError(error)
-        val errorMessage = getMessage(innermostError)
+        val errorMessage = getMessage(innermostError, isLoggedIn)
 
         val buttonMessage =
             when (innermostError) {

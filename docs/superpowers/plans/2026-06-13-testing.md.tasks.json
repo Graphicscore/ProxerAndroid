@@ -1,0 +1,81 @@
+{
+  "planPath": "docs/superpowers/plans/2026-06-13-testing.md",
+  "tasks": [
+    {
+      "id": 7,
+      "subject": "Task 1: Add test build infrastructure",
+      "status": "pending",
+      "description": "**Goal:** Wire test dependencies and source sets so `./gradlew test` and `./gradlew connectedDebugAndroidTest` compile and find test sources.\n\n**Files:**\n- Modify: `gradle/dependencies.gradle`\n- Modify: `build.gradle`\n\n**Acceptance Criteria:**\n- [ ] `./gradlew compileDebugUnitTestKotlin` succeeds\n- [ ] `./gradlew compileDebugAndroidTestKotlin` succeeds\n- [ ] No new production code changes\n\n**Verify:** `./gradlew compileDebugUnitTestKotlin compileDebugAndroidTestKotlin --no-daemon` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"gradle/dependencies.gradle\", \"build.gradle\"], \"verifyCommand\": \"./gradlew compileDebugUnitTestKotlin compileDebugAndroidTestKotlin --no-daemon\", \"acceptanceCriteria\": [\"compileDebugUnitTestKotlin succeeds\", \"compileDebugAndroidTestKotlin succeeds\"]}\n```"
+    },
+    {
+      "id": 8,
+      "subject": "Task 2: Refactor ErrorUtils for testability",
+      "status": "pending",
+      "description": "**Goal:** Add `internal` overloads to `getMessage`, `getMessageForProxerException`, and `handle` that accept `isLoggedIn: Boolean`.\n\n**Files:**\n- Modify: `src/main/kotlin/me/proxer/app/util/ErrorUtils.kt`\n\n**Acceptance Criteria:**\n- [ ] Public `getMessage(Throwable)` and `handle(Throwable)` signatures unchanged\n- [ ] `internal fun getMessage(Throwable, Boolean)` exists\n- [ ] `internal fun handle(Throwable, Boolean)` exists\n- [ ] `internal fun getMessageForProxerException(ProxerException, Boolean)` exists\n- [ ] `./gradlew compileDebugKotlin` succeeds\n\n**Verify:** `./gradlew compileDebugKotlin --no-daemon` → `BUILD SUCCESSFUL`\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/util/ErrorUtils.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin --no-daemon\", \"acceptanceCriteria\": [\"public getMessage(Throwable) still compiles\", \"internal getMessage(Throwable, Boolean) exists\", \"internal handle(Throwable, Boolean) exists\"]}\n```"
+    },
+    {
+      "id": 9,
+      "subject": "Task 3: Unit tests — UniqueQueue",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Full coverage of `UniqueQueue`'s deduplication, FIFO ordering, and Queue contract.\n\n**Files:**\n- Create: `src/test/kotlin/me/proxer/app/util/data/UniqueQueueTest.kt`\n\n**Acceptance Criteria:**\n- [ ] add/offer deduplication verified\n- [ ] FIFO poll order verified\n- [ ] peek, element(), isEmpty, size, remove(element), clear covered\n- [ ] `./gradlew test` passes\n\n**Verify:** `./gradlew test --tests \"me.proxer.app.util.data.UniqueQueueTest\" --no-daemon` → `BUILD SUCCESSFUL`, `0 tests failed`\n\n```json:metadata\n{\"files\": [\"src/test/kotlin/me/proxer/app/util/data/UniqueQueueTest.kt\"], \"verifyCommand\": \"./gradlew test --tests \\\"me.proxer.app.util.data.UniqueQueueTest\\\" --no-daemon\", \"acceptanceCriteria\": [\"all UniqueQueue tests pass\", \"deduplication verified\", \"FIFO order verified\"]}\n```"
+    },
+    {
+      "id": 10,
+      "subject": "Task 4: Unit tests — BBParser",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Verify `BBParser.parse()` tree structure using `mockkObject(TextPrototype)` to avoid Android SDK calls on JVM.\n\n**Files:**\n- Create: `src/test/kotlin/me/proxer/app/ui/view/bbcode/BBParserTest.kt`\n\n**Acceptance Criteria:**\n- [ ] Plain text, bold, italic, underline, strikethrough tags verified\n- [ ] Nested tags verified\n- [ ] Unknown tag fallback to TextPrototype verified\n- [ ] Unclosed tag handling verified\n- [ ] `./gradlew test` passes\n\n**Verify:** `./gradlew test --tests \"me.proxer.app.ui.view.bbcode.BBParserTest\" --no-daemon` → `BUILD SUCCESSFUL`, `0 tests failed`\n\n```json:metadata\n{\"files\": [\"src/test/kotlin/me/proxer/app/ui/view/bbcode/BBParserTest.kt\"], \"verifyCommand\": \"./gradlew test --tests \\\"me.proxer.app.ui.view.bbcode.BBParserTest\\\" --no-daemon\", \"acceptanceCriteria\": [\"all BBParser tests pass\", \"bold/italic parsing verified\", \"nested parsing verified\"]}\n```"
+    },
+    {
+      "id": 11,
+      "subject": "Task 5: Unit tests — ErrorUtils",
+      "status": "pending",
+      "blockedBy": [7, 8],
+      "description": "**Goal:** Verify every error type → string resource ID mapping and every error → buttonAction mapping.\n\n**Files:**\n- Create: `src/test/kotlin/me/proxer/app/util/ErrorUtilsTest.kt`\n\n**Acceptance Criteria:**\n- [ ] IO/TIMEOUT/PARSING/UNKNOWN/CANCELLED ErrorTypes map correctly\n- [ ] IP_BLOCKED, INVALID_TOKEN, USER_INSUFFICIENT_PERMISSIONS (both login states) verified\n- [ ] NotLoggedInException/NotConnectedException/AgeConfirmationRequiredException verified\n- [ ] PartialException data passthrough verified\n- [ ] MangaLinkException OPEN_LINK + link data verified\n- [ ] `./gradlew test` passes\n\n**Verify:** `./gradlew test --tests \"me.proxer.app.util.ErrorUtilsTest\" --no-daemon` → `BUILD SUCCESSFUL`, `0 tests failed`\n\n```json:metadata\n{\"files\": [\"src/test/kotlin/me/proxer/app/util/ErrorUtilsTest.kt\"], \"verifyCommand\": \"./gradlew test --tests \\\"me.proxer.app.util.ErrorUtilsTest\\\" --no-daemon\", \"acceptanceCriteria\": [\"all error type mappings verified\", \"buttonAction mappings verified\", \"PartialException data passthrough verified\"]}\n```"
+    },
+    {
+      "id": 12,
+      "subject": "Task 6: Unit tests — BaseViewModel",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Verify BaseViewModel's loading/error/reload state machine using Koin test fakes.\n\n**Files:**\n- Create: `src/test/kotlin/me/proxer/app/base/FakeAppModule.kt`\n- Create: `src/test/kotlin/me/proxer/app/base/BaseViewModelTest.kt`\n\n**Acceptance Criteria:**\n- [ ] load() sets data on success\n- [ ] load() sets error on failure\n- [ ] isLoading is false after both success and failure\n- [ ] reload() clears state before loading\n- [ ] loadIfPossible() skips when isLoading is true\n- [ ] `./gradlew test` passes\n\n**Verify:** `./gradlew test --tests \"me.proxer.app.base.BaseViewModelTest\" --no-daemon` → `BUILD SUCCESSFUL`, `0 tests failed`\n\n```json:metadata\n{\"files\": [\"src/test/kotlin/me/proxer/app/base/FakeAppModule.kt\", \"src/test/kotlin/me/proxer/app/base/BaseViewModelTest.kt\"], \"verifyCommand\": \"./gradlew test --tests \\\"me.proxer.app.base.BaseViewModelTest\\\" --no-daemon\", \"acceptanceCriteria\": [\"load success sets data\", \"load failure sets error\", \"reload clears state\", \"loadIfPossible skips when loading\"]}\n```"
+    },
+    {
+      "id": 13,
+      "subject": "Task 7: Compose UI tests — TvErrorView",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Verify TvErrorView renders correct buttons per ButtonAction and age-confirm dialog appears on click.\n\n**Files:**\n- Create: `src/androidTest/kotlin/me/proxer/app/tv/TvErrorViewTest.kt`\n\n**Acceptance Criteria:**\n- [ ] Generic error shows Retry button\n- [ ] LOGIN action shows login button\n- [ ] AGE_CONFIRMATION button click shows AlertDialog\n- [ ] ACTION_MESSAGE_HIDE: button assertDoesNotExist()\n- [ ] Error message text is displayed\n\n**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvErrorViewTest`\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/tv/TvErrorViewTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvErrorViewTest\", \"acceptanceCriteria\": [\"retry button shown for generic error\", \"login button shown for LOGIN action\", \"age confirm dialog shown on click\", \"HIDE removes button\"]}\n```"
+    },
+    {
+      "id": 14,
+      "subject": "Task 8: Compose UI tests — TvSearchScreenContent",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Verify TvSearchScreenContent renders search field, results, and error state.\n\n**Files:**\n- Create: `src/androidTest/kotlin/me/proxer/app/tv/TvSearchScreenTest.kt`\n\n**Acceptance Criteria:**\n- [ ] Results show entry names\n- [ ] Query text shown in search field\n- [ ] Error message shown in error state\n\n**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvSearchScreenTest`\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/tv/TvSearchScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvSearchScreenTest\", \"acceptanceCriteria\": [\"entry names shown\", \"query text shown\", \"error message shown\"]}\n```"
+    },
+    {
+      "id": 15,
+      "subject": "Task 9: Compose UI tests — TvMediaDetailScreenContent",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Verify TvMediaDetailScreenContent renders title, description, loading, and error states.\n\n**Files:**\n- Create: `src/androidTest/kotlin/me/proxer/app/tv/TvMediaDetailScreenTest.kt`\n\n**Acceptance Criteria:**\n- [ ] Entry name shown in populated state\n- [ ] Description shown in populated state\n- [ ] Error message shown in error state\n- [ ] Description absent in loading state\n\n**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvMediaDetailScreenTest`\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/tv/TvMediaDetailScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvMediaDetailScreenTest\", \"acceptanceCriteria\": [\"entry name displayed\", \"description displayed\", \"error shown\"]}\n```"
+    },
+    {
+      "id": 16,
+      "subject": "Task 10: Compose UI tests — TvEpisodeScreenContent",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Verify TvEpisodeScreenContent renders episode list, entry name, and error state.\n\n**Files:**\n- Create: `src/androidTest/kotlin/me/proxer/app/tv/TvEpisodeScreenTest.kt`\n\n**Acceptance Criteria:**\n- [ ] Entry name shown in header\n- [ ] Episode numbers shown in list\n- [ ] Error message shown in error state\n\n**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvEpisodeScreenTest`\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/tv/TvEpisodeScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.tv.TvEpisodeScreenTest\", \"acceptanceCriteria\": [\"entry name shown\", \"episode numbers shown\", \"error shown\"]}\n```"
+    },
+    {
+      "id": 17,
+      "subject": "Task 11: CI integration",
+      "status": "pending",
+      "blockedBy": [7],
+      "description": "**Goal:** Add unit-tests and instrumented-tests jobs to ci.yml, both needing build.\n\n**Files:**\n- Modify: `.github/workflows/ci.yml`\n\n**Acceptance Criteria:**\n- [ ] unit-tests job runs ./gradlew test, blocks on failure, needs: build\n- [ ] instrumented-tests job uses reactivecircus/android-emulator-runner@v2 api-level:30, continue-on-error:true\n- [ ] YAML valid\n\n**Verify:** `python3 -c \"import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('YAML OK')\"` → `YAML OK`\n\n```json:metadata\n{\"files\": [\".github/workflows/ci.yml\"], \"verifyCommand\": \"python3 -c \\\"import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('YAML OK')\\\"\", \"acceptanceCriteria\": [\"unit-tests job present with needs: build\", \"instrumented-tests job with emulator runner\", \"YAML validates\"]}\n```"
+    }
+  ],
+  "lastUpdated": "2026-06-13T00:00:00Z"
+}
