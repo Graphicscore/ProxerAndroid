@@ -89,7 +89,7 @@ fun ScheduleScreen(onOpenDrawer: () -> Unit = {}) {
         ) {
             val schedule = data ?: return@ContentScreen
             val context = LocalContext.current
-            val activity = context as Activity
+            val activity = context as? Activity ?: return@ContentScreen
             val sortedDays = remember(schedule) {
                 schedule.entries.sortedBy { (day, _) -> day.ordinal }
             }
