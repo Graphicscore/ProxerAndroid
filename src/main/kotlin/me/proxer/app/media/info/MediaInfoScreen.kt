@@ -26,6 +26,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -51,6 +52,9 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun MediaInfoScreen(id: String) {
     val viewModel = koinViewModel<MediaInfoViewModel> { parametersOf(id) }
+
+    LaunchedEffect(Unit) { viewModel.load() }
+
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
