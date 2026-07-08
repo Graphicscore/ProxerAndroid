@@ -1,0 +1,101 @@
+package me.proxer.app.media.relation
+
+import android.app.Activity
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import me.proxer.app.media.MediaActivity
+import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.library.entity.info.Relation
+import me.proxer.library.util.ProxerUrls
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@Composable
+fun RelationScreen(mediaId: String) {
+    val viewModel = koinViewModel<RelationViewModel> { parametersOf(mediaId) }
+    val data by viewModel.data.observeAsState()
+    val error by viewModel.error.observeAsState()
+    val isLoading by viewModel.isLoading.observeAsState(false)
+
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    ContentScreen(
+        isLoading = isLoading == true,
+        error = error,
+        onRetry = { viewModel.load() },
+    ) {
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            items(data ?: emptyList(), key = { it.id }) { relation ->
+                RelationCard(relation = relation)
+            }
+        }
+    }
+}
+
+@Composable
+private fun RelationCard(relation: Relation) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    Card(
+        onClick = {
+            if (activity != null) {
+                MediaActivity.navigateTo(activity, relation.id, relation.name, relation.category)
+            }
+        },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column {
+            AsyncImage(
+                model = ProxerUrls.entryImage(relation.id).toString(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.8f),
+            )
+            Text(
+                text = relation.name,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(8.dp),
+            )
+            if (relation.rating > 0) {
+                Text(
+                    text = "★ ${"%.1f".format(relation.rating / 2.0f)}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp),
+                )
+            }
+        }
+    }
+}
