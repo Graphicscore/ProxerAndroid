@@ -48,7 +48,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NewsScreen(onOpenDrawer: () -> Unit) {
+fun NewsScreen(onOpenDrawer: () -> Unit = {}) {
     val viewModel = koinViewModel<NewsViewModel>()
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
