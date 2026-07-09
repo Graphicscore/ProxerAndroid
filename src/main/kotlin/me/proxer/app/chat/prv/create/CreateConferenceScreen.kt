@@ -36,7 +36,9 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +63,7 @@ fun CreateConferenceScreen(
     val error by viewModel.error.observeAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     var topic by remember { mutableStateOf("") }
     var firstMessage by remember { mutableStateOf("") }
@@ -210,10 +213,14 @@ fun CreateConferenceScreen(
                             topicError = context.getString(R.string.error_input_empty)
                         }
                         trimmedMessage.isBlank() -> {
-                            /* handled via snackbar */
+                            scope.launch {
+                                snackbarHostState.showSnackbar(context.getString(R.string.error_input_empty))
+                            }
                         }
                         participants.isEmpty() -> {
-                            /* handled via snackbar */
+                            scope.launch {
+                                snackbarHostState.showSnackbar(context.getString(R.string.error_input_empty))
+                            }
                         }
                         isGroup -> viewModel.createGroup(trimmedTopic, trimmedMessage, participants.toList())
                         else -> viewModel.createChat(trimmedMessage, participants.first())
@@ -226,7 +233,7 @@ fun CreateConferenceScreen(
                     CircularProgressIndicator(modifier = Modifier.padding(end = 8.dp))
                 }
                 Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
-                Text(stringResource(R.string.dialog_chat_report_positive))
+                Text(stringResource(if (isGroup) R.string.action_create_group else R.string.action_create_chat))
             }
         }
     }

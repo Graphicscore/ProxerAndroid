@@ -1,6 +1,8 @@
 package me.proxer.app.chat.prv.message
 
 import android.app.Activity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,12 +41,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import me.proxer.app.R
 import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.chat.prv.LocalMessage
 import me.proxer.app.chat.prv.conference.info.ConferenceInfoActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toLocalDateTime
@@ -57,6 +64,7 @@ fun MessengerScreen(
     onBack: () -> Unit,
 ) {
     val viewModel = koinViewModel<MessengerViewModel> { parametersOf(conference) }
+    val reportViewModel = koinViewModel<MessengerReportViewModel>()
     val storageHelper: StorageHelper = koinInject()
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
@@ -66,6 +74,9 @@ fun MessengerScreen(
     val draft by viewModel.draft.observeAsState()
     val context = LocalContext.current
     var messageText by rememberSaveable { mutableStateOf(initialMessage ?: "") }
+    var selectedIds by remember { mutableStateOf(emptySet<Long>()) }
+    var showReportDialog by remember { mutableStateOf(false) }
+    var reportReason by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.load()
@@ -82,39 +93,98 @@ fun MessengerScreen(
 
     val myUserId = storageHelper.user?.id
 
+    if (showReportDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showReportDialog = false
+                reportReason = ""
+            },
+            title = { Text(stringResource(R.string.dialog_chat_report_title)) },
+            text = {
+                OutlinedTextField(
+                    value = reportReason,
+                    onValueChange = { reportReason = it },
+                    label = { Text(stringResource(R.string.dialog_chat_report_message_hint)) },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        reportViewModel.sendReport(currentConference.id.toString(), reportReason)
+                        showReportDialog = false
+                        reportReason = ""
+                        selectedIds = emptySet()
+                    },
+                ) {
+                    Text(stringResource(R.string.dialog_chat_report_positive))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showReportDialog = false; reportReason = "" }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    TextButton(
-                        onClick = {
-                            val activity = context as? Activity ?: return@TextButton
-                            if (currentConference.isGroup) {
-                                ConferenceInfoActivity.navigateTo(activity, currentConference)
-                            } else {
-                                ProfileActivity.navigateTo(
-                                    activity,
-                                    null,
-                                    currentConference.topic,
-                                    currentConference.image,
-                                )
-                            }
-                        },
-                        contentPadding = PaddingValues(0.dp),
-                    ) {
-                        Text(
-                            text = currentConference.topic,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
-            )
+            if (selectedIds.isEmpty()) {
+                TopAppBar(
+                    title = {
+                        TextButton(
+                            onClick = {
+                                val activity = context as? Activity ?: return@TextButton
+                                if (currentConference.isGroup) {
+                                    ConferenceInfoActivity.navigateTo(activity, currentConference)
+                                } else {
+                                    ProfileActivity.navigateTo(
+                                        activity,
+                                        null,
+                                        currentConference.topic,
+                                        currentConference.image,
+                                    )
+                                }
+                            },
+                            contentPadding = PaddingValues(0.dp),
+                        ) {
+                            Text(
+                                text = currentConference.topic,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = onBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        }
+                    },
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(selectedIds.size.toString()) },
+                    navigationIcon = {
+                        IconButton(onClick = { selectedIds = emptySet() }) {
+                            Icon(Icons.Default.Close, contentDescription = null)
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                showReportDialog = true
+                                reportReason = ""
+                            },
+                        ) {
+                            Icon(
+                                Icons.Default.Flag,
+                                contentDescription = stringResource(R.string.action_report),
+                            )
+                        }
+                    },
+                )
+            }
         },
         bottomBar = {
             Row(
@@ -166,8 +236,21 @@ fun MessengerScreen(
                     MessageItem(
                         message = message,
                         isOwnMessage = message.userId == myUserId,
+                        isSelected = message.id in selectedIds,
                         onUsernameClick = {
                             ProfileActivity.navigateTo(activity, message.userId, message.username)
+                        },
+                        onClick = {
+                            if (selectedIds.isNotEmpty()) {
+                                selectedIds = if (message.id in selectedIds) {
+                                    selectedIds - message.id
+                                } else {
+                                    selectedIds + message.id
+                                }
+                            }
+                        },
+                        onLongClick = {
+                            selectedIds = selectedIds + message.id
                         },
                     )
                 }
@@ -180,12 +263,17 @@ fun MessengerScreen(
 private fun MessageItem(
     message: LocalMessage,
     isOwnMessage: Boolean,
+    isSelected: Boolean,
     onUsernameClick: () -> Unit,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .then(if (isSelected) Modifier.background(MaterialTheme.colorScheme.primaryContainer) else Modifier)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 8.dp, vertical = 2.dp),
         horizontalAlignment = if (isOwnMessage) Alignment.End else Alignment.Start,
     ) {
@@ -209,10 +297,10 @@ private fun MessageItem(
                 },
             ),
         ) {
-            Text(
-                text = message.message,
+            AndroidView(
+                factory = { ctx -> BBCodeView(ctx) },
+                update = { view -> view.tree = message.styledMessage },
                 modifier = Modifier.padding(8.dp),
-                style = MaterialTheme.typography.bodyMedium,
             )
         }
         Text(
