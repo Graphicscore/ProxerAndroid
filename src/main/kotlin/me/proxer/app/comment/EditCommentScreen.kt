@@ -56,13 +56,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.ui.view.bbcode.toSimpleBBTree
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -121,12 +124,59 @@ fun EditCommentScreen(
         }
     }
 
+    EditCommentContent(
+        isUpdate = isUpdate == true,
+        name = name,
+        isLoading = isLoading == true,
+        error = error,
+        textFieldValue = textFieldValue,
+        currentRating = currentRating,
+        selectedTab = selectedTab,
+        snackbarHostState = snackbarHostState,
+        onBack = onBack,
+        onPublish = { viewModel.publish() },
+        onTextChanged = { newValue ->
+            textFieldValue = newValue
+            viewModel.updateContent(newValue.text)
+        },
+        onRatingChanged = { newRating ->
+            currentRating = newRating
+            viewModel.updateRating(newRating)
+        },
+        onInsertTag = { tag, value ->
+            textFieldValue = insertTag(textFieldValue, tag, value)
+            viewModel.updateContent(textFieldValue.text)
+        },
+        onTabSelected = { selectedTab = it },
+        onRetry = { viewModel.load() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditCommentContent(
+    isUpdate: Boolean,
+    name: String?,
+    isLoading: Boolean,
+    error: ErrorAction?,
+    textFieldValue: TextFieldValue,
+    currentRating: Float,
+    selectedTab: Int,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit,
+    onPublish: () -> Unit,
+    onTextChanged: (TextFieldValue) -> Unit,
+    onRatingChanged: (Float) -> Unit,
+    onInsertTag: (String, String) -> Unit,
+    onTabSelected: (Int) -> Unit,
+    onRetry: () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(if (isUpdate == true) R.string.action_update_comment else R.string.action_create_comment))
+                        Text(stringResource(if (isUpdate) R.string.action_update_comment else R.string.action_create_comment))
                         name?.trim()?.takeIf { it.isNotEmpty() }?.let { subtitle ->
                             Text(subtitle, style = MaterialTheme.typography.bodySmall)
                         }
@@ -138,7 +188,7 @@ fun EditCommentScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.publish() }) {
+                    IconButton(onClick = onPublish) {
                         Icon(
                             Icons.AutoMirrored.Filled.Send,
                             contentDescription = stringResource(R.string.action_publish),
@@ -150,21 +200,21 @@ fun EditCommentScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             modifier = Modifier.padding(padding),
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 PrimaryTabRow(selectedTabIndex = selectedTab) {
                     Tab(
                         selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
+                        onClick = { onTabSelected(0) },
                         text = { Text(stringResource(R.string.fragment_edit_comment)) },
                     )
                     Tab(
                         selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
+                        onClick = { onTabSelected(1) },
                         text = { Text(stringResource(R.string.fragment_edit_comment_preview)) },
                     )
                 }
@@ -172,24 +222,39 @@ fun EditCommentScreen(
                 when (selectedTab) {
                     0 -> EditTab(
                         textFieldValue = textFieldValue,
-                        onTextChanged = { newValue ->
-                            textFieldValue = newValue
-                            viewModel.updateContent(newValue.text)
-                        },
+                        onTextChanged = onTextChanged,
                         rating = currentRating,
-                        onRatingChanged = { newRating ->
-                            currentRating = newRating
-                            viewModel.updateRating(newRating)
-                        },
-                        onInsertTag = { tag, value ->
-                            textFieldValue = insertTag(textFieldValue, tag, value)
-                            viewModel.updateContent(textFieldValue.text)
-                        },
+                        onRatingChanged = onRatingChanged,
+                        onInsertTag = onInsertTag,
                     )
                     1 -> PreviewTab(text = textFieldValue.text)
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EditCommentContentPreview() {
+    ProxerTheme {
+        EditCommentContent(
+            isUpdate = false,
+            name = "My Anime",
+            isLoading = true,
+            error = null,
+            textFieldValue = TextFieldValue(""),
+            currentRating = 0f,
+            selectedTab = 0,
+            snackbarHostState = SnackbarHostState(),
+            onBack = {},
+            onPublish = {},
+            onTextChanged = {},
+            onRatingChanged = {},
+            onInsertTag = { _, _ -> },
+            onTabSelected = {},
+            onRetry = {},
+        )
     }
 }
 

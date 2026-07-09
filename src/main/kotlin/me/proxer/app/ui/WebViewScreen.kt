@@ -2,6 +2,8 @@ package me.proxer.app.ui
 
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -15,15 +17,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
+import me.proxer.app.ui.compose.ProxerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebViewScreen(url: String, onBack: () -> Unit) {
     val context = LocalContext.current
+    val isInPreview = LocalInspectionMode.current
+
     val webView = remember {
-        WebView(context).apply {
+        if (isInPreview) null else WebView(context).apply {
             webViewClient = WebViewClient()
             settings.javaScriptEnabled = true
             loadUrl(url)
@@ -36,7 +44,7 @@ fun WebViewScreen(url: String, onBack: () -> Unit) {
                 title = { Text(url) },
                 navigationIcon = {
                     IconButton(onClick = {
-                        if (webView.canGoBack()) webView.goBack() else onBack()
+                        if (webView?.canGoBack() == true) webView.goBack() else onBack()
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
@@ -44,11 +52,28 @@ fun WebViewScreen(url: String, onBack: () -> Unit) {
             )
         },
     ) { padding ->
-        AndroidView(
-            factory = { _ -> webView },
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-        )
+        if (isInPreview) {
+            Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .background(Color.Gray),
+            )
+        } else {
+            AndroidView(
+                factory = { _ -> requireNotNull(webView) },
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WebViewScreenPreview() {
+    ProxerTheme {
+        WebViewScreen(url = "https://proxer.me", onBack = {})
     }
 }

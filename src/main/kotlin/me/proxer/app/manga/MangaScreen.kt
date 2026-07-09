@@ -3,6 +3,7 @@ package me.proxer.app.manga
 import android.app.Activity
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,9 +46,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.WindowInsetsCompat
@@ -66,7 +70,9 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.DeviceUtils
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.GLUtil
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.extension.decodedName
@@ -161,6 +167,68 @@ fun MangaScreen(
         Category.MANGA.toEpisodeAppString(context, currentEpisode)
     }
 
+    MangaContent(
+        currentEpisode = currentEpisode,
+        totalEpisodes = totalEpisodes,
+        displayName = displayName,
+        displayChapterTitle = displayChapterTitle,
+        episodeLabel = episodeLabel,
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        isFullscreen = isFullscreen,
+        readerOrientation = readerOrientation,
+        snackbarHostState = snackbarHostState,
+        onBack = onBack,
+        onToggleOrientation = {
+            readerOrientation = when (readerOrientation) {
+                MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
+                MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
+                MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
+            }
+            preferenceHelper.mangaReaderOrientation = readerOrientation
+        },
+        onPreviousEpisode = {
+            if (currentEpisode > 1) {
+                currentEpisode--
+                viewModel.setEpisode(currentEpisode)
+            }
+        },
+        onNextEpisode = {
+            val total = totalEpisodes
+            if (total != null && currentEpisode < total) {
+                currentEpisode++
+                viewModel.setEpisode(currentEpisode)
+            }
+        },
+        onRetry = { viewModel.load() },
+        onLowMemory = { scope.launch { snackbarHostState.showSnackbar(lowMemoryMessage) } },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MangaContent(
+    currentEpisode: Int,
+    totalEpisodes: Int?,
+    displayName: String?,
+    displayChapterTitle: String?,
+    episodeLabel: String,
+    data: MangaChapterInfo?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    isFullscreen: Boolean,
+    readerOrientation: MangaReaderOrientation,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit,
+    onToggleOrientation: () -> Unit,
+    onPreviousEpisode: () -> Unit,
+    onNextEpisode: () -> Unit,
+    onRetry: () -> Unit,
+    onLowMemory: () -> Unit,
+) {
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             if (!isFullscreen) {
@@ -189,16 +257,7 @@ fun MangaScreen(
                         }
                     },
                     actions = {
-                        IconButton(
-                            onClick = {
-                                readerOrientation = when (readerOrientation) {
-                                    MangaReaderOrientation.LEFT_TO_RIGHT -> MangaReaderOrientation.RIGHT_TO_LEFT
-                                    MangaReaderOrientation.RIGHT_TO_LEFT -> MangaReaderOrientation.VERTICAL
-                                    MangaReaderOrientation.VERTICAL -> MangaReaderOrientation.LEFT_TO_RIGHT
-                                }
-                                preferenceHelper.mangaReaderOrientation = readerOrientation
-                            },
-                        ) {
+                        IconButton(onClick = onToggleOrientation) {
                             Icon(
                                 imageVector = Icons.Default.SwapVert,
                                 contentDescription = stringResource(R.string.fragment_manga_toggle_orientation),
@@ -220,12 +279,7 @@ fun MangaScreen(
                                 .padding(horizontal = 4.dp),
                         ) {
                             IconButton(
-                                onClick = {
-                                    if (currentEpisode > 1) {
-                                        currentEpisode--
-                                        viewModel.setEpisode(currentEpisode)
-                                    }
-                                },
+                                onClick = onPreviousEpisode,
                                 enabled = currentEpisode > 1,
                             ) {
                                 Icon(
@@ -240,12 +294,7 @@ fun MangaScreen(
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             IconButton(
-                                onClick = {
-                                    if (currentEpisode < total) {
-                                        currentEpisode++
-                                        viewModel.setEpisode(currentEpisode)
-                                    }
-                                },
+                                onClick = onNextEpisode,
                                 enabled = currentEpisode < total,
                             ) {
                                 Icon(
@@ -261,9 +310,9 @@ fun MangaScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             modifier = if (isFullscreen) Modifier else Modifier.padding(padding),
         ) {
             val chapterData = data ?: return@ContentScreen
@@ -279,9 +328,7 @@ fun MangaScreen(
                                 chapter = chapterData.chapter,
                                 isVertical = true,
                                 screenWidth = screenWidth,
-                                onLowMemory = {
-                                    scope.launch { snackbarHostState.showSnackbar(lowMemoryMessage) }
-                                },
+                                onLowMemory = onLowMemory,
                             )
                         }
                     }
@@ -303,14 +350,38 @@ fun MangaScreen(
                             chapter = chapterData.chapter,
                             isVertical = false,
                             screenWidth = 0,
-                            onLowMemory = {
-                                scope.launch { snackbarHostState.showSnackbar(lowMemoryMessage) }
-                            },
+                            onLowMemory = onLowMemory,
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MangaContentPreview() {
+    ProxerTheme {
+        MangaContent(
+            currentEpisode = 1,
+            totalEpisodes = 12,
+            displayName = "My Manga",
+            displayChapterTitle = null,
+            episodeLabel = "Chapter 1",
+            data = null,
+            error = null,
+            isLoading = true,
+            isFullscreen = false,
+            readerOrientation = MangaReaderOrientation.LEFT_TO_RIGHT,
+            snackbarHostState = SnackbarHostState(),
+            onBack = {},
+            onToggleOrientation = {},
+            onPreviousEpisode = {},
+            onNextEpisode = {},
+            onRetry = {},
+            onLowMemory = {},
+        )
     }
 }
 
@@ -403,6 +474,8 @@ private fun MangaImagePage(
                     modifier = Modifier.size(64.dp),
                 )
             }
+        } else if (LocalInspectionMode.current) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Gray))
         } else {
             AndroidView(
                 factory = { ctx ->
@@ -488,6 +561,8 @@ private fun MangaGifPage(
                     modifier = Modifier.size(64.dp),
                 )
             }
+        } else if (LocalInspectionMode.current) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Gray))
         } else {
             AndroidView(
                 factory = { ctx ->

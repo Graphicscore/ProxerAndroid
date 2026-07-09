@@ -24,9 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 
@@ -149,4 +151,12 @@ fun LoginDialog(onDismiss: () -> Unit) {
             }
         },
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LoginDialogPreview() {
+    ProxerTheme {
+        LoginDialog(onDismiss = {})
+    }
 }

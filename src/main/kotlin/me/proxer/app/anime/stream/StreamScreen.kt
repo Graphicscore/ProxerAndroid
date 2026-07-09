@@ -37,8 +37,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.cast.CastPlayer
 import androidx.media3.ui.PlayerView
@@ -52,7 +55,8 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.delay
 import me.proxer.app.R
 import me.proxer.app.anime.stream.StreamPlayerManager.PlayerState
-import me.proxer.app.util.ErrorUtils
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.logErrors
 import me.proxer.app.util.extension.toEpisodeAppString
 import me.proxer.library.enums.Category
@@ -64,7 +68,7 @@ fun StreamScreen(
     playerManager: StreamPlayerManager,
 ) {
     var playerState by remember { mutableStateOf(PlayerState.LOADING) }
-    var error by remember { mutableStateOf<ErrorUtils.ErrorAction?>(null) }
+    var error by remember { mutableStateOf<ErrorAction?>(null) }
     var isToolbarVisible by remember { mutableStateOf(false) }
 
     // Rewind indicator
@@ -180,47 +184,127 @@ fun StreamScreen(
         }
     }
 
+    StreamContent(
+        playerState = playerState,
+        error = error,
+        isToolbarVisible = isToolbarVisible,
+        rewindVisible = rewindVisible,
+        rewindCount = rewindCount,
+        ffVisible = ffVisible,
+        ffCount = ffCount,
+        controlVisible = controlVisible,
+        controlValue = controlValue,
+        name = activity.name,
+        episode = activity.episode,
+        isLandscapeMode = activity.isLandscapeMode,
+        isInternalPlayerOnly = activity.isInternalPlayerOnly,
+        isProxerStream = activity.isProxerStream,
+        playerContent = {
+            AndroidView(
+                factory = { _ ->
+                    activity.playerView.also { view ->
+                        view.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+
+                        activity.coverUri?.let { uri ->
+                            Glide.with(view)
+                                .load(uri)
+                                .logErrors()
+                                .into(
+                                    object : CustomViewTarget<PlayerView, Drawable>(view) {
+                                        override fun onLoadFailed(errorDrawable: Drawable?) = Unit
+                                        override fun onResourceCleared(placeholder: Drawable?) {
+                                            view.defaultArtwork = null
+                                        }
+                                        override fun onResourceReady(
+                                            resource: Drawable,
+                                            transition: Transition<in Drawable>?,
+                                        ) {
+                                            view.defaultArtwork = resource
+                                        }
+                                    },
+                                )
+                        }
+
+                        view.setControllerVisibilityListener(
+                            PlayerView.ControllerVisibilityListener { visibility ->
+                                isToolbarVisible = visibility == View.VISIBLE
+                                activity.toggleFullscreen(visibility == View.GONE)
+                            },
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
+        },
+        castButtonContent = if (activity.isProxerStream) {
+            {
+                AndroidView(
+                    factory = { ctx ->
+                        MediaRouteButton(ctx).also { button ->
+                            CastButtonFactory.setUpMediaRouteButton(ctx, button)
+                        }
+                    },
+                )
+            }
+        } else null,
+        onBack = { @Suppress("DEPRECATION") activity.onBackPressed() },
+        onRewindClick = {
+            activity.playerView.rewind()
+            rewindCount += 10
+            rewindHideKey++
+        },
+        onFastForwardClick = {
+            activity.playerView.fastForward()
+            ffCount += 10
+            ffHideKey++
+        },
+        onRetry = { playerManager.retry(); error = null },
+        onFinish = { activity.finish() },
+        onOpenInOtherApp = { activity.openInOtherApp() },
+        onToggleOrientation = { activity.toggleOrientation() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StreamContent(
+    playerState: PlayerState,
+    error: ErrorAction?,
+    isToolbarVisible: Boolean,
+    rewindVisible: Boolean,
+    rewindCount: Int,
+    ffVisible: Boolean,
+    ffCount: Int,
+    controlVisible: Boolean,
+    controlValue: Int,
+    name: String,
+    episode: Int,
+    isLandscapeMode: Boolean,
+    isInternalPlayerOnly: Boolean,
+    isProxerStream: Boolean,
+    playerContent: @Composable () -> Unit,
+    castButtonContent: (@Composable () -> Unit)?,
+    onBack: () -> Unit,
+    onRewindClick: () -> Unit,
+    onFastForwardClick: () -> Unit,
+    onRetry: () -> Unit,
+    onFinish: () -> Unit,
+    onOpenInOtherApp: () -> Unit,
+    onToggleOrientation: () -> Unit,
+) {
+    val context = LocalContext.current
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black),
     ) {
-        // Player view
-        AndroidView(
-            factory = { _ ->
-                activity.playerView.also { view ->
-                    view.setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-
-                    activity.coverUri?.let { uri ->
-                        Glide.with(view)
-                            .load(uri)
-                            .logErrors()
-                            .into(
-                                object : CustomViewTarget<PlayerView, Drawable>(view) {
-                                    override fun onLoadFailed(errorDrawable: Drawable?) = Unit
-                                    override fun onResourceCleared(placeholder: Drawable?) {
-                                        view.defaultArtwork = null
-                                    }
-                                    override fun onResourceReady(
-                                        resource: Drawable,
-                                        transition: Transition<in Drawable>?,
-                                    ) {
-                                        view.defaultArtwork = resource
-                                    }
-                                },
-                            )
-                    }
-
-                    view.setControllerVisibilityListener(
-                        PlayerView.ControllerVisibilityListener { visibility ->
-                            isToolbarVisible = visibility == View.VISIBLE
-                            activity.toggleFullscreen(visibility == View.GONE)
-                        },
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxSize(),
-        )
+        // Player view (replaced with grey placeholder in preview)
+        if (LocalInspectionMode.current) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Gray))
+        } else {
+            playerContent()
+        }
 
         // Loading indicator
         if (playerState == PlayerState.LOADING) {
@@ -242,11 +326,7 @@ fun StreamScreen(
             Text(
                 text = rewindCount.toString(),
                 color = Color.White,
-                modifier = Modifier.clickable {
-                    activity.playerView.rewind()
-                    rewindCount += 10
-                    rewindHideKey++
-                },
+                modifier = Modifier.clickable { onRewindClick() },
             )
         }
 
@@ -262,11 +342,7 @@ fun StreamScreen(
             Text(
                 text = ffCount.toString(),
                 color = Color.White,
-                modifier = Modifier.clickable {
-                    activity.playerView.fastForward()
-                    ffCount += 10
-                    ffHideKey++
-                },
+                modifier = Modifier.clickable { onFastForwardClick() },
             )
         }
 
@@ -293,15 +369,15 @@ fun StreamScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(text = activity.name, color = Color.White)
+                        Text(text = name, color = Color.White)
                         Text(
-                            text = Category.ANIME.toEpisodeAppString(activity, activity.episode),
+                            text = Category.ANIME.toEpisodeAppString(context, episode),
                             color = Color.White,
                         )
                     }
                 },
                 navigationIcon = {
-                    IconButton(onClick = { @Suppress("DEPRECATION") activity.onBackPressed() }) {
+                    IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = null,
@@ -310,8 +386,8 @@ fun StreamScreen(
                     }
                 },
                 actions = {
-                    if (!activity.isInternalPlayerOnly) {
-                        IconButton(onClick = { activity.openInOtherApp() }) {
+                    if (!isInternalPlayerOnly) {
+                        IconButton(onClick = onOpenInOtherApp) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.OpenInNew,
                                 contentDescription = stringResource(R.string.action_open_in_other_app),
@@ -319,9 +395,9 @@ fun StreamScreen(
                             )
                         }
                     }
-                    IconButton(onClick = { activity.toggleOrientation() }) {
+                    IconButton(onClick = onToggleOrientation) {
                         Icon(
-                            imageVector = if (activity.isLandscapeMode) {
+                            imageVector = if (isLandscapeMode) {
                                 Icons.Filled.FullscreenExit
                             } else {
                                 Icons.Filled.Fullscreen
@@ -330,15 +406,7 @@ fun StreamScreen(
                             tint = Color.White,
                         )
                     }
-                    if (activity.isProxerStream) {
-                        AndroidView(
-                            factory = { ctx ->
-                                MediaRouteButton(ctx).also { button ->
-                                    CastButtonFactory.setUpMediaRouteButton(ctx, button)
-                                }
-                            },
-                        )
-                    }
+                    castButtonContent?.invoke()
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0x80000000L.toInt()),
@@ -351,18 +419,50 @@ fun StreamScreen(
     // Error dialog
     error?.let { action ->
         AlertDialog(
-            onDismissRequest = { activity.finish() },
+            onDismissRequest = onFinish,
             text = { Text(stringResource(action.message)) },
             confirmButton = {
-                TextButton(onClick = { playerManager.retry(); error = null }) {
+                TextButton(onClick = onRetry) {
                     Text(stringResource(R.string.error_action_retry))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { activity.finish() }) {
+                TextButton(onClick = onFinish) {
                     Text(stringResource(R.string.error_action_finish))
                 }
             },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun StreamContentPreview() {
+    ProxerTheme {
+        StreamContent(
+            playerState = PlayerState.LOADING,
+            error = null,
+            isToolbarVisible = false,
+            rewindVisible = false,
+            rewindCount = 0,
+            ffVisible = false,
+            ffCount = 0,
+            controlVisible = false,
+            controlValue = 0,
+            name = "My Anime",
+            episode = 1,
+            isLandscapeMode = false,
+            isInternalPlayerOnly = false,
+            isProxerStream = false,
+            playerContent = {},
+            castButtonContent = null,
+            onBack = {},
+            onRewindClick = {},
+            onFastForwardClick = {},
+            onRetry = {},
+            onFinish = {},
+            onOpenInOtherApp = {},
+            onToggleOrientation = {},
         )
     }
 }

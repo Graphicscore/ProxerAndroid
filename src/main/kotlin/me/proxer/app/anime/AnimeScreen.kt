@@ -48,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.core.content.getSystemService
@@ -61,6 +62,8 @@ import me.proxer.app.media.MediaActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.Utils
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
@@ -169,12 +172,167 @@ fun AnimeScreen(
         }
     }
 
+    AnimeContent(
+        name = name,
+        episode = episode,
+        episodeAmount = episodeAmount,
+        streams = streams,
+        isLoading = isLoading == true,
+        error = error,
+        isLoggedIn = isLoggedIn,
+        lastAdAlertDate = lastAdAlertDate,
+        expandedStreamId = expandedStreamId,
+        noWifiStream = noWifiStream,
+        noWifiRemember = noWifiRemember,
+        appRequiredAction = appRequiredAction,
+        showLoginDialog = showLoginDialog,
+        snackbarHostState = snackbarHostState,
+        onBack = onBack,
+        onMediaClick = {
+            name?.let { MediaActivity.navigateTo(context as Activity, id, it, Category.ANIME) }
+        },
+        onShare = {
+            if (name != null) {
+                ShareCompat
+                    .IntentBuilder(context as Activity)
+                    .setText(
+                        context.getString(
+                            R.string.share_anime,
+                            episode,
+                            name,
+                            ProxerUrls.animeWeb(id, episode, language),
+                        ),
+                    ).setType("text/plain")
+                    .setChooserTitle(context.getString(R.string.share_title))
+                    .startChooser()
+            }
+        },
+        onRetry = { viewModel.load() },
+        onPrevious = {
+            val newEpisode = episode - 1
+            episode = newEpisode
+            viewModel.episode = newEpisode
+        },
+        onNext = {
+            val newEpisode = episode + 1
+            if (preferenceHelper.areBookmarksAutomatic && isLoggedIn) {
+                viewModel.bookmark(newEpisode)
+            }
+            episode = newEpisode
+            viewModel.episode = newEpisode
+        },
+        onBookmarkThis = { viewModel.bookmark(episode) },
+        onBookmarkOrFinish = {
+            if (episode < (episodeAmount ?: Int.MAX_VALUE)) {
+                viewModel.bookmark(episode + 1)
+            } else {
+                viewModel.markAsFinished()
+            }
+        },
+        onStreamHeaderClick = { streamId ->
+            expandedStreamId = if (expandedStreamId == streamId) null else streamId
+        },
+        onUploaderClick = { uploaderId, uploaderName ->
+            ProfileActivity.navigateTo(context as Activity, uploaderId, uploaderName)
+        },
+        onTranslatorGroupClick = { tgId, tgName ->
+            TranslatorGroupActivity.navigateTo(context as Activity, tgId, tgName)
+        },
+        onDismissAdAlert = {
+            storageHelper.lastAdAlertDate = Instant.now()
+            lastAdAlertDate = Instant.now()
+        },
+        onSetAdInterval = {
+            storageHelper.lastAdAlertDate = Instant.now()
+            lastAdAlertDate = Instant.now()
+            ProfileSettingsActivity.navigateTo(context as Activity)
+        },
+        onPlay = { stream ->
+            val connectivityManager = requireNotNull(context.getSystemService<ConnectivityManager>())
+            if (connectivityManager.isConnectedToCellular && preferenceHelper.shouldCheckCellular) {
+                noWifiStream = stream
+            } else {
+                viewModel.resolve(stream)
+            }
+        },
+        onLoginClick = { showLoginDialog = true },
+        onDismissNoWifi = {
+            noWifiStream = null
+            noWifiRemember = false
+        },
+        onNoWifiRememberChange = { noWifiRemember = it },
+        onConfirmNoWifi = {
+            if (noWifiRemember) preferenceHelper.shouldCheckCellular = false
+            noWifiStream?.let { viewModel.resolve(it) }
+            noWifiStream = null
+            noWifiRemember = false
+        },
+        onDismissLoginDialog = { showLoginDialog = false },
+        onDismissAppRequired = { appRequiredAction = null },
+        onConfirmAppRequired = {
+            appRequiredAction?.let { action ->
+                try {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${action.appPackage}")),
+                    )
+                } catch (_: ActivityNotFoundException) {
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse("https://play.google.com/store/apps/details?id=${action.appPackage}"),
+                        ),
+                    )
+                }
+            }
+            appRequiredAction = null
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AnimeContent(
+    name: String?,
+    episode: Int,
+    episodeAmount: Int?,
+    streams: List<AnimeStream>,
+    isLoading: Boolean,
+    error: ErrorAction?,
+    isLoggedIn: Boolean,
+    lastAdAlertDate: Instant,
+    expandedStreamId: String?,
+    noWifiStream: AnimeStream?,
+    noWifiRemember: Boolean,
+    appRequiredAction: AppRequiredErrorAction?,
+    showLoginDialog: Boolean,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit,
+    onMediaClick: () -> Unit,
+    onShare: () -> Unit,
+    onRetry: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onBookmarkThis: () -> Unit,
+    onBookmarkOrFinish: () -> Unit,
+    onStreamHeaderClick: (String) -> Unit,
+    onUploaderClick: (String, String) -> Unit,
+    onTranslatorGroupClick: (String, String) -> Unit,
+    onDismissAdAlert: () -> Unit,
+    onSetAdInterval: () -> Unit,
+    onPlay: (AnimeStream) -> Unit,
+    onLoginClick: () -> Unit,
+    onDismissNoWifi: () -> Unit,
+    onNoWifiRememberChange: (Boolean) -> Unit,
+    onConfirmNoWifi: () -> Unit,
+    onDismissLoginDialog: () -> Unit,
+    onDismissAppRequired: () -> Unit,
+    onConfirmAppRequired: () -> Unit,
+) {
+    val context = LocalContext.current
+
     if (noWifiStream != null) {
         AlertDialog(
-            onDismissRequest = {
-                noWifiStream = null
-                noWifiRemember = false
-            },
+            onDismissRequest = onDismissNoWifi,
             text = {
                 Column {
                     Text(stringResource(R.string.dialog_no_wifi_content))
@@ -182,27 +340,19 @@ fun AnimeScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = noWifiRemember,
-                            onCheckedChange = { noWifiRemember = it },
+                            onCheckedChange = onNoWifiRememberChange,
                         )
                         Text(stringResource(R.string.dialog_no_wifi_remember))
                     }
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    if (noWifiRemember) preferenceHelper.shouldCheckCellular = false
-                    noWifiStream?.let { viewModel.resolve(it) }
-                    noWifiStream = null
-                    noWifiRemember = false
-                }) {
+                TextButton(onClick = onConfirmNoWifi) {
                     Text(stringResource(R.string.dialog_no_wifi_positive))
                 }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    noWifiStream = null
-                    noWifiRemember = false
-                }) {
+                TextButton(onClick = onDismissNoWifi) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -210,35 +360,21 @@ fun AnimeScreen(
     }
 
     if (showLoginDialog) {
-        LoginDialog(onDismiss = { showLoginDialog = false })
+        LoginDialog(onDismiss = onDismissLoginDialog)
     }
 
     appRequiredAction?.let { action ->
         AlertDialog(
-            onDismissRequest = { appRequiredAction = null },
+            onDismissRequest = onDismissAppRequired,
             title = { Text(stringResource(R.string.dialog_app_required_title, action.name)) },
             text = { Text(stringResource(R.string.dialog_app_required_content, action.name)) },
             confirmButton = {
-                TextButton(onClick = {
-                    try {
-                        context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${action.appPackage}")),
-                        )
-                    } catch (_: ActivityNotFoundException) {
-                        context.startActivity(
-                            Intent(
-                                Intent.ACTION_VIEW,
-                                Uri.parse("https://play.google.com/store/apps/details?id=${action.appPackage}"),
-                            ),
-                        )
-                    }
-                    appRequiredAction = null
-                }) {
+                TextButton(onClick = onConfirmAppRequired) {
                     Text(stringResource(R.string.dialog_app_required_positive))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { appRequiredAction = null }) {
+                TextButton(onClick = onDismissAppRequired) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -250,9 +386,7 @@ fun AnimeScreen(
             TopAppBar(
                 title = {
                     Column(
-                        modifier = Modifier.clickable {
-                            name?.let { MediaActivity.navigateTo(context as Activity, id, it, Category.ANIME) }
-                        },
+                        modifier = Modifier.clickable { onMediaClick() },
                     ) {
                         if (name != null) {
                             Text(name, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -270,20 +404,7 @@ fun AnimeScreen(
                 },
                 actions = {
                     if (name != null) {
-                        IconButton(onClick = {
-                            ShareCompat
-                                .IntentBuilder(context as Activity)
-                                .setText(
-                                    context.getString(
-                                        R.string.share_anime,
-                                        episode,
-                                        name,
-                                        ProxerUrls.animeWeb(id, episode, language),
-                                    ),
-                                ).setType("text/plain")
-                                .setChooserTitle(context.getString(R.string.share_title))
-                                .startChooser()
-                        }) {
+                        IconButton(onClick = onShare) {
                             Icon(Icons.Default.Share, contentDescription = stringResource(R.string.action_share))
                         }
                     }
@@ -293,9 +414,9 @@ fun AnimeScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             modifier = Modifier.padding(padding),
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -304,32 +425,15 @@ fun AnimeScreen(
                         EpisodeControlCard(
                             episode = episode,
                             episodeAmount = episodeAmount,
-                            onPrevious = {
-                                val newEpisode = episode - 1
-                                episode = newEpisode
-                                viewModel.episode = newEpisode
-                            },
-                            onNext = {
-                                val newEpisode = episode + 1
-                                if (preferenceHelper.areBookmarksAutomatic && isLoggedIn) {
-                                    viewModel.bookmark(newEpisode)
-                                }
-                                episode = newEpisode
-                                viewModel.episode = newEpisode
-                            },
-                            onBookmarkThis = { viewModel.bookmark(episode) },
-                            onBookmarkOrFinish = {
-                                if (episode < episodeAmount) {
-                                    viewModel.bookmark(episode + 1)
-                                } else {
-                                    viewModel.markAsFinished()
-                                }
-                            },
+                            onPrevious = onPrevious,
+                            onNext = onNext,
+                            onBookmarkThis = onBookmarkThis,
+                            onBookmarkOrFinish = onBookmarkOrFinish,
                         )
                     }
                 }
 
-                if (streams.isEmpty() && isLoading != true && error == null) {
+                if (streams.isEmpty() && !isLoading && error == null) {
                     item {
                         Box(
                             modifier = Modifier
@@ -351,41 +455,66 @@ fun AnimeScreen(
                             isExpanded = expandedStreamId == stream.id,
                             isLoggedIn = isLoggedIn,
                             lastAdAlertDate = lastAdAlertDate,
-                            onHeaderClick = {
-                                expandedStreamId = if (expandedStreamId == stream.id) null else stream.id
-                            },
-                            onUploaderClick = {
-                                ProfileActivity.navigateTo(context as Activity, stream.uploaderId, stream.uploaderName)
-                            },
+                            onHeaderClick = { onStreamHeaderClick(stream.id) },
+                            onUploaderClick = { onUploaderClick(stream.uploaderId, stream.uploaderName) },
                             onTranslatorGroupClick = {
                                 val tgId = stream.translatorGroupId ?: return@StreamItem
                                 val tgName = stream.translatorGroupName ?: return@StreamItem
-                                TranslatorGroupActivity.navigateTo(context as Activity, tgId, tgName)
+                                onTranslatorGroupClick(tgId, tgName)
                             },
-                            onDismissAdAlert = {
-                                storageHelper.lastAdAlertDate = Instant.now()
-                                lastAdAlertDate = Instant.now()
-                            },
-                            onSetAdInterval = {
-                                storageHelper.lastAdAlertDate = Instant.now()
-                                lastAdAlertDate = Instant.now()
-                                ProfileSettingsActivity.navigateTo(context as Activity)
-                            },
-                            onPlay = {
-                                val connectivityManager =
-                                    requireNotNull(context.getSystemService<ConnectivityManager>())
-                                if (connectivityManager.isConnectedToCellular && preferenceHelper.shouldCheckCellular) {
-                                    noWifiStream = stream
-                                } else {
-                                    viewModel.resolve(stream)
-                                }
-                            },
-                            onLoginClick = { showLoginDialog = true },
+                            onDismissAdAlert = onDismissAdAlert,
+                            onSetAdInterval = onSetAdInterval,
+                            onPlay = { onPlay(stream) },
+                            onLoginClick = onLoginClick,
                         )
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AnimeContentPreview() {
+    ProxerTheme {
+        AnimeContent(
+            name = "My Anime",
+            episode = 1,
+            episodeAmount = 12,
+            streams = emptyList(),
+            isLoading = true,
+            error = null,
+            isLoggedIn = false,
+            lastAdAlertDate = Instant.now(),
+            expandedStreamId = null,
+            noWifiStream = null,
+            noWifiRemember = false,
+            appRequiredAction = null,
+            showLoginDialog = false,
+            snackbarHostState = SnackbarHostState(),
+            onBack = {},
+            onMediaClick = {},
+            onShare = {},
+            onRetry = {},
+            onPrevious = {},
+            onNext = {},
+            onBookmarkThis = {},
+            onBookmarkOrFinish = {},
+            onStreamHeaderClick = {},
+            onUploaderClick = { _, _ -> },
+            onTranslatorGroupClick = { _, _ -> },
+            onDismissAdAlert = {},
+            onSetAdInterval = {},
+            onPlay = {},
+            onLoginClick = {},
+            onDismissNoWifi = {},
+            onNoWifiRememberChange = {},
+            onConfirmNoWifi = {},
+            onDismissLoginDialog = {},
+            onDismissAppRequired = {},
+            onConfirmAppRequired = {},
+        )
     }
 }
 
