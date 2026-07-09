@@ -46,7 +46,7 @@ import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.settings.theme.ThemeDialog
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import me.proxer.app.util.wrapper.MaterialDrawerWrapper.DrawerItem
+import me.proxer.app.util.wrapper.DrawerItem
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)

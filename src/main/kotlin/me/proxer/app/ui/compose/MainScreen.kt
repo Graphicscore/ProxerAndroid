@@ -33,7 +33,7 @@ import me.proxer.app.media.list.MediaListScreen
 import me.proxer.app.news.NewsScreen
 import me.proxer.app.settings.AboutScreen
 import me.proxer.app.settings.SettingsScreen
-import me.proxer.app.util.wrapper.MaterialDrawerWrapper.DrawerItem
+import me.proxer.app.util.wrapper.DrawerItem
 import me.proxer.library.enums.Category
 
 private data class DrawerEntry(

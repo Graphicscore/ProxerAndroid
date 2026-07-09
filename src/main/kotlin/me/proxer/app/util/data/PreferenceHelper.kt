@@ -6,7 +6,7 @@ import com.f2prateek.rx.preferences2.RxSharedPreferences
 import me.proxer.app.manga.MangaReaderOrientation
 import me.proxer.app.settings.theme.ThemeContainer
 import me.proxer.app.util.extension.getSafeString
-import me.proxer.app.util.wrapper.MaterialDrawerWrapper.DrawerItem
+import me.proxer.app.util.wrapper.DrawerItem
 import okhttp3.logging.HttpLoggingInterceptor
 import org.threeten.bp.Instant
 

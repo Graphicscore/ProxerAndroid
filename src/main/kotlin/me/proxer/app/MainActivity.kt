@@ -24,7 +24,7 @@ import me.proxer.app.ui.compose.MainScreen
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.intentFor
 import me.proxer.app.util.wrapper.IntroductionWrapper
-import me.proxer.app.util.wrapper.MaterialDrawerWrapper.DrawerItem
+import me.proxer.app.util.wrapper.DrawerItem
 
 /**
  * @author Ruben Gees
