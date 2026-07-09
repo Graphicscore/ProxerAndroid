@@ -26,9 +26,6 @@
         <item name="asp_preferenceIconTint">?attr/colorSecondary</item>
         <item name="asp_preferenceDialogIconTint">?asp_preferenceIconTint</item>
 
-        <item name="materialDrawerStyle">@style/Widget.App.MaterialDrawerStyle</item>
-        <item name="materialDrawerHeaderStyle">@style/Widget.App.MaterialDrawerHeaderStyle</item>
-
         <item name="md_color_button_text">?attr/colorSecondary</item>
 
         <item name="emojiIcons">?attr/colorIcon</item>
@@ -117,14 +114,4 @@
         <item name="background">?attr/colorPrimaryLight</item>
     </style>
 
-    <style name="Widget.App.MaterialDrawerStyle" parent="Widget.MaterialDrawerStyle">
-        <item name="materialDrawerDividerColor">?attr/colorSurface</item>
-        <item name="materialDrawerSelectedBackgroundColor">?colorSecondary</item>
-    </style>
-
-    <style name="Widget.App.MaterialDrawerHeaderStyle" parent="Widget.MaterialDrawerHeaderStyle">
-        <item name="materialDrawerCompactStyle">true</item>
-        <item name="materialDrawerHeaderSelectionText">?attr/colorOnPrimary</item>
-        <item name="materialDrawerHeaderSelectionSubtext">?attr/colorOnPrimary</item>
-    </style>
 </resources>
