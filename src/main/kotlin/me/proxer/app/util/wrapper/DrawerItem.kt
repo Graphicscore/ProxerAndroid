@@ -6,7 +6,7 @@ package me.proxer.app.util.wrapper
 enum class DrawerItem(val id: Long) {
     NEWS(0L),
     CHAT(1L),
-    MESSENGER(1L),
+    MESSENGER(6L),
     BOOKMARKS(2L),
     ANIME(3L),
     SCHEDULE(4L),
