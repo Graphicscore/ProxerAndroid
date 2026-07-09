@@ -1,7 +1,10 @@
 package me.proxer.app.media.episode
 
 import android.app.Activity
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,10 +16,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,7 +34,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.ui.compose.ContentScreen
@@ -45,25 +54,97 @@ fun EpisodeScreen(mediaId: String, mediaName: String? = null) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val bookmarkResult by viewModel.bookmarkData.observeAsState()
+    val bookmarkError by viewModel.bookmarkError.observeAsState()
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    ContentScreen(
-        isLoading = isLoading == true,
-        error = error,
-        onRetry = { viewModel.load() },
-    ) {
-        LazyColumn(modifier = Modifier.fillMaxSize()) {
-            items(data ?: emptyList()) { episode ->
-                EpisodeItem(episode = episode, mediaId = mediaId, mediaName = mediaName)
-                HorizontalDivider()
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    var bookmarkEpisode by remember { mutableStateOf<EpisodeRow?>(null) }
+
+    LaunchedEffect(bookmarkResult) {
+        if (bookmarkResult != null) {
+            snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success))
+        }
+    }
+
+    LaunchedEffect(bookmarkError) {
+        val err = bookmarkError
+        if (err != null) {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_set_user_info, context.getString(err.message)),
+            )
+        }
+    }
+
+    val episodeToBookmark = bookmarkEpisode
+    if (episodeToBookmark != null) {
+        AlertDialog(
+            onDismissRequest = { bookmarkEpisode = null },
+            title = { Text(stringResource(R.string.fragment_episodes_bookmark_language_dialog_title)) },
+            text = {
+                Column {
+                    episodeToBookmark.languageHosterList.forEach { (language, _) ->
+                        Text(
+                            text = language.toAppString(context),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    viewModel.bookmark(
+                                        episodeToBookmark.number,
+                                        language,
+                                        episodeToBookmark.category,
+                                    )
+                                    bookmarkEpisode = null
+                                }
+                                .padding(vertical = 12.dp),
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { bookmarkEpisode = null }) {
+                    Text(stringResource(android.R.string.cancel))
+                }
+            },
+        )
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ContentScreen(
+            isLoading = isLoading == true,
+            error = error,
+            onRetry = { viewModel.load() },
+        ) {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(data ?: emptyList()) { episode ->
+                    EpisodeItem(
+                        episode = episode,
+                        mediaId = mediaId,
+                        mediaName = mediaName,
+                        onLongClick = { bookmarkEpisode = episode },
+                    )
+                    HorizontalDivider()
+                }
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun EpisodeItem(episode: EpisodeRow, mediaId: String, mediaName: String?) {
+private fun EpisodeItem(
+    episode: EpisodeRow,
+    mediaId: String,
+    mediaName: String?,
+    onLongClick: () -> Unit,
+) {
     val context = LocalContext.current
     val activity = context as? Activity
     var expanded by remember(episode.number) { mutableStateOf(false) }
@@ -72,7 +153,10 @@ private fun EpisodeItem(episode: EpisodeRow, mediaId: String, mediaName: String?
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded }
+            .combinedClickable(
+                onClick = { expanded = !expanded },
+                onLongClick = onLongClick,
+            )
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

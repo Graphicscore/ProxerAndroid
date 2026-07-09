@@ -3,6 +3,7 @@ package me.proxer.app.media.info
 import android.app.Activity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -24,11 +25,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -59,22 +63,48 @@ fun MediaInfoScreen(id: String) {
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val userInfo by viewModel.userInfoData.observeAsState()
+    val updateResult by viewModel.userInfoUpdateData.observeAsState()
+    val updateError by viewModel.userInfoUpdateError.observeAsState()
 
-    ContentScreen(
-        isLoading = isLoading == true,
-        error = error,
-        onRetry = { viewModel.load() },
-    ) {
-        if (data != null) {
-            MediaInfoBody(
-                entry = data!!,
-                userInfo = userInfo,
-                onNote = { viewModel.note() },
-                onFavorite = { viewModel.toggleFavorite() },
-                onFinish = { viewModel.markAsFinished() },
-                onSubscribe = { viewModel.toggleSubscription() },
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(updateResult) {
+        if (updateResult != null) {
+            snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success))
+        }
+    }
+
+    LaunchedEffect(updateError) {
+        val err = updateError
+        if (err != null) {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_set_user_info, context.getString(err.message)),
             )
         }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ContentScreen(
+            isLoading = isLoading == true,
+            error = error,
+            onRetry = { viewModel.load() },
+        ) {
+            if (data != null) {
+                MediaInfoBody(
+                    entry = data!!,
+                    userInfo = userInfo,
+                    onNote = { viewModel.note() },
+                    onFavorite = { viewModel.toggleFavorite() },
+                    onFinish = { viewModel.markAsFinished() },
+                    onSubscribe = { viewModel.toggleSubscription() },
+                )
+            }
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
