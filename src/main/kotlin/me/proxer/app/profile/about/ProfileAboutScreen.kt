@@ -16,11 +16,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.ProxerWebView
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAppString
 import me.proxer.library.entity.user.UserAbout
 import me.proxer.library.enums.Gender
@@ -37,13 +40,23 @@ fun ProfileAboutScreen(userId: String?, username: String?) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    ContentScreen(
-        isLoading = isLoading == true,
+    ProfileAboutContent(
+        data = data,
         error = error,
+        isLoading = isLoading == true,
         onRetry = { viewModel.load() },
+    )
+}
+
+@Composable
+private fun ProfileAboutContent(data: UserAbout?, error: ErrorAction?, isLoading: Boolean, onRetry: () -> Unit) {
+    ContentScreen(
+        isLoading = isLoading,
+        error = error,
+        onRetry = onRetry,
     ) {
         if (data != null) {
-            ProfileAboutBody(about = data!!)
+            ProfileAboutBody(about = data)
         }
     }
 }
@@ -135,5 +148,13 @@ private fun ProfileAboutBody(about: UserAbout) {
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileAboutContentPreview() {
+    ProxerTheme {
+        ProfileAboutContent(data = null, error = null, isLoading = true, onRetry = {})
     }
 }

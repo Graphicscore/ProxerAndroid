@@ -44,12 +44,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toEpisodeAppString
@@ -67,7 +70,6 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val listState = rememberLazyListState()
     val context = LocalContext.current
 
     var showFilterMenu by remember { mutableStateOf(false) }
@@ -75,10 +77,76 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
     var filterAvailable by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { viewModel.load() }
+
+    BookmarkContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        showFilterMenu = showFilterMenu,
+        selectedCategory = selectedCategory,
+        filterAvailable = filterAvailable,
+        onOpenDrawer = onOpenDrawer,
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+        onLoadMore = { viewModel.loadIfPossible() },
+        onShowFilterMenu = { showFilterMenu = it },
+        onSelectCategory = { category ->
+            selectedCategory = category
+            viewModel.category = category
+        },
+        onSetFilterAvailable = { available ->
+            filterAvailable = available
+            viewModel.filterAvailable = available
+        },
+        onBookmarkClick = { bookmark ->
+            val activity = context as? Activity
+            activity?.let {
+                when (bookmark.category) {
+                    Category.ANIME -> AnimeActivity.navigateTo(
+                        it,
+                        bookmark.entryId,
+                        bookmark.episode,
+                        bookmark.language.toAnimeLanguage(),
+                        bookmark.name,
+                    )
+                    Category.MANGA, Category.NOVEL -> MangaActivity.navigateTo(
+                        it,
+                        bookmark.entryId,
+                        bookmark.episode,
+                        bookmark.language.toGeneralLanguage(),
+                        bookmark.chapterName,
+                        bookmark.name,
+                    )
+                }
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BookmarkContent(
+    data: List<Bookmark>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    showFilterMenu: Boolean,
+    selectedCategory: Category?,
+    filterAvailable: Boolean,
+    onOpenDrawer: () -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    onShowFilterMenu: (Boolean) -> Unit,
+    onSelectCategory: (Category?) -> Unit,
+    onSetFilterAvailable: (Boolean) -> Unit,
+    onBookmarkClick: (Bookmark) -> Unit,
+) {
+    val listState = rememberLazyListState()
+
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
         val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     Scaffold(
@@ -92,7 +160,7 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = { showFilterMenu = true }) {
+                        IconButton(onClick = { onShowFilterMenu(true) }) {
                             Icon(
                                 Icons.Default.FilterList,
                                 contentDescription = stringResource(R.string.action_filter),
@@ -100,14 +168,13 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
                         }
                         DropdownMenu(
                             expanded = showFilterMenu,
-                            onDismissRequest = { showFilterMenu = false },
+                            onDismissRequest = { onShowFilterMenu(false) },
                         ) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_filter_all)) },
                                 onClick = {
-                                    selectedCategory = null
-                                    viewModel.category = null
-                                    showFilterMenu = false
+                                    onSelectCategory(null)
+                                    onShowFilterMenu(false)
                                 },
                                 trailingIcon = if (selectedCategory == null) {
                                     { Icon(Icons.Default.Check, contentDescription = null) }
@@ -118,9 +185,8 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_filter_anime)) },
                                 onClick = {
-                                    selectedCategory = Category.ANIME
-                                    viewModel.category = Category.ANIME
-                                    showFilterMenu = false
+                                    onSelectCategory(Category.ANIME)
+                                    onShowFilterMenu(false)
                                 },
                                 trailingIcon = if (selectedCategory == Category.ANIME) {
                                     { Icon(Icons.Default.Check, contentDescription = null) }
@@ -131,9 +197,8 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_filter_manga)) },
                                 onClick = {
-                                    selectedCategory = Category.MANGA
-                                    viewModel.category = Category.MANGA
-                                    showFilterMenu = false
+                                    onSelectCategory(Category.MANGA)
+                                    onShowFilterMenu(false)
                                 },
                                 trailingIcon = if (selectedCategory == Category.MANGA) {
                                     { Icon(Icons.Default.Check, contentDescription = null) }
@@ -144,11 +209,7 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
                             HorizontalDivider()
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.action_filter_available)) },
-                                onClick = {
-                                    val newValue = !filterAvailable
-                                    filterAvailable = newValue
-                                    viewModel.filterAvailable = newValue
-                                },
+                                onClick = { onSetFilterAvailable(!filterAvailable) },
                                 trailingIcon = if (filterAvailable) {
                                     { Icon(Icons.Default.Check, contentDescription = null) }
                                 } else {
@@ -162,40 +223,21 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data.isNullOrEmpty(),
+            isLoading = isLoading && data.isNullOrEmpty(),
             error = if (data.isNullOrEmpty()) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             isSwipeToRefreshEnabled = true,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.padding(padding),
         ) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                 items(data ?: emptyList()) { bookmark ->
-                    val activity = context as? Activity ?: return@items
                     BookmarkItem(
                         bookmark = bookmark,
-                        onClick = {
-                            when (bookmark.category) {
-                                Category.ANIME -> AnimeActivity.navigateTo(
-                                    activity,
-                                    bookmark.entryId,
-                                    bookmark.episode,
-                                    bookmark.language.toAnimeLanguage(),
-                                    bookmark.name,
-                                )
-                                Category.MANGA, Category.NOVEL -> MangaActivity.navigateTo(
-                                    activity,
-                                    bookmark.entryId,
-                                    bookmark.episode,
-                                    bookmark.language.toGeneralLanguage(),
-                                    bookmark.chapterName,
-                                    bookmark.name,
-                                )
-                            }
-                        },
+                        onClick = { onBookmarkClick(bookmark) },
                     )
                 }
-                if (isLoading == true && !data.isNullOrEmpty()) {
+                if (isLoading && !data.isNullOrEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
@@ -252,5 +294,28 @@ private fun BookmarkItem(bookmark: Bookmark, onClick: () -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun BookmarkContentPreview() {
+    ProxerTheme {
+        BookmarkContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            showFilterMenu = false,
+            selectedCategory = null,
+            filterAvailable = false,
+            onOpenDrawer = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {},
+            onShowFilterMenu = {},
+            onSelectCategory = {},
+            onSetFilterAvailable = {},
+            onBookmarkClick = {},
+        )
     }
 }

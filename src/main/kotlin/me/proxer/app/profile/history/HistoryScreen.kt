@@ -23,12 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.app.util.extension.toAppString
@@ -47,18 +50,35 @@ fun HistoryScreen(userId: String?, username: String?) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
+    HistoryContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        onRetry = { viewModel.load() },
+        onLoadMore = { viewModel.loadIfPossible() },
+    )
+}
+
+@Composable
+private fun HistoryContent(
+    data: List<LocalUserHistoryEntry>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+) {
     val gridState = rememberLazyGridState()
 
     LaunchedEffect(gridState.layoutInfo) {
         val total = gridState.layoutInfo.totalItemsCount
         val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     ContentScreen(
-        isLoading = isLoading == true && data.isNullOrEmpty(),
+        isLoading = isLoading && data.isNullOrEmpty(),
         error = if (data.isNullOrEmpty()) error else null,
-        onRetry = { viewModel.load() },
+        onRetry = onRetry,
     ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -148,5 +168,19 @@ private fun HistoryCard(entry: LocalUserHistoryEntry) {
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HistoryContentPreview() {
+    ProxerTheme {
+        HistoryContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
+            onLoadMore = {},
+        )
     }
 }

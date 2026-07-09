@@ -19,12 +19,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.forum.TopicActivity
 import me.proxer.app.profile.ProfileViewModel
 import me.proxer.app.profile.ProfileViewModel.UserInfoWrapper
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -42,13 +45,23 @@ fun ProfileInfoScreen(userId: String?, username: String?) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    ContentScreen(
-        isLoading = isLoading == true,
+    ProfileInfoContent(
+        data = data,
         error = error,
+        isLoading = isLoading == true,
         onRetry = { viewModel.load() },
+    )
+}
+
+@Composable
+private fun ProfileInfoContent(data: UserInfoWrapper?, error: ErrorAction?, isLoading: Boolean, onRetry: () -> Unit) {
+    ContentScreen(
+        isLoading = isLoading,
+        error = error,
+        onRetry = onRetry,
     ) {
         if (data != null) {
-            ProfileInfoBody(data = data!!)
+            ProfileInfoBody(data = data)
         }
     }
 }
@@ -190,3 +203,11 @@ private fun rankToString(points: Int, context: android.content.Context) = contex
         else -> R.string.rank_kami_sama
     },
 )
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileInfoContentPreview() {
+    ProxerTheme {
+        ProfileInfoContent(data = null, error = null, isLoading = true, onRetry = {})
+    }
+}

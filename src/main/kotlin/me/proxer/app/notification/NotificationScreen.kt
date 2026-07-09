@@ -39,11 +39,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.ProxerNotification
 import me.proxer.app.util.extension.distanceInWordsToNow
 import org.koin.androidx.compose.koinViewModel
@@ -56,10 +59,8 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
     val deletionError by viewModel.deletionError.observeAsState()
-    val listState = rememberLazyListState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-
     var showDeleteAllDialog by remember { mutableStateOf(false) }
     val dismissedIds = remember { mutableStateOf(emptySet<String>()) }
     val displayedData = (data ?: emptyList()).filterNot { it.id in dismissedIds.value }
@@ -67,11 +68,6 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
     LaunchedEffect(Unit) {
         viewModel.load()
         AccountNotifications.cancel(context)
-    }
-    LaunchedEffect(listState.layoutInfo) {
-        val total = listState.layoutInfo.totalItemsCount
-        val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
     }
     LaunchedEffect(deletionError) {
         deletionError?.let { errorAction ->
@@ -81,23 +77,75 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
         }
     }
 
+    NotificationContent(
+        data = data,
+        displayedData = displayedData,
+        error = error,
+        isLoading = isLoading == true,
+        showDeleteAllDialog = showDeleteAllDialog,
+        snackbarHostState = snackbarHostState,
+        onBack = onBack,
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+        onLoadMore = { viewModel.loadIfPossible() },
+        onDeleteItem = { notification ->
+            dismissedIds.value = dismissedIds.value + notification.id
+            viewModel.addItemToDelete(notification)
+        },
+        onDeleteAll = {
+            viewModel.deleteAll()
+            dismissedIds.value = emptySet()
+        },
+        onShowDeleteDialog = { showDeleteAllDialog = it },
+        onItemClick = { notification ->
+            val activity = context as? BaseActivity
+            activity?.showPage(notification.contentLink, skipCheck = true)
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NotificationContent(
+    data: List<ProxerNotification>?,
+    displayedData: List<ProxerNotification>,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    showDeleteAllDialog: Boolean,
+    snackbarHostState: SnackbarHostState,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    onDeleteItem: (ProxerNotification) -> Unit,
+    onDeleteAll: () -> Unit,
+    onShowDeleteDialog: (Boolean) -> Unit,
+    onItemClick: (ProxerNotification) -> Unit,
+) {
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(listState.layoutInfo) {
+        val total = listState.layoutInfo.totalItemsCount
+        val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+        if (total > 0 && last >= total - 5) onLoadMore()
+    }
+
     if (showDeleteAllDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteAllDialog = false },
+            onDismissRequest = { onShowDeleteDialog(false) },
             text = { Text(stringResource(R.string.dialog_notification_deletion_confirmation_content)) },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        viewModel.deleteAll()
-                        dismissedIds.value = emptySet()
-                        showDeleteAllDialog = false
+                        onDeleteAll()
+                        onShowDeleteDialog(false)
                     },
                 ) {
                     Text(stringResource(R.string.dialog_notification_deletion_confirmation_positive))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteAllDialog = false }) {
+                TextButton(onClick = { onShowDeleteDialog(false) }) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -115,7 +163,7 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
                 },
                 actions = {
                     IconButton(
-                        onClick = { if (displayedData.isNotEmpty()) showDeleteAllDialog = true },
+                        onClick = { if (displayedData.isNotEmpty()) onShowDeleteDialog(true) },
                     ) {
                         Icon(
                             Icons.Default.Delete,
@@ -128,21 +176,19 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data.isNullOrEmpty(),
+            isLoading = isLoading && data.isNullOrEmpty(),
             error = if (data.isNullOrEmpty()) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             isSwipeToRefreshEnabled = true,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.padding(padding),
         ) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                 items(displayedData, key = { it.id }) { notification ->
-                    val activity = context as? BaseActivity
                     val dismissState = rememberSwipeToDismissBoxState()
                     LaunchedEffect(dismissState.currentValue) {
                         if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
-                            dismissedIds.value = dismissedIds.value + notification.id
-                            viewModel.addItemToDelete(notification)
+                            onDeleteItem(notification)
                         }
                     }
                     SwipeToDismissBox(
@@ -165,13 +211,11 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
                     ) {
                         NotificationItem(
                             notification = notification,
-                            onClick = {
-                                activity?.showPage(notification.contentLink, skipCheck = true)
-                            },
+                            onClick = { onItemClick(notification) },
                         )
                     }
                 }
-                if (isLoading == true && !data.isNullOrEmpty()) {
+                if (isLoading && !data.isNullOrEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
@@ -208,5 +252,28 @@ private fun NotificationItem(notification: ProxerNotification, onClick: () -> Un
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NotificationContentPreview() {
+    ProxerTheme {
+        NotificationContent(
+            data = null,
+            displayedData = emptyList(),
+            error = null,
+            isLoading = true,
+            showDeleteAllDialog = false,
+            snackbarHostState = remember { SnackbarHostState() },
+            onBack = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {},
+            onDeleteItem = {},
+            onDeleteAll = {},
+            onShowDeleteDialog = {},
+            onItemClick = {},
+        )
     }
 }

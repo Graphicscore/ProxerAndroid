@@ -36,11 +36,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.R
 import me.proxer.app.forum.TopicActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.library.entity.notifications.NewsArticle
 import me.proxer.library.util.ProxerUrls
@@ -53,14 +56,45 @@ fun NewsScreen(onOpenDrawer: () -> Unit = {}) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
-    val listState = rememberLazyListState()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.load() }
+
+    NewsContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        onOpenDrawer = onOpenDrawer,
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+        onLoadMore = { viewModel.loadIfPossible() },
+        onArticleClick = { article ->
+            val activity = context as? Activity
+            activity?.let {
+                TopicActivity.navigateTo(it, article.threadId, article.categoryId, article.subject)
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NewsContent(
+    data: List<NewsArticle>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onOpenDrawer: () -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    onArticleClick: (NewsArticle) -> Unit,
+) {
+    val listState = rememberLazyListState()
+
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
         val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     Scaffold(
@@ -76,29 +110,21 @@ fun NewsScreen(onOpenDrawer: () -> Unit = {}) {
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data.isNullOrEmpty(),
+            isLoading = isLoading && data.isNullOrEmpty(),
             error = if (data.isNullOrEmpty()) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             isSwipeToRefreshEnabled = true,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.padding(padding),
         ) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                 items(data ?: emptyList()) { article ->
-                    val activity = context as? Activity ?: return@items
                     NewsItem(
                         article = article,
-                        onClick = {
-                            TopicActivity.navigateTo(
-                                activity,
-                                article.threadId,
-                                article.categoryId,
-                                article.subject,
-                            )
-                        },
+                        onClick = { onArticleClick(article) },
                     )
                 }
-                if (isLoading == true && !data.isNullOrEmpty()) {
+                if (isLoading && !data.isNullOrEmpty()) {
                     item {
                         Box(
                             modifier = Modifier
@@ -169,5 +195,22 @@ private fun NewsItem(article: NewsArticle, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NewsContentPreview() {
+    ProxerTheme {
+        NewsContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onOpenDrawer = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {},
+            onArticleClick = {},
+        )
     }
 }

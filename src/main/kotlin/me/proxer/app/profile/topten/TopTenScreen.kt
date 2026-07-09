@@ -24,11 +24,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -42,13 +45,30 @@ fun TopTenScreen(userId: String?, username: String?) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    ContentScreen(
-        isLoading = isLoading == true,
+    TopTenContent(
+        data = data,
         error = error,
+        isLoading = isLoading == true,
         onRetry = { viewModel.load() },
+        onDelete = { viewModel.addItemToDelete(it) },
+    )
+}
+
+@Composable
+private fun TopTenContent(
+    data: TopTenViewModel.ZippedTopTenResult?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onRetry: () -> Unit,
+    onDelete: (LocalTopTenEntry) -> Unit,
+) {
+    ContentScreen(
+        isLoading = isLoading,
+        error = error,
+        onRetry = onRetry,
     ) {
         if (data != null) {
-            TopTenBody(data = data!!, onDelete = { viewModel.addItemToDelete(it) })
+            TopTenBody(data = data, onDelete = onDelete)
         }
     }
 }
@@ -150,5 +170,19 @@ private fun TopTenCard(entry: LocalTopTenEntry, onDelete: (LocalTopTenEntry) -> 
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TopTenContentPreview() {
+    ProxerTheme {
+        TopTenContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
+            onDelete = {},
+        )
     }
 }

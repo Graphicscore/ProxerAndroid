@@ -23,10 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toCategory
 import me.proxer.app.util.extension.toEpisodeAppString
@@ -47,18 +50,37 @@ fun ProfileMediaListScreen(userId: String?, username: String?, category: Categor
 
     LaunchedEffect(Unit) { viewModel.load() }
 
+    ProfileMediaListContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        onRetry = { viewModel.load() },
+        onLoadMore = { viewModel.loadIfPossible() },
+        onDelete = { viewModel.addItemToDelete(it) },
+    )
+}
+
+@Composable
+private fun ProfileMediaListContent(
+    data: List<LocalUserMediaListEntry>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+    onDelete: (LocalUserMediaListEntry) -> Unit,
+) {
     val gridState = rememberLazyGridState()
 
     LaunchedEffect(gridState.layoutInfo) {
         val total = gridState.layoutInfo.totalItemsCount
         val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     ContentScreen(
-        isLoading = isLoading == true && data.isNullOrEmpty(),
+        isLoading = isLoading && data.isNullOrEmpty(),
         error = if (data.isNullOrEmpty()) error else null,
-        onRetry = { viewModel.load() },
+        onRetry = onRetry,
     ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -71,7 +93,7 @@ fun ProfileMediaListScreen(userId: String?, username: String?, category: Categor
             items(data ?: emptyList(), key = { it.id }) { entry ->
                 MediaListCard(
                     entry = entry,
-                    onDelete = { viewModel.addItemToDelete(it) },
+                    onDelete = onDelete,
                 )
             }
         }
@@ -118,5 +140,20 @@ private fun MediaListCard(entry: LocalUserMediaListEntry, onDelete: (LocalUserMe
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileMediaListContentPreview() {
+    ProxerTheme {
+        ProfileMediaListContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
+            onLoadMore = {},
+            onDelete = {},
+        )
     }
 }
