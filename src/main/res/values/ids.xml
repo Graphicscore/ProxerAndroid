@@ -3,4 +3,5 @@
     <item name="ignore_tag" type="id" />
     <item name="error_tag" type="id" />
     <item name="contentContainer" type="id" />
+    <item name="tag_manga_url" type="id" />
 </resources>
