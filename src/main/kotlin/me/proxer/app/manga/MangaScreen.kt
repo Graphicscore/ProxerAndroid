@@ -70,6 +70,7 @@ import me.proxer.app.util.DeviceUtils
 import me.proxer.app.util.GLUtil
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.extension.decodedName
+import me.proxer.app.util.extension.subscribeAndLogErrors
 import me.proxer.app.util.extension.toEpisodeAppString
 import me.proxer.app.util.wrapper.OriginalSizeGlideTarget
 import me.proxer.library.entity.manga.Chapter
@@ -104,7 +105,8 @@ fun MangaScreen(
     var readerOrientation by rememberSaveable { mutableStateOf(preferenceHelper.mangaReaderOrientation) }
     var isFullscreen by remember { mutableStateOf(false) }
 
-    val viewModel = koinViewModel<MangaViewModel> { parametersOf(id, language, currentEpisode) }
+    val initialEpisode = remember { currentEpisode }
+    val viewModel = koinViewModel<MangaViewModel> { parametersOf(id, language, initialEpisode) }
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
@@ -341,7 +343,7 @@ private fun MangaImagePage(
                     .fromCallable { ImageSource.uri(resource.path) }
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe { source -> viewRef[0]?.setImage(source) }
+                    .subscribeAndLogErrors { source -> viewRef[0]?.setImage(source) }
             }
 
             override fun onLoadFailed(errorDrawable: Drawable?) {
@@ -422,9 +424,6 @@ private fun MangaImagePage(
                             },
                         )
                     }.also { viewRef[0] = it }
-                },
-                update = { view ->
-                    viewRef[0] = view
                 },
                 modifier = Modifier.fillMaxSize(),
             )
