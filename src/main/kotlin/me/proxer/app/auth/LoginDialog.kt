@@ -26,6 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
+import me.proxer.app.base.BaseActivity
+import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -100,6 +102,18 @@ fun LoginDialog(onDismiss: () -> Unit) {
                         Text(
                             text = stringResource(action.message),
                             color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    val activity = context as? BaseActivity
+                    TextButton(
+                        onClick = { activity?.showPage(ProxerUrls.registerWeb()) },
+                        enabled = activity != null,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.dialog_login_registration),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }
