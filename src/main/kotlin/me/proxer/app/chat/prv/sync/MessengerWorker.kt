@@ -13,8 +13,6 @@ import androidx.work.WorkerParameters
 import com.rubengees.rxbus.RxBus
 import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.chat.prv.LocalMessage
-import me.proxer.app.chat.prv.conference.ConferenceFragmentPingEvent
-import me.proxer.app.chat.prv.message.MessengerFragmentPingEvent
 import me.proxer.app.exception.ChatException
 import me.proxer.app.exception.ChatMessageException
 import me.proxer.app.exception.ChatSendMessageException
@@ -73,14 +71,10 @@ class MessengerWorker(context: Context, workerParams: WorkerParameters) : Worker
 
         private fun reschedule(synchronizationResult: SynchronizationResult) {
             if (canSchedule() && synchronizationResult != SynchronizationResult.ERROR) {
-                if (synchronizationResult == SynchronizationResult.CHANGES || bus.post(MessengerFragmentPingEvent())) {
+                if (synchronizationResult == SynchronizationResult.CHANGES) {
                     storageHelper.resetChatInterval()
 
                     doEnqueue(3_000L)
-                } else if (bus.post(ConferenceFragmentPingEvent())) {
-                    storageHelper.resetChatInterval()
-
-                    doEnqueue(10_000L)
                 } else {
                     storageHelper.incrementChatInterval()
 
@@ -108,11 +102,9 @@ class MessengerWorker(context: Context, workerParams: WorkerParameters) : Worker
             workManager.beginUniqueWork(NAME, ExistingWorkPolicy.REPLACE, workRequest).enqueue()
         }
 
-        private fun canSchedule() = preferenceHelper.areChatNotificationsEnabled ||
-            bus.post(ConferenceFragmentPingEvent()) || bus.post(MessengerFragmentPingEvent())
+        private fun canSchedule() = preferenceHelper.areChatNotificationsEnabled
 
-        private fun canShowNotification() = preferenceHelper.areChatNotificationsEnabled &&
-            !bus.post(ConferenceFragmentPingEvent()) && !bus.post(MessengerFragmentPingEvent())
+        private fun canShowNotification() = preferenceHelper.areChatNotificationsEnabled
     }
 
     private val conferenceId: Long

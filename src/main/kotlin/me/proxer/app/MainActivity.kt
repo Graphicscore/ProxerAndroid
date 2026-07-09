@@ -12,7 +12,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.view.WindowCompat
-import com.google.android.material.tabs.TabLayout
 import com.rubengees.introduction.IntroductionBuilder
 import com.rubengees.introduction.IntroductionActivity.OPTION_RESULT
 import com.rubengees.introduction.Option
@@ -31,10 +30,6 @@ import me.proxer.app.util.wrapper.MaterialDrawerWrapper.DrawerItem
  * @author Ruben Gees
  */
 class MainActivity : BaseActivity() {
-    // Retained for source-compatibility with ChatContainerFragment which accesses hostingActivity.tabs.
-    // Not used in the Compose flow — ChatContainerFragment is replaced by ChatContainerScreen stub.
-    internal val tabs: TabLayout by lazy { TabLayout(this) }
-
     companion object {
         private const val SECTION_EXTRA = "section"
         private const val SECTION_ACTION_PREFIX = "me.proxer.app.intent.action."

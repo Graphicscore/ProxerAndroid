@@ -2,20 +2,17 @@ package me.proxer.app.chat.pub.message
 
 import android.app.Activity
 import android.os.Bundle
-import androidx.fragment.app.commitNow
-import com.jakewharton.rxbinding3.view.clicks
-import com.uber.autodispose.android.lifecycle.scope
-import com.uber.autodispose.autoDisposable
-import me.proxer.app.R
-import me.proxer.app.base.DrawerActivity
-import me.proxer.app.chat.pub.room.info.ChatRoomInfoActivity
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
 
 /**
  * @author Ruben Gees
  */
-class ChatActivity : DrawerActivity() {
+class ChatActivity : BaseActivity() {
     companion object {
         private const val CHAT_ROOM_ID_EXTRA = "chat_room_id"
         private const val CHAT_ROOM_NAME_EXTRA = "chat_room_name"
@@ -30,35 +27,27 @@ class ChatActivity : DrawerActivity() {
         }
     }
 
-    val chatRoomId: String
+    private val chatRoomId: String
         get() = intent.getSafeStringExtra(CHAT_ROOM_ID_EXTRA)
 
-    val chatRoomName: String
+    private val chatRoomName: String
         get() = intent.getSafeStringExtra(CHAT_ROOM_NAME_EXTRA)
 
-    val chatRoomIsReadOnly: Boolean
+    private val chatRoomIsReadOnly: Boolean
         get() = intent.getBooleanExtra(CHAT_ROOM_IS_READ_ONLY_EXTRA, false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setupToolbar()
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.commitNow {
-                replace(R.id.container, ChatFragment.newInstance())
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                ChatScreen(
+                    chatRoomId = chatRoomId,
+                    chatRoomName = chatRoomName,
+                    chatRoomIsReadOnly = chatRoomIsReadOnly,
+                    onBack = { finish() },
+                )
             }
         }
-    }
-
-    private fun setupToolbar() {
-        title = chatRoomName
-
-        toolbar
-            .clicks()
-            .autoDisposable(this.scope())
-            .subscribe {
-                ChatRoomInfoActivity.navigateTo(this, chatRoomId, chatRoomName)
-            }
     }
 }

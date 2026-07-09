@@ -4,18 +4,25 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.core.content.IntentCompat
 import androidx.core.content.pm.ShortcutManagerCompat
-import androidx.fragment.app.commitNow
+import androidx.core.view.WindowCompat
 import com.uber.autodispose.android.lifecycle.scope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import me.proxer.app.R
-import me.proxer.app.base.DrawerActivity
-import me.proxer.app.chat.prv.conference.ConferenceFragment
-import me.proxer.app.chat.prv.message.MessengerFragment
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.chat.prv.conference.ConferenceScreen
+import me.proxer.app.chat.prv.message.MessengerScreen
 import me.proxer.app.chat.prv.sync.MessengerDao
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.intentFor
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.startActivity
@@ -24,7 +31,7 @@ import timber.log.Timber
 /**
  * @author Ruben Gees
  */
-class PrvMessengerActivity : DrawerActivity() {
+class PrvMessengerActivity : BaseActivity() {
     companion object {
         private const val CONFERENCE_EXTRA = "conference"
 
@@ -52,48 +59,68 @@ class PrvMessengerActivity : DrawerActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
-        if (supportFragmentManager.fragments.isEmpty()) {
-            val conference = IntentCompat.getParcelableExtra(intent, CONFERENCE_EXTRA, LocalConference::class.java)
-            val initialMessage = intent.getStringExtra(Intent.EXTRA_TEXT)
+        val conference = IntentCompat.getParcelableExtra(intent, CONFERENCE_EXTRA, LocalConference::class.java)
+        val initialMessage = intent.getStringExtra(Intent.EXTRA_TEXT)
 
-            if (conference != null) {
-                supportFragmentManager.commitNow {
-                    replace(R.id.container, MessengerFragment.newInstance(conference, initialMessage))
+        when {
+            conference != null -> setContent {
+                ProxerTheme {
+                    MessengerScreen(
+                        conference = conference,
+                        initialMessage = initialMessage,
+                        onBack = { finish() },
+                    )
                 }
-            } else {
+            }
+
+            intent.hasExtra(ShortcutManagerCompat.EXTRA_SHORTCUT_ID) -> {
                 val conferenceId = intent.getStringExtra(ShortcutManagerCompat.EXTRA_SHORTCUT_ID)?.toLongOrNull()
-
                 if (conferenceId != null) {
-                    title = getString(R.string.fragment_chat_loading_message)
+                    val foundConference = mutableStateOf<LocalConference?>(null)
 
-                    messengerDao
-                        .getConferenceMaybe(conferenceId)
+                    messengerDao.getConferenceMaybe(conferenceId)
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDisposable(this.scope())
                         .subscribe(
                             {
-                                if (it != null) {
-                                    supportFragmentManager.commitNow {
-                                        replace(R.id.container, MessengerFragment.newInstance(it, initialMessage))
-                                    }
-                                } else {
-                                    error("No conference found for id $conferenceId")
-                                }
+                                if (it != null) foundConference.value = it else finish()
                             },
                             {
                                 Timber.e(it)
-
                                 finish()
                             },
                         )
-                } else {
-                    title = getString(R.string.activity_prv_messenger_send_to)
 
-                    supportFragmentManager.commitNow {
-                        replace(R.id.container, ConferenceFragment.newInstance(initialMessage))
+                    setContent {
+                        ProxerTheme {
+                            val conf = foundConference.value
+                            if (conf != null) {
+                                MessengerScreen(
+                                    conference = conf,
+                                    initialMessage = initialMessage,
+                                    onBack = { finish() },
+                                )
+                            } else {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
                     }
+                } else {
+                    finish()
+                }
+            }
+
+            else -> setContent {
+                ProxerTheme {
+                    ConferenceScreen(
+                        initialMessage = initialMessage,
+                        onBack = { finish() },
+                    )
                 }
             }
         }

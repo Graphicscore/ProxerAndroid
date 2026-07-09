@@ -3,18 +3,19 @@ package me.proxer.app.chat.prv.create
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.core.content.IntentCompat
-import androidx.fragment.app.commitNow
-import me.proxer.app.R
-import me.proxer.app.base.DrawerActivity
+import androidx.core.view.WindowCompat
+import me.proxer.app.base.BaseActivity
 import me.proxer.app.chat.prv.Participant
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.intentFor
 import me.proxer.app.util.extension.startActivity
 
 /**
  * @author Ruben Gees
  */
-class CreateConferenceActivity : DrawerActivity() {
+class CreateConferenceActivity : BaseActivity() {
     companion object {
         private const val IS_GROUP_EXTRA = "is_group"
         private const val INITIAL_PARTICIPANT_EXTRA = "initial_participant"
@@ -33,24 +34,22 @@ class CreateConferenceActivity : DrawerActivity() {
             )
     }
 
-    val isGroup: Boolean
+    private val isGroup: Boolean
         get() = intent.getBooleanExtra(IS_GROUP_EXTRA, false)
 
-    val initialParticipant: Participant?
+    private val initialParticipant: Participant?
         get() = IntentCompat.getParcelableExtra(intent, INITIAL_PARTICIPANT_EXTRA, Participant::class.java)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        title =
-            when (isGroup) {
-                true -> getString(R.string.action_create_group)
-                false -> getString(R.string.action_create_chat)
-            }
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.commitNow {
-                replace(R.id.container, CreateConferenceFragment.newInstance())
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                CreateConferenceScreen(
+                    isGroup = isGroup,
+                    initialParticipant = initialParticipant,
+                    onBack = { finish() },
+                )
             }
         }
     }
