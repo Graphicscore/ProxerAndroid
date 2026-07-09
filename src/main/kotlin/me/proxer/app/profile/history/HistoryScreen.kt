@@ -29,6 +29,7 @@ import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toGeneralLanguage
@@ -124,13 +125,24 @@ private fun HistoryCard(entry: LocalUserHistoryEntry) {
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             )
             Text(
-                text = context.getString(
-                    when (entry.category) {
-                        Category.ANIME -> me.proxer.app.R.string.fragment_history_entry_status_anime
-                        else -> me.proxer.app.R.string.fragment_history_entry_status_manga
-                    },
-                    entry.episode,
-                ),
+                text = if (entry is LocalUserHistoryEntry.Ucp) {
+                    context.getString(
+                        when (entry.category) {
+                            Category.ANIME -> me.proxer.app.R.string.fragment_history_entry_ucp_status_anime
+                            else -> me.proxer.app.R.string.fragment_history_entry_ucp_status_manga
+                        },
+                        entry.episode,
+                        entry.date.distanceInWordsToNow(context),
+                    )
+                } else {
+                    context.getString(
+                        when (entry.category) {
+                            Category.ANIME -> me.proxer.app.R.string.fragment_history_entry_status_anime
+                            else -> me.proxer.app.R.string.fragment_history_entry_status_manga
+                        },
+                        entry.episode,
+                    )
+                },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),

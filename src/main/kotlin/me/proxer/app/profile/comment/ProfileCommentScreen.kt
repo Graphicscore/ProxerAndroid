@@ -1,6 +1,7 @@
 package me.proxer.app.profile.comment
 
 import android.app.Activity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +32,7 @@ import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.extension.distanceInWordsToNow
-import me.proxer.app.util.extension.toCategory
+import me.proxer.app.util.extension.toEpisodeAppString
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -81,13 +82,11 @@ private fun ProfileCommentItem(comment: ParsedUserComment) {
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier
                     .weight(1f)
-                    .then(
-                        if (activity != null) {
-                            androidx.compose.ui.Modifier.fillMaxWidth()
-                        } else {
-                            Modifier
-                        },
-                    ),
+                    .clickable {
+                        activity?.let {
+                            MediaActivity.navigateTo(it, comment.entryId, comment.entryName, comment.category)
+                        }
+                    },
             )
             if (comment.overallRating > 0) {
                 Icon(
@@ -110,14 +109,7 @@ private fun ProfileCommentItem(comment: ParsedUserComment) {
         )
 
         Text(
-            text = comment.medium.toCategory().let { cat ->
-                context.getString(
-                    when (cat) {
-                        me.proxer.library.enums.Category.ANIME -> me.proxer.app.R.string.user_media_progress_watched
-                        else -> me.proxer.app.R.string.user_media_progress_read
-                    },
-                )
-            },
+            text = comment.mediaProgress.toEpisodeAppString(context, comment.episode, comment.category),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
