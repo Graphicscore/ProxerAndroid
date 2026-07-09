@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.util.ErrorUtils.ErrorAction
@@ -60,6 +61,42 @@ fun ContentScreen(
                 }
             }
             else -> content()
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ContentScreenLoadingPreview() {
+    ProxerTheme {
+        ContentScreen(isLoading = true, error = null, onRetry = {}) {
+            Text("Content")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ContentScreenErrorPreview() {
+    ProxerTheme {
+        ContentScreen(
+            isLoading = false,
+            error = ErrorAction(R.string.error_unknown),
+            onRetry = {},
+        ) {
+            Text("Content")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ContentScreenContentPreview() {
+    ProxerTheme {
+        ContentScreen(isLoading = false, error = null, onRetry = {}) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Content loaded!")
+            }
         }
     }
 }

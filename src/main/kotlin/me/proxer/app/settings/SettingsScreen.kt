@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.BuildConfig
 import me.proxer.app.R
@@ -44,6 +45,7 @@ import me.proxer.app.chat.prv.sync.MessengerWorker
 import me.proxer.app.notification.NotificationWorker
 import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.settings.theme.ThemeDialog
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.wrapper.DrawerItem
@@ -273,6 +275,119 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
         })
     }
 
+    // ---- Derived display values ----
+    val startPageTitle = startPageItems.indexOf(startPage)
+        .takeIf { it >= 0 }
+        ?.let { startPageTitles.getOrElse(it) { "" } }
+        ?: startPageTitles.firstOrNull() ?: ""
+    val intervalEnabled = newsNotifications || accountNotifications
+    val intervalTitle = notificationIntervalValues.indexOfFirst { it == notificationsInterval }
+        .takeIf { it >= 0 }
+        ?.let { notificationIntervalTitles.getOrElse(it) { "" } }
+        ?: notificationIntervalTitles.getOrElse(1) { "" }
+    val logLevelTitle = httpLogLevelTitles.getOrElse(httpLogLevelIdx) { "" }
+
+    SettingsContent(
+        isLoggedIn = isLoggedIn,
+        ageRestricted = ageRestricted,
+        autoBookmark = autoBookmark,
+        checkCellular = checkCellular,
+        checkLinks = checkLinks,
+        externalCache = externalCache,
+        showExternalCache = showExternalCache,
+        startPageTitle = startPageTitle,
+        themeLabel = themeLabel,
+        newsNotifications = newsNotifications,
+        accountNotifications = accountNotifications,
+        chatNotifications = chatNotifications,
+        intervalEnabled = intervalEnabled,
+        notificationsIntervalTitle = intervalTitle,
+        showDeveloperOptions = BuildConfig.DEBUG || BuildConfig.LOG,
+        httpLogLevelTitle = logLevelTitle,
+        httpVerbose = httpVerbose,
+        httpRedactToken = httpRedactToken,
+        snackbarHostState = snackbarHostState,
+        onOpenDrawer = onOpenDrawer,
+        onProfileSettingsClick = { ProfileSettingsActivity.navigateTo(context as android.app.Activity) },
+        onAgeRestrictedChange = { newValue ->
+            if (newValue) {
+                showAgeConfirmationDialog = true
+            } else {
+                ageRestricted = false
+                preferenceHelper.isAgeRestrictedMediaAllowed = false
+            }
+        },
+        onAutoBookmarkChange = { autoBookmark = it; preferenceHelper.areBookmarksAutomatic = it },
+        onCheckCellularChange = { checkCellular = it; preferenceHelper.shouldCheckCellular = it },
+        onCheckLinksChange = { checkLinks = it; preferenceHelper.shouldCheckLinks = it },
+        onExternalCacheChange = {
+            externalCache = it
+            preferenceHelper.shouldCacheExternally = it
+            restartTrigger++
+        },
+        onStartPageClick = { showStartPageDialog = true },
+        onThemeClick = { showThemeDialog = true },
+        onNewsNotificationsChange = {
+            newsNotifications = it
+            preferenceHelper.areNewsNotificationsEnabled = it
+            NotificationWorker.enqueueIfPossible()
+        },
+        onAccountNotificationsChange = {
+            accountNotifications = it
+            preferenceHelper.areAccountNotificationsEnabled = it
+            NotificationWorker.enqueueIfPossible()
+        },
+        onChatNotificationsChange = {
+            chatNotifications = it
+            preferenceHelper.areChatNotificationsEnabled = it
+            MessengerWorker.enqueueSynchronizationIfPossible()
+        },
+        onNotificationsIntervalClick = { showNotificationsIntervalDialog = true },
+        onHttpLogLevelClick = { showHttpLogLevelDialog = true },
+        onHttpVerboseChange = { httpVerbose = it; preferenceHelper.shouldLogHttpVerbose = it; restartTrigger++ },
+        onHttpRedactTokenChange = { httpRedactToken = it; preferenceHelper.shouldRedactToken = it; restartTrigger++ },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsContent(
+    isLoggedIn: Boolean,
+    ageRestricted: Boolean,
+    autoBookmark: Boolean,
+    checkCellular: Boolean,
+    checkLinks: Boolean,
+    externalCache: Boolean,
+    showExternalCache: Boolean,
+    startPageTitle: String,
+    themeLabel: String,
+    newsNotifications: Boolean,
+    accountNotifications: Boolean,
+    chatNotifications: Boolean,
+    intervalEnabled: Boolean,
+    notificationsIntervalTitle: String,
+    showDeveloperOptions: Boolean,
+    httpLogLevelTitle: String,
+    httpVerbose: Boolean,
+    httpRedactToken: Boolean,
+    snackbarHostState: SnackbarHostState,
+    onOpenDrawer: () -> Unit,
+    onProfileSettingsClick: () -> Unit,
+    onAgeRestrictedChange: (Boolean) -> Unit,
+    onAutoBookmarkChange: (Boolean) -> Unit,
+    onCheckCellularChange: (Boolean) -> Unit,
+    onCheckLinksChange: (Boolean) -> Unit,
+    onExternalCacheChange: (Boolean) -> Unit,
+    onStartPageClick: () -> Unit,
+    onThemeClick: () -> Unit,
+    onNewsNotificationsChange: (Boolean) -> Unit,
+    onAccountNotificationsChange: (Boolean) -> Unit,
+    onChatNotificationsChange: (Boolean) -> Unit,
+    onNotificationsIntervalClick: () -> Unit,
+    onHttpLogLevelClick: () -> Unit,
+    onHttpVerboseChange: (Boolean) -> Unit,
+    onHttpRedactTokenChange: (Boolean) -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -293,9 +408,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.section_profile_settings)) },
                     supportingContent = { Text(stringResource(R.string.preference_profile_summary)) },
-                    modifier = Modifier.clickable(enabled = isLoggedIn) {
-                        ProfileSettingsActivity.navigateTo(context as android.app.Activity)
-                    },
+                    modifier = Modifier.clickable(enabled = isLoggedIn, onClick = onProfileSettingsClick),
                 )
             }
 
@@ -314,14 +427,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = ageRestricted,
-                            onCheckedChange = { newValue ->
-                                if (newValue) {
-                                    showAgeConfirmationDialog = true
-                                } else {
-                                    ageRestricted = false
-                                    preferenceHelper.isAgeRestrictedMediaAllowed = false
-                                }
-                            },
+                            onCheckedChange = onAgeRestrictedChange,
                         )
                     },
                 )
@@ -339,10 +445,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = autoBookmark,
-                            onCheckedChange = {
-                                autoBookmark = it
-                                preferenceHelper.areBookmarksAutomatic = it
-                            },
+                            onCheckedChange = onAutoBookmarkChange,
                         )
                     },
                 )
@@ -360,10 +463,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = checkCellular,
-                            onCheckedChange = {
-                                checkCellular = it
-                                preferenceHelper.shouldCheckCellular = it
-                            },
+                            onCheckedChange = onCheckCellularChange,
                         )
                     },
                 )
@@ -381,10 +481,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = checkLinks,
-                            onCheckedChange = {
-                                checkLinks = it
-                                preferenceHelper.shouldCheckLinks = it
-                            },
+                            onCheckedChange = onCheckLinksChange,
                         )
                     },
                 )
@@ -403,11 +500,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                         trailingContent = {
                             Switch(
                                 checked = externalCache,
-                                onCheckedChange = {
-                                    externalCache = it
-                                    preferenceHelper.shouldCacheExternally = it
-                                    restartTrigger++
-                                },
+                                onCheckedChange = onExternalCacheChange,
                             )
                         },
                     )
@@ -415,14 +508,10 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
             }
 
             item {
-                val startPageTitle = startPageItems.indexOf(startPage)
-                    .takeIf { it >= 0 }
-                    ?.let { startPageTitles.getOrElse(it) { "" } }
-                    ?: startPageTitles.firstOrNull() ?: ""
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.preference_start_page_title)) },
                     supportingContent = { Text(startPageTitle) },
-                    modifier = Modifier.clickable { showStartPageDialog = true },
+                    modifier = Modifier.clickable(onClick = onStartPageClick),
                 )
             }
 
@@ -433,9 +522,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.dialog_theme_title)) },
                     supportingContent = { Text(themeLabel) },
-                    modifier = Modifier.clickable {
-                        showThemeDialog = true
-                    },
+                    modifier = Modifier.clickable(onClick = onThemeClick),
                 )
             }
 
@@ -454,11 +541,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = newsNotifications,
-                            onCheckedChange = {
-                                newsNotifications = it
-                                preferenceHelper.areNewsNotificationsEnabled = it
-                                NotificationWorker.enqueueIfPossible()
-                            },
+                            onCheckedChange = onNewsNotificationsChange,
                         )
                     },
                 )
@@ -476,11 +559,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = accountNotifications,
-                            onCheckedChange = {
-                                accountNotifications = it
-                                preferenceHelper.areAccountNotificationsEnabled = it
-                                NotificationWorker.enqueueIfPossible()
-                            },
+                            onCheckedChange = onAccountNotificationsChange,
                         )
                     },
                 )
@@ -498,23 +577,13 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     trailingContent = {
                         Switch(
                             checked = chatNotifications,
-                            onCheckedChange = {
-                                chatNotifications = it
-                                preferenceHelper.areChatNotificationsEnabled = it
-                                MessengerWorker.enqueueSynchronizationIfPossible()
-                            },
+                            onCheckedChange = onChatNotificationsChange,
                         )
                     },
                 )
             }
 
             item {
-                val intervalEnabled = newsNotifications || accountNotifications
-                val intervalTitle = notificationIntervalValues
-                    .indexOfFirst { it == notificationsInterval }
-                    .takeIf { it >= 0 }
-                    ?.let { notificationIntervalTitles.getOrElse(it) { "" } }
-                    ?: notificationIntervalTitles.getOrElse(1) { "" }
                 ListItem(
                     headlineContent = {
                         Text(
@@ -526,23 +595,20 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                             },
                         )
                     },
-                    supportingContent = { Text(intervalTitle) },
-                    modifier = Modifier.clickable(enabled = intervalEnabled) {
-                        showNotificationsIntervalDialog = true
-                    },
+                    supportingContent = { Text(notificationsIntervalTitle) },
+                    modifier = Modifier.clickable(enabled = intervalEnabled, onClick = onNotificationsIntervalClick),
                 )
             }
 
             // Developer options (visible in debug or LOG builds)
-            if (BuildConfig.DEBUG || BuildConfig.LOG) {
+            if (showDeveloperOptions) {
                 item { CategoryHeader(stringResource(R.string.preference_category_developer_option)) }
 
                 item {
-                    val logLevelTitle = httpLogLevelTitles.getOrElse(httpLogLevelIdx) { "" }
                     ListItem(
                         headlineContent = { Text(stringResource(R.string.preference_developer_options_http_log_level_title)) },
-                        supportingContent = { Text(logLevelTitle) },
-                        modifier = Modifier.clickable { showHttpLogLevelDialog = true },
+                        supportingContent = { Text(httpLogLevelTitle) },
+                        modifier = Modifier.clickable(onClick = onHttpLogLevelClick),
                     )
                 }
 
@@ -561,11 +627,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                         trailingContent = {
                             Switch(
                                 checked = httpVerbose,
-                                onCheckedChange = {
-                                    httpVerbose = it
-                                    preferenceHelper.shouldLogHttpVerbose = it
-                                    restartTrigger++
-                                },
+                                onCheckedChange = onHttpVerboseChange,
                             )
                         },
                     )
@@ -586,17 +648,57 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                         trailingContent = {
                             Switch(
                                 checked = httpRedactToken,
-                                onCheckedChange = {
-                                    httpRedactToken = it
-                                    preferenceHelper.shouldRedactToken = it
-                                    restartTrigger++
-                                },
+                                onCheckedChange = onHttpRedactTokenChange,
                             )
                         },
                     )
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsScreenPreview() {
+    ProxerTheme {
+        SettingsContent(
+            isLoggedIn = true,
+            ageRestricted = false,
+            autoBookmark = true,
+            checkCellular = false,
+            checkLinks = true,
+            externalCache = false,
+            showExternalCache = false,
+            startPageTitle = "News",
+            themeLabel = "Default",
+            newsNotifications = true,
+            accountNotifications = false,
+            chatNotifications = true,
+            intervalEnabled = true,
+            notificationsIntervalTitle = "2 hours",
+            showDeveloperOptions = false,
+            httpLogLevelTitle = "",
+            httpVerbose = false,
+            httpRedactToken = true,
+            snackbarHostState = remember { SnackbarHostState() },
+            onOpenDrawer = {},
+            onProfileSettingsClick = {},
+            onAgeRestrictedChange = {},
+            onAutoBookmarkChange = {},
+            onCheckCellularChange = {},
+            onCheckLinksChange = {},
+            onExternalCacheChange = {},
+            onStartPageClick = {},
+            onThemeClick = {},
+            onNewsNotificationsChange = {},
+            onAccountNotificationsChange = {},
+            onChatNotificationsChange = {},
+            onNotificationsIntervalClick = {},
+            onHttpLogLevelClick = {},
+            onHttpVerboseChange = {},
+            onHttpRedactTokenChange = {},
+        )
     }
 }
 

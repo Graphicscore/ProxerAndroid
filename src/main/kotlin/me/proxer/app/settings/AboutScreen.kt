@@ -30,8 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.getSystemService
 import com.mikepenz.aboutlibraries.LibsBuilder
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.BuildConfig
 import me.proxer.app.R
 import me.proxer.app.settings.status.ServerStatusActivity
@@ -51,7 +53,6 @@ private const val REPOSITORY_URL = "https://github.com/proxer/ProxerAndroid"
 @Composable
 fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
     val context = LocalContext.current
-    val activity = context as Activity
 
     Scaffold(
         topBar = {
@@ -92,7 +93,7 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     modifier = Modifier.clickable {
                         LibsBuilder()
                             .withActivityTitle(context.getString(R.string.about_licenses_activity_title))
-                            .start(activity)
+                            .start(context as Activity)
                     },
                 )
             }
@@ -111,7 +112,7 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     headlineContent = { Text(stringResource(R.string.about_server_status)) },
                     supportingContent = { Text(stringResource(R.string.about_server_status_description)) },
                     leadingContent = { Icon(Icons.Default.Storage, contentDescription = null) },
-                    modifier = Modifier.clickable { ServerStatusActivity.navigateTo(activity) },
+                    modifier = Modifier.clickable { ServerStatusActivity.navigateTo(context as Activity) },
                 )
             }
 
@@ -214,5 +215,13 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun AboutScreenPreview() {
+    ProxerTheme {
+        AboutScreen()
     }
 }

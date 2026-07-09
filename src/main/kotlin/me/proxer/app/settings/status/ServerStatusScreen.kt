@@ -31,9 +31,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,22 +49,40 @@ fun ServerStatusScreen() {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
+    ServerStatusContent(
+        isLoading = isLoading == true,
+        error = error,
+        servers = data,
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ServerStatusContent(
+    isLoading: Boolean,
+    error: ErrorAction?,
+    servers: List<ServerStatus>?,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(title = { Text(stringResource(R.string.section_server_status)) })
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             isSwipeToRefreshEnabled = true,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.padding(padding),
         ) {
-            val servers = data ?: return@ContentScreen
+            val safeServers = servers ?: return@ContentScreen
             Column {
-                val allOnline = servers.all { it.online }
+                val allOnline = safeServers.all { it.online }
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -91,10 +112,29 @@ fun ServerStatusScreen() {
                     contentPadding = PaddingValues(8.dp),
                     modifier = Modifier.fillMaxSize(),
                 ) {
-                    items(servers) { server -> ServerStatusItem(server) }
+                    items(safeServers) { server -> ServerStatusItem(server) }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ServerStatusScreenPreview() {
+    ProxerTheme {
+        ServerStatusContent(
+            isLoading = false,
+            error = null,
+            servers = listOf(
+                ServerStatus("Server 1", 1, ServerType.MAIN, true),
+                ServerStatus("Server 2", 2, ServerType.MAIN, false),
+                ServerStatus("Manga Server 1", 1, ServerType.MANGA, true),
+                ServerStatus("Stream Server 1", 1, ServerType.STREAM, true),
+            ),
+            onRetry = {},
+            onRefresh = {},
+        )
     }
 }
 

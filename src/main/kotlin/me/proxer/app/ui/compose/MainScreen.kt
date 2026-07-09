@@ -1,5 +1,7 @@
 package me.proxer.app.ui.compose
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -22,8 +24,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.anime.schedule.ScheduleScreen
@@ -54,6 +59,21 @@ private val drawerEntries = listOf(
 )
 
 @Composable
+private fun MainScreenDrawerSheet(selectedItem: DrawerItem, onSelect: (DrawerItem) -> Unit) {
+    ModalDrawerSheet {
+        drawerEntries.forEach { entry ->
+            NavigationDrawerItem(
+                icon = { Icon(entry.icon, contentDescription = null) },
+                label = { Text(stringResource(entry.labelRes)) },
+                selected = selectedItem == entry.item ||
+                    (entry.item == DrawerItem.CHAT && selectedItem == DrawerItem.MESSENGER),
+                onClick = { onSelect(entry.item) },
+            )
+        }
+    }
+}
+
+@Composable
 fun MainScreen(initialItem: DrawerItem) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
@@ -62,19 +82,9 @@ fun MainScreen(initialItem: DrawerItem) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
-                drawerEntries.forEach { entry ->
-                    NavigationDrawerItem(
-                        icon = { Icon(entry.icon, contentDescription = null) },
-                        label = { Text(stringResource(entry.labelRes)) },
-                        selected = selectedItem == entry.item ||
-                            (entry.item == DrawerItem.CHAT && selectedItem == DrawerItem.MESSENGER),
-                        onClick = {
-                            selectedItem = entry.item
-                            scope.launch { drawerState.close() }
-                        },
-                    )
-                }
+            MainScreenDrawerSheet(selectedItem) { item ->
+                selectedItem = item
+                scope.launch { drawerState.close() }
             }
         },
     ) {
@@ -88,6 +98,24 @@ fun MainScreen(initialItem: DrawerItem) {
             DrawerItem.MANGA -> MediaListScreen(category = Category.MANGA, onOpenDrawer = openDrawer)
             DrawerItem.INFO -> AboutScreen(onOpenDrawer = openDrawer)
             DrawerItem.SETTINGS -> SettingsScreen(onOpenDrawer = openDrawer)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MainScreenPreview() {
+    var selectedItem by rememberSaveable { mutableStateOf(DrawerItem.NEWS) }
+    ProxerTheme {
+        ModalNavigationDrawer(
+            drawerState = rememberDrawerState(DrawerValue.Closed),
+            drawerContent = {
+                MainScreenDrawerSheet(selectedItem) { selectedItem = it }
+            },
+        ) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Section: ${selectedItem.name}")
+            }
         }
     }
 }

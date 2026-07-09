@@ -34,22 +34,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.enums.UcpSettingConstraint
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
-    val context = LocalContext.current
     val viewModel = koinViewModel<ProfileSettingsViewModel>()
 
     val settings by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val updateError by viewModel.updateError.observeAsState()
 
+    ProfileSettingsContent(
+        settings = settings,
+        error = error,
+        updateError = updateError,
+        onBack = onBack,
+        onUpdate = { viewModel.update(it) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProfileSettingsContent(
+    settings: LocalProfileSettings?,
+    error: ErrorAction?,
+    updateError: ErrorAction?,
+    onBack: () -> Unit,
+    onUpdate: (LocalProfileSettings) -> Unit,
+) {
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     // Show load error as snackbar
@@ -145,7 +165,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
             confirmButton = {
                 TextButton(onClick = {
                     val newInterval = videoAdsIntervalValues[selected]
-                    settings?.let { viewModel.update(it.copy(adInterval = newInterval)) }
+                    settings?.let { onUpdate(it.copy(adInterval = newInterval)) }
                     showVideoAdsDialog = false
                 }) {
                     Text(stringResource(android.R.string.ok))
@@ -212,7 +232,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.profileVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(profileVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -231,7 +251,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.topTenVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(topTenVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -250,7 +270,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.animeVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(animeVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -269,7 +289,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.mangaVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(mangaVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -288,7 +308,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.commentVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(commentVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -307,7 +327,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.forumVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(forumVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -326,7 +346,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.friendVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(friendVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -356,7 +376,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                                 1 -> UcpSettingConstraint.EVERYONE
                                 else -> UcpSettingConstraint.PRIVATE
                             }
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(friendRequestConstraint = constraint),
                             )
                         }
@@ -375,7 +395,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.aboutVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(aboutVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -394,7 +414,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.historyVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(historyVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -413,7 +433,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.guestBookVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(guestBookVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -432,7 +452,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.guestBookEntryConstraint.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(guestBookEntryConstraint = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -451,7 +471,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.galleryVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(galleryVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -470,7 +490,7 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
                             titles = constraintTitles,
                             currentIndex = currentSettings.articleVisibility.ordinal,
                         ) { idx ->
-                            viewModel.update(
+                            onUpdate(
                                 currentSettings.copy(articleVisibility = UcpSettingConstraint.values()[idx]),
                             )
                         }
@@ -519,4 +539,18 @@ private data class ConstraintDialogConfig(
     }
 
     override fun hashCode(): Int = 31 * title.hashCode() + currentIndex
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProfileSettingsScreenPreview() {
+    ProxerTheme {
+        ProfileSettingsContent(
+            settings = LocalProfileSettings.default(),
+            error = null,
+            updateError = null,
+            onBack = {},
+            onUpdate = {},
+        )
+    }
 }

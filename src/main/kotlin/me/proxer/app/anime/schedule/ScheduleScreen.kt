@@ -42,12 +42,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.formattedDistanceTo
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toLocalDateTimeBP
@@ -57,9 +60,9 @@ import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
+import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScheduleScreen(onOpenDrawer: () -> Unit = {}) {
     val viewModel = koinViewModel<ScheduleViewModel>()
@@ -68,6 +71,28 @@ fun ScheduleScreen(onOpenDrawer: () -> Unit = {}) {
     val isLoading by viewModel.isLoading.observeAsState(false)
 
     LaunchedEffect(Unit) { viewModel.load() }
+
+    ScheduleContent(
+        isLoading = isLoading == true,
+        error = error,
+        schedule = data,
+        onOpenDrawer = onOpenDrawer,
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ScheduleContent(
+    isLoading: Boolean,
+    error: ErrorAction?,
+    schedule: Map<CalendarDay, List<CalendarEntry>>?,
+    onOpenDrawer: () -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+) {
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -80,18 +105,17 @@ fun ScheduleScreen(onOpenDrawer: () -> Unit = {}) {
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             isSwipeToRefreshEnabled = true,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.padding(padding),
         ) {
-            val schedule = data ?: return@ContentScreen
-            val context = LocalContext.current
+            val safeSchedule = schedule ?: return@ContentScreen
             val activity = context as? Activity ?: return@ContentScreen
-            val sortedDays = remember(schedule) {
-                schedule.entries.sortedBy { (day, _) -> day.ordinal }
+            val sortedDays = remember(safeSchedule) {
+                safeSchedule.entries.sortedBy { (day, _) -> day.ordinal }
             }
 
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -117,6 +141,38 @@ fun ScheduleScreen(onOpenDrawer: () -> Unit = {}) {
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ScheduleScreenPreview() {
+    val now = Date()
+    val fakeEntry = CalendarEntry(
+        id = "1",
+        entryId = "100",
+        name = "Attack on Titan",
+        episode = 5,
+        episodeTitle = "",
+        date = now,
+        timezone = "UTC",
+        industryId = "1",
+        industryName = "Funimation",
+        weekDay = CalendarDay.MONDAY,
+        uploadDate = now,
+        genres = emptySet(),
+        ratingSum = 400,
+        ratingAmount = 100,
+    )
+    ProxerTheme {
+        ScheduleContent(
+            isLoading = false,
+            error = null,
+            schedule = mapOf(CalendarDay.MONDAY to listOf(fakeEntry)),
+            onOpenDrawer = {},
+            onRetry = {},
+            onRefresh = {},
+        )
     }
 }
 

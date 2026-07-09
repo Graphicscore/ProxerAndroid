@@ -1,10 +1,12 @@
 package me.proxer.app.ui.compose
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import me.proxer.app.R
 import me.proxer.app.util.extension.resolveColor
 
@@ -33,4 +35,12 @@ fun ProxerTheme(content: @Composable () -> Unit) {
         ),
         content = content,
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ProxerThemePreview() {
+    ProxerTheme {
+        Text("Preview")
+    }
 }
