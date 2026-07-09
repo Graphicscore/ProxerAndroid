@@ -45,7 +45,7 @@ fun WebViewScreen(url: String, onBack: () -> Unit) {
         },
     ) { padding ->
         AndroidView(
-            factory = { webView },
+            factory = { _ -> webView },
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize(),
