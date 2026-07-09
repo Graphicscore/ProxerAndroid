@@ -2,23 +2,17 @@ package me.proxer.app.ui
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.MenuItem
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import kotterknife.bindView
-import me.proxer.app.R
-import me.proxer.app.util.compat.TaskDescriptionCompat
-import me.proxer.app.util.data.PreferenceHelper
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.getSafeStringExtra
-import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.extension.startActivity
 
 /**
  * @author Ruben Gees
  */
-class WebViewActivity : AppCompatActivity() {
+class WebViewActivity : BaseActivity() {
     companion object {
         private const val URL_EXTRA = "url"
 
@@ -28,36 +22,13 @@ class WebViewActivity : AppCompatActivity() {
     private val url: String
         get() = intent.getSafeStringExtra(URL_EXTRA)
 
-    private val preferenceHelper by safeInject<PreferenceHelper>()
-
-    private val toolbar: Toolbar by bindView(R.id.toolbar)
-    private val webView: WebView by bindView(R.id.webview)
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        val theme = preferenceHelper.themeContainer.theme
-
-        getTheme().applyStyle(theme.main, true)
-        TaskDescriptionCompat.setTaskDescription(this, theme.primaryColor(this))
-
         super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_web_view)
-        setSupportActionBar(toolbar)
-
-        webView.webViewClient = WebViewClient()
-        webView.settings.javaScriptEnabled = true
-
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        title = url
-
-        webView.loadUrl(url)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> finish()
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                WebViewScreen(url = url, onBack = { finish() })
+            }
         }
-
-        return super.onOptionsItemSelected(item)
     }
 }
