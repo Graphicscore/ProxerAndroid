@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -112,6 +111,7 @@ fun AnimeScreen(
     var appRequiredAction by remember { mutableStateOf<AppRequiredErrorAction?>(null) }
     var lastAdAlertDate by remember { mutableStateOf(storageHelper.lastAdAlertDate) }
     var isLoggedIn by remember { mutableStateOf(storageHelper.isLoggedIn) }
+    var showLoginDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -207,6 +207,10 @@ fun AnimeScreen(
                 }
             },
         )
+    }
+
+    if (showLoginDialog) {
+        LoginDialog(onDismiss = { showLoginDialog = false })
     }
 
     appRequiredAction?.let { action ->
@@ -376,7 +380,7 @@ fun AnimeScreen(
                                     viewModel.resolve(stream)
                                 }
                             },
-                            onLoginClick = { LoginDialog.show(context as AppCompatActivity) },
+                            onLoginClick = { showLoginDialog = true },
                         )
                     }
                 }

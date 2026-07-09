@@ -7,7 +7,6 @@ import android.view.View
 import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.HttpDataSource
 import me.proxer.app.R
-import me.proxer.app.auth.LoginDialog
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.comment.CommentInvalidProgressException
 import me.proxer.app.comment.CommentTooLongException
@@ -604,10 +603,6 @@ object ErrorUtils {
                         activity.startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
                     }
                 }
-            }
-
-            LOGIN -> {
-                View.OnClickListener { LoginDialog.show(activity) }
             }
 
             AGE_CONFIRMATION -> {

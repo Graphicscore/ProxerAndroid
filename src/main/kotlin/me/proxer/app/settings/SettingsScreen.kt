@@ -2,7 +2,6 @@ package me.proxer.app.settings
 
 import android.content.Context
 import android.os.Environment
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -79,6 +78,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
     var showStartPageDialog by remember { mutableStateOf(false) }
     var showNotificationsIntervalDialog by remember { mutableStateOf(false) }
     var showHttpLogLevelDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
 
     // Restart-needed snackbar trigger (incremented to fire the LaunchedEffect)
     var restartTrigger by remember { mutableIntStateOf(0) }
@@ -266,6 +266,13 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
         )
     }
 
+    if (showThemeDialog) {
+        ThemeDialog(onDismiss = {
+            showThemeDialog = false
+            themeLabel = buildThemeLabel(context, preferenceHelper)
+        })
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -427,7 +434,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                     headlineContent = { Text(stringResource(R.string.dialog_theme_title)) },
                     supportingContent = { Text(themeLabel) },
                     modifier = Modifier.clickable {
-                        ThemeDialog.show(context as AppCompatActivity)
+                        showThemeDialog = true
                     },
                 )
             }
