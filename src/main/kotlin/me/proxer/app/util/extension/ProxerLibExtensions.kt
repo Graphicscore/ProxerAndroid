@@ -10,7 +10,6 @@ import com.mikepenz.iconics.typeface.library.community.material.CommunityMateria
 import com.mikepenz.iconics.utils.colorInt
 import me.proxer.app.R
 import me.proxer.app.R.id.description
-import me.proxer.app.R.id.post
 import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.chat.prv.LocalConference
@@ -559,7 +558,7 @@ fun Topic.toTopicMetaData() = TopicMetaData(
     lastPostDate,
     hits,
     isLocked,
-    post,
+    postAmount,
     subject,
 )
 
