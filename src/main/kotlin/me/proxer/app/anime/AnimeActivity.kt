@@ -2,30 +2,20 @@ package me.proxer.app.anime
 
 import android.app.Activity
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import androidx.core.app.ShareCompat
+import androidx.activity.compose.setContent
 import androidx.core.content.IntentCompat
-import androidx.fragment.app.commitNow
-import com.jakewharton.rxbinding3.view.clicks
-import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
-import com.uber.autodispose.android.lifecycle.scope
-import com.uber.autodispose.autoDisposable
-import me.proxer.app.R
-import me.proxer.app.base.DrawerActivity
-import me.proxer.app.media.MediaActivity
+import androidx.core.view.WindowCompat
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
-import me.proxer.app.util.extension.toEpisodeAppString
 import me.proxer.library.enums.AnimeLanguage
-import me.proxer.library.enums.Category
-import me.proxer.library.util.ProxerUrls
 import me.proxer.library.util.ProxerUtils
 
 /**
  * @author Ruben Gees
  */
-class AnimeActivity : DrawerActivity() {
+class AnimeActivity : BaseActivity() {
     companion object {
         private const val ID_EXTRA = "id"
         private const val EPISODE_EXTRA = "episode"
@@ -51,127 +41,68 @@ class AnimeActivity : DrawerActivity() {
         }
     }
 
-    val id: String
+    private val id: String
         get() =
             when (intent.hasExtra(ID_EXTRA)) {
                 true -> intent.getSafeStringExtra(ID_EXTRA)
                 false -> intent?.data?.pathSegments?.getOrNull(1) ?: "-1"
             }
 
-    var episode: Int
+    private val initialEpisode: Int
         get() =
             when (intent.hasExtra(EPISODE_EXTRA)) {
-                true -> {
-                    intent.getIntExtra(EPISODE_EXTRA, 1)
-                }
-
-                false -> {
+                true -> intent.getIntExtra(EPISODE_EXTRA, 1)
+                false ->
                     intent
                         ?.data
                         ?.pathSegments
                         ?.getOrNull(2)
                         ?.toIntOrNull() ?: 1
-                }
             }
-        set(value) {
-            intent.putExtra(EPISODE_EXTRA, value)
 
-            updateTitle()
-        }
-
-    val language: AnimeLanguage
+    private val language: AnimeLanguage
         get() =
             when (intent.hasExtra(LANGUAGE_EXTRA)) {
-                true -> {
+                true ->
                     requireNotNull(
                         IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java),
                     ) {
                         "LANGUAGE_EXTRA present but deserialized to null in AnimeActivity"
                     }
-                }
 
-                false -> {
+                false ->
                     intent
                         ?.data
                         ?.pathSegments
                         ?.getOrNull(3)
                         ?.let { ProxerUtils.toApiEnum<AnimeLanguage>(it) }
                         ?: AnimeLanguage.ENGLISH_SUB
-                }
             }
 
-    var name: String?
+    private val initialName: String?
         get() = intent.getStringExtra(NAME_EXTRA)
-        set(value) {
-            intent.putExtra(NAME_EXTRA, value)
 
-            updateTitle()
-        }
-
-    var episodeAmount: Int?
+    private val initialEpisodeAmount: Int?
         get() =
             when (intent.hasExtra(EPISODE_AMOUNT_EXTRA)) {
                 true -> intent.getIntExtra(EPISODE_AMOUNT_EXTRA, 1)
                 false -> null
             }
-        set(value) {
-            if (value == null) {
-                intent.removeExtra(EPISODE_AMOUNT_EXTRA)
-            } else {
-                intent.putExtra(EPISODE_AMOUNT_EXTRA, value)
-            }
-        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setupToolbar()
-        updateTitle()
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.commitNow {
-                replace(R.id.container, AnimeFragment.newInstance())
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                AnimeScreen(
+                    id = id,
+                    initialEpisode = initialEpisode,
+                    language = language,
+                    initialName = initialName,
+                    initialEpisodeAmount = initialEpisodeAmount,
+                    onBack = { finish() },
+                )
             }
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        IconicsMenuInflaterUtil.inflate(menuInflater, this, R.menu.activity_share, menu, true)
-
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_share -> {
-                name?.let {
-                    ShareCompat
-                        .IntentBuilder(this)
-                        .setText(
-                            getString(R.string.share_anime, episode, it, ProxerUrls.animeWeb(id, episode, language)),
-                        ).setType("text/plain")
-                        .setChooserTitle(getString(R.string.share_title))
-                        .startChooser()
-                }
-            }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    private fun setupToolbar() {
-        toolbar
-            .clicks()
-            .autoDisposable(this.scope())
-            .subscribe {
-                name?.let {
-                    MediaActivity.navigateTo(this, id, it, Category.ANIME)
-                }
-            }
-    }
-
-    private fun updateTitle() {
-        title = name
-        supportActionBar?.subtitle = Category.ANIME.toEpisodeAppString(this, episode)
     }
 }
