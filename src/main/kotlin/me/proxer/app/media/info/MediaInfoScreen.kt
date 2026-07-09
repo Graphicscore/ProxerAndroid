@@ -37,11 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.media.MediaInfoViewModel
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toCategory
 import me.proxer.app.util.extension.toEndAppString
@@ -66,6 +69,36 @@ fun MediaInfoScreen(id: String) {
     val updateResult by viewModel.userInfoUpdateData.observeAsState()
     val updateError by viewModel.userInfoUpdateError.observeAsState()
 
+    MediaInfoContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        userInfo = userInfo,
+        updateResult = updateResult,
+        updateError = updateError,
+        onRetry = { viewModel.load() },
+        onNote = { viewModel.note() },
+        onFavorite = { viewModel.toggleFavorite() },
+        onFinish = { viewModel.markAsFinished() },
+        onSubscribe = { viewModel.toggleSubscription() },
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun MediaInfoContent(
+    data: Entry?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    userInfo: MediaUserInfo?,
+    updateResult: Unit?,
+    updateError: ErrorAction?,
+    onRetry: () -> Unit,
+    onNote: () -> Unit,
+    onFavorite: () -> Unit,
+    onFinish: () -> Unit,
+    onSubscribe: () -> Unit,
+) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -86,18 +119,18 @@ fun MediaInfoScreen(id: String) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
         ) {
             if (data != null) {
                 MediaInfoBody(
-                    entry = data!!,
+                    entry = data,
                     userInfo = userInfo,
-                    onNote = { viewModel.note() },
-                    onFavorite = { viewModel.toggleFavorite() },
-                    onFinish = { viewModel.markAsFinished() },
-                    onSubscribe = { viewModel.toggleSubscription() },
+                    onNote = onNote,
+                    onFavorite = onFavorite,
+                    onFinish = onFinish,
+                    onSubscribe = onSubscribe,
                 )
             }
         }
@@ -363,6 +396,26 @@ private fun InfoRow(label: String, value: String, onClick: (() -> Unit)? = null)
             text = value,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.weight(0.6f),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MediaInfoContentPreview() {
+    ProxerTheme {
+        MediaInfoContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            userInfo = null,
+            updateResult = null,
+            updateError = null,
+            onRetry = {},
+            onNote = {},
+            onFavorite = {},
+            onFinish = {},
+            onSubscribe = {},
         )
     }
 }

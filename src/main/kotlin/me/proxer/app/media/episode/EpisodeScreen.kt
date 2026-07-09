@@ -35,16 +35,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toEpisodeAppString
 import me.proxer.app.util.extension.toGeneralLanguage
 import me.proxer.library.enums.Category
+import me.proxer.library.enums.MediaLanguage
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -59,6 +63,31 @@ fun EpisodeScreen(mediaId: String, mediaName: String? = null) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
+    EpisodeContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        mediaId = mediaId,
+        mediaName = mediaName,
+        bookmarkResult = bookmarkResult,
+        bookmarkError = bookmarkError,
+        onRetry = { viewModel.load() },
+        onBookmark = { number, language, category -> viewModel.bookmark(number, language, category) },
+    )
+}
+
+@Composable
+private fun EpisodeContent(
+    data: List<EpisodeRow>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    mediaId: String,
+    mediaName: String?,
+    bookmarkResult: Unit?,
+    bookmarkError: ErrorAction?,
+    onRetry: () -> Unit,
+    onBookmark: (Int, MediaLanguage, Category) -> Unit,
+) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var bookmarkEpisode by remember { mutableStateOf<EpisodeRow?>(null) }
@@ -92,7 +121,7 @@ fun EpisodeScreen(mediaId: String, mediaName: String? = null) {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    viewModel.bookmark(
+                                    onBookmark(
                                         episodeToBookmark.number,
                                         language,
                                         episodeToBookmark.category,
@@ -114,9 +143,9 @@ fun EpisodeScreen(mediaId: String, mediaName: String? = null) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         ContentScreen(
-            isLoading = isLoading == true,
+            isLoading = isLoading,
             error = error,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(data ?: emptyList()) { episode ->
@@ -212,5 +241,23 @@ private fun EpisodeItem(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EpisodeContentPreview() {
+    ProxerTheme {
+        EpisodeContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            mediaId = "1",
+            mediaName = null,
+            bookmarkResult = null,
+            bookmarkError = null,
+            onRetry = {},
+            onBookmark = { _, _, _ -> },
+        )
     }
 }

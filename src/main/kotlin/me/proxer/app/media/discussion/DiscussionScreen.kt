@@ -18,10 +18,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.forum.TopicActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.entity.info.ForumDiscussion
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -35,10 +38,25 @@ fun DiscussionScreen(mediaId: String) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    ContentScreen(
-        isLoading = isLoading == true,
+    DiscussionContent(
+        data = data,
         error = error,
+        isLoading = isLoading == true,
         onRetry = { viewModel.load() },
+    )
+}
+
+@Composable
+private fun DiscussionContent(
+    data: List<ForumDiscussion>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onRetry: () -> Unit,
+) {
+    ContentScreen(
+        isLoading = isLoading,
+        error = error,
+        onRetry = onRetry,
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(data ?: emptyList()) { discussion ->
@@ -76,6 +94,19 @@ private fun DiscussionItem(discussion: ForumDiscussion) {
             ),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun DiscussionContentPreview() {
+    ProxerTheme {
+        DiscussionContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
         )
     }
 }

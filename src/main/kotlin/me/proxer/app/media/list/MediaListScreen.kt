@@ -62,6 +62,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -70,6 +71,8 @@ import me.proxer.app.R
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.enumSetOf
 import me.proxer.app.util.extension.getQuantityString
 import me.proxer.app.util.extension.toAppString
@@ -113,10 +116,6 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
     val isLoading by viewModel.isLoading.observeAsState(false)
     val genreData by viewModel.genreData.observeAsState(emptyList())
     val tagData by viewModel.tagData.observeAsState(emptyList())
-    val context = LocalContext.current
-
-    val gridState = rememberLazyGridState()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     // Search state
     var isSearchActive by remember { mutableStateOf(false) }
@@ -142,64 +141,121 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
         viewModel.load()
     }
 
+    MediaListContent(
+        category = category,
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        isSearchActive = isSearchActive,
+        searchQuery = searchQuery,
+        showFilterSheet = showFilterSheet,
+        onOpenDrawer = onOpenDrawer,
+        onSearchToggle = {
+            if (isSearchActive) {
+                searchQuery = ""
+                viewModel.searchQuery = null
+                viewModel.reload()
+            }
+            isSearchActive = !isSearchActive
+        },
+        onSearchQueryChange = { searchQuery = it },
+        onSearchSubmit = {
+            viewModel.searchQuery = searchQuery.trim().ifBlank { null }
+            viewModel.reload()
+        },
+        onFilterClick = { showFilterSheet = true },
+        onDismissFilterSheet = { showFilterSheet = false },
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+        onLoadMore = { viewModel.loadIfPossible() },
+    ) {
+        MediaFilterSheet(
+            category = category,
+            sortCriteria = pendingSortCriteria,
+            type = pendingType,
+            language = pendingLanguage,
+            genres = pendingGenres,
+            excludedGenres = pendingExcludedGenres,
+            fskConstraints = pendingFskConstraints,
+            tags = pendingTags,
+            excludedTags = pendingExcludedTags,
+            includeUnratedTags = pendingIncludeUnratedTags,
+            includeSpoilerTags = pendingIncludeSpoilerTags,
+            hideFinished = pendingHideFinished,
+            genreData = genreData ?: emptyList(),
+            tagData = tagData ?: emptyList(),
+            onSortChange = { pendingSortCriteria = it },
+            onTypeChange = { pendingType = it },
+            onLanguageChange = { pendingLanguage = it },
+            onGenresChange = { pendingGenres = it },
+            onExcludedGenresChange = { pendingExcludedGenres = it },
+            onFskConstraintsChange = { pendingFskConstraints = it },
+            onTagsChange = { pendingTags = it },
+            onExcludedTagsChange = { pendingExcludedTags = it },
+            onIncludeUnratedTagsChange = { pendingIncludeUnratedTags = it },
+            onIncludeSpoilerTagsChange = { pendingIncludeSpoilerTags = it },
+            onHideFinishedChange = { pendingHideFinished = it },
+            onSearch = {
+                viewModel.searchQuery = searchQuery.trim().ifBlank { null }
+                viewModel.language = pendingLanguage
+                viewModel.genres = pendingGenres
+                viewModel.excludedGenres = pendingExcludedGenres
+                viewModel.fskConstraints = enumSetOf(pendingFskConstraints.toList())
+                viewModel.tags = pendingTags
+                viewModel.excludedTags = pendingExcludedTags
+                viewModel.tagRateFilter =
+                    if (pendingIncludeUnratedTags) TagRateFilter.ALL else TagRateFilter.RATED_ONLY
+                viewModel.tagSpoilerFilter =
+                    if (pendingIncludeSpoilerTags) TagSpoilerFilter.ALL else TagSpoilerFilter.NO_SPOILERS
+                viewModel.hideFinished = pendingHideFinished
+                // sortCriteria and type have Delegates.observable that call reload() automatically
+                viewModel.sortCriteria = pendingSortCriteria
+                viewModel.type = pendingType
+                // Explicit reload to cover the case where sort/type didn't change
+                viewModel.reload()
+                showFilterSheet = false
+            },
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@Composable
+private fun MediaListContent(
+    category: Category,
+    data: List<MediaListEntry>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    isSearchActive: Boolean,
+    searchQuery: String,
+    showFilterSheet: Boolean,
+    onOpenDrawer: () -> Unit,
+    onSearchToggle: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onSearchSubmit: () -> Unit,
+    onFilterClick: () -> Unit,
+    onDismissFilterSheet: () -> Unit,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+    filterSheetContent: @Composable () -> Unit,
+) {
+    val context = LocalContext.current
+    val gridState = rememberLazyGridState()
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     LaunchedEffect(gridState.layoutInfo) {
         val total = gridState.layoutInfo.totalItemsCount
         val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     if (showFilterSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showFilterSheet = false },
+            onDismissRequest = onDismissFilterSheet,
             sheetState = bottomSheetState,
         ) {
-            MediaFilterSheet(
-                category = category,
-                sortCriteria = pendingSortCriteria,
-                type = pendingType,
-                language = pendingLanguage,
-                genres = pendingGenres,
-                excludedGenres = pendingExcludedGenres,
-                fskConstraints = pendingFskConstraints,
-                tags = pendingTags,
-                excludedTags = pendingExcludedTags,
-                includeUnratedTags = pendingIncludeUnratedTags,
-                includeSpoilerTags = pendingIncludeSpoilerTags,
-                hideFinished = pendingHideFinished,
-                genreData = genreData ?: emptyList(),
-                tagData = tagData ?: emptyList(),
-                onSortChange = { pendingSortCriteria = it },
-                onTypeChange = { pendingType = it },
-                onLanguageChange = { pendingLanguage = it },
-                onGenresChange = { pendingGenres = it },
-                onExcludedGenresChange = { pendingExcludedGenres = it },
-                onFskConstraintsChange = { pendingFskConstraints = it },
-                onTagsChange = { pendingTags = it },
-                onExcludedTagsChange = { pendingExcludedTags = it },
-                onIncludeUnratedTagsChange = { pendingIncludeUnratedTags = it },
-                onIncludeSpoilerTagsChange = { pendingIncludeSpoilerTags = it },
-                onHideFinishedChange = { pendingHideFinished = it },
-                onSearch = {
-                    viewModel.searchQuery = searchQuery.trim().ifBlank { null }
-                    viewModel.language = pendingLanguage
-                    viewModel.genres = pendingGenres
-                    viewModel.excludedGenres = pendingExcludedGenres
-                    viewModel.fskConstraints = enumSetOf(pendingFskConstraints.toList())
-                    viewModel.tags = pendingTags
-                    viewModel.excludedTags = pendingExcludedTags
-                    viewModel.tagRateFilter =
-                        if (pendingIncludeUnratedTags) TagRateFilter.ALL else TagRateFilter.RATED_ONLY
-                    viewModel.tagSpoilerFilter =
-                        if (pendingIncludeSpoilerTags) TagSpoilerFilter.ALL else TagSpoilerFilter.NO_SPOILERS
-                    viewModel.hideFinished = pendingHideFinished
-                    // sortCriteria and type have Delegates.observable that call reload() automatically
-                    viewModel.sortCriteria = pendingSortCriteria
-                    viewModel.type = pendingType
-                    // Explicit reload to cover the case where sort/type didn't change
-                    viewModel.reload()
-                    showFilterSheet = false
-                },
-            )
+            filterSheetContent()
         }
     }
 
@@ -210,14 +266,11 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
                     if (isSearchActive) {
                         TextField(
                             value = searchQuery,
-                            onValueChange = { searchQuery = it },
+                            onValueChange = onSearchQueryChange,
                             placeholder = { Text(stringResource(R.string.action_search)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = {
-                                viewModel.searchQuery = searchQuery.trim().ifBlank { null }
-                                viewModel.reload()
-                            }),
+                            keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
                             modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
@@ -234,20 +287,13 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        if (isSearchActive) {
-                            searchQuery = ""
-                            viewModel.searchQuery = null
-                            viewModel.reload()
-                        }
-                        isSearchActive = !isSearchActive
-                    }) {
+                    IconButton(onClick = onSearchToggle) {
                         Icon(
                             if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
                             contentDescription = stringResource(R.string.action_search),
                         )
                     }
-                    IconButton(onClick = { showFilterSheet = true }) {
+                    IconButton(onClick = onFilterClick) {
                         Icon(Icons.Default.FilterList, contentDescription = stringResource(R.string.action_filter))
                     }
                 },
@@ -255,11 +301,11 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data.isNullOrEmpty(),
+            isLoading = isLoading && data.isNullOrEmpty(),
             error = if (data.isNullOrEmpty()) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             isSwipeToRefreshEnabled = true,
-            onRefresh = { viewModel.refresh() },
+            onRefresh = onRefresh,
             modifier = Modifier.padding(padding),
         ) {
             LazyVerticalGrid(
@@ -275,7 +321,7 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
                         onClick = { MediaActivity.navigateTo(activity, entry.id, entry.name, category) },
                     )
                 }
-                if (isLoading == true && !data.isNullOrEmpty()) {
+                if (isLoading && !data.isNullOrEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Box(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -649,5 +695,31 @@ private fun MediaFilterSheet(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MediaListContentPreview() {
+    ProxerTheme {
+        MediaListContent(
+            category = Category.ANIME,
+            data = null,
+            error = null,
+            isLoading = true,
+            isSearchActive = false,
+            searchQuery = "",
+            showFilterSheet = false,
+            onOpenDrawer = {},
+            onSearchToggle = {},
+            onSearchQueryChange = {},
+            onSearchSubmit = {},
+            onFilterClick = {},
+            onDismissFilterSheet = {},
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {},
+            filterSheetContent = {},
+        )
     }
 }

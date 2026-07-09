@@ -22,10 +22,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.entity.info.Relation
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
@@ -40,10 +43,25 @@ fun RelationScreen(mediaId: String) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    ContentScreen(
-        isLoading = isLoading == true,
+    RelationContent(
+        data = data,
         error = error,
+        isLoading = isLoading == true,
         onRetry = { viewModel.load() },
+    )
+}
+
+@Composable
+private fun RelationContent(
+    data: List<Relation>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onRetry: () -> Unit,
+) {
+    ContentScreen(
+        isLoading = isLoading,
+        error = error,
+        onRetry = onRetry,
     ) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -97,5 +115,18 @@ private fun RelationCard(relation: Relation) {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RelationContentPreview() {
+    ProxerTheme {
+        RelationContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
+        )
     }
 }

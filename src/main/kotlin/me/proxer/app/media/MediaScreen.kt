@@ -1,5 +1,6 @@
 package me.proxer.app.media
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,8 +21,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.comments.CommentsScreen
@@ -30,6 +33,7 @@ import me.proxer.app.media.episode.EpisodeScreen
 import me.proxer.app.media.info.MediaInfoScreen
 import me.proxer.app.media.recommendation.RecommendationScreen
 import me.proxer.app.media.relation.RelationScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -52,9 +56,40 @@ fun MediaScreen(id: String, name: String, onBack: () -> Unit) {
         R.string.section_discussions,
     )
 
+    val tabLabels = tabs.map { stringResource(it) }
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
 
+    MediaScreenContent(
+        displayName = displayName,
+        tabs = tabLabels,
+        selectedTab = pagerState.currentPage,
+        onTabSelected = { scope.launch { pagerState.animateScrollToPage(it) } },
+        onBack = onBack,
+    ) { _ ->
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            when (page) {
+                0 -> MediaInfoScreen(id = id)
+                1 -> CommentsScreen(mediaId = id)
+                2 -> EpisodeScreen(mediaId = id, mediaName = data?.name ?: name)
+                3 -> RelationScreen(mediaId = id)
+                4 -> RecommendationScreen(mediaId = id)
+                5 -> DiscussionScreen(mediaId = id)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MediaScreenContent(
+    displayName: String,
+    tabs: List<String>,
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    onBack: () -> Unit,
+    tabContent: @Composable (Int) -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -68,24 +103,33 @@ fun MediaScreen(id: String, name: String, onBack: () -> Unit) {
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            PrimaryScrollableTabRow(selectedTabIndex = pagerState.currentPage) {
-                tabs.forEachIndexed { index, labelRes ->
+            PrimaryScrollableTabRow(selectedTabIndex = selectedTab) {
+                tabs.forEachIndexed { index, label ->
                     Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
-                        text = { Text(stringResource(labelRes)) },
+                        selected = selectedTab == index,
+                        onClick = { onTabSelected(index) },
+                        text = { Text(label) },
                     )
                 }
             }
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-                when (page) {
-                    0 -> MediaInfoScreen(id = id)
-                    1 -> CommentsScreen(mediaId = id)
-                    2 -> EpisodeScreen(mediaId = id, mediaName = data?.name ?: name)
-                    3 -> RelationScreen(mediaId = id)
-                    4 -> RecommendationScreen(mediaId = id)
-                    5 -> DiscussionScreen(mediaId = id)
-                }
+            tabContent(selectedTab)
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MediaScreenPreview() {
+    ProxerTheme {
+        MediaScreenContent(
+            displayName = "Steins;Gate",
+            tabs = listOf("Info", "Comments", "Episodes"),
+            selectedTab = 0,
+            onTabSelected = {},
+            onBack = {},
+        ) { page ->
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Tab $page")
             }
         }
     }

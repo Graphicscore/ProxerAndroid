@@ -24,10 +24,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
+import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.library.enums.CommentSortCriteria
 import org.koin.androidx.compose.koinViewModel
@@ -42,20 +45,39 @@ fun CommentsScreen(mediaId: String) {
 
     LaunchedEffect(Unit) { viewModel.load() }
 
+    CommentsContent(
+        data = data,
+        error = error,
+        isLoading = isLoading == true,
+        onRetry = { viewModel.load() },
+        onRefresh = { viewModel.refresh() },
+        onLoadMore = { viewModel.loadIfPossible() },
+    )
+}
+
+@Composable
+private fun CommentsContent(
+    data: List<ParsedComment>?,
+    error: ErrorAction?,
+    isLoading: Boolean,
+    onRetry: () -> Unit,
+    onRefresh: () -> Unit,
+    onLoadMore: () -> Unit,
+) {
     val listState = rememberLazyListState()
 
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
         val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     ContentScreen(
-        isLoading = isLoading == true && data.isNullOrEmpty(),
+        isLoading = isLoading && data.isNullOrEmpty(),
         error = if (data.isNullOrEmpty()) error else null,
-        onRetry = { viewModel.load() },
+        onRetry = onRetry,
         isSwipeToRefreshEnabled = true,
-        onRefresh = { viewModel.refresh() },
+        onRefresh = onRefresh,
     ) {
         LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
             items(data ?: emptyList(), key = { it.id }) { comment ->
@@ -105,5 +127,20 @@ private fun CommentItem(comment: ParsedComment) {
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CommentsContentPreview() {
+    ProxerTheme {
+        CommentsContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
+            onRefresh = {},
+            onLoadMore = {},
+        )
     }
 }
