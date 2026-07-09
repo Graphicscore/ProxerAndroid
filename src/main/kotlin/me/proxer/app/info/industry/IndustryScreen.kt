@@ -1,0 +1,377 @@
+package me.proxer.app.info.industry
+
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.core.app.ShareCompat
+import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+import me.proxer.app.R
+import me.proxer.app.media.MediaActivity
+import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.util.extension.toAppString
+import me.proxer.app.util.extension.toCategory
+import me.proxer.library.entity.info.Industry
+import me.proxer.library.entity.list.IndustryProject
+import me.proxer.library.enums.Country
+import me.proxer.library.util.ProxerUrls
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun IndustryScreen(id: String, initialName: String?, onBack: () -> Unit) {
+    val context = LocalContext.current
+    val infoViewModel = koinViewModel<IndustryInfoViewModel> { parametersOf(id) }
+    val data by infoViewModel.data.observeAsState()
+
+    val displayName = data?.name ?: initialName ?: ""
+
+    val tabs = listOf(R.string.section_industry_info, R.string.section_industry_projects)
+    val pagerState = rememberPagerState { tabs.size }
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+                actions = {
+                    if (displayName.isNotBlank()) {
+                        IconButton(
+                            onClick = {
+                                val activity = context as? Activity ?: return@IconButton
+                                ShareCompat
+                                    .IntentBuilder(activity)
+                                    .setText(
+                                        context.getString(
+                                            R.string.share_industry,
+                                            displayName,
+                                            ProxerUrls.industryWeb(id),
+                                        ),
+                                    )
+                                    .setType("text/plain")
+                                    .setChooserTitle(context.getString(R.string.share_title))
+                                    .startChooser()
+                            },
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = stringResource(R.string.action_share))
+                        }
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
+                tabs.forEachIndexed { index, labelRes ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                        text = { Text(stringResource(labelRes)) },
+                    )
+                }
+            }
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                when (page) {
+                    0 -> IndustryInfoTab(id = id)
+                    1 -> IndustryProjectsTab(id = id)
+                    else -> Unit
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IndustryInfoTab(id: String) {
+    val viewModel = koinViewModel<IndustryInfoViewModel> { parametersOf(id) }
+    val data by viewModel.data.observeAsState()
+    val error by viewModel.error.observeAsState()
+    val isLoading by viewModel.isLoading.observeAsState(false)
+
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    ContentScreen(
+        isLoading = isLoading == true,
+        error = error,
+        onRetry = { viewModel.load() },
+    ) {
+        if (data != null) {
+            IndustryInfoBody(data = data!!)
+        }
+    }
+}
+
+@Composable
+private fun IndustryInfoBody(data: Industry) {
+    val context = LocalContext.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.fragment_industry_type),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(0.4f),
+            )
+            Text(
+                text = data.type.toAppString(context),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.weight(0.6f),
+            )
+        }
+
+        if (data.country != Country.NONE) {
+            HorizontalDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.fragment_industry_language),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(0.4f),
+                )
+                Image(
+                    painter = painterResource(data.country.toDrawableRes()),
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+        }
+
+        val linkText = data.link?.toString()
+        if (!linkText.isNullOrBlank()) {
+            HorizontalDivider()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.fragment_industry_link),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(0.4f),
+                )
+                Text(
+                    text = linkText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .clickable {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(linkText)))
+                            }
+                        },
+                )
+            }
+        }
+
+        if (data.description.isNotBlank()) {
+            HorizontalDivider()
+            Text(
+                text = stringResource(R.string.fragment_industry_description),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            Text(
+                text = data.description,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
+
+@Composable
+private fun IndustryProjectsTab(id: String) {
+    val viewModel = koinViewModel<IndustryProjectViewModel> { parametersOf(id) }
+    val data by viewModel.data.observeAsState()
+    val error by viewModel.error.observeAsState()
+    val isLoading by viewModel.isLoading.observeAsState(false)
+
+    LaunchedEffect(Unit) { viewModel.load() }
+
+    val gridState = rememberLazyGridState()
+
+    LaunchedEffect(gridState.layoutInfo) {
+        val total = gridState.layoutInfo.totalItemsCount
+        val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+    }
+
+    ContentScreen(
+        isLoading = isLoading == true && data.isNullOrEmpty(),
+        error = if (data.isNullOrEmpty()) error else null,
+        onRetry = { viewModel.load() },
+    ) {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(160.dp),
+            state = gridState,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            items(data ?: emptyList(), key = { it.id }) { project ->
+                IndustryProjectItem(project = project)
+            }
+            if (isLoading == true && !data.isNullOrEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun IndustryProjectItem(project: IndustryProject) {
+    val context = LocalContext.current
+    val activity = context as? Activity
+
+    Card(
+        onClick = {
+            activity?.let {
+                MediaActivity.navigateTo(it, project.id, project.name, project.medium.toCategory())
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp),
+    ) {
+        Column {
+            AsyncImage(
+                model = ProxerUrls.entryImage(project.id).toString(),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.8f),
+            )
+            Text(
+                text = project.name,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            )
+            Text(
+                text = project.medium.toAppString(context),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+            Text(
+                text = project.state.toAppString(context),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 8.dp),
+            )
+            if (project.rating > 0) {
+                Row(
+                    modifier = Modifier.padding(start = 6.dp, end = 6.dp, bottom = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        modifier = Modifier.size(12.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "%.1f".format(project.rating / 2.0f),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+    }
+}
+
+@DrawableRes
+private fun Country.toDrawableRes(): Int = when (this) {
+    Country.GERMANY -> R.drawable.ic_germany
+    Country.ENGLAND -> R.drawable.ic_united_states
+    Country.UNITED_STATES -> R.drawable.ic_united_states
+    Country.JAPAN -> R.drawable.ic_japan
+    Country.KOREA -> R.drawable.ic_korea
+    Country.CHINA -> R.drawable.ic_china
+    Country.INTERNATIONAL, Country.OTHER, Country.NONE -> R.drawable.ic_united_nations
+}
