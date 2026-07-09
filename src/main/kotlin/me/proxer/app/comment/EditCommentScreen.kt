@@ -160,7 +160,7 @@ fun EditCommentScreen(
                     Tab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        text = { Text("Bearbeiten") },
+                        text = { Text(stringResource(R.string.fragment_edit_comment)) },
                     )
                     Tab(
                         selected = selectedTab == 1,
