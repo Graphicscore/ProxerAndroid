@@ -53,6 +53,8 @@ import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toLocalDateTime
 import me.proxer.library.util.ProxerUrls
+import androidx.compose.ui.tooling.preview.Preview
+import me.proxer.app.ui.compose.ProxerTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -184,6 +186,22 @@ private fun ConferenceListContent(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ConferenceListContentPreview() {
+    ProxerTheme {
+        ConferenceListContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            searchQuery = "",
+            initialMessage = null,
+            onRetry = {},
+            modifier = Modifier,
+        )
     }
 }
 

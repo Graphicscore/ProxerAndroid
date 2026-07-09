@@ -32,12 +32,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.R
 import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.Utils
 import me.proxer.app.util.extension.toLocalDateTimeBP
 import me.proxer.library.entity.messenger.ConferenceInfo
@@ -45,6 +48,7 @@ import me.proxer.library.entity.messenger.ConferenceParticipant
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+import org.threeten.bp.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,6 +64,32 @@ fun ConferenceInfoScreen(
 
     LaunchedEffect(Unit) { viewModel.load() }
 
+    ConferenceInfoScreenContent(
+        data = data,
+        error = error,
+        isLoading = isLoading,
+        conference = conference,
+        onBack = onBack,
+        onRetry = { viewModel.load() },
+        onParticipantClick = { participant ->
+            (context as? Activity)?.let { activity ->
+                ProfileActivity.navigateTo(activity, participant.id, participant.username, participant.image)
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ConferenceInfoScreenContent(
+    data: ConferenceInfo?,
+    error: ErrorUtils.ErrorAction?,
+    isLoading: Boolean?,
+    conference: LocalConference,
+    onBack: () -> Unit,
+    onRetry: () -> Unit = {},
+    onParticipantClick: (ConferenceParticipant) -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,19 +105,46 @@ fun ConferenceInfoScreen(
         ContentScreen(
             isLoading = isLoading == true && data == null,
             error = if (data == null) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
         ) {
             ConferenceInfoContent(
                 info = data!!,
-                onParticipantClick = { participant ->
-                    val activity = context as? Activity ?: return@ConferenceInfoContent
-                    ProfileActivity.navigateTo(activity, participant.id, participant.username, participant.image)
-                },
+                onParticipantClick = onParticipantClick,
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ConferenceInfoScreenContentPreview() {
+    val conf = LocalConference(
+        id = 1L,
+        topic = "Group Chat",
+        customTopic = "",
+        participantAmount = 3,
+        image = "",
+        imageType = "",
+        isGroup = true,
+        localIsRead = true,
+        isRead = true,
+        date = Instant.EPOCH,
+        unreadMessageAmount = 0,
+        lastReadMessageId = "",
+        isFullyLoaded = false,
+    )
+    ProxerTheme {
+        ConferenceInfoScreenContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            conference = conf,
+            onBack = {},
+            onParticipantClick = {},
+        )
     }
 }
 

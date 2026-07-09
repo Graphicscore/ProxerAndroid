@@ -25,17 +25,42 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import me.proxer.app.R
 import me.proxer.app.chat.prv.conference.ConferenceList
 import me.proxer.app.chat.prv.create.CreateConferenceActivity
 import me.proxer.app.chat.pub.room.ChatRoomList
+import me.proxer.app.ui.compose.ProxerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatContainerScreen(onOpenDrawer: () -> Unit = {}) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
+    val activity = context as? Activity
 
+    ChatContainerContent(
+        selectedTab = selectedTab,
+        onTabSelected = { selectedTab = it },
+        onOpenDrawer = onOpenDrawer,
+        onAddClick = { activity?.let { CreateConferenceActivity.navigateTo(it, false) } },
+    ) {
+        when (selectedTab) {
+            0 -> ChatRoomList()
+            1 -> ConferenceList()
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatContainerContent(
+    selectedTab: Int,
+    onTabSelected: (Int) -> Unit,
+    onOpenDrawer: () -> Unit,
+    onAddClick: () -> Unit,
+    tabContent: @Composable () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -47,12 +72,7 @@ fun ChatContainerScreen(onOpenDrawer: () -> Unit = {}) {
                 },
                 actions = {
                     if (selectedTab == 1) {
-                        IconButton(
-                            onClick = {
-                                val activity = context as? Activity ?: return@IconButton
-                                CreateConferenceActivity.navigateTo(activity, false)
-                            },
-                        ) {
+                        IconButton(onClick = onAddClick) {
                             Icon(Icons.Default.Add, contentDescription = stringResource(R.string.action_create_chat))
                         }
                     }
@@ -71,12 +91,12 @@ fun ChatContainerScreen(onOpenDrawer: () -> Unit = {}) {
             ) {
                 Tab(
                     selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
+                    onClick = { onTabSelected(0) },
                     text = { Text(stringResource(R.string.fragment_chat_container_public)) },
                 )
                 Tab(
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
+                    onClick = { onTabSelected(1) },
                     text = { Text(stringResource(R.string.fragment_chat_container_private)) },
                 )
             }
@@ -85,11 +105,23 @@ fun ChatContainerScreen(onOpenDrawer: () -> Unit = {}) {
                     .weight(1f)
                     .fillMaxWidth(),
             ) {
-                when (selectedTab) {
-                    0 -> ChatRoomList()
-                    1 -> ConferenceList()
-                }
+                tabContent()
             }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChatContainerContentPreview() {
+    ProxerTheme {
+        ChatContainerContent(
+            selectedTab = 0,
+            onTabSelected = {},
+            onOpenDrawer = {},
+            onAddClick = {},
+        ) {
+            Box(modifier = Modifier.fillMaxSize())
         }
     }
 }

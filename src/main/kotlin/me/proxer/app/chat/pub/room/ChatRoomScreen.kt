@@ -18,9 +18,12 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.chat.pub.message.ChatActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils
 import me.proxer.library.entity.chat.ChatRoom
 import org.koin.androidx.compose.koinViewModel
 
@@ -30,15 +33,33 @@ fun ChatRoomList() {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) { viewModel.load() }
+
+    ChatRoomListContent(
+        data = data,
+        error = error,
+        isLoading = isLoading,
+        onRetry = { viewModel.load() },
+        modifier = Modifier.fillMaxSize(),
+    )
+}
+
+@Composable
+private fun ChatRoomListContent(
+    data: List<ChatRoom>?,
+    error: ErrorUtils.ErrorAction?,
+    isLoading: Boolean?,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val context = LocalContext.current
 
     ContentScreen(
         isLoading = isLoading == true && data.isNullOrEmpty(),
         error = if (data.isNullOrEmpty()) error else null,
-        onRetry = { viewModel.load() },
-        modifier = Modifier.fillMaxSize(),
+        onRetry = onRetry,
+        modifier = modifier,
     ) {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(data ?: emptyList()) { room ->
@@ -49,6 +70,19 @@ fun ChatRoomList() {
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChatRoomListContentPreview() {
+    ProxerTheme {
+        ChatRoomListContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            onRetry = {},
+        )
     }
 }
 

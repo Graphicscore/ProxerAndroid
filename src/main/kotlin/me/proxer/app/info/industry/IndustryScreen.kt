@@ -54,6 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import coil.compose.AsyncImage
@@ -61,6 +62,7 @@ import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toCategory
 import me.proxer.library.entity.info.Industry
@@ -83,6 +85,52 @@ fun IndustryScreen(id: String, initialName: String?, onBack: () -> Unit) {
     val pagerState = rememberPagerState { tabs.size }
     val scope = rememberCoroutineScope()
 
+    IndustryScreenContent(
+        displayName = displayName,
+        selectedTab = pagerState.currentPage,
+        tabs = tabs,
+        onTabSelected = { scope.launch { pagerState.animateScrollToPage(it) } },
+        onBack = onBack,
+        onShare = if (displayName.isNotBlank()) {
+            {
+                (context as? Activity)?.let { activity ->
+                    ShareCompat
+                        .IntentBuilder(activity)
+                        .setText(
+                            context.getString(
+                                R.string.share_industry,
+                                displayName,
+                                ProxerUrls.industryWeb(id),
+                            ),
+                        )
+                        .setType("text/plain")
+                        .setChooserTitle(context.getString(R.string.share_title))
+                        .startChooser()
+                }
+            }
+        } else null,
+    ) {
+        HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+            when (page) {
+                0 -> IndustryInfoTab(id = id)
+                1 -> IndustryProjectsTab(id = id)
+                else -> Unit
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun IndustryScreenContent(
+    displayName: String,
+    selectedTab: Int,
+    tabs: List<Int>,
+    onTabSelected: (Int) -> Unit,
+    onBack: () -> Unit,
+    onShare: (() -> Unit)?,
+    tabContent: @Composable () -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -93,24 +141,8 @@ fun IndustryScreen(id: String, initialName: String?, onBack: () -> Unit) {
                     }
                 },
                 actions = {
-                    if (displayName.isNotBlank()) {
-                        IconButton(
-                            onClick = {
-                                val activity = context as? Activity ?: return@IconButton
-                                ShareCompat
-                                    .IntentBuilder(activity)
-                                    .setText(
-                                        context.getString(
-                                            R.string.share_industry,
-                                            displayName,
-                                            ProxerUrls.industryWeb(id),
-                                        ),
-                                    )
-                                    .setType("text/plain")
-                                    .setChooserTitle(context.getString(R.string.share_title))
-                                    .startChooser()
-                            },
-                        ) {
+                    if (onShare != null) {
+                        IconButton(onClick = onShare) {
                             Icon(Icons.Default.Share, contentDescription = stringResource(R.string.action_share))
                         }
                     }
@@ -119,22 +151,33 @@ fun IndustryScreen(id: String, initialName: String?, onBack: () -> Unit) {
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            PrimaryTabRow(selectedTabIndex = pagerState.currentPage) {
+            PrimaryTabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, labelRes ->
                     Tab(
-                        selected = pagerState.currentPage == index,
-                        onClick = { scope.launch { pagerState.animateScrollToPage(index) } },
+                        selected = selectedTab == index,
+                        onClick = { onTabSelected(index) },
                         text = { Text(stringResource(labelRes)) },
                     )
                 }
             }
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
-                when (page) {
-                    0 -> IndustryInfoTab(id = id)
-                    1 -> IndustryProjectsTab(id = id)
-                    else -> Unit
-                }
-            }
+            tabContent()
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun IndustryScreenContentPreview() {
+    ProxerTheme {
+        IndustryScreenContent(
+            displayName = "Example Studio",
+            selectedTab = 0,
+            tabs = listOf(R.string.section_industry_info, R.string.section_industry_projects),
+            onTabSelected = {},
+            onBack = {},
+            onShare = null,
+        ) {
+            Box(modifier = Modifier.fillMaxSize())
         }
     }
 }

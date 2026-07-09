@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -53,7 +54,9 @@ import me.proxer.app.R
 import me.proxer.app.chat.pub.room.info.ChatRoomInfoActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.library.enums.ChatMessageAction
@@ -76,12 +79,7 @@ fun ChatScreen(
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var messageText by rememberSaveable { mutableStateOf("") }
-    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
-    var reportTarget by remember { mutableStateOf<ParsedChatMessage?>(null) }
-    var reportReason by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.load()
@@ -100,9 +98,47 @@ fun ChatScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val myUserId = storageHelper.user?.id
-    val isLoggedIn = storageHelper.isLoggedIn
-    val inputEnabled = !chatRoomIsReadOnly && isLoggedIn && !data.isNullOrEmpty()
+    ChatScreenContent(
+        messages = data,
+        error = error,
+        isLoading = isLoading,
+        chatRoomId = chatRoomId,
+        chatRoomName = chatRoomName,
+        chatRoomIsReadOnly = chatRoomIsReadOnly,
+        myUserId = storageHelper.user?.id,
+        isLoggedIn = storageHelper.isLoggedIn,
+        onBack = onBack,
+        onSend = { viewModel.sendMessage(it) },
+        onReport = { messageId, reason -> reportViewModel.sendReport(messageId, reason) },
+        onDraftUpdate = { viewModel.updateDraft(it) },
+        onRetry = { viewModel.load() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatScreenContent(
+    messages: List<ParsedChatMessage>?,
+    error: ErrorUtils.ErrorAction?,
+    isLoading: Boolean?,
+    chatRoomId: String,
+    chatRoomName: String,
+    chatRoomIsReadOnly: Boolean,
+    myUserId: String?,
+    isLoggedIn: Boolean,
+    onBack: () -> Unit,
+    onSend: (String) -> Unit,
+    onReport: (messageId: String, reason: String) -> Unit,
+    onDraftUpdate: (String) -> Unit,
+    onRetry: () -> Unit,
+) {
+    val context = LocalContext.current
+    var messageText by rememberSaveable { mutableStateOf("") }
+    var selectedIds by remember { mutableStateOf(emptySet<String>()) }
+    var reportTarget by remember { mutableStateOf<ParsedChatMessage?>(null) }
+    var reportReason by remember { mutableStateOf("") }
+
+    val inputEnabled = !chatRoomIsReadOnly && isLoggedIn && !messages.isNullOrEmpty()
 
     if (reportTarget != null) {
         AlertDialog(
@@ -122,7 +158,7 @@ fun ChatScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        reportViewModel.sendReport(reportTarget!!.id, reportReason)
+                        onReport(reportTarget!!.id, reportReason)
                         reportTarget = null
                         reportReason = ""
                         selectedIds = emptySet()
@@ -152,8 +188,9 @@ fun ChatScreen(
                     actions = {
                         IconButton(
                             onClick = {
-                                val activity = context as? Activity ?: return@IconButton
-                                ChatRoomInfoActivity.navigateTo(activity, chatRoomId, chatRoomName)
+                                (context as? Activity)?.let { activity ->
+                                    ChatRoomInfoActivity.navigateTo(activity, chatRoomId, chatRoomName)
+                                }
                             },
                         ) {
                             Icon(Icons.Default.Info, contentDescription = null)
@@ -171,7 +208,7 @@ fun ChatScreen(
                     actions = {
                         IconButton(
                             onClick = {
-                                reportTarget = data?.firstOrNull { it.id in selectedIds }
+                                reportTarget = messages?.firstOrNull { it.id in selectedIds }
                                 reportReason = ""
                             },
                         ) {
@@ -195,14 +232,14 @@ fun ChatScreen(
                     value = messageText,
                     onValueChange = {
                         messageText = it
-                        viewModel.updateDraft(it)
+                        onDraftUpdate(it)
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = {
                         Text(
                             stringResource(
                                 when {
-                                    data.isNullOrEmpty() -> R.string.fragment_chat_loading_message
+                                    messages.isNullOrEmpty() -> R.string.fragment_chat_loading_message
                                     chatRoomIsReadOnly -> R.string.fragment_chat_read_only_message
                                     !isLoggedIn -> R.string.fragment_chat_login_required_message
                                     else -> R.string.fragment_messenger_message
@@ -218,7 +255,7 @@ fun ChatScreen(
                     onClick = {
                         val text = messageText.trim()
                         if (text.isNotBlank()) {
-                            viewModel.sendMessage(text)
+                            onSend(text)
                             messageText = ""
                         }
                     },
@@ -230,9 +267,9 @@ fun ChatScreen(
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data.isNullOrEmpty(),
-            error = if (data.isNullOrEmpty()) error else null,
-            onRetry = { viewModel.load() },
+            isLoading = isLoading == true && messages.isNullOrEmpty(),
+            error = if (messages.isNullOrEmpty()) error else null,
+            onRetry = onRetry,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -241,7 +278,7 @@ fun ChatScreen(
                 modifier = Modifier.fillMaxSize(),
                 reverseLayout = true,
             ) {
-                items(data ?: emptyList(), key = { it.id }) { message ->
+                items(messages ?: emptyList(), key = { it.id }) { message ->
                     val activity = context as? Activity ?: return@items
                     if (message.action == ChatMessageAction.REMOVE_MESSAGE) return@items
                     ChatMessageItem(
@@ -267,6 +304,28 @@ fun ChatScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChatScreenContentPreview() {
+    ProxerTheme {
+        ChatScreenContent(
+            messages = null,
+            error = null,
+            isLoading = true,
+            chatRoomId = "1",
+            chatRoomName = "General",
+            chatRoomIsReadOnly = false,
+            myUserId = null,
+            isLoggedIn = false,
+            onBack = {},
+            onSend = {},
+            onReport = { _, _ -> },
+            onDraftUpdate = {},
+            onRetry = {},
+        )
     }
 }
 

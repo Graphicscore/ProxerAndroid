@@ -33,12 +33,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils
 import me.proxer.library.entity.chat.ChatRoomUser
 import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
@@ -55,7 +58,6 @@ fun ChatRoomInfoScreen(
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
-    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) { viewModel.load() }
@@ -72,6 +74,28 @@ fun ChatRoomInfoScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    ChatRoomInfoContent(
+        data = data,
+        error = error,
+        isLoading = isLoading,
+        chatRoomName = chatRoomName,
+        onBack = onBack,
+        onRetry = { viewModel.load() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatRoomInfoContent(
+    data: List<ChatRoomUser>?,
+    error: ErrorUtils.ErrorAction?,
+    isLoading: Boolean?,
+    chatRoomName: String,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+) {
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,7 +111,7 @@ fun ChatRoomInfoScreen(
         ContentScreen(
             isLoading = isLoading == true && data == null,
             error = if (data == null) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -104,6 +128,21 @@ fun ChatRoomInfoScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChatRoomInfoContentPreview() {
+    ProxerTheme {
+        ChatRoomInfoContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            chatRoomName = "General Chat",
+            onBack = {},
+            onRetry = {},
+        )
     }
 }
 

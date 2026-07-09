@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
@@ -46,9 +47,11 @@ import coil.compose.AsyncImage
 import me.proxer.app.R
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
-import me.proxer.app.ui.view.bbcode.BBCodeView
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.library.util.ProxerUrls
+import me.proxer.app.ui.view.bbcode.BBCodeView
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
@@ -70,14 +73,41 @@ fun TopicScreen(
 
     val displaySubject = metaData?.subject ?: subject
 
-    val listState = rememberLazyListState()
-
     LaunchedEffect(Unit) { viewModel.load() }
+
+    TopicContent(
+        data = data,
+        error = error,
+        isLoading = isLoading,
+        displaySubject = displaySubject,
+        categoryId = categoryId,
+        topicId = id,
+        onBack = onBack,
+        onRetry = { viewModel.load() },
+        onLoadMore = { viewModel.loadIfPossible() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TopicContent(
+    data: List<ParsedPost>?,
+    error: ErrorUtils.ErrorAction?,
+    isLoading: Boolean?,
+    displaySubject: String?,
+    categoryId: String,
+    topicId: String,
+    onBack: () -> Unit,
+    onRetry: () -> Unit,
+    onLoadMore: () -> Unit,
+) {
+    val context = LocalContext.current
+    val listState = rememberLazyListState()
 
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
         val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-        if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
+        if (total > 0 && last >= total - 5) onLoadMore()
     }
 
     Scaffold(
@@ -100,14 +130,15 @@ fun TopicScreen(
                     if (shareSubject != null) {
                         IconButton(
                             onClick = {
-                                val activity = context as? Activity ?: return@IconButton
-                                val url = ProxerUrls.forumWeb(categoryId, id).toString()
-                                ShareCompat
-                                    .IntentBuilder(activity)
-                                    .setText(activity.getString(R.string.share_topic, shareSubject, url))
-                                    .setType("text/plain")
-                                    .setChooserTitle(activity.getString(R.string.share_title))
-                                    .startChooser()
+                                (context as? Activity)?.let { activity ->
+                                    val url = ProxerUrls.forumWeb(categoryId, topicId).toString()
+                                    ShareCompat
+                                        .IntentBuilder(activity)
+                                        .setText(activity.getString(R.string.share_topic, shareSubject, url))
+                                        .setType("text/plain")
+                                        .setChooserTitle(activity.getString(R.string.share_title))
+                                        .startChooser()
+                                }
                             },
                         ) {
                             Icon(Icons.Default.Share, contentDescription = stringResource(R.string.action_share))
@@ -120,7 +151,7 @@ fun TopicScreen(
         ContentScreen(
             isLoading = isLoading == true && data.isNullOrEmpty(),
             error = if (data.isNullOrEmpty()) error else null,
-            onRetry = { viewModel.load() },
+            onRetry = onRetry,
             modifier = Modifier.padding(padding),
         ) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -142,6 +173,24 @@ fun TopicScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun TopicContentPreview() {
+    ProxerTheme {
+        TopicContent(
+            data = null,
+            error = null,
+            isLoading = true,
+            displaySubject = "Sample Topic",
+            categoryId = "1",
+            topicId = "42",
+            onBack = {},
+            onRetry = {},
+            onLoadMore = {},
+        )
     }
 }
 

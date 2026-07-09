@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import me.proxer.app.R
@@ -48,13 +49,16 @@ import me.proxer.app.chat.prv.LocalMessage
 import me.proxer.app.chat.prv.conference.info.ConferenceInfoActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
+import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toLocalDateTime
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import org.threeten.bp.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,26 +76,57 @@ fun MessengerScreen(
     val currentConference by viewModel.conference.observeAsState(initial = conference)
     val deleted by viewModel.deleted.observeAsState()
     val draft by viewModel.draft.observeAsState()
-    val context = LocalContext.current
-    var messageText by rememberSaveable { mutableStateOf(initialMessage ?: "") }
-    var selectedIds by remember { mutableStateOf(emptySet<Long>()) }
-    var showReportDialog by remember { mutableStateOf(false) }
-    var reportReason by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.load()
         viewModel.loadDraft()
     }
 
-    LaunchedEffect(draft) {
-        if (draft != null && messageText.isBlank()) messageText = draft ?: ""
-    }
-
     LaunchedEffect(deleted) {
         if (deleted != null) onBack()
     }
 
-    val myUserId = storageHelper.user?.id
+    MessengerContent(
+        messages = data,
+        error = error,
+        isLoading = isLoading,
+        conference = currentConference,
+        myUserId = storageHelper.user?.id,
+        draft = draft,
+        initialMessage = initialMessage,
+        onBack = onBack,
+        onSend = { viewModel.sendMessage(it) },
+        onReport = { reason -> reportViewModel.sendReport(currentConference.id.toString(), reason) },
+        onDraftUpdate = { viewModel.updateDraft(it) },
+        onRetry = { viewModel.load() },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MessengerContent(
+    messages: List<LocalMessage>?,
+    error: ErrorUtils.ErrorAction?,
+    isLoading: Boolean?,
+    conference: LocalConference,
+    myUserId: String?,
+    draft: String?,
+    initialMessage: String?,
+    onBack: () -> Unit,
+    onSend: (String) -> Unit,
+    onReport: (reason: String) -> Unit,
+    onDraftUpdate: (String) -> Unit,
+    onRetry: () -> Unit,
+) {
+    val context = LocalContext.current
+    var messageText by rememberSaveable { mutableStateOf(initialMessage ?: "") }
+    var selectedIds by remember { mutableStateOf(emptySet<Long>()) }
+    var showReportDialog by remember { mutableStateOf(false) }
+    var reportReason by remember { mutableStateOf("") }
+
+    LaunchedEffect(draft) {
+        if (draft != null && messageText.isBlank()) messageText = draft ?: ""
+    }
 
     if (showReportDialog) {
         AlertDialog(
@@ -111,7 +146,7 @@ fun MessengerScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        reportViewModel.sendReport(currentConference.id.toString(), reportReason)
+                        onReport(reportReason)
                         showReportDialog = false
                         reportReason = ""
                         selectedIds = emptySet()
@@ -136,21 +171,21 @@ fun MessengerScreen(
                         TextButton(
                             onClick = {
                                 val activity = context as? Activity ?: return@TextButton
-                                if (currentConference.isGroup) {
-                                    ConferenceInfoActivity.navigateTo(activity, currentConference)
+                                if (conference.isGroup) {
+                                    ConferenceInfoActivity.navigateTo(activity, conference)
                                 } else {
                                     ProfileActivity.navigateTo(
                                         activity,
                                         null,
-                                        currentConference.topic,
-                                        currentConference.image,
+                                        conference.topic,
+                                        conference.image,
                                     )
                                 }
                             },
                             contentPadding = PaddingValues(0.dp),
                         ) {
                             Text(
-                                text = currentConference.topic,
+                                text = conference.topic,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
@@ -197,7 +232,7 @@ fun MessengerScreen(
                     value = messageText,
                     onValueChange = {
                         messageText = it
-                        viewModel.updateDraft(it)
+                        onDraftUpdate(it)
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = { Text(stringResource(R.string.fragment_messenger_message)) },
@@ -208,7 +243,7 @@ fun MessengerScreen(
                     onClick = {
                         val text = messageText.trim()
                         if (text.isNotBlank()) {
-                            viewModel.sendMessage(text)
+                            onSend(text)
                             messageText = ""
                         }
                     },
@@ -220,9 +255,9 @@ fun MessengerScreen(
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data == null,
-            error = if (data == null) error else null,
-            onRetry = { viewModel.load() },
+            isLoading = isLoading == true && messages == null,
+            error = if (messages == null) error else null,
+            onRetry = onRetry,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
@@ -231,7 +266,7 @@ fun MessengerScreen(
                 modifier = Modifier.fillMaxSize(),
                 reverseLayout = true,
             ) {
-                items(data ?: emptyList(), key = { it.id }) { message ->
+                items(messages ?: emptyList(), key = { it.id }) { message ->
                     val activity = context as? Activity ?: return@items
                     MessageItem(
                         message = message,
@@ -256,6 +291,42 @@ fun MessengerScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MessengerContentPreview() {
+    val conf = LocalConference(
+        id = 1L,
+        topic = "Sample Chat",
+        customTopic = "",
+        participantAmount = 2,
+        image = "",
+        imageType = "",
+        isGroup = false,
+        localIsRead = true,
+        isRead = true,
+        date = Instant.EPOCH,
+        unreadMessageAmount = 0,
+        lastReadMessageId = "",
+        isFullyLoaded = false,
+    )
+    ProxerTheme {
+        MessengerContent(
+            messages = null,
+            error = null,
+            isLoading = true,
+            conference = conf,
+            myUserId = null,
+            draft = null,
+            initialMessage = null,
+            onBack = {},
+            onSend = {},
+            onReport = {},
+            onDraftUpdate = {},
+            onRetry = {},
+        )
     }
 }
 

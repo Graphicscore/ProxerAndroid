@@ -15,7 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,11 +42,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.chat.prv.Participant
 import me.proxer.app.chat.prv.PrvMessengerActivity
+import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.util.ErrorUtils
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,6 +63,39 @@ fun CreateConferenceScreen(
     val isLoading by viewModel.isLoading.observeAsState(false)
     val result by viewModel.result.observeAsState()
     val error by viewModel.error.observeAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(result) {
+        val conf: LocalConference? = result
+        if (conf != null) {
+            val activity = context as? Activity ?: return@LaunchedEffect
+            activity.finish()
+            PrvMessengerActivity.navigateTo(activity, conf)
+        }
+    }
+
+    CreateConferenceContent(
+        isGroup = isGroup,
+        isLoading = isLoading,
+        error = error,
+        initialParticipant = initialParticipant,
+        onCreateChat = { message, participant -> viewModel.createChat(message, participant) },
+        onCreateGroup = { topic, message, participants -> viewModel.createGroup(topic, message, participants) },
+        onBack = onBack,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateConferenceContent(
+    isGroup: Boolean,
+    isLoading: Boolean,
+    error: ErrorUtils.ErrorAction?,
+    initialParticipant: Participant?,
+    onCreateChat: (message: String, participant: Participant) -> Unit,
+    onCreateGroup: (topic: String, message: String, participants: List<Participant>) -> Unit,
+    onBack: () -> Unit,
+) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -77,15 +112,6 @@ fun CreateConferenceScreen(
 
     var topicError by remember { mutableStateOf<String?>(null) }
     var participantError by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(result) {
-        val conf: LocalConference? = result
-        if (conf != null) {
-            val activity = context as? Activity ?: return@LaunchedEffect
-            activity.finish()
-            PrvMessengerActivity.navigateTo(activity, conf)
-        }
-    }
 
     LaunchedEffect(error) {
         error?.let { snackbarHostState.showSnackbar(context.getString(it.message)) }
@@ -222,8 +248,8 @@ fun CreateConferenceScreen(
                                 snackbarHostState.showSnackbar(context.getString(R.string.error_input_empty))
                             }
                         }
-                        isGroup -> viewModel.createGroup(trimmedTopic, trimmedMessage, participants.toList())
-                        else -> viewModel.createChat(trimmedMessage, participants.first())
+                        isGroup -> onCreateGroup(trimmedTopic, trimmedMessage, participants.toList())
+                        else -> onCreateChat(trimmedMessage, participants.first())
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -236,5 +262,21 @@ fun CreateConferenceScreen(
                 Text(stringResource(if (isGroup) R.string.action_create_group else R.string.action_create_chat))
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CreateConferenceContentPreview() {
+    ProxerTheme {
+        CreateConferenceContent(
+            isGroup = false,
+            isLoading = false,
+            error = null,
+            initialParticipant = null,
+            onCreateChat = { _, _ -> },
+            onCreateGroup = { _, _, _ -> },
+            onBack = {},
+        )
     }
 }
