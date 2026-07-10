@@ -39,6 +39,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -51,7 +52,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.chat.pub.room.info.ChatRoomInfoActivity
 import me.proxer.app.profile.ProfileActivity
@@ -81,8 +86,6 @@ fun ChatScreen(
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
-    val sendMessageError by viewModel.sendMessageError.observeAsState()
-    val reportData by reportViewModel.data.observeAsState()
     val reportError by reportViewModel.error.observeAsState()
     val reportIsLoading by reportViewModel.isLoading.observeAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -108,8 +111,8 @@ fun ChatScreen(
         messages = data,
         error = error,
         isLoading = isLoading,
-        sendMessageError = sendMessageError,
-        reportData = reportData,
+        sendMessageError = viewModel.sendMessageError,
+        reportData = reportViewModel.data,
         reportError = reportError,
         reportIsLoading = reportIsLoading,
         chatRoomId = chatRoomId,
@@ -131,8 +134,8 @@ private fun ChatScreenContent(
     messages: List<ParsedChatMessage>?,
     error: ErrorUtils.ErrorAction?,
     isLoading: Boolean?,
-    sendMessageError: ErrorUtils.ErrorAction?,
-    reportData: Unit?,
+    sendMessageError: LiveData<ErrorUtils.ErrorAction?>,
+    reportData: LiveData<Unit?>,
     reportError: ErrorUtils.ErrorAction?,
     reportIsLoading: Boolean?,
     chatRoomId: String,
@@ -147,6 +150,8 @@ private fun ChatScreenContent(
     onRetry: () -> Unit,
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var messageText by rememberSaveable { mutableStateOf("") }
     var selectedIds by remember { mutableStateOf(emptySet<String>()) }
@@ -155,21 +160,36 @@ private fun ChatScreenContent(
 
     val inputEnabled = !chatRoomIsReadOnly && isLoggedIn && !messages.isNullOrEmpty()
 
-    LaunchedEffect(sendMessageError) {
-        val err = sendMessageError
-        if (err != null) {
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.error_chat_send_message, context.getString(err.message)),
-            )
+    // sendMessageError/reportData are ResettingMutableLiveData - each real failure/success is a
+    // one-shot event, not a piece of continuous state. observeAsState()+LaunchedEffect(value) would
+    // silently miss every event after the first structurally-equal one (e.g. two offline sends produce
+    // the same ErrorAction, and Unit==Unit always), since Compose's default structural-equality state
+    // policy skips recomposition when the "new" value equals the current one. A raw Observer bypasses
+    // that: ResettingMutableLiveData already fires onChanged exactly once per genuine event.
+    DisposableEffect(lifecycleOwner, sendMessageError) {
+        val observer = Observer<ErrorUtils.ErrorAction?> { err ->
+            if (err != null) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.error_chat_send_message, context.getString(err.message)),
+                    )
+                }
+            }
         }
+        sendMessageError.observe(lifecycleOwner, observer)
+        onDispose { sendMessageError.removeObserver(observer) }
     }
 
-    LaunchedEffect(reportData) {
-        if (reportData != null) {
-            reportTarget = null
-            reportReason = ""
-            selectedIds = emptySet()
+    DisposableEffect(lifecycleOwner, reportData) {
+        val observer = Observer<Unit?> { value ->
+            if (value != null) {
+                reportTarget = null
+                reportReason = ""
+                selectedIds = emptySet()
+            }
         }
+        reportData.observe(lifecycleOwner, observer)
+        onDispose { reportData.removeObserver(observer) }
     }
 
     if (reportTarget != null) {
@@ -354,8 +374,8 @@ private fun ChatScreenContentPreview() {
             messages = null,
             error = null,
             isLoading = true,
-            sendMessageError = null,
-            reportData = null,
+            sendMessageError = MutableLiveData(null),
+            reportData = MutableLiveData(null),
             reportError = null,
             reportIsLoading = null,
             chatRoomId = "1",

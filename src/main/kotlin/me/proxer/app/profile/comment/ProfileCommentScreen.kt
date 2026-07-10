@@ -27,37 +27,46 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import kotlinx.coroutines.launch
+import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils.ErrorAction
+import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toEpisodeAppString
-import me.proxer.app.R
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ProfileCommentScreen(userId: String?, username: String?) {
     val viewModel = koinViewModel<ProfileCommentViewModel> { parametersOf(userId, username, null) }
+    val storageHelper = koinInject<StorageHelper>()
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val itemDeletionError by viewModel.itemDeletionError.observeAsState()
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -65,7 +74,8 @@ fun ProfileCommentScreen(userId: String?, username: String?) {
         data = data,
         error = error,
         isLoading = isLoading == true,
-        itemDeletionError = itemDeletionError,
+        itemDeletionError = viewModel.itemDeletionError,
+        currentUserId = storageHelper.user?.id,
         onRetry = { viewModel.load() },
         onLoadMore = { viewModel.loadIfPossible() },
         onDelete = { viewModel.deleteComment(it) },
@@ -77,12 +87,15 @@ private fun ProfileCommentContent(
     data: List<ParsedUserComment>?,
     error: ErrorAction?,
     isLoading: Boolean,
-    itemDeletionError: ErrorAction?,
+    itemDeletionError: LiveData<ErrorAction?>,
+    currentUserId: String?,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
     onDelete: (ParsedUserComment) -> Unit,
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
     var deleteTarget by remember { mutableStateOf<ParsedUserComment?>(null) }
@@ -93,13 +106,22 @@ private fun ProfileCommentContent(
         if (total > 0 && last >= total - 3) onLoadMore()
     }
 
-    LaunchedEffect(itemDeletionError) {
-        val err = itemDeletionError
-        if (err != null) {
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.error_comment_deletion, context.getString(err.message)),
-            )
+    // itemDeletionError is a ResettingMutableLiveData - each failure is a one-shot event, not
+    // continuous state. observeAsState()+LaunchedEffect(value) would silently miss every failure
+    // after the first structurally-equal one, since Compose's default state-equality policy skips
+    // recomposition when the "new" value equals the current one. A raw Observer bypasses that.
+    DisposableEffect(lifecycleOwner, itemDeletionError) {
+        val observer = Observer<ErrorAction?> { err ->
+            if (err != null) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.error_comment_deletion, context.getString(err.message)),
+                    )
+                }
+            }
         }
+        itemDeletionError.observe(lifecycleOwner, observer)
+        onDispose { itemDeletionError.removeObserver(observer) }
     }
 
     deleteTarget?.let { comment ->
@@ -132,7 +154,11 @@ private fun ProfileCommentContent(
         ) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
                 items(data ?: emptyList(), key = { it.id }) { comment ->
-                    ProfileCommentItem(comment = comment, onDelete = { deleteTarget = comment })
+                    ProfileCommentItem(
+                        comment = comment,
+                        isOwnComment = comment.authorId == currentUserId,
+                        onDelete = { deleteTarget = comment },
+                    )
                     HorizontalDivider()
                 }
             }
@@ -145,7 +171,7 @@ private fun ProfileCommentContent(
 }
 
 @Composable
-private fun ProfileCommentItem(comment: ParsedUserComment, onDelete: () -> Unit) {
+private fun ProfileCommentItem(comment: ParsedUserComment, isOwnComment: Boolean, onDelete: () -> Unit) {
     val context = LocalContext.current
     val activity = context as? Activity
 
@@ -177,11 +203,13 @@ private fun ProfileCommentItem(comment: ParsedUserComment, onDelete: () -> Unit)
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.action_delete),
-                )
+            if (isOwnComment) {
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.action_delete),
+                    )
+                }
             }
         }
 
@@ -216,7 +244,8 @@ private fun ProfileCommentContentPreview() {
             data = null,
             error = null,
             isLoading = true,
-            itemDeletionError = null,
+            itemDeletionError = MutableLiveData(null),
+            currentUserId = null,
             onRetry = {},
             onLoadMore = {},
             onDelete = {},

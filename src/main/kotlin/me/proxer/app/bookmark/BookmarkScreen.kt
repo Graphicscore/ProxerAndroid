@@ -40,20 +40,27 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
@@ -77,9 +84,6 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val itemDeletionError by viewModel.itemDeletionError.observeAsState()
-    val undoData by viewModel.undoData.observeAsState()
-    val undoError by viewModel.undoError.observeAsState()
     val context = LocalContext.current
 
     var showFilterMenu by remember { mutableStateOf(false) }
@@ -95,9 +99,9 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
         displayedData = displayedData,
         error = error,
         isLoading = isLoading == true,
-        itemDeletionError = itemDeletionError,
-        undoData = undoData,
-        undoError = undoError,
+        itemDeletionError = viewModel.itemDeletionError,
+        undoData = viewModel.undoData,
+        undoError = viewModel.undoError,
         showFilterMenu = showFilterMenu,
         selectedCategory = selectedCategory,
         filterAvailable = filterAvailable,
@@ -155,9 +159,9 @@ private fun BookmarkContent(
     displayedData: List<Bookmark>,
     error: ErrorAction?,
     isLoading: Boolean,
-    itemDeletionError: ErrorAction?,
-    undoData: Unit?,
-    undoError: ErrorAction?,
+    itemDeletionError: LiveData<ErrorAction?>,
+    undoData: LiveData<Unit?>,
+    undoError: LiveData<ErrorAction?>,
     showFilterMenu: Boolean,
     selectedCategory: Category?,
     filterAvailable: Boolean,
@@ -174,6 +178,8 @@ private fun BookmarkContent(
     onBookmarkClick: (Bookmark) -> Unit,
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -183,33 +189,55 @@ private fun BookmarkContent(
         if (total > 0 && last >= total - 5) onLoadMore()
     }
 
-    LaunchedEffect(itemDeletionError) {
-        val err = itemDeletionError
-        if (err != null) {
-            onDeletionFailed()
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.error_bookmark_deletion, context.getString(err.message)),
-            )
+    // itemDeletionError/undoData/undoError are all ResettingMutableLiveData - each event (a failed
+    // delete, a successful delete offering undo, a failed undo) is one-shot, not continuous state.
+    // observeAsState()+LaunchedEffect(value) would silently miss every event after the first
+    // structurally-equal one (Unit==Unit always; two identical ErrorActions from repeated offline
+    // swipes), since Compose's default state-equality policy skips recomposition when the "new"
+    // value equals the current one. A raw Observer bypasses that.
+    DisposableEffect(lifecycleOwner, itemDeletionError) {
+        val observer = Observer<ErrorAction?> { err ->
+            if (err != null) {
+                onDeletionFailed()
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.error_bookmark_deletion, context.getString(err.message)),
+                    )
+                }
+            }
         }
+        itemDeletionError.observe(lifecycleOwner, observer)
+        onDispose { itemDeletionError.removeObserver(observer) }
     }
 
-    LaunchedEffect(undoData) {
-        if (undoData != null) {
-            val result = snackbarHostState.showSnackbar(
-                message = context.getString(R.string.fragment_bookmark_delete_message),
-                actionLabel = context.getString(R.string.action_undo),
-            )
-            if (result == SnackbarResult.ActionPerformed) onUndo()
+    DisposableEffect(lifecycleOwner, undoData) {
+        val observer = Observer<Unit?> { value ->
+            if (value != null) {
+                scope.launch {
+                    val result = snackbarHostState.showSnackbar(
+                        message = context.getString(R.string.fragment_bookmark_delete_message),
+                        actionLabel = context.getString(R.string.action_undo),
+                    )
+                    if (result == SnackbarResult.ActionPerformed) onUndo()
+                }
+            }
         }
+        undoData.observe(lifecycleOwner, observer)
+        onDispose { undoData.removeObserver(observer) }
     }
 
-    LaunchedEffect(undoError) {
-        val err = undoError
-        if (err != null) {
-            snackbarHostState.showSnackbar(
-                context.getString(R.string.error_undo, context.getString(err.message)),
-            )
+    DisposableEffect(lifecycleOwner, undoError) {
+        val observer = Observer<ErrorAction?> { err ->
+            if (err != null) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(
+                        context.getString(R.string.error_undo, context.getString(err.message)),
+                    )
+                }
+            }
         }
+        undoError.observe(lifecycleOwner, observer)
+        onDispose { undoError.removeObserver(observer) }
     }
 
     Scaffold(
@@ -395,9 +423,9 @@ private fun BookmarkContentPreview() {
             displayedData = emptyList(),
             error = null,
             isLoading = true,
-            itemDeletionError = null,
-            undoData = null,
-            undoError = null,
+            itemDeletionError = MutableLiveData(null),
+            undoData = MutableLiveData(null),
+            undoError = MutableLiveData(null),
             showFilterMenu = false,
             selectedCategory = null,
             filterAvailable = false,
