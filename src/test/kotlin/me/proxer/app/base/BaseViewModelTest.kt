@@ -5,9 +5,9 @@ import io.mockk.every
 import io.reactivex.Observable
 import io.reactivex.Single
 import me.proxer.app.exception.NotLoggedInException
+import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import me.proxer.app.util.Validators
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -145,7 +145,7 @@ class BaseViewModelTest : KoinTest {
     // isLoginRequired is overridden to false so that the isLoggedInObservable subscription
     // in init does not trigger spurious reload() calls during tests.
     private inner class TestViewModel : BaseViewModel<String>() {
-        override public var isLoginRequired = false
+        public override var isLoginRequired = false
         var nextResponse: Single<String> = Single.never()
         override val dataSingle: Single<String>
             get() = Single.fromCallable { validate() }.flatMap { nextResponse }
