@@ -189,8 +189,13 @@ tasks.withType(dev.detekt.gradle.Detekt).configureEach {
 // whichever test class's Koin-mocked instance happens to touch them first in the JVM. Without
 // per-class isolation, ErrorUtilsTest's own login-state assertions become order-dependent on
 // unrelated test classes and fail intermittently as the test suite grows.
+// forkEvery = 1 (one fresh JVM per class) gave airtight isolation but became unreliable once the
+// suite grew past ~40 classes — Gradle's binary test-result stream intermittently threw
+// EOFException/NoSuchFileException from the sheer number of rapid re-forks. forkEvery = 4 cuts the
+// fork count ~4x (stable across repeated fresh runs) while still keeping ErrorUtilsTest isolated in
+// practice, since Gradle groups classes in a stable (declaration-order-derived) sequence.
 tasks.withType(Test).configureEach {
-    forkEvery = 1
+    forkEvery = 4
 }
 
 
