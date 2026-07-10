@@ -8,9 +8,11 @@ import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.stubError
 import me.proxer.app.base.stubSuccess
+import me.proxer.app.exception.NotLoggedInException
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
+import me.proxer.app.util.Validators
 import me.proxer.library.ProxerApi
 import me.proxer.library.api.anime.StreamsEndpoint
 import me.proxer.library.api.info.EntryCoreEndpoint
@@ -52,6 +54,7 @@ class AnimeViewModelTest : KoinTest {
     private val api: ProxerApi by inject()
     private val storageHelper: StorageHelper by inject()
     private val preferenceHelper: PreferenceHelper by inject()
+    private val validators: Validators by inject()
 
     private val entryEndpoint = mockk<EntryCoreEndpoint>(relaxed = true)
     private val streamsEndpoint = mockk<StreamsEndpoint>(relaxed = true)
@@ -155,5 +158,15 @@ class AnimeViewModelTest : KoinTest {
 
         assertNull(viewModel.data.value)
         assertEquals(ButtonAction.AGE_CONFIRMATION, viewModel.error.value?.buttonAction)
+    }
+
+    @Test
+    fun `load sets login-required error when validators rejects a logged-out user`() {
+        every { validators.validateLogin() } throws NotLoggedInException()
+
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertEquals(ButtonAction.LOGIN, viewModel.error.value?.buttonAction)
     }
 }
