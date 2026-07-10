@@ -13,7 +13,6 @@ import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.toLocalComment
 import me.proxer.library.ProxerApi
 import me.proxer.library.ProxerException
-import me.proxer.library.api.Endpoint
 import me.proxer.library.api.comment.CommentEndpoint
 import me.proxer.library.entity.info.Comment
 import me.proxer.library.entity.info.RatingDetails
@@ -89,6 +88,10 @@ class EditCommentViewModelTest : KoinTest {
         assertEquals(COMMENT_ID, viewModel.data.value?.id)
         assertEquals(ENTRY_ID, viewModel.data.value?.entryId)
         assertEquals("", viewModel.data.value?.content)
+        assertEquals(UserMediaProgress.WATCHED, viewModel.data.value?.mediaProgress)
+        assertEquals(RatingDetails(genre = 1, story = 2, animation = 3, characters = 4, music = 5), viewModel.data.value?.ratingDetails)
+        assertEquals(8, viewModel.data.value?.overallRating)
+        assertEquals(5, viewModel.data.value?.episode)
         assertNull(viewModel.error.value)
     }
 
@@ -148,6 +151,10 @@ class EditCommentViewModelTest : KoinTest {
         assertEquals(COMMENT_ID, viewModel.data.value?.id)
         assertEquals(ENTRY_ID, viewModel.data.value?.entryId)
         assertEquals("", viewModel.data.value?.content)
+        assertEquals(UserMediaProgress.WATCHED, viewModel.data.value?.mediaProgress)
+        assertEquals(RatingDetails(genre = 1, story = 2, animation = 3, characters = 4, music = 5), viewModel.data.value?.ratingDetails)
+        assertEquals(8, viewModel.data.value?.overallRating)
+        assertEquals(5, viewModel.data.value?.episode)
         assertNull(viewModel.error.value)
     }
 
