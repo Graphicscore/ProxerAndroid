@@ -1,6 +1,7 @@
 package me.proxer.app.profile
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.activity.compose.setContent
@@ -47,6 +48,18 @@ class ProfileActivity : BaseActivity() {
     val username: String?
         get() = intent.getStringExtra(USERNAME_EXTRA)
 
+    private val initialTab: Int
+        get() = when (intent.action) {
+            Intent.ACTION_VIEW -> when (intent.data?.pathSegments?.getOrNull(2)) {
+                "about" -> 1
+                "anime" -> 3
+                "manga" -> 4
+                "chronik" -> 6
+                else -> 0
+            }
+            else -> 0
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -55,6 +68,7 @@ class ProfileActivity : BaseActivity() {
                 ProfileScreen(
                     userId = userId,
                     username = username,
+                    initialTab = initialTab,
                     onBack = { finish() },
                 )
             }

@@ -39,7 +39,7 @@ import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MediaScreen(id: String, name: String, onBack: () -> Unit) {
+fun MediaScreen(id: String, name: String, initialTab: Int = 0, onBack: () -> Unit) {
     val viewModel = koinViewModel<MediaInfoViewModel> { parametersOf(id) }
     val data by viewModel.data.observeAsState()
 
@@ -57,7 +57,7 @@ fun MediaScreen(id: String, name: String, onBack: () -> Unit) {
     )
 
     val tabLabels = tabs.map { stringResource(it) }
-    val pagerState = rememberPagerState { tabs.size }
+    val pagerState = rememberPagerState(initialPage = initialTab) { tabs.size }
     val scope = rememberCoroutineScope()
 
     MediaScreenContent(

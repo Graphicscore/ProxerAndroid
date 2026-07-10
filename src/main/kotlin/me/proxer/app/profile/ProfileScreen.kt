@@ -40,7 +40,7 @@ import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(userId: String?, username: String?, onBack: () -> Unit) {
+fun ProfileScreen(userId: String?, username: String?, initialTab: Int = 0, onBack: () -> Unit) {
     val viewModel = koinViewModel<ProfileViewModel> { parametersOf(userId, username) }
     val data by viewModel.data.observeAsState()
 
@@ -60,7 +60,7 @@ fun ProfileScreen(userId: String?, username: String?, onBack: () -> Unit) {
         stringResource(R.string.section_user_history),
     )
 
-    val pagerState = rememberPagerState { tabs.size }
+    val pagerState = rememberPagerState(initialPage = initialTab) { tabs.size }
     val scope = rememberCoroutineScope()
 
     ProfileContent(

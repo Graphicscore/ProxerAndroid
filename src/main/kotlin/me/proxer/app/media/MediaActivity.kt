@@ -57,6 +57,19 @@ class MediaActivity : BaseActivity() {
     val category: Category?
         get() = IntentCompat.getSerializableExtra(intent, CATEGORY_EXTRA, Category::class.java)
 
+    private val initialTab: Int
+        get() = when (intent.action) {
+            Intent.ACTION_VIEW -> when (intent.data?.pathSegments?.getOrNull(2)) {
+                "comments" -> 1
+                "episodes", "list" -> 2
+                "relation" -> 3
+                "recommendations" -> 4
+                "forum" -> 5
+                else -> 0
+            }
+            else -> 0
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -65,6 +78,7 @@ class MediaActivity : BaseActivity() {
                 MediaScreen(
                     id = id,
                     name = name ?: "",
+                    initialTab = initialTab,
                     onBack = { finish() },
                 )
             }
