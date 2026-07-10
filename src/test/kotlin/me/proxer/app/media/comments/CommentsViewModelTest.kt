@@ -3,15 +3,18 @@ package me.proxer.app.media.comments
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.reactivex.Observable
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.mockProxerCallNullableSuccess
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
 import me.proxer.app.comment.LocalComment
+import me.proxer.app.ui.view.bbcode.BBArgs
+import me.proxer.app.ui.view.bbcode.BBTree
+import me.proxer.app.ui.view.bbcode.prototype.TextPrototype
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
@@ -21,12 +24,11 @@ import me.proxer.library.entity.info.Comment
 import me.proxer.library.entity.info.RatingDetails
 import me.proxer.library.enums.CommentSortCriteria
 import me.proxer.library.enums.UserMediaProgress
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.junit.Assert.fail
-import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -73,12 +75,17 @@ class CommentsViewModelTest : KoinTest {
 
     @Before
     fun setup() {
-        // Force computation scheduler to trampoline for parsing
-        RxJavaPlugins.setComputationSchedulerHandler { Schedulers.trampoline() }
-
         every { storageHelper.isLoggedInObservable } returns Observable.never()
         every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
         every { storageHelper.isLoggedIn } returns true
+
+        // Comment.toParsedComment() eagerly parses `content` into a BB tree on construction, which
+        // otherwise calls through to android.text.LinkifyCompat / SpannableStringBuilder - unavailable
+        // in plain JUnit (no Robolectric). Stub it out the same way BBParserTest/MessengerViewModelTest do.
+        mockkObject(TextPrototype)
+        every { TextPrototype.construct(any<String>(), any<BBTree>()) } answers {
+            BBTree(TextPrototype, secondArg(), args = BBArgs(text = firstArg<String>()))
+        }
 
         // Mock the endpoint chain
         commentsEndpoint = mockk(relaxed = true)
@@ -90,7 +97,7 @@ class CommentsViewModelTest : KoinTest {
 
     @After
     fun teardown() {
-        RxJavaPlugins.setComputationSchedulerHandler(null)
+        unmockkObject(TextPrototype)
     }
 
     @Test
