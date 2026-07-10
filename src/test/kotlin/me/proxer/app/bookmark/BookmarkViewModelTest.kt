@@ -7,12 +7,10 @@ import io.mockk.slot
 import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
-import me.proxer.app.base.stubError
 import me.proxer.app.base.stubNullableError
 import me.proxer.app.base.stubNullableSuccess
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
-import me.proxer.app.base.stubSuccess
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
