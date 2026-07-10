@@ -5,9 +5,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import io.mockk.verify
 import io.reactivex.Observable
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.mockProxerCallNullableSuccess
@@ -35,7 +34,6 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.threeten.bp.Instant
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.inject
@@ -90,10 +88,6 @@ class ProfileCommentViewModelTest : KoinTest {
 
     @Before
     fun setup() {
-        // ProfileCommentViewModel's dataSingle hops onto Schedulers.computation() while
-        // mapping comments; force that scheduler onto the trampoline too.
-        RxJavaPlugins.setComputationSchedulerHandler { Schedulers.trampoline() }
-
         every { storageHelper.isLoggedInObservable } returns Observable.never()
         every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
         every { storageHelper.isLoggedIn } returns true
@@ -111,7 +105,6 @@ class ProfileCommentViewModelTest : KoinTest {
 
     @After
     fun teardown() {
-        RxJavaPlugins.setComputationSchedulerHandler(null)
         unmockkObject(TextPrototype)
     }
 
@@ -241,6 +234,7 @@ class ProfileCommentViewModelTest : KoinTest {
 
         assertEquals(9, viewModel.data.value?.size)
         assertFalse(viewModel.data.value!!.any { it.id == target.id })
+        verify { storageHelper.deleteCommentDraft(target.entryId) }
     }
 
     @Test
@@ -251,19 +245,25 @@ class ProfileCommentViewModelTest : KoinTest {
         viewModel.load()
 
         val target = viewModel.data.value!!.first()
+        val expectedRatingDetails = RatingDetails(9, 8, 7, 6, 5)
         val update = LocalComment(
             target.id,
             target.entryId,
             UserMediaProgress.WILL_WATCH,
-            RatingDetails(9, 8, 7, 6, 5),
+            expectedRatingDetails,
             "Updated",
             9,
             target.episode,
         )
+        val originalInstant = target.instant
 
         viewModel.updateComment(update)
 
         val updated = viewModel.data.value!!.first { it.id == target.id }
         assertEquals(9, updated.overallRating)
+        assertEquals(expectedRatingDetails, updated.ratingDetails)
+        assertEquals(update.parsedContent, updated.parsedContent)
+        assertNotNull(updated.instant)
+        assertFalse(originalInstant == updated.instant)
     }
 }
