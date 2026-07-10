@@ -66,3 +66,43 @@ fun <T : Any> PagingLimitEndpoint<T>.stubPagingError(
     every { limit(any()) } returns this
     every { build() } returns mockProxerCallError(exception)
 }
+
+/**
+ * Creates a relaxed mock [ProxerCall] for a *nullable* endpoint (`Endpoint<T?>`), whose
+ * [ProxerCall.execute] returns [value]. Nullable endpoints resolve through
+ * [me.proxer.app.util.rx.ProxerCallNullableSingle], which calls `execute()`, NOT `safeExecute()` —
+ * unlike [mockProxerCallSuccess]/[mockProxerCallError], which are for the non-null `Endpoint<T>` path.
+ * Stubbing `safeExecute()` on a mock driven by this path is inert (the real code never calls it).
+ */
+fun <T : Any> mockProxerCallNullableSuccess(value: T?): ProxerCall<T?> {
+    val call = mockk<ProxerCall<T?>>(relaxed = true)
+
+    every { call.clone() } returns call
+    every { call.execute() } returns value
+
+    return call
+}
+
+/** Creates a relaxed mock [ProxerCall] for a *nullable* endpoint whose [ProxerCall.execute] throws [exception]. */
+fun <T : Any> mockProxerCallNullableError(
+    exception: ProxerException = ProxerException(ProxerException.ErrorType.IO),
+): ProxerCall<T?> {
+    val call = mockk<ProxerCall<T?>>(relaxed = true)
+
+    every { call.clone() } returns call
+    every { call.execute() } throws exception
+
+    return call
+}
+
+/** Stubs this mocked nullable [Endpoint] so `buildSingle()` emits [value] (defaults to `null`). */
+fun <T : Any> Endpoint<T?>.stubNullableSuccess(value: T? = null) {
+    every { build() } returns mockProxerCallNullableSuccess(value)
+}
+
+/** Stubs this mocked nullable [Endpoint] so `buildSingle()` errors with [exception]. */
+fun <T : Any> Endpoint<T?>.stubNullableError(
+    exception: ProxerException = ProxerException(ProxerException.ErrorType.IO),
+) {
+    every { build() } returns mockProxerCallNullableError(exception)
+}
