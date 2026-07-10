@@ -4,8 +4,10 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.reactivex.Observable
 import io.reactivex.Single
+import me.proxer.app.exception.NotLoggedInException
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
+import me.proxer.app.util.Validators
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -32,6 +34,7 @@ class BaseViewModelTest : KoinTest {
 
     private val storageHelper: StorageHelper by inject()
     private val preferenceHelper: PreferenceHelper by inject()
+    private val validators: Validators by inject()
 
     private lateinit var viewModel: TestViewModel
 
@@ -126,12 +129,25 @@ class BaseViewModelTest : KoinTest {
         assertEquals("ok", viewModel.data.value)
     }
 
+    @Test
+    fun `load surfaces a NotLoggedInException from validate() as a login-required error`() {
+        every { validators.validateLogin() } throws NotLoggedInException()
+        viewModel.isLoginRequired = true
+
+        viewModel.nextResponse = Single.just("ignored")
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertNotNull(viewModel.error.value)
+    }
+
     // Inner fake ViewModel — override dataSingle via var so tests can control responses.
     // isLoginRequired is overridden to false so that the isLoggedInObservable subscription
     // in init does not trigger spurious reload() calls during tests.
     private inner class TestViewModel : BaseViewModel<String>() {
-        override val isLoginRequired = false
+        override public var isLoginRequired = false
         var nextResponse: Single<String> = Single.never()
-        override val dataSingle: Single<String> get() = nextResponse
+        override val dataSingle: Single<String>
+            get() = Single.fromCallable { validate() }.flatMap { nextResponse }
     }
 }
