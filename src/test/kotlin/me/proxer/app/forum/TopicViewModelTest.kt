@@ -4,6 +4,8 @@ import android.content.res.Resources
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.reactivex.Observable
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
@@ -11,6 +13,9 @@ import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
+import me.proxer.app.ui.view.bbcode.BBArgs
+import me.proxer.app.ui.view.bbcode.BBTree
+import me.proxer.app.ui.view.bbcode.prototype.TextPrototype
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
@@ -84,6 +89,17 @@ class TopicViewModelTest : KoinTest {
         // force that scheduler onto the trampoline too so load() completes synchronously.
         RxJavaPlugins.setComputationSchedulerHandler { Schedulers.trampoline() }
 
+        // Post#toParsedPost() runs every post message through BBParser, whose TextPrototype
+        // always calls code.toSpannableStringBuilder().linkify() (via LinkifyCompat), which
+        // touches the real android.text.SpannableStringBuilder. That class is an unmocked
+        // Android SDK stub on the JVM unit test classpath and throws "not mocked" on first
+        // use. Mock TextPrototype.construct() the same way BBParserTest does, to skip the
+        // Android-dependent Linkify path while still producing a usable BBTree.
+        mockkObject(TextPrototype)
+        every { TextPrototype.construct(any<String>(), any<BBTree>()) } answers {
+            BBTree(TextPrototype, secondArg(), args = BBArgs(text = firstArg<String>()))
+        }
+
         every { storageHelper.isLoggedInObservable } returns Observable.never()
         every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
         every { storageHelper.isLoggedIn } returns true
@@ -96,6 +112,7 @@ class TopicViewModelTest : KoinTest {
     @After
     fun teardown() {
         RxJavaPlugins.setComputationSchedulerHandler(null)
+        unmockkObject(TextPrototype)
     }
 
     @Test
