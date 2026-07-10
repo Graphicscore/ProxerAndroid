@@ -8,6 +8,7 @@ import me.proxer.app.auth.LocalUser
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.stubError
+import me.proxer.app.base.stubNullableSuccess
 import me.proxer.app.base.stubSuccess
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
@@ -194,10 +195,7 @@ class TopTenViewModelTest : KoinTest {
         val itemToDelete = LocalTopTenEntry.Ucp("a1", "Anime Entry", Category.ANIME, Medium.ANIMESERIES, "e1")
 
         every { api.ucp.deleteFavorite("a1") } returns deleteEndpoint
-        val deleteCall = mockk<me.proxer.library.ProxerCall<Unit?>>(relaxed = true)
-        every { deleteCall.clone() } returns deleteCall
-        every { deleteCall.safeExecute() } returns null
-        every { deleteEndpoint.build() } returns deleteCall
+        deleteEndpoint.stubNullableSuccess()
 
         viewModel.addItemToDelete(itemToDelete)
 
