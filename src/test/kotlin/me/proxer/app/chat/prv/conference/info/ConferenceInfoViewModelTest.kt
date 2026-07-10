@@ -11,7 +11,6 @@ import me.proxer.app.base.stubSuccess
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
-import me.proxer.library.api.Endpoint
 import me.proxer.library.api.messenger.ConferenceInfoEndpoint
 import me.proxer.library.entity.messenger.ConferenceInfo
 import org.junit.Assert.assertEquals
