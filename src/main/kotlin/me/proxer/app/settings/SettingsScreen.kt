@@ -132,23 +132,9 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
     // ---- Dialogs ----
 
     if (showAgeConfirmationDialog) {
-        AlertDialog(
-            onDismissRequest = { showAgeConfirmationDialog = false },
-            text = { Text(stringResource(R.string.dialog_age_confirmation_content)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    preferenceHelper.isAgeRestrictedMediaAllowed = true
-                    ageRestricted = true
-                    showAgeConfirmationDialog = false
-                }) {
-                    Text(stringResource(R.string.dialog_age_confirmation_positive))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAgeConfirmationDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
+        AgeConfirmationDialog(
+            onDismiss = { showAgeConfirmationDialog = false },
+            onConfirm = { ageRestricted = true },
         )
     }
 
