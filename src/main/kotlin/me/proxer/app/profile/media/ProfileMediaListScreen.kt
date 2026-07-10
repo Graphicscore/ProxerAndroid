@@ -2,6 +2,7 @@ package me.proxer.app.profile.media
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -12,20 +13,30 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ProxerTheme
@@ -47,6 +58,7 @@ fun ProfileMediaListScreen(userId: String?, username: String?, category: Categor
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val itemDeletionError by viewModel.itemDeletionError.observeAsState()
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -54,6 +66,7 @@ fun ProfileMediaListScreen(userId: String?, username: String?, category: Categor
         data = data,
         error = error,
         isLoading = isLoading == true,
+        itemDeletionError = itemDeletionError,
         onRetry = { viewModel.load() },
         onLoadMore = { viewModel.loadIfPossible() },
         onDelete = { viewModel.addItemToDelete(it) },
@@ -65,11 +78,14 @@ private fun ProfileMediaListContent(
     data: List<LocalUserMediaListEntry>?,
     error: ErrorAction?,
     isLoading: Boolean,
+    itemDeletionError: ErrorAction?,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
     onDelete: (LocalUserMediaListEntry) -> Unit,
 ) {
+    val context = LocalContext.current
     val gridState = rememberLazyGridState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(gridState.layoutInfo) {
         val total = gridState.layoutInfo.totalItemsCount
@@ -77,26 +93,41 @@ private fun ProfileMediaListContent(
         if (total > 0 && last >= total - 5) onLoadMore()
     }
 
-    ContentScreen(
-        isLoading = isLoading && data.isNullOrEmpty(),
-        error = if (data.isNullOrEmpty()) error else null,
-        onRetry = onRetry,
-    ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = gridState,
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize(),
+    LaunchedEffect(itemDeletionError) {
+        val err = itemDeletionError
+        if (err != null) {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_profile_media_list_deletion, context.getString(err.message)),
+            )
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ContentScreen(
+            isLoading = isLoading && data.isNullOrEmpty(),
+            error = if (data.isNullOrEmpty()) error else null,
+            onRetry = onRetry,
         ) {
-            items(data ?: emptyList(), key = { it.id }) { entry ->
-                MediaListCard(
-                    entry = entry,
-                    onDelete = onDelete,
-                )
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                state = gridState,
+                contentPadding = PaddingValues(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items(data ?: emptyList(), key = { it.id }) { entry ->
+                    MediaListCard(
+                        entry = entry,
+                        onDelete = onDelete,
+                    )
+                }
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -139,6 +170,12 @@ private fun MediaListCard(entry: LocalUserMediaListEntry, onDelete: (LocalUserMe
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             )
+            IconButton(onClick = { onDelete(entry) }) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.action_delete),
+                )
+            }
         }
     }
 }
@@ -151,6 +188,7 @@ private fun ProfileMediaListContentPreview() {
             data = null,
             error = null,
             isLoading = true,
+            itemDeletionError = null,
             onRetry = {},
             onLoadMore = {},
             onDelete = {},
