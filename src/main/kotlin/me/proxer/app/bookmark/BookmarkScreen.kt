@@ -122,6 +122,7 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
             dismissedIds.value = emptySet()
             viewModel.undo()
         },
+        onDeletionFailed = { dismissedIds.value = emptySet() },
         onBookmarkClick = { bookmark ->
             val activity = context as? Activity
             activity?.let {
@@ -169,6 +170,7 @@ private fun BookmarkContent(
     onSetFilterAvailable: (Boolean) -> Unit,
     onDeleteItem: (Bookmark) -> Unit,
     onUndo: () -> Unit,
+    onDeletionFailed: () -> Unit,
     onBookmarkClick: (Bookmark) -> Unit,
 ) {
     val context = LocalContext.current
@@ -184,6 +186,7 @@ private fun BookmarkContent(
     LaunchedEffect(itemDeletionError) {
         val err = itemDeletionError
         if (err != null) {
+            onDeletionFailed()
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_bookmark_deletion, context.getString(err.message)),
             )
@@ -407,6 +410,7 @@ private fun BookmarkContentPreview() {
             onSetFilterAvailable = {},
             onDeleteItem = {},
             onUndo = {},
+            onDeletionFailed = {},
             onBookmarkClick = {},
         )
     }
