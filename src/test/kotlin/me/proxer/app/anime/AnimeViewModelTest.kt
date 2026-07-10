@@ -10,9 +10,9 @@ import me.proxer.app.base.stubError
 import me.proxer.app.base.stubSuccess
 import me.proxer.app.exception.NotLoggedInException
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
+import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import me.proxer.app.util.Validators
 import me.proxer.library.ProxerApi
 import me.proxer.library.api.anime.StreamsEndpoint
 import me.proxer.library.api.info.EntryCoreEndpoint
