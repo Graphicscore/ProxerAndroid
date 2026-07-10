@@ -11,6 +11,9 @@ import me.proxer.app.base.stubNullableError
 import me.proxer.app.base.stubNullableSuccess
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
+import me.proxer.app.exception.NotLoggedInException
+import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
+import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
@@ -46,6 +49,7 @@ class BookmarkViewModelTest : KoinTest {
     private val api: ProxerApi by inject()
     private val storageHelper: StorageHelper by inject()
     private val preferenceHelper: PreferenceHelper by inject()
+    private val validators: Validators by inject()
 
     private lateinit var viewModel: BookmarkViewModel
 
@@ -105,6 +109,16 @@ class BookmarkViewModelTest : KoinTest {
 
         assertNull(viewModel.data.value)
         assertNotNull(viewModel.error.value)
+    }
+
+    @Test
+    fun `load sets login-required error when validators rejects a logged-out user`() {
+        every { validators.validateLogin() } throws NotLoggedInException()
+
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertEquals(ButtonAction.LOGIN, viewModel.error.value?.buttonAction)
     }
 
     @Test
