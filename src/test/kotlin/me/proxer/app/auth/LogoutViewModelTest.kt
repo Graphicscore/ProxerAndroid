@@ -6,8 +6,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
-import me.proxer.app.base.stubError
-import me.proxer.app.base.stubSuccess
+import me.proxer.app.base.stubNullableError
+import me.proxer.app.base.stubNullableSuccess
 import me.proxer.library.ProxerApi
 import me.proxer.library.api.user.LogoutEndpoint
 import org.junit.Assert.assertEquals
@@ -45,10 +45,7 @@ class LogoutViewModelTest : KoinTest {
     fun `logout sets success on success`() {
         val logoutEndpoint = mockk<LogoutEndpoint>(relaxed = true)
         every { api.user.logout() } returns logoutEndpoint
-        val call = mockk<me.proxer.library.ProxerCall<Unit?>>(relaxed = true)
-        every { call.clone() } returns call
-        every { call.execute() } returns Unit
-        every { logoutEndpoint.build() } returns call
+        logoutEndpoint.stubNullableSuccess(Unit)
 
         viewModel.logout()
 
@@ -61,10 +58,7 @@ class LogoutViewModelTest : KoinTest {
     fun `logout sets error on failure`() {
         val logoutEndpoint = mockk<LogoutEndpoint>(relaxed = true)
         every { api.user.logout() } returns logoutEndpoint
-        val call = mockk<me.proxer.library.ProxerCall<Unit?>>(relaxed = true)
-        every { call.clone() } returns call
-        every { call.execute() } throws me.proxer.library.ProxerException(me.proxer.library.ProxerException.ErrorType.IO)
-        every { logoutEndpoint.build() } returns call
+        logoutEndpoint.stubNullableError()
 
         viewModel.logout()
 
