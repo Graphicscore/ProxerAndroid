@@ -182,6 +182,17 @@ tasks.withType(dev.detekt.gradle.Detekt).configureEach {
     }
 }
 
+// ErrorUtils resolves its StorageHelper/PreferenceHelper singletons through a `by safeInject<T>()`
+// delegate — a `by lazy` that binds once per JVM and never re-resolves. Any test that reaches
+// ErrorUtils.handle()/getMessage() (which includes every BaseViewModel error-path test, since
+// BaseViewModel.load() routes failures through ErrorUtils.handle()) binds those singletons to
+// whichever test class's Koin-mocked instance happens to touch them first in the JVM. Without
+// per-class isolation, ErrorUtilsTest's own login-state assertions become order-dependent on
+// unrelated test classes and fail intermittently as the test suite grows.
+tasks.withType(Test).configureEach {
+    forkEvery = 1
+}
+
 
 tasks.named("dependencyUpdates").configure {
     rejectVersionIf {
