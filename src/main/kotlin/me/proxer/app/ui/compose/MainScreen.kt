@@ -31,11 +31,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -66,6 +71,7 @@ import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.settings.AboutScreen
 import me.proxer.app.settings.SettingsScreen
+import me.proxer.app.util.InAppUpdateFlow
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.wrapper.DrawerItem
 import me.proxer.library.enums.Category
@@ -229,54 +235,98 @@ fun MainScreen(initialItem: DrawerItem) {
     if (showLoginDialog) LoginDialog(onDismiss = { showLoginDialog = false })
     if (showLogoutDialog) LogoutDialog(onDismiss = { showLogoutDialog = false })
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = {
-            MainScreenDrawerSheet(
-                user = user,
-                selectedItem = selectedItem,
-                onLoginClick = {
-                    scope.launch { drawerState.close() }
-                    showLoginDialog = true
-                },
-                onProfileClick = {
-                    scope.launch { drawerState.close() }
-                    (context as? Activity)?.let { activity ->
-                        user?.let { u ->
-                            ProfileActivity.navigateTo(activity, userId = u.id, username = u.name)
-                        }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val inAppUpdateFlow = remember { InAppUpdateFlow() }
+    val updateAvailableMessage = stringResource(R.string.activity_update_available)
+    val updateDownloadAction = stringResource(R.string.activity_update_action_download)
+    val updateReadyMessage = stringResource(R.string.activity_update_ready)
+    val updateInstallAction = stringResource(R.string.activity_update_action_install)
+
+    LaunchedEffect(Unit) {
+        (context as? Activity)?.let { activity ->
+            inAppUpdateFlow.start(
+                activity = activity,
+                onUpdateAvailable = { download ->
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = updateAvailableMessage,
+                            actionLabel = updateDownloadAction,
+                            duration = SnackbarDuration.Indefinite,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) download()
                     }
                 },
-                onNotificationsClick = {
-                    scope.launch { drawerState.close() }
-                    (context as? Activity)?.let { NotificationActivity.navigateTo(it) }
-                },
-                onProfileSettingsClick = {
-                    scope.launch { drawerState.close() }
-                    (context as? Activity)?.let { ProfileSettingsActivity.navigateTo(it) }
-                },
-                onLogoutClick = {
-                    scope.launch { drawerState.close() }
-                    showLogoutDialog = true
-                },
-                onSelect = { item ->
-                    selectedItem = item
-                    scope.launch { drawerState.close() }
+                onUpdateReady = { install ->
+                    scope.launch {
+                        val result = snackbarHostState.showSnackbar(
+                            message = updateReadyMessage,
+                            actionLabel = updateInstallAction,
+                            duration = SnackbarDuration.Indefinite,
+                        )
+                        if (result == SnackbarResult.ActionPerformed) install()
+                    }
                 },
             )
-        },
-    ) {
-        val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
-        when (selectedItem) {
-            DrawerItem.NEWS -> NewsScreen(onOpenDrawer = openDrawer)
-            DrawerItem.CHAT, DrawerItem.MESSENGER -> ChatContainerScreen(onOpenDrawer = openDrawer)
-            DrawerItem.BOOKMARKS -> BookmarkScreen(onOpenDrawer = openDrawer)
-            DrawerItem.ANIME -> MediaListScreen(category = Category.ANIME, onOpenDrawer = openDrawer)
-            DrawerItem.SCHEDULE -> ScheduleScreen(onOpenDrawer = openDrawer)
-            DrawerItem.MANGA -> MediaListScreen(category = Category.MANGA, onOpenDrawer = openDrawer)
-            DrawerItem.INFO -> AboutScreen(onOpenDrawer = openDrawer)
-            DrawerItem.SETTINGS -> SettingsScreen(onOpenDrawer = openDrawer)
         }
+    }
+    DisposableEffect(Unit) {
+        onDispose { inAppUpdateFlow.stop() }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                MainScreenDrawerSheet(
+                    user = user,
+                    selectedItem = selectedItem,
+                    onLoginClick = {
+                        scope.launch { drawerState.close() }
+                        showLoginDialog = true
+                    },
+                    onProfileClick = {
+                        scope.launch { drawerState.close() }
+                        (context as? Activity)?.let { activity ->
+                            user?.let { u ->
+                                ProfileActivity.navigateTo(activity, userId = u.id, username = u.name)
+                            }
+                        }
+                    },
+                    onNotificationsClick = {
+                        scope.launch { drawerState.close() }
+                        (context as? Activity)?.let { NotificationActivity.navigateTo(it) }
+                    },
+                    onProfileSettingsClick = {
+                        scope.launch { drawerState.close() }
+                        (context as? Activity)?.let { ProfileSettingsActivity.navigateTo(it) }
+                    },
+                    onLogoutClick = {
+                        scope.launch { drawerState.close() }
+                        showLogoutDialog = true
+                    },
+                    onSelect = { item ->
+                        selectedItem = item
+                        scope.launch { drawerState.close() }
+                    },
+                )
+            },
+        ) {
+            val openDrawer: () -> Unit = { scope.launch { drawerState.open() } }
+            when (selectedItem) {
+                DrawerItem.NEWS -> NewsScreen(onOpenDrawer = openDrawer)
+                DrawerItem.CHAT, DrawerItem.MESSENGER -> ChatContainerScreen(onOpenDrawer = openDrawer)
+                DrawerItem.BOOKMARKS -> BookmarkScreen(onOpenDrawer = openDrawer)
+                DrawerItem.ANIME -> MediaListScreen(category = Category.ANIME, onOpenDrawer = openDrawer)
+                DrawerItem.SCHEDULE -> ScheduleScreen(onOpenDrawer = openDrawer)
+                DrawerItem.MANGA -> MediaListScreen(category = Category.MANGA, onOpenDrawer = openDrawer)
+                DrawerItem.INFO -> AboutScreen(onOpenDrawer = openDrawer)
+                DrawerItem.SETTINGS -> SettingsScreen(onOpenDrawer = openDrawer)
+            }
+        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
