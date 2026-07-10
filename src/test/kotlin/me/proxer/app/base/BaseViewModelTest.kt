@@ -4,12 +4,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.android.plugins.RxAndroidPlugins
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -31,6 +27,9 @@ class BaseViewModelTest : KoinTest {
     @get:Rule
     val instantExecutor = InstantTaskExecutorRule()
 
+    @get:Rule
+    val rxTrampolineRule = RxTrampolineRule()
+
     private val storageHelper: StorageHelper by inject()
     private val preferenceHelper: PreferenceHelper by inject()
 
@@ -38,18 +37,10 @@ class BaseViewModelTest : KoinTest {
 
     @Before
     fun setup() {
-        RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
-        RxJavaPlugins.setIoSchedulerHandler { Schedulers.trampoline() }
         every { storageHelper.isLoggedInObservable } returns Observable.never()
         every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
         every { storageHelper.isLoggedIn } returns true
         viewModel = TestViewModel()
-    }
-
-    @After
-    fun teardown() {
-        RxAndroidPlugins.reset()
-        RxJavaPlugins.reset()
     }
 
     @Test
