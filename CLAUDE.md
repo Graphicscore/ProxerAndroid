@@ -37,6 +37,7 @@ TV frontend lives on the `tv-support` branch (`me.proxer.app.tv`), all Compose (
 
 Shared infra in `me.proxer.app.base`: `RxTrampolineRule`, `ProxerEndpointTestUtils.kt`, `FakeAppModule.kt`.
 
+- Need ProxerLibJava internals (endpoint/entity source, not just the jar)? Source checked out at `../ProxerLibJava` — read it there instead of decompiling/extracting the jar.
 - ProxerLibJava endpoints often return concrete subtypes (e.g. `EntryCoreEndpoint`) — mock the concrete type, not `Endpoint<T>`.
 - Nullable endpoints (`Endpoint<T?>`) run through `ProxerCallNullableSingle.execute()` — use `stubNullableSuccess`/`stubNullableError`, not the non-null variants.
 - Entities with BBCode (`LocalComment`, `LocalMessage`, `ParsedPost`) call `.toSimpleBBTree()` on construction and crash on unmocked `SpannableStringBuilder` — stub `mockkObject(TextPrototype)` in `@Before`/`unmockkObject` in `@After`.
