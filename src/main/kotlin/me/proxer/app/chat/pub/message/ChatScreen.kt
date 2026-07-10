@@ -27,6 +27,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -79,6 +81,10 @@ fun ChatScreen(
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
+    val sendMessageError by viewModel.sendMessageError.observeAsState()
+    val reportData by reportViewModel.data.observeAsState()
+    val reportError by reportViewModel.error.observeAsState()
+    val reportIsLoading by reportViewModel.isLoading.observeAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(Unit) {
@@ -102,6 +108,10 @@ fun ChatScreen(
         messages = data,
         error = error,
         isLoading = isLoading,
+        sendMessageError = sendMessageError,
+        reportData = reportData,
+        reportError = reportError,
+        reportIsLoading = reportIsLoading,
         chatRoomId = chatRoomId,
         chatRoomName = chatRoomName,
         chatRoomIsReadOnly = chatRoomIsReadOnly,
@@ -121,6 +131,10 @@ private fun ChatScreenContent(
     messages: List<ParsedChatMessage>?,
     error: ErrorUtils.ErrorAction?,
     isLoading: Boolean?,
+    sendMessageError: ErrorUtils.ErrorAction?,
+    reportData: Unit?,
+    reportError: ErrorUtils.ErrorAction?,
+    reportIsLoading: Boolean?,
     chatRoomId: String,
     chatRoomName: String,
     chatRoomIsReadOnly: Boolean,
@@ -133,12 +147,30 @@ private fun ChatScreenContent(
     onRetry: () -> Unit,
 ) {
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
     var messageText by rememberSaveable { mutableStateOf("") }
     var selectedIds by remember { mutableStateOf(emptySet<String>()) }
     var reportTarget by remember { mutableStateOf<ParsedChatMessage?>(null) }
     var reportReason by remember { mutableStateOf("") }
 
     val inputEnabled = !chatRoomIsReadOnly && isLoggedIn && !messages.isNullOrEmpty()
+
+    LaunchedEffect(sendMessageError) {
+        val err = sendMessageError
+        if (err != null) {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_chat_send_message, context.getString(err.message)),
+            )
+        }
+    }
+
+    LaunchedEffect(reportData) {
+        if (reportData != null) {
+            reportTarget = null
+            reportReason = ""
+            selectedIds = emptySet()
+        }
+    }
 
     if (reportTarget != null) {
         AlertDialog(
@@ -148,21 +180,27 @@ private fun ChatScreenContent(
             },
             title = { Text(stringResource(R.string.dialog_chat_report_title)) },
             text = {
-                OutlinedTextField(
-                    value = reportReason,
-                    onValueChange = { reportReason = it },
-                    label = { Text(stringResource(R.string.dialog_chat_report_message_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column {
+                    OutlinedTextField(
+                        value = reportReason,
+                        onValueChange = { reportReason = it },
+                        label = { Text(stringResource(R.string.dialog_chat_report_message_hint)) },
+                        enabled = reportIsLoading != true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    reportError?.let { err ->
+                        Text(
+                            text = stringResource(err.message),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
             },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        onReport(reportTarget!!.id, reportReason)
-                        reportTarget = null
-                        reportReason = ""
-                        selectedIds = emptySet()
-                    },
+                    onClick = { onReport(reportTarget!!.id, reportReason) },
+                    enabled = reportIsLoading != true,
                 ) {
                     Text(stringResource(R.string.dialog_chat_report_positive))
                 }
@@ -176,6 +214,7 @@ private fun ChatScreenContent(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             if (selectedIds.isEmpty()) {
                 TopAppBar(
@@ -315,6 +354,10 @@ private fun ChatScreenContentPreview() {
             messages = null,
             error = null,
             isLoading = true,
+            sendMessageError = null,
+            reportData = null,
+            reportError = null,
+            reportIsLoading = null,
             chatRoomId = "1",
             chatRoomName = "General",
             chatRoomIsReadOnly = false,
