@@ -7,6 +7,7 @@ import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
+import okhttp3.OkHttpClient
 import org.koin.dsl.module
 
 fun fakeAppModule() = module {
@@ -16,4 +17,5 @@ fun fakeAppModule() = module {
     single<RxBus> { RxBus() }
     single<Validators> { mockk(relaxed = true) }
     single<MessengerDao> { mockk(relaxed = true) }
+    single<OkHttpClient> { mockk(relaxed = true) }
 }
