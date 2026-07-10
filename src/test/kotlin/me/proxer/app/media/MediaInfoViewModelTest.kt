@@ -8,6 +8,7 @@ import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.stubError
 import me.proxer.app.base.stubSuccess
+import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
@@ -113,6 +114,34 @@ class MediaInfoViewModelTest : KoinTest {
 
         assertNull(viewModel.data.value)
         assertNotNull(viewModel.error.value)
+    }
+
+    @Test
+    fun `load sets login-required error for age restricted entry when not logged in`() {
+        val entryEndpoint = mockk<EntryEndpoint>(relaxed = true)
+
+        every { api.info.entry(entryId) } returns entryEndpoint
+        entryEndpoint.stubSuccess(createEntry(isAgeRestricted = true))
+
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertEquals(ButtonAction.LOGIN, viewModel.error.value?.buttonAction)
+    }
+
+    @Test
+    fun `load sets age confirmation error for age restricted entry when logged in but not confirmed`() {
+        val entryEndpoint = mockk<EntryEndpoint>(relaxed = true)
+
+        every { storageHelper.isLoggedIn } returns true
+        every { preferenceHelper.isAgeRestrictedMediaAllowed } returns false
+        every { api.info.entry(entryId) } returns entryEndpoint
+        entryEndpoint.stubSuccess(createEntry(isAgeRestricted = true))
+
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertEquals(ButtonAction.AGE_CONFIRMATION, viewModel.error.value?.buttonAction)
     }
 
     @Test
