@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
@@ -29,9 +30,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -70,18 +77,27 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val itemDeletionError by viewModel.itemDeletionError.observeAsState()
+    val undoData by viewModel.undoData.observeAsState()
+    val undoError by viewModel.undoError.observeAsState()
     val context = LocalContext.current
 
     var showFilterMenu by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
     var filterAvailable by remember { mutableStateOf(false) }
+    val dismissedIds = remember { mutableStateOf(emptySet<String>()) }
+    val displayedData = (data ?: emptyList()).filterNot { it.id in dismissedIds.value }
 
     LaunchedEffect(Unit) { viewModel.load() }
 
     BookmarkContent(
         data = data,
+        displayedData = displayedData,
         error = error,
         isLoading = isLoading == true,
+        itemDeletionError = itemDeletionError,
+        undoData = undoData,
+        undoError = undoError,
         showFilterMenu = showFilterMenu,
         selectedCategory = selectedCategory,
         filterAvailable = filterAvailable,
@@ -97,6 +113,14 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
         onSetFilterAvailable = { available ->
             filterAvailable = available
             viewModel.filterAvailable = available
+        },
+        onDeleteItem = { bookmark ->
+            dismissedIds.value = dismissedIds.value + bookmark.id
+            viewModel.addItemToDelete(bookmark)
+        },
+        onUndo = {
+            dismissedIds.value = emptySet()
+            viewModel.undo()
         },
         onBookmarkClick = { bookmark ->
             val activity = context as? Activity
@@ -127,8 +151,12 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
 @Composable
 private fun BookmarkContent(
     data: List<Bookmark>?,
+    displayedData: List<Bookmark>,
     error: ErrorAction?,
     isLoading: Boolean,
+    itemDeletionError: ErrorAction?,
+    undoData: Unit?,
+    undoError: ErrorAction?,
     showFilterMenu: Boolean,
     selectedCategory: Category?,
     filterAvailable: Boolean,
@@ -139,14 +167,46 @@ private fun BookmarkContent(
     onShowFilterMenu: (Boolean) -> Unit,
     onSelectCategory: (Category?) -> Unit,
     onSetFilterAvailable: (Boolean) -> Unit,
+    onDeleteItem: (Bookmark) -> Unit,
+    onUndo: () -> Unit,
     onBookmarkClick: (Bookmark) -> Unit,
 ) {
+    val context = LocalContext.current
     val listState = rememberLazyListState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
         val last = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
         if (total > 0 && last >= total - 5) onLoadMore()
+    }
+
+    LaunchedEffect(itemDeletionError) {
+        val err = itemDeletionError
+        if (err != null) {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_bookmark_deletion, context.getString(err.message)),
+            )
+        }
+    }
+
+    LaunchedEffect(undoData) {
+        if (undoData != null) {
+            val result = snackbarHostState.showSnackbar(
+                message = context.getString(R.string.fragment_bookmark_delete_message),
+                actionLabel = context.getString(R.string.action_undo),
+            )
+            if (result == SnackbarResult.ActionPerformed) onUndo()
+        }
+    }
+
+    LaunchedEffect(undoError) {
+        val err = undoError
+        if (err != null) {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_undo, context.getString(err.message)),
+            )
+        }
     }
 
     Scaffold(
@@ -221,6 +281,7 @@ private fun BookmarkContent(
                 },
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         ContentScreen(
             isLoading = isLoading && data.isNullOrEmpty(),
@@ -231,11 +292,36 @@ private fun BookmarkContent(
             modifier = Modifier.padding(padding),
         ) {
             LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                items(data ?: emptyList()) { bookmark ->
-                    BookmarkItem(
-                        bookmark = bookmark,
-                        onClick = { onBookmarkClick(bookmark) },
-                    )
+                items(displayedData, key = { it.id }) { bookmark ->
+                    val dismissState = rememberSwipeToDismissBoxState()
+                    LaunchedEffect(dismissState.currentValue) {
+                        if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                            onDeleteItem(bookmark)
+                        }
+                    }
+                    SwipeToDismissBox(
+                        state = dismissState,
+                        enableDismissFromStartToEnd = false,
+                        backgroundContent = {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp),
+                                contentAlignment = Alignment.CenterEnd,
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = stringResource(R.string.action_delete),
+                                    tint = MaterialTheme.colorScheme.error,
+                                )
+                            }
+                        },
+                    ) {
+                        BookmarkItem(
+                            bookmark = bookmark,
+                            onClick = { onBookmarkClick(bookmark) },
+                        )
+                    }
                 }
                 if (isLoading && !data.isNullOrEmpty()) {
                     item {
@@ -303,8 +389,12 @@ private fun BookmarkContentPreview() {
     ProxerTheme {
         BookmarkContent(
             data = null,
+            displayedData = emptyList(),
             error = null,
             isLoading = true,
+            itemDeletionError = null,
+            undoData = null,
+            undoError = null,
             showFilterMenu = false,
             selectedCategory = null,
             filterAvailable = false,
@@ -315,6 +405,8 @@ private fun BookmarkContentPreview() {
             onShowFilterMenu = {},
             onSelectCategory = {},
             onSetFilterAvailable = {},
+            onDeleteItem = {},
+            onUndo = {},
             onBookmarkClick = {},
         )
     }
