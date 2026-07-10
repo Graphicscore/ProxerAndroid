@@ -4,6 +4,7 @@ import androidx.work.WorkManager
 import com.rubengees.rxbus.RxBus
 import io.mockk.mockk
 import me.proxer.app.chat.prv.sync.MessengerDao
+import me.proxer.app.chat.prv.sync.MessengerDatabase
 import me.proxer.app.media.TagDao
 import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
@@ -22,4 +23,5 @@ fun fakeAppModule() = module {
     single<OkHttpClient> { mockk(relaxed = true) }
     single<TagDao> { mockk(relaxed = true) }
     single<WorkManager> { mockk(relaxed = true) }
+    single<MessengerDatabase> { mockk(relaxed = true) }
 }
