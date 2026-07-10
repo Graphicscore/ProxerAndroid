@@ -3,11 +3,16 @@ package me.proxer.app.comment
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.stubError
 import me.proxer.app.base.stubSuccess
+import me.proxer.app.ui.view.bbcode.BBArgs
+import me.proxer.app.ui.view.bbcode.BBTree
+import me.proxer.app.ui.view.bbcode.prototype.TextPrototype
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.toLocalComment
@@ -17,6 +22,7 @@ import me.proxer.library.api.comment.CommentEndpoint
 import me.proxer.library.entity.info.Comment
 import me.proxer.library.entity.info.RatingDetails
 import me.proxer.library.enums.UserMediaProgress
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -75,7 +81,20 @@ class EditCommentViewModelTest : KoinTest {
         every { storageHelper.isLoggedIn } returns true
         every { api.comment.comment(COMMENT_ID, null) } returns commentEndpoint
 
+        // Comment content is eagerly parsed into a BB tree via toLocalComment(), which otherwise calls
+        // through to android.text.LinkifyCompat / SpannableStringBuilder - unavailable in plain JUnit
+        // (no Robolectric). Stub it out the same way BBParserTest does.
+        mockkObject(TextPrototype)
+        every { TextPrototype.construct(any<String>(), any<BBTree>()) } answers {
+            BBTree(TextPrototype, secondArg(), args = BBArgs(text = firstArg<String>()))
+        }
+
         viewModel = EditCommentViewModel(COMMENT_ID, null)
+    }
+
+    @After
+    fun teardown() {
+        unmockkObject(TextPrototype)
     }
 
     @Test

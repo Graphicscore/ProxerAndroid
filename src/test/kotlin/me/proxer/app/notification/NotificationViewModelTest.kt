@@ -6,6 +6,7 @@ import io.mockk.mockk
 import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
+import me.proxer.app.base.mockProxerCallNullableSuccess
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.ProxerNotification
@@ -87,14 +88,7 @@ class NotificationViewModelTest : KoinTest {
         return call
     }
 
-    private fun mockUnitCall(): ProxerCall<Unit?> {
-        val call = mockk<ProxerCall<Unit?>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns Unit
-
-        return call
-    }
+    private fun mockUnitCall(): ProxerCall<Unit?> = mockProxerCallNullableSuccess(Unit)
 
     @Before
     fun setup() {

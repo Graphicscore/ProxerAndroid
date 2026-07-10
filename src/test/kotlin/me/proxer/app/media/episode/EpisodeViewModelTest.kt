@@ -6,12 +6,12 @@ import io.mockk.mockk
 import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
+import me.proxer.app.base.stubNullableSuccess
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi
-import me.proxer.library.ProxerCall
 import me.proxer.library.api.info.EpisodeInfoEndpoint
 import me.proxer.library.api.ucp.SetBookmarkEndpoint
 import me.proxer.library.entity.info.AnimeEpisode
@@ -145,15 +145,11 @@ class EpisodeViewModelTest : KoinTest {
     @Test
     fun `bookmark sets bookmarkData on success`() {
         val bookmarkEndpoint = mockk<SetBookmarkEndpoint>(relaxed = true)
-        val call = mockk<ProxerCall<Unit?>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns Unit
 
         every {
             api.ucp.setBookmark(entryId, 1, MediaLanguage.GERMAN_SUB, Category.ANIME)
         } returns bookmarkEndpoint
-        every { bookmarkEndpoint.build() } returns call
+        bookmarkEndpoint.stubNullableSuccess(Unit)
 
         viewModel.bookmark(1, MediaLanguage.GERMAN_SUB, Category.ANIME)
 
