@@ -7,13 +7,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import me.proxer.app.util.ErrorUtils
+import me.proxer.app.util.data.ResettingMutableLiveData
 import me.proxer.app.util.extension.subscribeAndLogErrors
 
 /**
  * @author Ruben Gees
  */
 abstract class ReportViewModel : ViewModel() {
-    val data = MutableLiveData<Unit?>()
+    val data = ResettingMutableLiveData<Unit?>()
     val error = MutableLiveData<ErrorUtils.ErrorAction?>()
     val isLoading = MutableLiveData<Boolean?>()
 
