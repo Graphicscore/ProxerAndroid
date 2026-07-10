@@ -1,5 +1,6 @@
 package me.proxer.app.base
 
+import androidx.work.WorkManager
 import com.rubengees.rxbus.RxBus
 import io.mockk.mockk
 import me.proxer.app.chat.prv.sync.MessengerDao
@@ -20,4 +21,5 @@ fun fakeAppModule() = module {
     single<MessengerDao> { mockk(relaxed = true) }
     single<OkHttpClient> { mockk(relaxed = true) }
     single<TagDao> { mockk(relaxed = true) }
+    single<WorkManager> { mockk(relaxed = true) }
 }
