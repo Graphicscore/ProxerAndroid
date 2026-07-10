@@ -1,6 +1,8 @@
 package me.proxer.app.util
 
+import io.mockk.every
 import me.proxer.app.R
+import me.proxer.app.base.fakeAppModule
 import me.proxer.app.comment.CommentInvalidProgressException
 import me.proxer.app.comment.CommentTooLongException
 import me.proxer.app.exception.AgeConfirmationRequiredException
@@ -13,149 +15,163 @@ import me.proxer.app.manga.MangaNotAvailableException
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_HIDE
+import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerException
 import me.proxer.library.ProxerException.ErrorType
 import me.proxer.library.ProxerException.ServerErrorType
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Rule
 import org.junit.Test
+import org.koin.test.KoinTest
+import org.koin.test.KoinTestRule
+import org.koin.test.inject
 import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.net.ssl.SSLPeerUnverifiedException
 
-class ErrorUtilsTest {
+class ErrorUtilsTest : KoinTest {
+
+    @get:Rule
+    val koinTestRule = KoinTestRule.create { modules(fakeAppModule()) }
+
+    private val storageHelper: StorageHelper by inject()
 
     // ── getMessage ──────────────────────────────────────────────────────────
 
     @Test fun `IO errorType maps to error_io`() {
         val ex = ProxerException(ErrorType.IO)
-        assertEquals(R.string.error_io, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_io, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `TIMEOUT errorType maps to error_timeout`() {
         val ex = ProxerException(ErrorType.TIMEOUT)
-        assertEquals(R.string.error_timeout, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_timeout, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `PARSING errorType maps to error_parsing`() {
         val ex = ProxerException(ErrorType.PARSING)
-        assertEquals(R.string.error_parsing, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_parsing, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `UNKNOWN errorType maps to error_unknown`() {
         val ex = ProxerException(ErrorType.UNKNOWN)
-        assertEquals(R.string.error_unknown, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_unknown, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `CANCELLED errorType maps to error_unknown`() {
         val ex = ProxerException(ErrorType.CANCELLED)
-        assertEquals(R.string.error_unknown, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_unknown, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `SERVER IP_BLOCKED maps to error_captcha`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.IP_BLOCKED)
-        assertEquals(R.string.error_captcha, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_captcha, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `SERVER RATE_LIMIT maps to error_rate_limit`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.RATE_LIMIT)
-        assertEquals(R.string.error_rate_limit, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_rate_limit, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `SERVER INVALID_TOKEN maps to error_invalid_token`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.INVALID_TOKEN)
-        assertEquals(R.string.error_invalid_token, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_invalid_token, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `SERVER LOGIN_INVALID_CREDENTIALS maps to error_login_credentials`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.LOGIN_INVALID_CREDENTIALS)
-        assertEquals(R.string.error_login_credentials, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_login_credentials, ErrorUtils.getMessage(ex))
     }
 
-    @Test fun `SERVER USER_INSUFFICIENT_PERMISSIONS logged in maps to logged_in variant`() {
+    // ErrorUtils resolves `storageHelper` through a `by safeInject<StorageHelper>()` delegate — a `by lazy`
+    // that binds once per JVM and never re-resolves. Splitting this into two @Test methods would let the
+    // first one's KoinTestRule mock get cached forever, so both login states are asserted here in one test
+    // against that same cached mock instead.
+    @Test fun `SERVER USER_INSUFFICIENT_PERMISSIONS message depends on login state`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.USER_INSUFFICIENT_PERMISSIONS)
-        assertEquals(R.string.error_insufficient_permissions_logged_in, ErrorUtils.getMessage(ex, isLoggedIn = true))
-    }
 
-    @Test fun `SERVER USER_INSUFFICIENT_PERMISSIONS logged out maps to base variant`() {
-        val ex = ProxerException(ErrorType.SERVER, ServerErrorType.USER_INSUFFICIENT_PERMISSIONS)
-        assertEquals(R.string.error_insufficient_permissions, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        every { storageHelper.isLoggedIn } returns true
+        assertEquals(R.string.error_insufficient_permissions_logged_in, ErrorUtils.getMessage(ex))
+
+        every { storageHelper.isLoggedIn } returns false
+        assertEquals(R.string.error_insufficient_permissions, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `SERVER USER_2FA_SECRET_REQUIRED maps to error_login_two_factor_authentication`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.USER_2FA_SECRET_REQUIRED)
-        assertEquals(R.string.error_login_two_factor_authentication, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_login_two_factor_authentication, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `SocketTimeoutException maps to error_timeout`() {
-        assertEquals(R.string.error_timeout, ErrorUtils.getMessage(SocketTimeoutException(), isLoggedIn = false))
+        assertEquals(R.string.error_timeout, ErrorUtils.getMessage(SocketTimeoutException()))
     }
 
     @Test fun `SSLPeerUnverifiedException maps to error_ssl`() {
-        assertEquals(R.string.error_ssl, ErrorUtils.getMessage(SSLPeerUnverifiedException("x"), isLoggedIn = false))
+        assertEquals(R.string.error_ssl, ErrorUtils.getMessage(SSLPeerUnverifiedException("x")))
     }
 
     @Test fun `NotConnectedException maps to error_no_network`() {
-        assertEquals(R.string.error_no_network, ErrorUtils.getMessage(NotConnectedException(), isLoggedIn = false))
+        assertEquals(R.string.error_no_network, ErrorUtils.getMessage(NotConnectedException()))
     }
 
     @Test fun `IOException maps to error_io`() {
-        assertEquals(R.string.error_io, ErrorUtils.getMessage(IOException("test"), isLoggedIn = false))
+        assertEquals(R.string.error_io, ErrorUtils.getMessage(IOException("test")))
     }
 
     @Test fun `NotLoggedInException maps to error_login_required`() {
-        assertEquals(R.string.error_login_required, ErrorUtils.getMessage(NotLoggedInException(), isLoggedIn = false))
+        assertEquals(R.string.error_login_required, ErrorUtils.getMessage(NotLoggedInException()))
     }
 
     @Test fun `AgeConfirmationRequiredException maps to error_age_confirmation_needed`() {
         assertEquals(
             R.string.error_age_confirmation_needed,
-            ErrorUtils.getMessage(AgeConfirmationRequiredException(), isLoggedIn = false),
+            ErrorUtils.getMessage(AgeConfirmationRequiredException()),
         )
     }
 
     @Test fun `StreamResolutionException maps to error_stream_resolution`() {
         assertEquals(
             R.string.error_stream_resolution,
-            ErrorUtils.getMessage(StreamResolutionException(), isLoggedIn = false),
+            ErrorUtils.getMessage(StreamResolutionException()),
         )
     }
 
     @Test fun `MangaNotAvailableException maps to error_manga_not_available`() {
         assertEquals(
             R.string.error_manga_not_available,
-            ErrorUtils.getMessage(MangaNotAvailableException(), isLoggedIn = false),
+            ErrorUtils.getMessage(MangaNotAvailableException()),
         )
     }
 
     @Test fun `CommentTooLongException maps to error_comment_too_long`() {
         assertEquals(
             R.string.error_comment_too_long,
-            ErrorUtils.getMessage(CommentTooLongException(), isLoggedIn = false),
+            ErrorUtils.getMessage(CommentTooLongException()),
         )
     }
 
     @Test fun `CommentInvalidProgressException maps to error_comment_invalid_progress`() {
         assertEquals(
             R.string.error_comment_invalid_progress,
-            ErrorUtils.getMessage(CommentInvalidProgressException(), isLoggedIn = false),
+            ErrorUtils.getMessage(CommentInvalidProgressException()),
         )
     }
 
     @Test fun `MangaLinkException maps to error_manga_link`() {
         val ex = MangaLinkException("Chapter 1", "https://example.com/manga".toHttpUrl())
-        assertEquals(R.string.error_manga_link, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_manga_link, ErrorUtils.getMessage(ex))
     }
 
     @Test fun `unknown exception maps to error_unknown`() {
-        assertEquals(R.string.error_unknown, ErrorUtils.getMessage(RuntimeException("unexpected"), isLoggedIn = false))
+        assertEquals(R.string.error_unknown, ErrorUtils.getMessage(RuntimeException("unexpected")))
     }
 
     @Test fun `PartialException unwraps to inner error message`() {
         val inner = NotLoggedInException()
         val ex = PartialException(inner, "some partial data")
-        assertEquals(R.string.error_login_required, ErrorUtils.getMessage(ex, isLoggedIn = false))
+        assertEquals(R.string.error_login_required, ErrorUtils.getMessage(ex))
     }
 
     // ── handle ──────────────────────────────────────────────────────────────
