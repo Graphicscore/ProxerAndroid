@@ -7,6 +7,8 @@ import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.mockProxerCallNullableSuccess
+import me.proxer.app.exception.NotLoggedInException
+import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.ProxerNotification
@@ -45,6 +47,7 @@ class NotificationViewModelTest : KoinTest {
     private val api: ProxerApi by inject()
     private val storageHelper: StorageHelper by inject()
     private val preferenceHelper: PreferenceHelper by inject()
+    private val validators: Validators by inject()
 
     private lateinit var viewModel: NotificationViewModel
 
@@ -90,6 +93,15 @@ class NotificationViewModelTest : KoinTest {
 
     private fun mockUnitCall(): ProxerCall<Unit?> = mockProxerCallNullableSuccess(Unit)
 
+    private fun mockErrorUnitCall(): ProxerCall<Unit?> {
+        val call = mockk<ProxerCall<Unit?>>(relaxed = true)
+
+        every { call.clone() } returns call
+        every { call.execute() } throws ProxerException(ProxerException.ErrorType.IO)
+
+        return call
+    }
+
     @Before
     fun setup() {
         every { storageHelper.isLoggedInObservable } returns Observable.never()
@@ -116,6 +128,16 @@ class NotificationViewModelTest : KoinTest {
     fun `load sets error when the unread call fails`() {
         val endpoint = mockNotificationsEndpoint()
         every { endpoint.build() } returns mockErrorCall()
+
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertNotNull(viewModel.error.value)
+    }
+
+    @Test
+    fun `load sets login-required error when validators rejects a logged-out user`() {
+        every { validators.validateLogin() } throws NotLoggedInException()
 
         viewModel.load()
 
@@ -214,7 +236,7 @@ class NotificationViewModelTest : KoinTest {
     }
 
     @Test
-    fun `deleteAll clears data on success and sets deletionError on failure`() {
+    fun `deleteAll clears data on success`() {
         every { api.notifications.deleteAllNotifications() } returns mockk(relaxed = true) {
             every { build() } returns mockUnitCall()
         }
@@ -222,6 +244,18 @@ class NotificationViewModelTest : KoinTest {
         viewModel.deleteAll()
 
         assertEquals(emptyList<ProxerNotification>(), viewModel.data.value)
+        assertNull(viewModel.deletionError.value)
+    }
+
+    @Test
+    fun `deleteAll sets deletionError on failure`() {
+        every { api.notifications.deleteAllNotifications() } returns mockk(relaxed = true) {
+            every { build() } returns mockErrorUnitCall()
+        }
+
+        viewModel.deleteAll()
+
+        assertNotNull(viewModel.deletionError.value)
     }
 
     @Test
