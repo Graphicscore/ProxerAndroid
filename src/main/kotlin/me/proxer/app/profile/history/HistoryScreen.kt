@@ -2,6 +2,7 @@ package me.proxer.app.profile.history
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
@@ -14,22 +15,32 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
+import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
@@ -54,6 +65,7 @@ fun HistoryScreen(userId: String?, username: String?) {
         data = data,
         error = error,
         isLoading = isLoading == true,
+        refreshError = viewModel.refreshError,
         onRetry = { viewModel.load() },
         onLoadMore = { viewModel.loadIfPossible() },
     )
@@ -64,10 +76,14 @@ private fun HistoryContent(
     data: List<LocalUserHistoryEntry>?,
     error: ErrorAction?,
     isLoading: Boolean,
+    refreshError: LiveData<ErrorAction?>,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(gridState.layoutInfo) {
         val total = gridState.layoutInfo.totalItemsCount
@@ -75,23 +91,37 @@ private fun HistoryContent(
         if (total > 0 && last >= total - 5) onLoadMore()
     }
 
-    ContentScreen(
-        isLoading = isLoading && data.isNullOrEmpty(),
-        error = if (data.isNullOrEmpty()) error else null,
-        onRetry = onRetry,
-    ) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            state = gridState,
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxSize(),
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        ContentScreen(
+            isLoading = isLoading && data.isNullOrEmpty(),
+            error = if (data.isNullOrEmpty()) error else null,
+            onRetry = onRetry,
         ) {
-            items(data ?: emptyList(), key = { it.id }) { entry ->
-                HistoryCard(entry = entry)
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                state = gridState,
+                contentPadding = PaddingValues(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items(data ?: emptyList(), key = { it.id }) { entry ->
+                    HistoryCard(entry = entry)
+                }
             }
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -179,6 +209,7 @@ private fun HistoryContentPreview() {
             data = null,
             error = null,
             isLoading = true,
+            refreshError = MutableLiveData(null),
             onRetry = {},
             onLoadMore = {},
         )
