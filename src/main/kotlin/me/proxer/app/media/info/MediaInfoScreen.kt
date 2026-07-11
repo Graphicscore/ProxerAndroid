@@ -33,16 +33,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.media.MediaInfoViewModel
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAppString
@@ -66,16 +71,14 @@ fun MediaInfoScreen(id: String) {
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val userInfo by viewModel.userInfoData.observeAsState()
-    val updateResult by viewModel.userInfoUpdateData.observeAsState()
-    val updateError by viewModel.userInfoUpdateError.observeAsState()
 
     MediaInfoContent(
         data = data,
         error = error,
         isLoading = isLoading == true,
         userInfo = userInfo,
-        updateResult = updateResult,
-        updateError = updateError,
+        updateResult = viewModel.userInfoUpdateData,
+        updateError = viewModel.userInfoUpdateError,
         onRetry = { viewModel.load() },
         onNote = { viewModel.note() },
         onFavorite = { viewModel.toggleFavorite() },
@@ -91,8 +94,8 @@ private fun MediaInfoContent(
     error: ErrorAction?,
     isLoading: Boolean,
     userInfo: MediaUserInfo?,
-    updateResult: Unit?,
-    updateError: ErrorAction?,
+    updateResult: LiveData<Unit?>,
+    updateError: LiveData<ErrorAction?>,
     onRetry: () -> Unit,
     onNote: () -> Unit,
     onFavorite: () -> Unit,
@@ -102,15 +105,14 @@ private fun MediaInfoContent(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(updateResult) {
-        if (updateResult != null) {
-            snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success))
-        }
+    val scope = rememberCoroutineScope()
+
+    ObserveLiveDataEvent(updateResult) {
+        scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success)) }
     }
 
-    LaunchedEffect(updateError) {
-        val err = updateError
-        if (err != null) {
+    ObserveLiveDataEvent(updateError) { err ->
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_set_user_info, context.getString(err.message)),
             )
@@ -409,8 +411,8 @@ private fun MediaInfoContentPreview() {
             error = null,
             isLoading = true,
             userInfo = null,
-            updateResult = null,
-            updateError = null,
+            updateResult = MutableLiveData(null),
+            updateError = MutableLiveData(null),
             onRetry = {},
             onNote = {},
             onFavorite = {},
