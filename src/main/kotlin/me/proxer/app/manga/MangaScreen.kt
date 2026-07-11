@@ -70,6 +70,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.DeviceUtils
 import me.proxer.app.util.ErrorUtils.ErrorAction
@@ -121,20 +122,14 @@ fun MangaScreen(
     val scope = rememberCoroutineScope()
     val lowMemoryMessage = stringResource(R.string.fragment_manga_low_memory)
 
-    val userStateSaved by viewModel.userStateData.observeAsState()
-    val userStateErr by viewModel.userStateError.observeAsState()
-
     LaunchedEffect(Unit) { viewModel.load() }
 
-    LaunchedEffect(userStateSaved) {
-        if (userStateSaved != null) {
-            snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success))
-        }
+    ObserveLiveDataEvent(viewModel.userStateData) {
+        scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success)) }
     }
 
-    LaunchedEffect(userStateErr) {
-        val err = userStateErr
-        if (err != null) {
+    ObserveLiveDataEvent(viewModel.userStateError) { err ->
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_set_user_info, context.getString(err.message)),
             )
