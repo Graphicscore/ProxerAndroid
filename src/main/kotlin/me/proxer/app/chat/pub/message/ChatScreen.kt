@@ -54,13 +54,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.chat.pub.room.info.ChatRoomInfoActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils
@@ -112,6 +112,7 @@ fun ChatScreen(
         error = error,
         isLoading = isLoading,
         sendMessageError = viewModel.sendMessageError,
+        refreshError = viewModel.refreshError,
         reportData = reportViewModel.data,
         reportError = reportError,
         reportIsLoading = reportIsLoading,
@@ -135,6 +136,7 @@ private fun ChatScreenContent(
     error: ErrorUtils.ErrorAction?,
     isLoading: Boolean?,
     sendMessageError: LiveData<ErrorUtils.ErrorAction?>,
+    refreshError: LiveData<ErrorUtils.ErrorAction?>,
     reportData: LiveData<Unit?>,
     reportError: ErrorUtils.ErrorAction?,
     reportIsLoading: Boolean?,
@@ -150,7 +152,6 @@ private fun ChatScreenContent(
     onRetry: () -> Unit,
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     var messageText by rememberSaveable { mutableStateOf("") }
@@ -160,36 +161,26 @@ private fun ChatScreenContent(
 
     val inputEnabled = !chatRoomIsReadOnly && isLoggedIn && !messages.isNullOrEmpty()
 
-    // sendMessageError/reportData are ResettingMutableLiveData - each real failure/success is a
-    // one-shot event, not a piece of continuous state. observeAsState()+LaunchedEffect(value) would
-    // silently miss every event after the first structurally-equal one (e.g. two offline sends produce
-    // the same ErrorAction, and Unit==Unit always), since Compose's default structural-equality state
-    // policy skips recomposition when the "new" value equals the current one. A raw Observer bypasses
-    // that: ResettingMutableLiveData already fires onChanged exactly once per genuine event.
-    DisposableEffect(lifecycleOwner, sendMessageError) {
-        val observer = Observer<ErrorUtils.ErrorAction?> { err ->
-            if (err != null) {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        context.getString(R.string.error_chat_send_message, context.getString(err.message)),
-                    )
-                }
-            }
+    ObserveLiveDataEvent(sendMessageError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_chat_send_message, context.getString(err!!.message)),
+            )
         }
-        sendMessageError.observe(lifecycleOwner, observer)
-        onDispose { sendMessageError.removeObserver(observer) }
     }
 
-    DisposableEffect(lifecycleOwner, reportData) {
-        val observer = Observer<Unit?> { value ->
-            if (value != null) {
-                reportTarget = null
-                reportReason = ""
-                selectedIds = emptySet()
-            }
+    ObserveLiveDataEvent(reportData) {
+        reportTarget = null
+        reportReason = ""
+        selectedIds = emptySet()
+    }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err!!.message)),
+            )
         }
-        reportData.observe(lifecycleOwner, observer)
-        onDispose { reportData.removeObserver(observer) }
     }
 
     if (reportTarget != null) {
@@ -375,6 +366,7 @@ private fun ChatScreenContentPreview() {
             error = null,
             isLoading = true,
             sendMessageError = MutableLiveData(null),
+            refreshError = MutableLiveData(null),
             reportData = MutableLiveData(null),
             reportError = null,
             reportIsLoading = null,
