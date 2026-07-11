@@ -52,7 +52,9 @@ class MainActivity : BaseActivity() {
             ActivityCompat.requestPermissions(this, arrayOf(WRITE_EXTERNAL_STORAGE), 1)
         }
 
-        val shouldIntroduce = preferenceHelper.launches <= 0 && intent.action == Intent.ACTION_MAIN
+        val shouldIntroduce = savedInstanceState == null &&
+            preferenceHelper.launches <= 0 &&
+            intent.action == Intent.ACTION_MAIN
         if (shouldIntroduce) {
             preferenceHelper.incrementLaunches()
             IntroductionWrapper.introduce(this)
