@@ -8,6 +8,7 @@ import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.base.mockProxerCallNullableSuccess
 import me.proxer.app.exception.NotLoggedInException
+import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
@@ -142,7 +143,7 @@ class NotificationViewModelTest : KoinTest {
         viewModel.load()
 
         assertNull(viewModel.data.value)
-        assertNotNull(viewModel.error.value)
+        assertEquals(ButtonAction.LOGIN, viewModel.error.value?.buttonAction)
     }
 
     @Test

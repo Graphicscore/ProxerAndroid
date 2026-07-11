@@ -5,6 +5,7 @@ import io.mockk.every
 import io.reactivex.Observable
 import io.reactivex.Single
 import me.proxer.app.exception.NotLoggedInException
+import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
@@ -138,7 +139,7 @@ class BaseViewModelTest : KoinTest {
         viewModel.load()
 
         assertNull(viewModel.data.value)
-        assertNotNull(viewModel.error.value)
+        assertEquals(ButtonAction.LOGIN, viewModel.error.value?.buttonAction)
     }
 
     // Inner fake ViewModel — override dataSingle via var so tests can control responses.
