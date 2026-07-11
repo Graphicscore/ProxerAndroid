@@ -40,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -52,19 +51,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAnimeLanguage
@@ -178,7 +176,6 @@ private fun BookmarkContent(
     onBookmarkClick: (Bookmark) -> Unit,
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -194,50 +191,32 @@ private fun BookmarkContent(
     // observeAsState()+LaunchedEffect(value) would silently miss every event after the first
     // structurally-equal one (Unit==Unit always; two identical ErrorActions from repeated offline
     // swipes), since Compose's default state-equality policy skips recomposition when the "new"
-    // value equals the current one. A raw Observer bypasses that.
-    DisposableEffect(lifecycleOwner, itemDeletionError) {
-        val observer = Observer<ErrorAction?> { err ->
-            if (err != null) {
-                onDeletionFailed()
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        context.getString(R.string.error_bookmark_deletion, context.getString(err.message)),
-                    )
-                }
-            }
+    // value equals the current one. ObserveLiveDataEvent bypasses that.
+    ObserveLiveDataEvent(itemDeletionError) { err ->
+        onDeletionFailed()
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_bookmark_deletion, context.getString(err.message)),
+            )
         }
-        itemDeletionError.observe(lifecycleOwner, observer)
-        onDispose { itemDeletionError.removeObserver(observer) }
     }
 
-    DisposableEffect(lifecycleOwner, undoData) {
-        val observer = Observer<Unit?> { value ->
-            if (value != null) {
-                scope.launch {
-                    val result = snackbarHostState.showSnackbar(
-                        message = context.getString(R.string.fragment_bookmark_delete_message),
-                        actionLabel = context.getString(R.string.action_undo),
-                    )
-                    if (result == SnackbarResult.ActionPerformed) onUndo()
-                }
-            }
+    ObserveLiveDataEvent(undoData) {
+        scope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = context.getString(R.string.fragment_bookmark_delete_message),
+                actionLabel = context.getString(R.string.action_undo),
+            )
+            if (result == SnackbarResult.ActionPerformed) onUndo()
         }
-        undoData.observe(lifecycleOwner, observer)
-        onDispose { undoData.removeObserver(observer) }
     }
 
-    DisposableEffect(lifecycleOwner, undoError) {
-        val observer = Observer<ErrorAction?> { err ->
-            if (err != null) {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        context.getString(R.string.error_undo, context.getString(err.message)),
-                    )
-                }
-            }
+    ObserveLiveDataEvent(undoError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_undo, context.getString(err.message)),
+            )
         }
-        undoError.observe(lifecycleOwner, observer)
-        onDispose { undoError.removeObserver(observer) }
     }
 
     Scaffold(
