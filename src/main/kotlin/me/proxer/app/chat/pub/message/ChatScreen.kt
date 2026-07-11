@@ -164,7 +164,7 @@ private fun ChatScreenContent(
     ObserveLiveDataEvent(sendMessageError) { err ->
         scope.launch {
             snackbarHostState.showSnackbar(
-                context.getString(R.string.error_chat_send_message, context.getString(err!!.message)),
+                context.getString(R.string.error_chat_send_message, context.getString(err.message)),
             )
         }
     }
@@ -178,7 +178,7 @@ private fun ChatScreenContent(
     ObserveLiveDataEvent(refreshError) { err ->
         scope.launch {
             snackbarHostState.showSnackbar(
-                context.getString(R.string.error_refresh, context.getString(err!!.message)),
+                context.getString(R.string.error_refresh, context.getString(err.message)),
             )
         }
     }

@@ -15,7 +15,7 @@ import androidx.lifecycle.Observer
  * one - a raw Observer fires once per genuine LiveData delivery regardless.
  */
 @Composable
-fun <T> ObserveLiveDataEvent(liveData: LiveData<T>, onEvent: (T) -> Unit) {
+fun <T> ObserveLiveDataEvent(liveData: LiveData<T>, onEvent: (T & Any) -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, liveData) {
         val observer = Observer<T> { value -> if (value != null) onEvent(value) }
