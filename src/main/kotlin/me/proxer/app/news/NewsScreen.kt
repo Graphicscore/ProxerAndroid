@@ -24,12 +24,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -38,10 +42,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.forum.TopicActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
@@ -74,6 +82,7 @@ fun NewsScreen(onOpenDrawer: () -> Unit = {}) {
                 TopicActivity.navigateTo(it, article.threadId, article.categoryId, article.subject)
             }
         },
+        refreshError = viewModel.refreshError,
     )
 }
 
@@ -82,6 +91,7 @@ fun NewsScreen(onOpenDrawer: () -> Unit = {}) {
 private fun NewsContent(
     data: List<NewsArticle>?,
     error: ErrorAction?,
+    refreshError: LiveData<ErrorAction?>,
     isLoading: Boolean,
     onOpenDrawer: () -> Unit,
     onRetry: () -> Unit,
@@ -90,6 +100,17 @@ private fun NewsContent(
     onArticleClick: (NewsArticle) -> Unit,
 ) {
     val listState = rememberLazyListState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
+    }
 
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
@@ -98,6 +119,7 @@ private fun NewsContent(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.section_news)) },
@@ -205,6 +227,7 @@ private fun NewsContentPreview() {
         NewsContent(
             data = null,
             error = null,
+            refreshError = MutableLiveData(null),
             isLoading = true,
             onOpenDrawer = {},
             onRetry = {},
