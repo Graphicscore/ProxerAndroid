@@ -23,7 +23,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -33,19 +32,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAppString
@@ -73,6 +71,7 @@ fun ProfileMediaListScreen(userId: String?, username: String?, category: Categor
         error = error,
         isLoading = isLoading == true,
         itemDeletionError = viewModel.itemDeletionError,
+        refreshError = viewModel.refreshError,
         onRetry = { viewModel.load() },
         onLoadMore = { viewModel.loadIfPossible() },
         onDelete = { viewModel.addItemToDelete(it) },
@@ -85,12 +84,12 @@ private fun ProfileMediaListContent(
     error: ErrorAction?,
     isLoading: Boolean,
     itemDeletionError: LiveData<ErrorAction?>,
+    refreshError: LiveData<ErrorAction?>,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
     onDelete: (LocalUserMediaListEntry) -> Unit,
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val gridState = rememberLazyGridState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -101,22 +100,20 @@ private fun ProfileMediaListContent(
         if (total > 0 && last >= total - 5) onLoadMore()
     }
 
-    // itemDeletionError is a ResettingMutableLiveData - each failure is a one-shot event, not
-    // continuous state. observeAsState()+LaunchedEffect(value) would silently miss every failure
-    // after the first structurally-equal one, since Compose's default state-equality policy skips
-    // recomposition when the "new" value equals the current one. A raw Observer bypasses that.
-    DisposableEffect(lifecycleOwner, itemDeletionError) {
-        val observer = Observer<ErrorAction?> { err ->
-            if (err != null) {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        context.getString(R.string.error_profile_media_list_deletion, context.getString(err.message)),
-                    )
-                }
-            }
+    ObserveLiveDataEvent(itemDeletionError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_profile_media_list_deletion, context.getString(err.message)),
+            )
         }
-        itemDeletionError.observe(lifecycleOwner, observer)
-        onDispose { itemDeletionError.removeObserver(observer) }
+    }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -208,6 +205,7 @@ private fun ProfileMediaListContentPreview() {
             error = null,
             isLoading = true,
             itemDeletionError = MutableLiveData(null),
+            refreshError = MutableLiveData(null),
             onRetry = {},
             onLoadMore = {},
             onDelete = {},
