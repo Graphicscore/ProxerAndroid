@@ -1,7 +1,6 @@
 package me.proxer.app.info.industry
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.DrawableRes
@@ -68,7 +67,7 @@ import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
-import me.proxer.app.util.extension.toast
+import me.proxer.app.util.extension.startActivityOrToast
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toCategory
 import me.proxer.library.entity.info.Industry
@@ -279,11 +278,7 @@ private fun IndustryInfoBody(data: Industry) {
                     modifier = Modifier
                         .weight(0.6f)
                         .clickable {
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(linkText)))
-                            } catch (_: ActivityNotFoundException) {
-                                context.toast(R.string.error_open_link_no_activity)
-                            }
+                            context.startActivityOrToast(Intent(Intent.ACTION_VIEW, Uri.parse(linkText)))
                         },
                 )
             }
