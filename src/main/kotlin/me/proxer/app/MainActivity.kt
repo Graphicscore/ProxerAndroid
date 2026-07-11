@@ -59,7 +59,7 @@ class MainActivity : BaseActivity() {
             return
         }
 
-        if (intent.action == Intent.ACTION_MAIN) {
+        if (savedInstanceState == null && intent.action == Intent.ACTION_MAIN) {
             preferenceHelper.incrementLaunches()
         }
 
