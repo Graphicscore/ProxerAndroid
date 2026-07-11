@@ -30,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,10 +38,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAnimeLanguage
@@ -58,8 +63,6 @@ fun EpisodeScreen(mediaId: String, mediaName: String? = null) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val bookmarkResult by viewModel.bookmarkData.observeAsState()
-    val bookmarkError by viewModel.bookmarkError.observeAsState()
 
     LaunchedEffect(Unit) { viewModel.load() }
 
@@ -69,8 +72,8 @@ fun EpisodeScreen(mediaId: String, mediaName: String? = null) {
         isLoading = isLoading == true,
         mediaId = mediaId,
         mediaName = mediaName,
-        bookmarkResult = bookmarkResult,
-        bookmarkError = bookmarkError,
+        bookmarkResult = viewModel.bookmarkData,
+        bookmarkError = viewModel.bookmarkError,
         onRetry = { viewModel.load() },
         onBookmark = { number, language, category -> viewModel.bookmark(number, language, category) },
     )
@@ -83,24 +86,22 @@ private fun EpisodeContent(
     isLoading: Boolean,
     mediaId: String,
     mediaName: String?,
-    bookmarkResult: Unit?,
-    bookmarkError: ErrorAction?,
+    bookmarkResult: LiveData<Unit?>,
+    bookmarkError: LiveData<ErrorAction?>,
     onRetry: () -> Unit,
     onBookmark: (Int, MediaLanguage, Category) -> Unit,
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var bookmarkEpisode by remember { mutableStateOf<EpisodeRow?>(null) }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(bookmarkResult) {
-        if (bookmarkResult != null) {
-            snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success))
-        }
+    ObserveLiveDataEvent(bookmarkResult) {
+        scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success)) }
     }
 
-    LaunchedEffect(bookmarkError) {
-        val err = bookmarkError
-        if (err != null) {
+    ObserveLiveDataEvent(bookmarkError) { err ->
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_set_user_info, context.getString(err.message)),
             )
@@ -254,8 +255,8 @@ private fun EpisodeContentPreview() {
             isLoading = true,
             mediaId = "1",
             mediaName = null,
-            bookmarkResult = null,
-            bookmarkError = null,
+            bookmarkResult = MutableLiveData(null),
+            bookmarkError = MutableLiveData(null),
             onRetry = {},
             onBookmark = { _, _, _ -> },
         )
