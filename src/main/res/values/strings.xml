@@ -895,6 +895,7 @@
     <string name="about_developer_title">Entwickler</string>
     <string name="about_developer_github_title">GitHub</string>
     <string name="about_error_mail_no_activity">Es ist keine E-Mail App installiert</string>
+    <string name="error_open_link_no_activity">Der Link konnte nicht geöffnet werden</string>
 
     <string name="introduction_welcome_title">Willkommen!</string>
     <string name="introduction_welcome_description">Ein paar Einstellungen und es geht los</string>
