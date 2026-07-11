@@ -25,6 +25,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -34,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -43,12 +46,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.chat.prv.LocalMessage
 import me.proxer.app.chat.prv.conference.info.ConferenceInfoActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils
@@ -75,7 +82,8 @@ fun MessengerScreen(
     val isLoading by viewModel.isLoading.observeAsState()
     val currentConference by viewModel.conference.observeAsState(initial = conference)
     val deleted by viewModel.deleted.observeAsState()
-    val draft by viewModel.draft.observeAsState()
+    val reportError by reportViewModel.error.observeAsState()
+    val reportIsLoading by reportViewModel.isLoading.observeAsState()
 
     LaunchedEffect(Unit) {
         viewModel.load()
@@ -92,7 +100,11 @@ fun MessengerScreen(
         isLoading = isLoading,
         conference = currentConference,
         myUserId = storageHelper.user?.id,
-        draft = draft,
+        draft = viewModel.draft,
+        refreshError = viewModel.refreshError,
+        reportData = reportViewModel.data,
+        reportError = reportError,
+        reportIsLoading = reportIsLoading,
         initialMessage = initialMessage,
         onBack = onBack,
         onSend = { viewModel.sendMessage(it) },
@@ -110,7 +122,11 @@ private fun MessengerContent(
     isLoading: Boolean?,
     conference: LocalConference,
     myUserId: String?,
-    draft: String?,
+    draft: LiveData<String?>,
+    refreshError: LiveData<ErrorUtils.ErrorAction?>,
+    reportData: LiveData<Unit?>,
+    reportError: ErrorUtils.ErrorAction?,
+    reportIsLoading: Boolean?,
     initialMessage: String?,
     onBack: () -> Unit,
     onSend: (String) -> Unit,
@@ -119,44 +135,71 @@ private fun MessengerContent(
     onRetry: () -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     var messageText by rememberSaveable { mutableStateOf(initialMessage ?: "") }
     var selectedIds by remember { mutableStateOf(emptySet<Long>()) }
-    var showReportDialog by remember { mutableStateOf(false) }
+    var reportTarget by remember { mutableStateOf<LocalConference?>(null) }
     var reportReason by remember { mutableStateOf("") }
 
-    LaunchedEffect(draft) {
-        if (draft != null && messageText.isBlank()) messageText = draft ?: ""
+    ObserveLiveDataEvent(draft) {
+        if (messageText.isBlank()) messageText = it ?: ""
     }
 
-    if (showReportDialog) {
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
+    }
+
+    // reportData is a ResettingMutableLiveData - a one-shot success event, not continuous state.
+    // observeAsState()+LaunchedEffect(value) would silently miss every event after the first
+    // structurally-equal one (Unit == Unit always), since Compose's default state-equality policy
+    // skips recomposition when the "new" value equals the current one. Only dismiss the dialog on
+    // confirmed success, not eagerly on click - mirrors ChatScreen.kt's report-dialog handling.
+    ObserveLiveDataEvent(reportData) {
+        reportTarget = null
+        reportReason = ""
+        selectedIds = emptySet()
+    }
+
+    if (reportTarget != null) {
         AlertDialog(
             onDismissRequest = {
-                showReportDialog = false
+                reportTarget = null
                 reportReason = ""
             },
             title = { Text(stringResource(R.string.dialog_chat_report_title)) },
             text = {
-                OutlinedTextField(
-                    value = reportReason,
-                    onValueChange = { reportReason = it },
-                    label = { Text(stringResource(R.string.dialog_chat_report_message_hint)) },
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column {
+                    OutlinedTextField(
+                        value = reportReason,
+                        onValueChange = { reportReason = it },
+                        label = { Text(stringResource(R.string.dialog_chat_report_message_hint)) },
+                        enabled = reportIsLoading != true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    reportError?.let { err ->
+                        Text(
+                            text = stringResource(err.message),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
             },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        onReport(reportReason)
-                        showReportDialog = false
-                        reportReason = ""
-                        selectedIds = emptySet()
-                    },
+                    onClick = { onReport(reportReason) },
+                    enabled = reportIsLoading != true,
                 ) {
                     Text(stringResource(R.string.dialog_chat_report_positive))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showReportDialog = false; reportReason = "" }) {
+                TextButton(onClick = { reportTarget = null; reportReason = "" }) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
@@ -164,6 +207,7 @@ private fun MessengerContent(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             if (selectedIds.isEmpty()) {
                 TopAppBar(
@@ -208,7 +252,7 @@ private fun MessengerContent(
                     actions = {
                         IconButton(
                             onClick = {
-                                showReportDialog = true
+                                reportTarget = conference
                                 reportReason = ""
                             },
                         ) {
@@ -319,7 +363,11 @@ private fun MessengerContentPreview() {
             isLoading = true,
             conference = conf,
             myUserId = null,
-            draft = null,
+            draft = MutableLiveData(null),
+            refreshError = MutableLiveData(null),
+            reportData = MutableLiveData(null),
+            reportError = null,
+            reportIsLoading = null,
             initialMessage = null,
             onBack = {},
             onSend = {},
