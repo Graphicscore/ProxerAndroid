@@ -23,20 +23,24 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import me.proxer.app.R
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.enums.UcpSettingConstraint
@@ -48,13 +52,11 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
     val viewModel = koinViewModel<ProfileSettingsViewModel>()
 
     val settings by viewModel.data.observeAsState()
-    val error by viewModel.error.observeAsState()
-    val updateError by viewModel.updateError.observeAsState()
 
     ProfileSettingsContent(
         settings = settings,
-        error = error,
-        updateError = updateError,
+        error = viewModel.error,
+        updateError = viewModel.updateError,
         onBack = onBack,
         onUpdate = { viewModel.update(it) },
     )
@@ -64,17 +66,18 @@ fun ProfileSettingsScreen(onBack: () -> Unit = {}) {
 @Composable
 private fun ProfileSettingsContent(
     settings: LocalProfileSettings?,
-    error: ErrorAction?,
-    updateError: ErrorAction?,
+    error: LiveData<ErrorAction>,
+    updateError: LiveData<ErrorAction>,
     onBack: () -> Unit,
     onUpdate: (LocalProfileSettings) -> Unit,
 ) {
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     // Show load error as snackbar
-    LaunchedEffect(error) {
-        error?.let {
+    ObserveLiveDataEvent(error) {
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_refresh, context.getString(it.message)),
             )
@@ -82,8 +85,8 @@ private fun ProfileSettingsContent(
     }
 
     // Show update error as snackbar
-    LaunchedEffect(updateError) {
-        updateError?.let {
+    ObserveLiveDataEvent(updateError) {
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_set_user_info, context.getString(it.message)),
             )
@@ -547,8 +550,8 @@ private fun ProfileSettingsScreenPreview() {
     ProxerTheme {
         ProfileSettingsContent(
             settings = LocalProfileSettings.default(),
-            error = null,
-            updateError = null,
+            error = MutableLiveData(),
+            updateError = MutableLiveData(),
             onBack = {},
             onUpdate = {},
         )
