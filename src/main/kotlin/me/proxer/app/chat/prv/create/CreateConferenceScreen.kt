@@ -29,7 +29,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
@@ -44,10 +43,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import me.proxer.app.R
-import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.chat.prv.Participant
 import me.proxer.app.chat.prv.PrvMessengerActivity
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils
 import org.koin.androidx.compose.koinViewModel
@@ -61,23 +62,18 @@ fun CreateConferenceScreen(
 ) {
     val viewModel = koinViewModel<CreateConferenceViewModel>()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val result by viewModel.result.observeAsState()
-    val error by viewModel.error.observeAsState()
     val context = LocalContext.current
 
-    LaunchedEffect(result) {
-        val conf: LocalConference? = result
-        if (conf != null) {
-            val activity = context as? Activity ?: return@LaunchedEffect
-            activity.finish()
-            PrvMessengerActivity.navigateTo(activity, conf)
-        }
+    ObserveLiveDataEvent(viewModel.result) { conf ->
+        val activity = context as? Activity ?: return@ObserveLiveDataEvent
+        activity.finish()
+        PrvMessengerActivity.navigateTo(activity, conf)
     }
 
     CreateConferenceContent(
         isGroup = isGroup,
         isLoading = isLoading,
-        error = error,
+        error = viewModel.error,
         initialParticipant = initialParticipant,
         onCreateChat = { message, participant -> viewModel.createChat(message, participant) },
         onCreateGroup = { topic, message, participants -> viewModel.createGroup(topic, message, participants) },
@@ -90,7 +86,7 @@ fun CreateConferenceScreen(
 private fun CreateConferenceContent(
     isGroup: Boolean,
     isLoading: Boolean,
-    error: ErrorUtils.ErrorAction?,
+    error: LiveData<ErrorUtils.ErrorAction>,
     initialParticipant: Participant?,
     onCreateChat: (message: String, participant: Participant) -> Unit,
     onCreateGroup: (topic: String, message: String, participants: List<Participant>) -> Unit,
@@ -113,8 +109,8 @@ private fun CreateConferenceContent(
     var topicError by remember { mutableStateOf<String?>(null) }
     var participantError by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(error) {
-        error?.let { snackbarHostState.showSnackbar(context.getString(it.message)) }
+    ObserveLiveDataEvent(error) {
+        scope.launch { snackbarHostState.showSnackbar(context.getString(it.message)) }
     }
 
     Scaffold(
@@ -272,7 +268,7 @@ private fun CreateConferenceContentPreview() {
         CreateConferenceContent(
             isGroup = false,
             isLoading = false,
-            error = null,
+            error = MutableLiveData(),
             initialParticipant = null,
             onCreateChat = { _, _ -> },
             onCreateGroup = { _, _, _ -> },
