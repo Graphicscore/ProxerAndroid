@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,9 +43,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.text.parseAsHtml
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.ProxerNotification
@@ -58,9 +61,9 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState()
-    val deletionError by viewModel.deletionError.observeAsState()
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var showDeleteAllDialog by remember { mutableStateOf(false) }
     val dismissedIds = remember { mutableStateOf(emptySet<String>()) }
     val displayedData = (data ?: emptyList()).filterNot { it.id in dismissedIds.value }
@@ -69,10 +72,18 @@ fun NotificationScreen(onBack: () -> Unit = {}) {
         viewModel.load()
         AccountNotifications.cancel(context)
     }
-    LaunchedEffect(deletionError) {
-        deletionError?.let { errorAction ->
+    ObserveLiveDataEvent(viewModel.deletionError) { errorAction ->
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_notification_deletion, context.getString(errorAction.message)),
+            )
+        }
+    }
+
+    ObserveLiveDataEvent(viewModel.refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
             )
         }
     }
