@@ -7,14 +7,10 @@ import io.reactivex.Observable
 import me.proxer.app.auth.LocalUser
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
-import me.proxer.app.base.mockProxerCallError
 import me.proxer.app.base.mockProxerCallNullableError
 import me.proxer.app.base.mockProxerCallNullableSuccess
-import me.proxer.app.base.mockProxerCallSuccess
-import me.proxer.app.base.stubError
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
-import me.proxer.app.base.stubSuccess
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerApi

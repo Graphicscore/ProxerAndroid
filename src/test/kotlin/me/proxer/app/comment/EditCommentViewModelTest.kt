@@ -15,7 +15,6 @@ import me.proxer.app.ui.view.bbcode.BBTree
 import me.proxer.app.ui.view.bbcode.prototype.TextPrototype
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import me.proxer.app.util.extension.toLocalComment
 import me.proxer.library.ProxerApi
 import me.proxer.library.ProxerException
 import me.proxer.library.api.comment.CommentEndpoint
