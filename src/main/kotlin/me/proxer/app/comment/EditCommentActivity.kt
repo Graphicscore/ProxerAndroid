@@ -4,17 +4,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.widget.Toolbar
 import androidx.core.content.IntentCompat
-import androidx.fragment.app.commitNow
-import androidx.lifecycle.Observer
-import com.google.android.material.snackbar.Snackbar
-import kotterknife.bindView
+import androidx.core.view.WindowCompat
 import me.proxer.app.R
 import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.intentFor
-import me.proxer.app.util.extension.multilineSnackbar
 import me.proxer.app.util.extension.toast
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
@@ -31,73 +28,30 @@ class EditCommentActivity : BaseActivity() {
         private const val NAME_ARGUMENT = "name_id"
     }
 
-    val id: String?
+    private val id: String?
         get() = intent.getStringExtra(ID_ARGUMENT)
 
-    val entryId: String?
+    private val entryId: String?
         get() = intent.getStringExtra(ENTRY_ID_ARGUMENT)
 
-    val name: String?
+    private val name: String?
         get() = intent.getStringExtra(NAME_ARGUMENT)
 
     private val viewModel by viewModel<EditCommentViewModel> {
         parametersOf(id, entryId)
     }
 
-    private val toolbar: Toolbar by bindView(R.id.toolbar)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_no_drawer)
-        setSupportActionBar(toolbar)
-        setupToolbar()
-
-        viewModel.isUpdate.observe(
-            this,
-            Observer {
-                title =
-                    getString(
-                        when (it) {
-                            true -> R.string.action_update_comment
-                            false -> R.string.action_create_comment
-                        },
-                    )
-            },
-        )
-
-        viewModel.publishResult.observe(
-            this,
-            Observer {
-                if (it != null) {
-                    viewModel.data.value?.also { comment ->
-                        setResult(Activity.RESULT_OK, Intent().putExtra(COMMENT_EXTRA, comment))
-                    }
-
-                    toast(R.string.fragment_edit_comment_published)
-
-                    finish()
-                }
-            },
-        )
-
-        viewModel.publishError.observe(
-            this,
-            Observer {
-                it?.let {
-                    multilineSnackbar(
-                        getString(R.string.error_comment_publish, getString(it.message)),
-                        Snackbar.LENGTH_LONG,
-                        it.buttonMessage,
-                        it.toClickListener(this),
-                    )
-                }
-            },
-        )
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.commitNow {
-                replace(R.id.container, EditCommentFragment.newInstance())
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                EditCommentScreen(
+                    id = id,
+                    entryId = entryId,
+                    name = name,
+                    onBack = { finish() },
+                )
             }
         }
     }
@@ -116,11 +70,6 @@ class EditCommentActivity : BaseActivity() {
         }
 
         super.onDestroy()
-    }
-
-    private fun setupToolbar() {
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.subtitle = name?.trim()
     }
 
     class Contract : ActivityResultContract<Contract.Input, LocalComment?>() {

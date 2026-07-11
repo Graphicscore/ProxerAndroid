@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "DEPRECATION_ERROR")
 
 package me.proxer.app.util.extension
 
@@ -7,6 +7,10 @@ import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT
 
+@Deprecated(
+    "Compose Activities have no root view. Use SnackbarHostState in the composable instead.",
+    level = DeprecationLevel.ERROR,
+)
 inline fun BaseActivity.snackbar(
     message: Int,
     duration: Int = LENGTH_LONG,
@@ -14,6 +18,10 @@ inline fun BaseActivity.snackbar(
     actionCallback: View.OnClickListener? = null,
 ) = snackbar(getString(message), duration, actionMessage, actionCallback)
 
+@Deprecated(
+    "Compose Activities have no root view. Use SnackbarHostState in the composable instead.",
+    level = DeprecationLevel.ERROR,
+)
 inline fun BaseActivity.multilineSnackbar(
     message: CharSequence,
     duration: Int = LENGTH_LONG,
@@ -22,6 +30,10 @@ inline fun BaseActivity.multilineSnackbar(
     maxLines: Int = 5,
 ) = snackbar(message, duration, actionMessage, actionCallback, maxLines)
 
+@Deprecated(
+    "Compose Activities have no root view. Use SnackbarHostState in the composable instead.",
+    level = DeprecationLevel.ERROR,
+)
 inline fun BaseActivity.multilineSnackbar(
     message: Int,
     duration: Int = LENGTH_LONG,

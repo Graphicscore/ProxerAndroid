@@ -1,67 +1,83 @@
 package me.proxer.app.auth
 
-import android.app.Dialog
-import android.os.Bundle
-import android.widget.ProgressBar
-import android.widget.TextView
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.Observer
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.customview.customView
-import kotterknife.bindView
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import me.proxer.app.R
-import me.proxer.app.base.BaseDialog
-import me.proxer.app.util.extension.toast
-import org.koin.androidx.viewmodel.ext.android.viewModel
+import me.proxer.app.ui.compose.ProxerTheme
+import org.koin.androidx.compose.koinViewModel
 
-/**
- * @author Ruben Gees
- */
-class LogoutDialog : BaseDialog() {
-    companion object {
-        fun show(activity: FragmentActivity) = LogoutDialog().show(activity.supportFragmentManager, "logout_dialog")
+@Composable
+fun LogoutDialog(onDismiss: () -> Unit) {
+    val viewModel = koinViewModel<LogoutViewModel>()
+
+    val isLoading by viewModel.isLoading.observeAsState(false)
+    val success by viewModel.success.observeAsState()
+    val error by viewModel.error.observeAsState()
+
+    LaunchedEffect(success) {
+        if (success != null) onDismiss()
     }
 
-    private val viewModel by viewModel<LogoutViewModel>()
-
-    private val content: TextView by bindView(R.id.content)
-    private val progress: ProgressBar by bindView(R.id.progress)
-
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog = MaterialDialog(requireContext())
-        .noAutoDismiss()
-        .positiveButton(R.string.dialog_logout_positive) { viewModel.logout() }
-        .negativeButton(R.string.cancel) { dismiss() }
-        .customView(R.layout.dialog_logout, scrollable = true)
-
-    override fun onDialogCreated(savedInstanceState: Bundle?) {
-        super.onDialogCreated(savedInstanceState)
-
-        viewModel.success.observe(
-            dialogLifecycleOwner,
-            Observer {
-                it?.let { dismiss() }
-            },
-        )
-
-        viewModel.error.observe(
-            dialogLifecycleOwner,
-            Observer {
-                it?.let {
-                    viewModel.error.value = null
-
-                    requireContext().toast(it.message)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(stringResource(R.string.dialog_logout_content))
+                error?.let { action ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(action.message),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
-            },
-        )
+                if (isLoading == true) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    CircularProgressIndicator(modifier = Modifier.padding(4.dp))
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { viewModel.logout() },
+                enabled = isLoading != true,
+            ) {
+                Text(stringResource(R.string.dialog_logout_positive))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        },
+    )
+}
 
-        viewModel.isLoading.observe(
-            dialogLifecycleOwner,
-            Observer {
-                content.isGone = it == true
-                progress.isVisible = it == true
-            },
-        )
+@Preview(showBackground = true)
+@Composable
+private fun LogoutDialogPreview() {
+    ProxerTheme {
+        LogoutDialog(onDismiss = {})
     }
 }

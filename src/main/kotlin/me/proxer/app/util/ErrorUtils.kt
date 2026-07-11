@@ -3,11 +3,9 @@ package me.proxer.app.util
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import android.view.View
 import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.HttpDataSource
 import me.proxer.app.R
-import me.proxer.app.auth.LoginDialog
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.comment.CommentInvalidProgressException
 import me.proxer.app.comment.CommentTooLongException
@@ -19,7 +17,6 @@ import me.proxer.app.exception.PartialException
 import me.proxer.app.exception.StreamResolutionException
 import me.proxer.app.manga.MangaLinkException
 import me.proxer.app.manga.MangaNotAvailableException
-import me.proxer.app.settings.AgeConfirmationDialog
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction.AGE_CONFIRMATION
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction.CAPTCHA
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction.LOGIN
@@ -304,7 +301,7 @@ object ErrorUtils {
 
     internal fun handle(error: Throwable, isLoggedIn: Boolean): ErrorAction {
         val innermostError = getInnermostError(error)
-        val errorMessage = getMessage(innermostError, isLoggedIn)
+        val errorMessage = getMessage(innermostError)
 
         val buttonMessage =
             when (innermostError) {
@@ -589,15 +586,15 @@ object ErrorUtils {
             const val ACTION_MESSAGE_HIDE = -2
         }
 
-        fun toClickListener(activity: BaseActivity) = when (buttonAction) {
+        fun toClickListener(activity: BaseActivity): (() -> Unit)? = when (buttonAction) {
             CAPTCHA -> {
-                View.OnClickListener {
+                {
                     activity.showPage(ProxerUrls.captchaWeb(Utils.getIpAddress(), Device.MOBILE), skipCheck = true)
                 }
             }
 
             NETWORK_SETTINGS -> {
-                View.OnClickListener {
+                {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                         activity.startActivity(Intent(Settings.Panel.ACTION_INTERNET_CONNECTIVITY))
                     } else {
@@ -606,18 +603,12 @@ object ErrorUtils {
                 }
             }
 
-            LOGIN -> {
-                View.OnClickListener { LoginDialog.show(activity) }
-            }
-
-            AGE_CONFIRMATION -> {
-                View.OnClickListener { AgeConfirmationDialog.show(activity) }
-            }
-
             OPEN_LINK -> {
                 data[LINK_DATA_KEY].let { link ->
                     when (link) {
-                        is HttpUrl -> View.OnClickListener { activity.showPage(link, skipCheck = true) }
+                        is HttpUrl -> {
+                            { activity.showPage(link, skipCheck = true) }
+                        }
                         else -> null
                     }
                 }

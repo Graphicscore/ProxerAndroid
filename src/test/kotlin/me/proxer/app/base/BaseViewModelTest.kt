@@ -4,12 +4,11 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.android.plugins.RxAndroidPlugins
-import io.reactivex.plugins.RxJavaPlugins
-import io.reactivex.schedulers.Schedulers
+import me.proxer.app.exception.NotLoggedInException
+import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
+import me.proxer.app.util.Validators
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -31,25 +30,21 @@ class BaseViewModelTest : KoinTest {
     @get:Rule
     val instantExecutor = InstantTaskExecutorRule()
 
+    @get:Rule
+    val rxTrampolineRule = RxTrampolineRule()
+
     private val storageHelper: StorageHelper by inject()
     private val preferenceHelper: PreferenceHelper by inject()
+    private val validators: Validators by inject()
 
     private lateinit var viewModel: TestViewModel
 
     @Before
     fun setup() {
-        RxAndroidPlugins.setInitMainThreadSchedulerHandler { Schedulers.trampoline() }
-        RxJavaPlugins.setIoSchedulerHandler { Schedulers.trampoline() }
         every { storageHelper.isLoggedInObservable } returns Observable.never()
         every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
         every { storageHelper.isLoggedIn } returns true
         viewModel = TestViewModel()
-    }
-
-    @After
-    fun teardown() {
-        RxAndroidPlugins.reset()
-        RxJavaPlugins.reset()
     }
 
     @Test
@@ -135,12 +130,25 @@ class BaseViewModelTest : KoinTest {
         assertEquals("ok", viewModel.data.value)
     }
 
+    @Test
+    fun `load surfaces a NotLoggedInException from validate() as a login-required error`() {
+        every { validators.validateLogin() } throws NotLoggedInException()
+        viewModel.isLoginRequired = true
+
+        viewModel.nextResponse = Single.just("ignored")
+        viewModel.load()
+
+        assertNull(viewModel.data.value)
+        assertEquals(ButtonAction.LOGIN, viewModel.error.value?.buttonAction)
+    }
+
     // Inner fake ViewModel — override dataSingle via var so tests can control responses.
     // isLoginRequired is overridden to false so that the isLoggedInObservable subscription
     // in init does not trigger spurious reload() calls during tests.
     private inner class TestViewModel : BaseViewModel<String>() {
-        override val isLoginRequired = false
+        public override var isLoginRequired = false
         var nextResponse: Single<String> = Single.never()
-        override val dataSingle: Single<String> get() = nextResponse
+        override val dataSingle: Single<String>
+            get() = Single.fromCallable { validate() }.flatMap { nextResponse }
     }
 }

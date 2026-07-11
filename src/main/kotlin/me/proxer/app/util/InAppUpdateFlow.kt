@@ -1,12 +1,10 @@
 package me.proxer.app.util
 
 import android.app.Activity
-import android.view.ViewGroup
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateInfo
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -14,7 +12,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import me.proxer.app.R
 import timber.log.Timber
 
 /**
@@ -31,14 +28,12 @@ class InAppUpdateFlow {
     private var progressListener: InstallStateUpdatedListener? = null
     private var failureListener: OnFailureListener? = null
 
-    private var snackbar: Snackbar? = null
-
-    fun start(context: Activity, rootView: ViewGroup) {
-        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS) {
+    fun start(activity: Activity, onUpdateAvailable: (download: () -> Unit) -> Unit, onUpdateReady: (install: () -> Unit) -> Unit) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity) == ConnectionResult.SUCCESS) {
             appUpdateManager =
-                AppUpdateManagerFactory.create(context).also { appUpdateManager ->
-                    successListener = successListener(context, rootView, appUpdateManager)
-                    progressListener = progressListener(rootView, appUpdateManager)
+                AppUpdateManagerFactory.create(activity).also { appUpdateManager ->
+                    successListener = successListener(activity, appUpdateManager, onUpdateAvailable)
+                    progressListener = progressListener(appUpdateManager, onUpdateReady)
                     failureListener = failureListener()
 
                     appUpdateManager.appUpdateInfo.addOnSuccessListener(successListener)
@@ -48,60 +43,43 @@ class InAppUpdateFlow {
         }
     }
 
-    private fun successListener(context: Activity, rootView: ViewGroup, appUpdateManager: AppUpdateManager) =
-        OnSuccessListener<AppUpdateInfo> { appUpdateInfo ->
-            if (
-                appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
-                appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
-            ) {
-                snackbar =
-                    Snackbar
-                        .make(rootView, R.string.activity_update_available, Snackbar.LENGTH_INDEFINITE)
-                        .apply {
-                            setAction(R.string.activity_update_action_download) {
-                                @Suppress("DEPRECATION")
-                                appUpdateManager.startUpdateFlowForResult(
-                                    appUpdateInfo,
-                                    AppUpdateType.FLEXIBLE,
-                                    context,
-                                    REQUEST_CODE,
-                                )
-                            }
-
-                            show()
-                        }
+    private fun successListener(
+        activity: Activity,
+        appUpdateManager: AppUpdateManager,
+        onUpdateAvailable: (download: () -> Unit) -> Unit,
+    ) = OnSuccessListener<AppUpdateInfo> { appUpdateInfo ->
+        if (
+            appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
+            appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+        ) {
+            onUpdateAvailable {
+                @Suppress("DEPRECATION")
+                appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    AppUpdateType.FLEXIBLE,
+                    activity,
+                    REQUEST_CODE,
+                )
             }
         }
+    }
 
     private fun failureListener() = OnFailureListener { error ->
         Timber.e(error)
     }
 
-    private fun progressListener(rootView: ViewGroup, appUpdateManager: AppUpdateManager) =
+    private fun progressListener(appUpdateManager: AppUpdateManager, onUpdateReady: (install: () -> Unit) -> Unit) =
         InstallStateUpdatedListener {
             if (it.installStatus() == InstallStatus.DOWNLOADED) {
-                snackbar =
-                    Snackbar
-                        .make(rootView, R.string.activity_update_ready, Snackbar.LENGTH_INDEFINITE)
-                        .apply {
-                            setAction(R.string.activity_update_action_install) {
-                                appUpdateManager.completeUpdate()
-                            }
-
-                            show()
-                        }
-            } else if (it.installStatus() == InstallStatus.CANCELED) {
-                snackbar?.dismiss()
+                onUpdateReady { appUpdateManager.completeUpdate() }
             }
         }
 
     fun stop() {
         progressListener?.also { appUpdateManager?.unregisterListener(it) }
-        snackbar?.dismiss()
 
         appUpdateManager = null
         failureListener = null
         progressListener = null
-        snackbar = null
     }
 }

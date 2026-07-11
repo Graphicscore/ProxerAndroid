@@ -1,22 +1,15 @@
 package me.proxer.app.ui
 
 import android.app.Activity
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.widget.ImageView
-import androidx.core.view.ViewCompat
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.ImageViewTarget
-import com.jakewharton.rxbinding3.view.clicks
-import com.uber.autodispose.android.lifecycle.scope
-import com.uber.autodispose.autoDisposable
-import kotterknife.bindView
-import me.proxer.app.R
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ActivityUtils
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.intentFor
-import me.proxer.app.util.extension.logErrors
 import okhttp3.HttpUrl
 
 /**
@@ -39,35 +32,13 @@ class ImageDetailActivity : BaseActivity() {
     private val url: String
         get() = intent.getSafeStringExtra(URL_EXTRA)
 
-    private val image: ImageView by bindView(R.id.image)
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        setContentView(R.layout.activity_image_detail)
-        supportPostponeEnterTransition()
-
-        ViewCompat.setTransitionName(image, ActivityUtils.getTransitionName(this))
-
-        Glide
-            .with(this)
-            .load(url)
-            .logErrors()
-            .into(
-                object : ImageViewTarget<Drawable>(image) {
-                    override fun setResource(resource: Drawable?) {
-                        image.setImageDrawable(resource)
-
-                        if (resource != null) {
-                            supportStartPostponedEnterTransition()
-                        }
-                    }
-                },
-            )
-
-        root
-            .clicks()
-            .autoDisposable(this.scope())
-            .subscribe { supportFinishAfterTransition() }
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                ImageDetailScreen(url = url, onClose = { supportFinishAfterTransition() })
+            }
+        }
     }
 }

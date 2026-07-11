@@ -2,16 +2,17 @@ package me.proxer.app.chat.pub.room.info
 
 import android.app.Activity
 import android.os.Bundle
-import androidx.fragment.app.commitNow
-import me.proxer.app.R
-import me.proxer.app.base.DrawerActivity
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
 
 /**
  * @author Ruben Gees
  */
-class ChatRoomInfoActivity : DrawerActivity() {
+class ChatRoomInfoActivity : BaseActivity() {
     companion object {
         private const val CHAT_ROOM_ID_EXTRA = "chat_room_id"
         private const val CHAT_ROOM_NAME_EXTRA = "chat_room_name"
@@ -24,20 +25,22 @@ class ChatRoomInfoActivity : DrawerActivity() {
         }
     }
 
-    val chatRoomId: String
+    private val chatRoomId: String
         get() = intent.getSafeStringExtra(CHAT_ROOM_ID_EXTRA)
 
-    val chatRoomName: String
+    private val chatRoomName: String
         get() = intent.getSafeStringExtra(CHAT_ROOM_NAME_EXTRA)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        title = chatRoomName
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.commitNow {
-                replace(R.id.container, ChatRoomInfoFragment.newInstance())
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                ChatRoomInfoScreen(
+                    chatRoomId = chatRoomId,
+                    chatRoomName = chatRoomName,
+                    onBack = { finish() },
+                )
             }
         }
     }

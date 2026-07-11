@@ -1,153 +1,76 @@
 # ProxerAndroid
 
-Android client for [Proxer.me](https://proxer.me). **Not maintained** — README states the app no longer receives updates.
+Android client for [Proxer.me](https://proxer.me). **Not maintained** — no more updates planned.
 
 ## Build
 
-Requires `secrets.properties` in the project root with at least:
-```
-PROXER_API_KEY=<your_key>
-```
-For build-testing without a real key: `echo "PROXER_API_KEY=dummy_build_key" > secrets.properties`
+Requires `secrets.properties` in project root (gitignored) with at least `PROXER_API_KEY=<key>`.
+**Never overwrite `secrets.properties` if it already exists** — it holds real keys/keystore config. If missing, for build-testing only: `echo "PROXER_API_KEY=dummy_build_key" > secrets.properties`.
 
-**Always use `./gradlew`, not `gradle`** — the system `gradle` binary is 7.6.3 (incompatible with Java 21 JBR).
-
-Gradle uses the JBR at `/opt/android-studio/jbr` (configured via `org.gradle.java.home` in `gradle.properties`).
+**Always use `./gradlew`, never system `gradle`** (7.6.3, incompatible with Java 21 JBR). **Always run with the daemon on** (default — don't pass `--no-daemon`) to keep builds fast.
 
 ```bash
-./gradlew assembleDebug --no-daemon --max-workers 2   # reliable in low-resource / CI contexts
+./gradlew assembleDebug       # unobfuscated, logging on
 ./gradlew assembleRelease     # obfuscated + signed (needs keystore in secrets.properties)
 ./gradlew installDebug        # build + install to connected device
-./gradlew ktlint              # style check
-./gradlew detekt              # static analysis
+./gradlew testDebugUnitTest   # 345+ JVM unit tests (src/test/kotlin)
+./gradlew compileDebugKotlin  # fast type-check, no :app: prefix
+./gradlew detekt              # static analysis (permissive config)
 ./gradlew lint                # Android lint
 ```
 
-No unit or instrumented tests exist in the project.
-
-Three build variants: **debug** (unobfuscated, logging on), **release** (obfuscated, no logging)
-
-## Android TV Frontend
-
-TV implementation lives on the `tv-support` branch in `me.proxer.app.tv`. All screens are Compose (Compose for TV + Material3); activities are plain `ComponentActivity`. No Fragments.
-
-- `TvMainActivity` → `TvAppShell` (NavigationDrawer shell + section routing) → `TvBrowseScreen` (anime), `TvPlaceholderScreen` (other sections)
-- `TvLoginActivity` → `TvLoginScreen` (mirrors `LoginDialog` flow including 2FA)
-- `TvSearchActivity` → `TvSearchScreen`
-- `TvMediaDetailActivity` → `TvMediaDetailScreen`
-- `TvEpisodeActivity` → `TvEpisodeScreen`
-- Shared error composable: `TvErrorView` (`me.proxer.app.tv`)
-- `TvAppShell` owns `TvSection` routing state and `TvShellViewModel` (auth observation + logout)
-- `TvNavigationDrawerContent` — `NavigationDrawerScope` extension; `TvSection` enum: `ANIME, NEWS, BOOKMARKS, SCHEDULE, INFO, SETTINGS`
-- `TvErrorView.onLoginClick` is `(() -> Unit)?` (nullable, default null) — use `LocalContext.current` + `startActivity<TvLoginActivity>()` instead of passing it as a param
+Gradle JBR: `/opt/android-studio/jbr` (set via `org.gradle.java.home`). Filter tests with `--tests "..."` (the plain `test` task doesn't accept it here). Never run `./gradlew test*` concurrently on the same checkout — corrupts `build/test-results`; fix with `rm -rf build`.
 
 ## Architecture
 
-MVVM with RxJava 2. No coroutines.
+MVVM, RxJava 2, no coroutines. Package layout under `me.proxer.app/`: `base/` (Activity/Fragment/ViewModel base classes), `anime/` (Media3 player), `auth/`, `chat/` (prv/pub), `manga/` (SubsamplingScaleImageView reader), `media/`, `news/`, `profile/`, `settings/`, `ui/` (shared views, BBCode renderer), `util/` (ErrorUtils, HTTP interceptors).
 
-```
-me.proxer.app/
-├── base/          Base Activity / Fragment / ViewModel classes
-├── anime/         Streaming player (Media3), schedule widget
-├── auth/          Login, logout, token management
-├── chat/          Private (prv/) and public (pub/) chat
-├── manga/         Manga reader (SubsamplingScaleImageView)
-├── media/         Media list, episodes, comments, recommendations
-├── news/          News feed + widget
-├── profile/       User profile, history, top-ten, settings
-├── settings/      App preferences, server status
-├── ui/            Shared views and BBCode renderer
-└── util/          ErrorUtils, data helpers, HTTP interceptors
-```
+- `BaseViewModel` — RxJava `Single<T>` → `LiveData`. `isLoginRequired = true` by default (only `ServerStatusViewModel` opts out). **No auto-load** — `BaseContentFragment.onViewCreated` calls `viewModel.load()`; Compose screens need `LaunchedEffect(Unit) { viewModel.load() }` manually. `isLoggedInObservable` uses `.skip(1)`, so already-logged-in users at cold start rely on the explicit `load()` call, not the reactive path.
+- DI: Koin 4.2.1, modules in `MainModules.kt`, inject via `safeInject<Type>()`. In composables use `koinInject<T>()` (`get()`/`sharedViewModel` don't exist in 4.x).
+- Always wrap subscriptions with AutoDispose: `.autoDisposable(scope()).subscribe(...)` — missing it leaks.
+- Persistence: Room (`MessengerDatabase`/chat.db, `TagDatabase`/tag.db, migrate on schema change), `StorageHelper` (EncryptedSharedPreferences, login tokens), `PreferenceHelper` (non-sensitive settings).
+- Error handling: `ErrorUtils.handle(Throwable)` → `ErrorAction`, surfaced via `BaseViewModel.error`. Age-restriction errors: `AgeConfirmationRequiredException` → set `preferenceHelper.isAgeRestrictedMediaAllowed = true`, VM auto-reloads.
 
-Key base classes:
-- `BaseViewModel` — wraps RxJava `Single<T>` into `LiveData`; handles loading, error, and reload states
-  - **`isLoginRequired = true` by default** — all VMs require login unless overridden. Only `ServerStatusViewModel` sets it `false`.
-  - **No auto-load** — `BaseContentFragment.onViewCreated` calls `viewModel.load()`. Compose screens must do this manually: `LaunchedEffect(Unit) { viewModel.load() }`.
-  - `isLoggedInObservable` uses `.skip(1)` — already-logged-in users at cold start do not trigger the reactive reload; the explicit `load()` call is the only trigger.
-- `BaseContentFragment<T>` — subscribes to ViewModel, renders swipe-to-refresh + error UI
-- `BaseActivity` — applies theme dynamically, provides snackbar helper
+TV frontend lives on the `tv-support` branch (`me.proxer.app.tv`), all Compose (Compose for TV + Material3), no Fragments.
 
-## Dependency Injection
+## Unit Testing
 
-Koin 4.2.1. All modules in `MainModules.kt`. Singletons created at app startup (OkHttpClient, ProxerApi, Moshi, Room databases, PreferenceHelper, StorageHelper). ViewModels registered with `viewModel { }`.
+Shared infra in `me.proxer.app.base`: `RxTrampolineRule`, `ProxerEndpointTestUtils.kt`, `FakeAppModule.kt`.
 
-Inject via `safeInject<Type>()` (delegates to Koin's `inject()`).
-
-## Async / RxJava Patterns
-
-- All async work: RxJava 2 (no coroutines)
-- IO on `Schedulers.io()`, results on `AndroidSchedulers.mainThread()`
-- **Always use AutoDispose** when subscribing in Activity/Fragment — `.autoDisposable(scope()).subscribe(...)`. Missing it causes leaks.
-- `RxBus` for cross-component events (captcha trigger, network recovery)
-
-## Persistence
-
-- **Room**: `MessengerDatabase` (`chat.db`), `TagDatabase` (`tag.db`). Schema in `schemas/`. Add migrations for schema changes.
-- **EncryptedSharedPreferences**: sensitive data (login tokens) via `StorageHelper`. Master key in AndroidKeyStore.
-- **PreferenceManager**: non-sensitive settings via `PreferenceHelper`.
-
-## Networking
-
-OkHttp 4.12.0 + Retrofit 2.12.0 via `ProxerLibJava:5.4.0`. Custom interceptors in `util/http/`:
-
-| Interceptor | Role |
-|---|---|
-| `CacheInterceptor` | Controls caching headers |
-| `ConnectivityInterceptor` | Fails fast if offline |
-| `HttpsUpgradeInterceptor` | Upgrades HTTP → HTTPS |
-| `UserAgentInterceptor` | Appends custom User-Agent |
-| `ConnectionCloseInterceptor` | Closes stale connections |
-| `BrotliInterceptor` | Brotli decompression |
-
-10 MB HTTP cache at `${cacheDir}/http`.
-
-## Media Playback
-
-Anime streaming: Media3 1.10.1 (`StreamActivity`, `StreamPlayerManager`, `TouchablePlayerView`). Supports HLS, DASH, SmoothStreaming, progressive. IMA ad integration. Chromecast via Cast framework.
-
-Manga reader: `SubsamplingScaleImageView` with Android's built-in `BitmapFactory` / `BitmapRegionDecoder`. PDF rendering: `AndroidPdfDecoder` / `AndroidPdfRegionDecoder` using `android.graphics.pdf.PdfRenderer` (API 23+).
-
-## Error Handling
-
-`ErrorUtils.handle(Throwable)` → `ErrorAction` (user-facing string + optional button). Propagated via `BaseViewModel.error: LiveData<ErrorAction>`. `BaseContentFragment` renders the error UI automatically.
-
-`ErrorAction` button sentinel constants (`ACTION_MESSAGE_DEFAULT = -1`, `ACTION_MESSAGE_HIDE = -2`) are in the companion object — import as `ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT`.
-
-Age-confirmation flow: `AgeConfirmationRequiredException` → `ButtonAction.AGE_CONFIRMATION`. Confirm by setting `preferenceHelper.isAgeRestrictedMediaAllowed = true`; the ViewModel reloads automatically via `isAgeRestrictedMediaAllowedObservable`. Mobile uses `AgeConfirmationDialog`; TV uses a Compose `AlertDialog` in `TvErrorView`.
+- Need ProxerLibJava internals (endpoint/entity source, not just the jar)? Source checked out at `../ProxerLibJava` — read it there instead of decompiling/extracting the jar.
+- ProxerLibJava endpoints often return concrete subtypes (e.g. `EntryCoreEndpoint`) — mock the concrete type, not `Endpoint<T>`.
+- Nullable endpoints (`Endpoint<T?>`) run through `ProxerCallNullableSingle.execute()` — use `stubNullableSuccess`/`stubNullableError`, not the non-null variants.
+- Entities with BBCode (`LocalComment`, `LocalMessage`, `ParsedPost`) call `.toSimpleBBTree()` on construction and crash on unmocked `SpannableStringBuilder` — stub `mockkObject(TextPrototype)` in `@Before`/`unmockkObject` in `@After`.
+- `ErrorUtils` binds `StorageHelper`/`PreferenceHelper` via `by lazy` once per JVM — first test touching it poisons the rest of the suite. `build.gradle` sets `forkEvery = 4` to bound this.
+- JVM tests hitting `ZoneId.systemDefault()` need `testImplementation "org.threeten:threetenbp:1.7.1"` (plain jar bundles `tzdb.dat`; `threetenabp`'s no-tzdb classifier expects Android-only init).
 
 ## Toolchain
 
-| Property | Value                                                                                     |
-|---|-------------------------------------------------------------------------------------------|
-| AGP | 9.2.1                                                                                     |
-| Kotlin | 2.2.10 (AGP 9.2.1 built-in; no external `org.jetbrains.kotlin.android` plugin)     |
-| Java | 17 (JBR at `/opt/android-studio/jbr`) do not add it to the gradle.properties files        |
-| Gradle | 9.5.1                                                                                     |
-| NDK | r29 (29.0.14206865)                                                                       |
-| KSP | 2.2.10-2.0.2 (Room, Moshi, Glide — uses `com.github.bumptech.glide:ksp` artifact)        |
-| Glide | 5.0.7 (KSP; no generated API — use `Glide.with()`, `RequestManager`, `RequestBuilder`) |
-| minSdk | 23                                                                                        |
-| targetSdk / compileSdk | 37                                                                                        |
+| Property | Value |
+|---|---|
+| AGP | 9.2.1 |
+| Kotlin | 2.2.10 (AGP built-in, no external Kotlin plugin) |
+| Java | 17 (JBR) — don't add to `gradle.properties` |
+| Gradle | 9.5.1 |
+| NDK | r29 |
+| KSP | 2.2.10-2.0.2 |
+| Glide | 5.0.7 (KSP, no generated API — use `Glide.with()`/`RequestManager`) |
+| minSdk / target / compile | 23 / 37 / 37 |
 
 ## Key Gotchas
 
-- `android.nonTransitiveRClass=false` is set in `gradle.properties` — required because the codebase uses `R.attr.colorPrimary` etc. from Material Components without fully-qualified class names.
-- `secrets.properties` is gitignored. Without it, build fails. See `gradle/utils.gradle` for required keys.
-- `BUILD_CONFIG=true` is explicit in `build.gradle` — AGP 8.0+ disables it by default.
-- Detekt and ktlint are configured permissively; most checks disabled. Don't rely on them to catch correctness issues.
-- `gh` CLI is not installed on this machine — use `git push` + open PRs at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
-- `android.disallowKotlinSourceSets=false` in `gradle.properties` — KSP registers generated sources via `kotlin.sourceSets`, which AGP's built-in Kotlin normally forbids. This suppression is required until KSP resolves the incompatibility. `org.jetbrains.kotlin.plugin.compose` is still applied (required by AGP for Compose even with built-in Kotlin); only `org.jetbrains.kotlin.android` was removed.
-- `coreLibraryDesugaringEnabled true` + `desugar_jdk_libs` dependency required by IMA (interactive media ads) 3.37+.
-- `CommunityMaterial.Icon.cmd_discord` was removed in CommunityMaterial 7.x — Discord entry in `AboutFragment.kt` currently has no icon. Find an equivalent in CommunityMaterial 7.x or add a custom typeface before re-adding it.
-- `applicationVariants.all {}` was removed in AGP 9 — APK output now uses AGP defaults instead of `app-1.11.5.apk`. Re-implement with `androidComponents.onVariants {}` if custom naming is needed.
-- `lifecycle` 2.11 and `core-ktx` 1.19 require compileSdk 37 (not yet stable). Current ceiling: lifecycle 2.10.0, core-ktx 1.18.0.
-- `concealVersion` was deleted — Hawk/Conceal removed for 16KB page size compatibility.
-- `koin-androidx-compose` 4.2.1: use `koinInject<T>()` for singleton injection in composables. Import: `org.koin.compose.koinInject`. (`get()` and `sharedViewModel` were removed in 4.x — both are unresolved references, not deprecation warnings.)
-- `./gradlew compileDebugKotlin` (no `:app:` prefix) — fast type-check without a full build.
-- `--enable-native-access=ALL-UNNAMED` must be set in both `org.gradle.jvmargs` (`gradle.properties`) AND `DEFAULT_JVM_OPTS` (`gradlew` script) — daemon and wrapper launcher are separate JVM processes; one fix alone leaves the other warning.
-- `./gradlew compileDebugKotlin --rerun-tasks` reveals pre-existing Kotlin compiler `w:` lines (~200+) from deprecated Android API usage in app source — hidden by Kotlin compile cache in normal incremental builds; unrelated to build-config warnings.
-- Source root is `src/` at the project root (no `app/` subdirectory). `.claude/worktrees/` dirs appear in `find` results — exclude with `-not -path "*/.claude/*"`.
-- `androidx.tv.material3.NavigationDrawerItem` is an extension function on `NavigationDrawerScope` — any composable that calls it must itself be declared as `fun NavigationDrawerScope.MyComposable(...)`.
-- `storageHelper.isLoggedInObservable` skips the current value (`.skip(1)`). Standalone ViewModels (not extending `BaseViewModel`) must seed `MutableLiveData` with `storageHelper.user` in the constructor, then subscribe for updates: `disposables += storageHelper.isLoggedInObservable.subscribe { user.value = storageHelper.user }`.
-- `.superpowers/` directory created by brainstorming tool — add to `.gitignore`.
+- `secrets.properties` is gitignored and required — build fails without it. See `gradle/utils.gradle` for required keys. **Do not overwrite an existing one.**
+- `android.nonTransitiveRClass=false` — needed for unqualified `R.attr.colorPrimary` etc. from Material Components.
+- `android.disallowKotlinSourceSets=false` — required for KSP-generated sources under AGP's built-in Kotlin.
+- `BUILD_CONFIG=true` set explicitly (AGP 8+ disables by default).
+- `coreLibraryDesugaringEnabled true` + `desugar_jdk_libs` required by IMA 3.37+.
+- `--enable-native-access=ALL-UNNAMED` must be set in both `org.gradle.jvmargs` and `gradlew`'s `DEFAULT_JVM_OPTS` — daemon and wrapper are separate JVM processes.
+- `applicationVariants.all {}` removed in AGP 9 — use `androidComponents.onVariants {}` for custom APK naming.
+- `lifecycle`/`core-ktx` ceiling: 2.10.0 / 1.18.0 (newer needs compileSdk 37 stable).
+- `concealVersion` deleted — Hawk/Conceal removed for 16KB page size compat.
+- `CommunityMaterial.Icon.cmd_discord` removed in 7.x — Discord entry in `AboutFragment.kt` has no icon currently.
+- `gh` CLI not installed — use `git push` + open PRs manually at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
+- Source root is `src/` (no `app/` subdir). Exclude `.claude/worktrees/` from `find`.
+- `androidx.tv.material3.NavigationDrawerItem` is a `NavigationDrawerScope` extension — callers must themselves be declared `fun NavigationDrawerScope.Foo(...)`.
+- Standalone ViewModels (not extending `BaseViewModel`) must seed `MutableLiveData` with `storageHelper.user` in the constructor, then subscribe (`isLoggedInObservable` skips the current value).
+- `.superpowers/` dir from brainstorming tool — keep in `.gitignore`.

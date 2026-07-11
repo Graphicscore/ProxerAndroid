@@ -3,6 +3,7 @@
 package me.proxer.app.util.extension
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -13,9 +14,11 @@ import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.CheckResult
 import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.children
+import me.proxer.app.R
 
 @ColorInt
 inline fun Context.resolveColor(
@@ -53,6 +56,17 @@ inline fun Context.toast(message: Int, duration: Int = Toast.LENGTH_LONG): Toast
 inline fun Context.toast(message: String, duration: Int = Toast.LENGTH_LONG): Toast = Toast
     .makeText(this, message, duration)
     .apply { show() }
+
+inline fun Context.startActivityOrToast(
+    intent: Intent,
+    @StringRes noActivityMessage: Int = R.string.error_open_link_no_activity,
+) {
+    try {
+        startActivity(intent)
+    } catch (_: ActivityNotFoundException) {
+        toast(noActivityMessage)
+    }
+}
 
 val ViewGroup.recursiveChildren: Sequence<View>
     get() =

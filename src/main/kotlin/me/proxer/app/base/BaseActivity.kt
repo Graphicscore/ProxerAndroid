@@ -101,6 +101,10 @@ abstract class BaseActivity :
         customTabsHelper.fallbackHandleLink(this, url, forceBrowser, skipCheck)
     }
 
+    @Deprecated(
+        "Compose Activities have no root view. Use SnackbarHostState in the composable instead.",
+        level = DeprecationLevel.ERROR,
+    )
     fun snackbar(
         message: CharSequence,
         duration: Int = Snackbar.LENGTH_LONG,

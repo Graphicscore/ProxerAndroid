@@ -1,25 +1,18 @@
 package me.proxer.app.info.translatorgroup
 
 import android.app.Activity
-import android.view.Menu
-import android.view.MenuItem
-import androidx.core.app.ShareCompat
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.tabs.TabLayoutMediator
-import com.mikepenz.iconics.utils.IconicsMenuInflaterUtil
-import me.proxer.app.R
-import me.proxer.app.base.ImageTabsActivity
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
+import me.proxer.app.base.BaseActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.getSafeStringExtra
 import me.proxer.app.util.extension.startActivity
-import me.proxer.app.util.extension.unsafeLazy
-import me.proxer.library.util.ProxerUrls
-import okhttp3.HttpUrl
 
 /**
  * @author Ruben Gees
  */
-class TranslatorGroupActivity : ImageTabsActivity() {
+class TranslatorGroupActivity : BaseActivity() {
     companion object {
         private const val ID_EXTRA = "id"
         private const val NAME_EXTRA = "name"
@@ -35,65 +28,20 @@ class TranslatorGroupActivity : ImageTabsActivity() {
     val id: String
         get() = intent.getSafeStringExtra(ID_EXTRA)
 
-    var name: String?
+    val name: String?
         get() = intent.getStringExtra(NAME_EXTRA)
-        set(value) {
-            intent.putExtra(NAME_EXTRA, value)
 
-            title = value
-        }
-
-    override val headerImageUrl: HttpUrl by unsafeLazy { ProxerUrls.translatorGroupImage(id) }
-    override val sectionsPagerAdapter: FragmentStateAdapter by unsafeLazy { SectionsPagerAdapter() }
-    override val sectionsTabCallback: TabLayoutMediator.TabConfigurationStrategy by unsafeLazy { SectionsTabCallback() }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        IconicsMenuInflaterUtil.inflate(menuInflater, this, R.menu.activity_share, menu, true)
-
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.action_share -> {
-                name?.let {
-                    ShareCompat
-                        .IntentBuilder(this)
-                        .setText(getString(R.string.share_translator_group, it, ProxerUrls.translatorGroupWeb(id)))
-                        .setType("text/plain")
-                        .setChooserTitle(getString(R.string.share_title))
-                        .startChooser()
-                }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        setContent {
+            ProxerTheme {
+                TranslatorGroupScreen(
+                    id = id,
+                    initialName = name,
+                    onBack = { finish() },
+                )
             }
-        }
-
-        return super.onOptionsItemSelected(item)
-    }
-
-    override fun setupToolbar() {
-        super.setupToolbar()
-
-        title = name
-    }
-
-    private inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
-        override fun getItemCount() = 2
-
-        override fun createFragment(position: Int) = when (position) {
-            0 -> TranslatorGroupInfoFragment.newInstance()
-            1 -> TranslatorGroupProjectFragment.newInstance()
-            else -> error("Unknown index passed: $position")
-        }
-    }
-
-    private inner class SectionsTabCallback : TabLayoutMediator.TabConfigurationStrategy {
-        override fun onConfigureTab(tab: TabLayout.Tab, position: Int) {
-            tab.text =
-                when (position) {
-                    0 -> getString(R.string.section_translator_group_info)
-                    1 -> getString(R.string.section_translator_group_projects)
-                    else -> error("Unknown index passed: $position")
-                }
         }
     }
 }

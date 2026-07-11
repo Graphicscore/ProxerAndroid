@@ -32,7 +32,7 @@ import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.extension.LocalConferenceMap
 import me.proxer.app.util.extension.getQuantityString
 import me.proxer.app.util.extension.safeInject
-import me.proxer.app.util.wrapper.MaterialDrawerWrapper.DrawerItem
+import me.proxer.app.util.wrapper.DrawerItem
 import me.proxer.library.enums.Device
 import me.proxer.library.util.ProxerUrls
 

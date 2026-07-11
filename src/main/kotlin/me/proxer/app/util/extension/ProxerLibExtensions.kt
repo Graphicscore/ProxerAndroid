@@ -9,8 +9,6 @@ import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.mikepenz.iconics.utils.colorInt
 import me.proxer.app.R
-import me.proxer.app.R.id.description
-import me.proxer.app.R.id.post
 import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.chat.prv.LocalConference
@@ -85,7 +83,7 @@ object ProxerLibExtensions {
         context.getString(R.string.fsk_fear) -> FskConstraint.FEAR
         context.getString(R.string.fsk_violence) -> FskConstraint.VIOLENCE
         context.getString(R.string.fsk_sex) -> FskConstraint.SEX
-        else -> error("Could not find fsk constraint for description: $description")
+        else -> error("Could not find fsk constraint for string: $string")
     }
 }
 
@@ -559,7 +557,7 @@ fun Topic.toTopicMetaData() = TopicMetaData(
     lastPostDate,
     hits,
     isLocked,
-    post,
+    postAmount,
     subject,
 )
 

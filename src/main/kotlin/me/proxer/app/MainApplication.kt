@@ -18,7 +18,6 @@ import com.google.android.gms.common.GooglePlayServicesUtil
 import com.google.android.gms.security.ProviderInstaller
 import com.jakewharton.threetenabp.AndroidThreeTen
 import com.kirillr.strictmodehelper.StrictModeCompat
-import com.mikepenz.materialdrawer.util.DrawerImageLoader
 import com.rubengees.rxbus.RxBus
 import com.vanniktech.emoji.EmojiManager
 import com.vanniktech.emoji.ios.IosEmojiProvider
@@ -30,7 +29,6 @@ import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
 import me.proxer.app.auth.LoginHandler
 import me.proxer.app.base.NetworkConnectedEvent
-import me.proxer.app.util.GlideDrawerImageLoader
 import me.proxer.app.util.NotificationUtils
 import me.proxer.app.util.compat.isConnected
 import me.proxer.app.util.data.PreferenceHelper
@@ -202,7 +200,6 @@ class MainApplication : Application() {
         RxAndroidPlugins.setMainThreadSchedulerHandler { AndroidSchedulers.from(Looper.getMainLooper(), true) }
 
         SubsamplingScaleImageView.setPreferredBitmapConfig(Bitmap.Config.RGB_565)
-        DrawerImageLoader.init(GlideDrawerImageLoader())
 
         Completable
             .fromAction { EmojiManager.install(IosEmojiProvider()) }

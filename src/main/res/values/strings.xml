@@ -192,6 +192,8 @@
     <string name="error_comment_deletion">Der Kommentar konnte nicht gelöscht werden: %s</string>
     <string name="error_notification_deletion">Die Benachrichtigung konnte nicht gelöscht werden: %s</string>
     <string name="error_bookmark_deletion">Das Lesezeichen konnte nicht entfernt werden: %s</string>
+    <string name="error_top_ten_deletion">Der Eintrag konnte nicht gelöscht werden: %s</string>
+    <string name="error_profile_media_list_deletion">Der Eintrag konnte nicht gelöscht werden: %s</string>
     <string name="error_media_entry_deletion">Der Eintrag konnte nicht entfernt werden: %s</string>
     <string name="error_topten_entry_removal">Der Eintrag konnte nicht entfernt werden: %s</string>
     <string name="error_chat_send_message">Die Nachricht konnte nicht versandt werden: %s</string>
@@ -893,6 +895,7 @@
     <string name="about_developer_title">Entwickler</string>
     <string name="about_developer_github_title">GitHub</string>
     <string name="about_error_mail_no_activity">Es ist keine E-Mail App installiert</string>
+    <string name="error_open_link_no_activity">Der Link konnte nicht geöffnet werden</string>
 
     <string name="introduction_welcome_title">Willkommen!</string>
     <string name="introduction_welcome_description">Ein paar Einstellungen und es geht los</string>
@@ -914,6 +917,7 @@
     <string name="action_answer">Antworten</string>
     <string name="action_copy">Kopieren</string>
     <string name="action_reply">Antworten</string>
+    <string name="action_delete">Löschen</string>
     <string name="action_delete_all">Alle löschen</string>
     <string name="action_report">Melden</string>
     <string name="action_undo">Rückgängig</string>

@@ -49,10 +49,7 @@ dependencies {
     implementation "com.mikepenz:iconics-core:$iconicsVersion"
     implementation "com.mikepenz:iconics-views:$iconicsVersion"
     implementation "com.mikepenz:community-material-typeface:$communityMaterialTypefaceVersion"
-    implementation "com.mikepenz:materialdrawer:$materialDrawerVersion"
-    implementation "com.mikepenz:materialdrawer-iconics:$materialDrawerVersion"
     implementation "com.mikepenz:aboutlibraries:$aboutLibrariesVersion"
-    implementation "com.mikepenz:crossfader:$crossfaderVersion@aar"
     implementation "com.github.daniel-stoneuk:material-about-library:$materialAboutVersion"
     implementation "com.davemorrissey.labs:subsampling-scale-image-view:$subsamplingScaleImageViewVersion"
     implementation "com.afollestad.material-dialogs:core:$materialDialogsVersion"
@@ -123,6 +120,12 @@ dependencies {
     testImplementation "io.insert-koin:koin-test:$koinVersion"
     testImplementation "io.insert-koin:koin-test-junit4:$koinVersion"
     testImplementation "androidx.arch.core:core-testing:2.2.0"
+    // threetenabp pulls in the "no-tzdb" threetenbp classifier, which relies on Android asset-based
+    // time-zone data registered via AndroidThreeTen.init() at app startup. That init never runs in JVM
+    // unit tests, so ZoneId.systemDefault() throws ZoneRulesException. The plain (non "no-tzdb") jar
+    // bundles the tzdb.dat resource, which the zone provider discovers on the classpath regardless of
+    // which jar a given class loaded from.
+    testImplementation "org.threeten:threetenbp:1.7.1"
 
     androidTestImplementation platform("androidx.compose:compose-bom:$composeBomVersion")
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"

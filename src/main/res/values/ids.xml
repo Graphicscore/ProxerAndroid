@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <item name="root" type="id" />
     <item name="ignore_tag" type="id" />
     <item name="error_tag" type="id" />
+    <item name="contentContainer" type="id" />
+    <item name="tag_manga_url" type="id" />
 </resources>
