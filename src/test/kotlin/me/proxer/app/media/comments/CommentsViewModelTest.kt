@@ -8,6 +8,7 @@ import io.mockk.unmockkObject
 import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
 import me.proxer.app.base.fakeAppModule
+import me.proxer.app.base.mockProxerCallNullableError
 import me.proxer.app.base.mockProxerCallNullableSuccess
 import me.proxer.app.base.stubPagingError
 import me.proxer.app.base.stubPagingSuccess
@@ -219,6 +220,25 @@ class CommentsViewModelTest : KoinTest {
 
         assertEquals(9, viewModel.data.value?.size)
         assertFalse(viewModel.data.value!!.any { it.id == target.id })
+    }
+
+    @Test
+    fun `deleteComment sets itemDeletionError on failure`() {
+        val comments = fullPage("p0")
+        commentsEndpoint.stubPagingSuccess(comments)
+        viewModel.load()
+
+        val target = viewModel.data.value!!.first()
+        val updateEndpoint = mockk<UpdateCommentEndpoint>(relaxed = true)
+        every { api.comment.update(target.id) } returns updateEndpoint
+        every { updateEndpoint.comment(any()) } returns updateEndpoint
+        every { updateEndpoint.rating(any()) } returns updateEndpoint
+        every { updateEndpoint.build() } returns mockProxerCallNullableError()
+
+        viewModel.deleteComment(target)
+
+        assertNotNull(viewModel.itemDeletionError.value)
+        assertEquals(comments.map { it.id }, viewModel.data.value?.map { it.id })
     }
 
     @Test
