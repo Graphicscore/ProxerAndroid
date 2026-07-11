@@ -40,6 +40,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -47,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +66,7 @@ import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.toast
 import me.proxer.app.util.extension.toAppString
@@ -308,8 +312,19 @@ private fun IndustryProjectsTab(id: String) {
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) { viewModel.load() }
+
+    ObserveLiveDataEvent(viewModel.refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
+    }
 
     val gridState = rememberLazyGridState()
 
@@ -319,30 +334,33 @@ private fun IndustryProjectsTab(id: String) {
         if (total > 0 && last >= total - 5) viewModel.loadIfPossible()
     }
 
-    ContentScreen(
-        isLoading = isLoading == true && data.isNullOrEmpty(),
-        error = if (data.isNullOrEmpty()) error else null,
-        onRetry = { viewModel.load() },
-    ) {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(160.dp),
-            state = gridState,
-            modifier = Modifier.fillMaxSize(),
+    Box(modifier = Modifier.fillMaxSize()) {
+        ContentScreen(
+            isLoading = isLoading == true && data.isNullOrEmpty(),
+            error = if (data.isNullOrEmpty()) error else null,
+            onRetry = { viewModel.load() },
         ) {
-            items(data ?: emptyList(), key = { it.id }) { project ->
-                IndustryProjectItem(project = project)
-            }
-            if (isLoading == true && !data.isNullOrEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(160.dp),
+                state = gridState,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                items(data ?: emptyList(), key = { it.id }) { project ->
+                    IndustryProjectItem(project = project)
+                }
+                if (isLoading == true && !data.isNullOrEmpty()) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
             }
         }
+        SnackbarHost(hostState = snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
