@@ -19,7 +19,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -29,19 +28,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.util.ProxerUrls
@@ -77,26 +75,15 @@ private fun TopTenContent(
     onDelete: (LocalTopTenEntry) -> Unit,
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // itemDeletionError is a ResettingMutableLiveData - each failure is a one-shot event, not
-    // continuous state. observeAsState()+LaunchedEffect(value) would silently miss every failure
-    // after the first structurally-equal one, since Compose's default state-equality policy skips
-    // recomposition when the "new" value equals the current one. A raw Observer bypasses that.
-    DisposableEffect(lifecycleOwner, itemDeletionError) {
-        val observer = Observer<ErrorAction?> { err ->
-            if (err != null) {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        context.getString(R.string.error_top_ten_deletion, context.getString(err.message)),
-                    )
-                }
-            }
+    ObserveLiveDataEvent(itemDeletionError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_top_ten_deletion, context.getString(err.message)),
+            )
         }
-        itemDeletionError.observe(lifecycleOwner, observer)
-        onDispose { itemDeletionError.removeObserver(observer) }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
