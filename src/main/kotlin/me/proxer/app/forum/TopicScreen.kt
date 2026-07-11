@@ -28,12 +28,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +47,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.app.ShareCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
@@ -70,6 +78,7 @@ fun TopicScreen(
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val metaData by viewModel.metaData.observeAsState()
+    val refreshError = viewModel.refreshError
 
     val displaySubject = metaData?.subject ?: subject
 
@@ -85,6 +94,7 @@ fun TopicScreen(
         onBack = onBack,
         onRetry = { viewModel.load() },
         onLoadMore = { viewModel.loadIfPossible() },
+        refreshError = viewModel.refreshError,
     )
 }
 
@@ -93,6 +103,7 @@ fun TopicScreen(
 private fun TopicContent(
     data: List<ParsedPost>?,
     error: ErrorUtils.ErrorAction?,
+    refreshError: LiveData<ErrorUtils.ErrorAction?>,
     isLoading: Boolean?,
     displaySubject: String?,
     categoryId: String,
@@ -103,6 +114,16 @@ private fun TopicContent(
 ) {
     val context = LocalContext.current
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
+    }
 
     LaunchedEffect(listState.layoutInfo) {
         val total = listState.layoutInfo.totalItemsCount
@@ -111,6 +132,7 @@ private fun TopicContent(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -183,6 +205,7 @@ private fun TopicContentPreview() {
         TopicContent(
             data = null,
             error = null,
+            refreshError = MutableLiveData(null),
             isLoading = true,
             displaySubject = "Sample Topic",
             categoryId = "1",
