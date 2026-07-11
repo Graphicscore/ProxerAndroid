@@ -41,6 +41,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
@@ -51,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,11 +69,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.enumSetOf
@@ -168,6 +175,7 @@ fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
         onRetry = { viewModel.load() },
         onRefresh = { viewModel.refresh() },
         onLoadMore = { viewModel.loadIfPossible() },
+        refreshError = viewModel.refreshError,
     ) {
         MediaFilterSheet(
             category = category,
@@ -225,6 +233,7 @@ private fun MediaListContent(
     category: Category,
     data: List<MediaListEntry>?,
     error: ErrorAction?,
+    refreshError: LiveData<ErrorAction?>,
     isLoading: Boolean,
     isSearchActive: Boolean,
     searchQuery: String,
@@ -244,6 +253,17 @@ private fun MediaListContent(
     val gridState = rememberLazyGridState()
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
+    }
+
     LaunchedEffect(gridState.layoutInfo) {
         val total = gridState.layoutInfo.totalItemsCount
         val last = gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -260,6 +280,7 @@ private fun MediaListContent(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -706,6 +727,7 @@ private fun MediaListContentPreview() {
             category = Category.ANIME,
             data = null,
             error = null,
+            refreshError = MutableLiveData(null),
             isLoading = true,
             isSearchActive = false,
             searchQuery = "",
