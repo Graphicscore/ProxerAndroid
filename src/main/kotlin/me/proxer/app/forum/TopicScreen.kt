@@ -78,7 +78,6 @@ fun TopicScreen(
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val metaData by viewModel.metaData.observeAsState()
-    val refreshError = viewModel.refreshError
 
     val displaySubject = metaData?.subject ?: subject
 
