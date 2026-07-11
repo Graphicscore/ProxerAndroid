@@ -11,8 +11,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -31,7 +29,6 @@ import timber.log.Timber
 @Composable
 fun ImageDetailScreen(url: String, onClose: () -> Unit) {
     var hasError by remember { mutableStateOf(false) }
-    var retryCount by remember { mutableIntStateOf(0) }
 
     Box(
         modifier = Modifier
@@ -48,49 +45,44 @@ fun ImageDetailScreen(url: String, onClose: () -> Unit) {
                     tint = Color.White,
                     modifier = Modifier
                         .size(64.dp)
-                        .clickable {
-                            hasError = false
-                            retryCount++
-                        },
+                        .clickable { hasError = false },
                 )
             }
         } else if (LocalInspectionMode.current) {
             Box(modifier = Modifier.fillMaxSize().background(Color.Gray))
         } else {
-            key(retryCount) {
-                AndroidView(
-                    factory = { ctx ->
-                        SubsamplingScaleImageView(ctx).apply {
-                            setMinimumTileDpi(160)
+            AndroidView(
+                factory = { ctx ->
+                    SubsamplingScaleImageView(ctx).apply {
+                        setMinimumTileDpi(160)
 
-                            setOnImageEventListener(
-                                object : SubsamplingScaleImageView.OnImageEventListener {
-                                    override fun onReady() = Unit
-                                    override fun onImageLoaded() = Unit
+                        setOnImageEventListener(
+                            object : SubsamplingScaleImageView.OnImageEventListener {
+                                override fun onReady() = Unit
+                                override fun onImageLoaded() = Unit
 
-                                    override fun onPreviewLoadError(e: Exception) {
-                                        Timber.e(e, "Failed to load image preview for $url")
-                                    }
+                                override fun onPreviewLoadError(e: Exception) {
+                                    Timber.e(e, "Failed to load image preview for $url")
+                                }
 
-                                    override fun onImageLoadError(e: Exception) {
-                                        Timber.e(e, "Failed to load image for $url")
-                                        hasError = true
-                                    }
+                                override fun onImageLoadError(e: Exception) {
+                                    Timber.e(e, "Failed to load image for $url")
+                                    hasError = true
+                                }
 
-                                    override fun onTileLoadError(e: Exception) {
-                                        Timber.e(e, "Failed to load image tile for $url")
-                                    }
+                                override fun onTileLoadError(e: Exception) {
+                                    Timber.e(e, "Failed to load image tile for $url")
+                                }
 
-                                    override fun onPreviewReleased() = Unit
-                                },
-                            )
+                                override fun onPreviewReleased() = Unit
+                            },
+                        )
 
-                            setImage(ImageSource.uri(url))
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize(),
-                )
-            }
+                        setImage(ImageSource.uri(url))
+                    }
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
