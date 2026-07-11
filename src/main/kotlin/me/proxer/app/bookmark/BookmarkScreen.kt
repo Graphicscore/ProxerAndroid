@@ -100,6 +100,7 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
         itemDeletionError = viewModel.itemDeletionError,
         undoData = viewModel.undoData,
         undoError = viewModel.undoError,
+        refreshError = viewModel.refreshError,
         showFilterMenu = showFilterMenu,
         selectedCategory = selectedCategory,
         filterAvailable = filterAvailable,
@@ -160,6 +161,7 @@ private fun BookmarkContent(
     itemDeletionError: LiveData<ErrorAction?>,
     undoData: LiveData<Unit?>,
     undoError: LiveData<ErrorAction?>,
+    refreshError: LiveData<ErrorAction?>,
     showFilterMenu: Boolean,
     selectedCategory: Category?,
     filterAvailable: Boolean,
@@ -215,6 +217,14 @@ private fun BookmarkContent(
         scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_undo, context.getString(err.message)),
+            )
+        }
+    }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
             )
         }
     }
@@ -405,6 +415,7 @@ private fun BookmarkContentPreview() {
             itemDeletionError = MutableLiveData(null),
             undoData = MutableLiveData(null),
             undoError = MutableLiveData(null),
+            refreshError = MutableLiveData(null),
             showFilterMenu = false,
             selectedCategory = null,
             filterAvailable = false,
