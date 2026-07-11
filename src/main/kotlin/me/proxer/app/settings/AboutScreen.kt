@@ -103,7 +103,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     supportingContent = { Text(stringResource(R.string.about_source_code_description)) },
                     leadingContent = { Icon(Icons.Default.Code, contentDescription = null) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPOSITORY_URL)))
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(REPOSITORY_URL)))
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
@@ -128,7 +132,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     supportingContent = { Text(stringResource(R.string.about_facebook_description)) },
                     leadingContent = { Icon(Icons.Default.Public, contentDescription = null) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FACEBOOK_URL)))
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(FACEBOOK_URL)))
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
@@ -138,7 +146,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     supportingContent = { Text(stringResource(R.string.about_twitter_description)) },
                     leadingContent = { Icon(Icons.Default.Public, contentDescription = null) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(TWITTER_URL)))
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(TWITTER_URL)))
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
@@ -148,7 +160,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     supportingContent = { Text(stringResource(R.string.about_youtube_description)) },
                     leadingContent = { Icon(Icons.Default.Public, contentDescription = null) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(YOUTUBE_URL)))
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(YOUTUBE_URL)))
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
@@ -158,7 +174,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     headlineContent = { Text(stringResource(R.string.about_discord_title)) },
                     supportingContent = { Text(stringResource(R.string.about_discord_description)) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(DISCORD_URL)))
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(DISCORD_URL)))
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
@@ -174,7 +194,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     headlineContent = { Text(stringResource(R.string.about_support_info)) },
                     leadingContent = { Icon(Icons.Default.Info, contentDescription = null) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(TEAM_URL)))
+                        try {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(TEAM_URL)))
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
@@ -210,7 +234,13 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     supportingContent = { Text(DEVELOPER_GITHUB_NAME) },
                     leadingContent = { Icon(Icons.Default.Code, contentDescription = null) },
                     modifier = Modifier.clickable {
-                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/$DEVELOPER_GITHUB_NAME")))
+                        try {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/$DEVELOPER_GITHUB_NAME")),
+                            )
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(R.string.error_open_link_no_activity)
+                        }
                     },
                 )
             }
