@@ -1,6 +1,7 @@
 package me.proxer.app.info.translatorgroup
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.DrawableRes
@@ -65,6 +66,7 @@ import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toCategory
+import me.proxer.app.util.extension.toast
 import me.proxer.library.entity.info.TranslatorGroup
 import me.proxer.library.entity.list.TranslatorGroupProject
 import me.proxer.library.enums.Country
@@ -254,8 +256,10 @@ private fun TranslatorGroupInfoBody(data: TranslatorGroup) {
                     modifier = Modifier
                         .weight(0.6f)
                         .clickable {
-                            runCatching {
+                            try {
                                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(linkText)))
+                            } catch (_: ActivityNotFoundException) {
+                                context.toast(R.string.error_open_link_no_activity)
                             }
                         },
                 )
