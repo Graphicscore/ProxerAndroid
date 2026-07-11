@@ -62,6 +62,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.ui.view.bbcode.toSimpleBBTree
@@ -82,8 +83,6 @@ fun EditCommentScreen(
     val isLoading by viewModel.isLoading.observeAsState(false)
     val error by viewModel.error.observeAsState()
     val isUpdate by viewModel.isUpdate.observeAsState(id.isNullOrBlank().not())
-    val publishResult by viewModel.publishResult.observeAsState()
-    val publishError by viewModel.publishError.observeAsState()
 
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -106,21 +105,18 @@ fun EditCommentScreen(
         }
     }
 
-    LaunchedEffect(publishResult) {
-        val comment = publishResult ?: return@LaunchedEffect
-        val activity = context as? Activity ?: return@LaunchedEffect
+    ObserveLiveDataEvent(viewModel.publishResult) { comment ->
+        val activity = context as? Activity ?: return@ObserveLiveDataEvent
         activity.setResult(Activity.RESULT_OK, Intent().putExtra(EditCommentActivity.COMMENT_EXTRA, comment))
         Toast.makeText(context, R.string.fragment_edit_comment_published, Toast.LENGTH_SHORT).show()
         activity.finish()
     }
 
-    LaunchedEffect(publishError) {
-        publishError?.let { errorAction ->
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.error_comment_publish, context.getString(errorAction.message)),
-                )
-            }
+    ObserveLiveDataEvent(viewModel.publishError) { errorAction ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_comment_publish, context.getString(errorAction.message)),
+            )
         }
     }
 
