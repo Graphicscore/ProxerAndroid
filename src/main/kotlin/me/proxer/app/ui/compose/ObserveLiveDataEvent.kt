@@ -13,6 +13,9 @@ import androidx.lifecycle.Observer
  * events (Unit == Unit is always true; two identical ErrorActions from repeated identical
  * failures) because Compose skips recomposition when a "new" state value equals the current
  * one - a raw Observer fires once per genuine LiveData delivery regardless.
+ *
+ * onEvent takes `T & Any` (definitely non-null) so callers never need `!!`/`?.` even when the
+ * LiveData's declared type argument is nullable - do not simplify back to `(T) -> Unit`.
  */
 @Composable
 fun <T> ObserveLiveDataEvent(liveData: LiveData<T>, onEvent: (T & Any) -> Unit) {
