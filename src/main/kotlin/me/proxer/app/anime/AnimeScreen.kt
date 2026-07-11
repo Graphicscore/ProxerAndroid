@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.ShareCompat
 import androidx.core.content.getSystemService
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.anime.resolver.ProxerStreamResolver
 import me.proxer.app.anime.resolver.StreamResolutionResult
@@ -62,6 +64,7 @@ import me.proxer.app.media.MediaActivity
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.Utils
@@ -99,10 +102,6 @@ fun AnimeScreen(
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
-    val resolutionResult by viewModel.resolutionResult.observeAsState()
-    val resolutionError by viewModel.resolutionError.observeAsState()
-    val userStateData by viewModel.userStateData.observeAsState()
-    val userStateError by viewModel.userStateError.observeAsState()
 
     val name = data?.name ?: initialName
     val episodeAmount = data?.episodeAmount ?: initialEpisodeAmount
@@ -117,6 +116,7 @@ fun AnimeScreen(
     var showLoginDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
 
     DisposableEffect(Unit) {
         val disposable = storageHelper.isLoggedInObservable
@@ -126,46 +126,40 @@ fun AnimeScreen(
 
     LaunchedEffect(Unit) { viewModel.load() }
 
-    LaunchedEffect(resolutionResult) {
-        resolutionResult?.let { result ->
-            when (result) {
-                is StreamResolutionResult.Video -> {
-                    result.play(
-                        context, id, name, episode, language,
-                        ProxerUrls.entryImage(id).toString().let { Uri.parse(it) }, true,
-                    )
-                }
-                is StreamResolutionResult.Link -> {
-                    context.startActivity(result.makeIntent())
-                }
-                is StreamResolutionResult.App -> {
-                    result.navigate(context)
-                }
-                is StreamResolutionResult.Message -> {
-                    // Messages are shown inline in the stream list item.
-                }
+    ObserveLiveDataEvent(viewModel.resolutionResult) { result ->
+        when (result) {
+            is StreamResolutionResult.Video -> {
+                result.play(
+                    context, id, name, episode, language,
+                    ProxerUrls.entryImage(id).toString().let { Uri.parse(it) }, true,
+                )
+            }
+            is StreamResolutionResult.Link -> {
+                context.startActivity(result.makeIntent())
+            }
+            is StreamResolutionResult.App -> {
+                result.navigate(context)
+            }
+            is StreamResolutionResult.Message -> {
+                // Messages are shown inline in the stream list item.
             }
         }
     }
 
-    LaunchedEffect(resolutionError) {
-        resolutionError?.let { action ->
-            if (action is AppRequiredErrorAction) {
-                appRequiredAction = action
-            } else {
-                snackbarHostState.showSnackbar(context.getString(action.message))
-            }
+    ObserveLiveDataEvent(viewModel.resolutionError) { action ->
+        if (action is AppRequiredErrorAction) {
+            appRequiredAction = action
+        } else {
+            scope.launch { snackbarHostState.showSnackbar(context.getString(action.message)) }
         }
     }
 
-    LaunchedEffect(userStateData) {
-        if (userStateData != null) {
-            snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success))
-        }
+    ObserveLiveDataEvent(viewModel.userStateData) {
+        scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.fragment_set_user_info_success)) }
     }
 
-    LaunchedEffect(userStateError) {
-        userStateError?.let { action ->
+    ObserveLiveDataEvent(viewModel.userStateError) { action ->
+        scope.launch {
             snackbarHostState.showSnackbar(
                 context.getString(R.string.error_set_user_info, context.getString(action.message)),
             )
