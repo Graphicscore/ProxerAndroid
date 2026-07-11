@@ -25,7 +25,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -43,10 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils.ErrorAction
@@ -72,6 +71,7 @@ fun CommentsScreen(mediaId: String) {
         error = error,
         isLoading = isLoading == true,
         itemDeletionError = viewModel.itemDeletionError,
+        refreshError = viewModel.refreshError,
         currentUserId = storageHelper.user?.id,
         onRetry = { viewModel.load() },
         onRefresh = { viewModel.refresh() },
@@ -86,6 +86,7 @@ private fun CommentsContent(
     error: ErrorAction?,
     isLoading: Boolean,
     itemDeletionError: LiveData<ErrorAction?>,
+    refreshError: LiveData<ErrorAction?>,
     currentUserId: String?,
     onRetry: () -> Unit,
     onRefresh: () -> Unit,
@@ -105,22 +106,20 @@ private fun CommentsContent(
         if (total > 0 && last >= total - 5) onLoadMore()
     }
 
-    // itemDeletionError is a ResettingMutableLiveData - each failure is a one-shot event, not
-    // continuous state. observeAsState()+LaunchedEffect(value) would silently miss every failure
-    // after the first structurally-equal one, since Compose's default state-equality policy skips
-    // recomposition when the "new" value equals the current one. A raw Observer bypasses that.
-    DisposableEffect(lifecycleOwner, itemDeletionError) {
-        val observer = Observer<ErrorAction?> { err ->
-            if (err != null) {
-                scope.launch {
-                    snackbarHostState.showSnackbar(
-                        context.getString(R.string.error_comment_deletion, context.getString(err.message)),
-                    )
-                }
-            }
+    ObserveLiveDataEvent(itemDeletionError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_comment_deletion, context.getString(err.message)),
+            )
         }
-        itemDeletionError.observe(lifecycleOwner, observer)
-        onDispose { itemDeletionError.removeObserver(observer) }
+    }
+
+    ObserveLiveDataEvent(refreshError) { err ->
+        scope.launch {
+            snackbarHostState.showSnackbar(
+                context.getString(R.string.error_refresh, context.getString(err.message)),
+            )
+        }
     }
 
     deleteTarget?.let { comment ->
@@ -230,6 +229,7 @@ private fun CommentsContentPreview() {
             error = null,
             isLoading = true,
             itemDeletionError = MutableLiveData(null),
+            refreshError = MutableLiveData(null),
             currentUserId = null,
             onRetry = {},
             onRefresh = {},
