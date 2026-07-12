@@ -1,4 +1,5 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import dev.detekt.gradle.Detekt
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript { scriptHandler ->
     apply from: "${projectDir}/gradle/versions.gradle"
@@ -138,6 +139,8 @@ android {
         exclude "META-INF/rxkotlin.properties"
         exclude "META-INF/proguard/**"
         exclude "META-INF/README.md"
+        exclude "META-INF/LICENSE*"
+        exclude "META-INF/NOTICE*"
         exclude "META-INF/nanohttpd/**"
         exclude "kotlin/**"
         exclude "kotlinx/**"
@@ -165,7 +168,7 @@ ksp {
 kotlin {
     compilerOptions {
         allWarningsAsErrors = false
-        jvmTarget = "JVM_$javaVersion"
+        jvmTarget = JvmTarget.JVM_17
         freeCompilerArgs = ["-Xjsr305=strict", "-progressive"]
     }
 }
@@ -176,7 +179,7 @@ detekt {
     autoCorrect = false
 }
 
-tasks.withType(dev.detekt.gradle.Detekt).configureEach {
+tasks.withType(Detekt).configureEach {
     reports {
         markdown { required = true }
     }
