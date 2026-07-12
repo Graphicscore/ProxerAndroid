@@ -109,9 +109,13 @@ class StreamActivity : BaseActivity() {
     internal var isInFullscreenMode = false
         private set
 
+    private var pendingSystemBarsVisible: Boolean? = null
+
+    private val clearPendingSystemBarsRunnable = Runnable { pendingSystemBarsVisible = null }
+
     private var contentKey by mutableIntStateOf(0)
 
-    private val adFullscreenHandler = Handler(Looper.getMainLooper())
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,7 +130,17 @@ class StreamActivity : BaseActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { v, insets ->
             val systemBarsVisible = insets.isVisible(WindowInsetsCompat.Type.systemBars())
-            handleUIChange(systemBarsVisible)
+            val expected = pendingSystemBarsVisible
+
+            when {
+                expected == null -> handleUIChange(systemBarsVisible)
+                systemBarsVisible == expected -> {
+                    pendingSystemBarsVisible = null
+                    mainHandler.removeCallbacks(clearPendingSystemBarsRunnable)
+                }
+                else -> Unit
+            }
+
             ViewCompat.onApplyWindowInsets(v, insets)
         }
 
@@ -164,7 +178,7 @@ class StreamActivity : BaseActivity() {
     override fun onDestroy() {
         playerView.player = null
 
-        adFullscreenHandler.removeCallbacksAndMessages(null)
+        mainHandler.removeCallbacksAndMessages(null)
 
         super.onDestroy()
     }
@@ -216,6 +230,12 @@ class StreamActivity : BaseActivity() {
         val isInMultiWindowMode = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && this.isInMultiWindowMode
         val controller = WindowInsetsControllerCompat(window, window.decorView)
 
+        pendingSystemBarsVisible = !wantFullscreen || isInMultiWindowMode
+        mainHandler.removeCallbacks(clearPendingSystemBarsRunnable)
+        // Safety margin in case the system bars are already at the target state and never
+        // redispatch insets, which would otherwise leave pendingSystemBarsVisible stuck forever.
+        mainHandler.postDelayed(clearPendingSystemBarsRunnable, 500)
+
         if (wantFullscreen && !isInMultiWindowMode) {
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
@@ -234,7 +254,7 @@ class StreamActivity : BaseActivity() {
                 playerView.hideController()
             }
         } else {
-            adFullscreenHandler.postDelayed(3_000) {
+            mainHandler.postDelayed(3_000) {
                 toggleFullscreen(true)
             }
         }
