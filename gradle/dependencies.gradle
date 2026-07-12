@@ -127,7 +127,7 @@ dependencies {
     // unit tests, so ZoneId.systemDefault() throws ZoneRulesException. The plain (non "no-tzdb") jar
     // bundles the tzdb.dat resource, which the zone provider discovers on the classpath regardless of
     // which jar a given class loaded from.
-    testImplementation "org.threeten:threetenbp:1.7.1"
+    testImplementation "org.threeten:threetenbp:1.7.3"
 
     androidTestImplementation platform("androidx.compose:compose-bom:$composeBomVersion")
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
