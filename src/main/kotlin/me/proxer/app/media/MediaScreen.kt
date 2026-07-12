@@ -27,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import me.proxer.app.R
-import me.proxer.library.enums.Category
 import me.proxer.app.media.comments.CommentsScreen
 import me.proxer.app.media.discussion.DiscussionScreen
 import me.proxer.app.media.episode.EpisodeScreen
@@ -35,6 +34,7 @@ import me.proxer.app.media.info.MediaInfoScreen
 import me.proxer.app.media.recommendation.RecommendationScreen
 import me.proxer.app.media.relation.RelationScreen
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.library.enums.Category
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
