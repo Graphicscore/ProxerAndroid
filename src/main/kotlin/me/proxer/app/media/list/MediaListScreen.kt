@@ -22,6 +22,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -67,8 +69,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import coil.compose.AsyncImage
@@ -579,8 +579,11 @@ private fun MediaFilterSheet(
                         selected = genres.any { it.id == tag.id },
                         onClick = {
                             val updated =
-                                if (genres.any { it.id == tag.id }) genres.filter { it.id != tag.id }
-                                else genres + tag
+                                if (genres.any { it.id == tag.id }) {
+                                    genres.filter { it.id != tag.id }
+                                } else {
+                                    genres + tag
+                                }
                             onGenresChange(updated)
                         },
                         label = { Text(tag.name) },
@@ -601,8 +604,11 @@ private fun MediaFilterSheet(
                         selected = excludedGenres.any { it.id == tag.id },
                         onClick = {
                             val updated =
-                                if (excludedGenres.any { it.id == tag.id }) excludedGenres.filter { it.id != tag.id }
-                                else excludedGenres + tag
+                                if (excludedGenres.any { it.id == tag.id }) {
+                                    excludedGenres.filter { it.id != tag.id }
+                                } else {
+                                    excludedGenres + tag
+                                }
                             onExcludedGenresChange(updated)
                         },
                         label = { Text(tag.name) },
@@ -621,8 +627,11 @@ private fun MediaFilterSheet(
                     selected = fsk in fskConstraints,
                     onClick = {
                         val updated =
-                            if (fsk in fskConstraints) fskConstraints - fsk
-                            else fskConstraints + fsk
+                            if (fsk in fskConstraints) {
+                                fskConstraints - fsk
+                            } else {
+                                fskConstraints + fsk
+                            }
                         onFskConstraintsChange(updated)
                     },
                     label = { Text(fsk.toAppString(context)) },
@@ -641,8 +650,11 @@ private fun MediaFilterSheet(
                         selected = tags.any { it.id == tag.id },
                         onClick = {
                             val updated =
-                                if (tags.any { it.id == tag.id }) tags.filter { it.id != tag.id }
-                                else tags + tag
+                                if (tags.any { it.id == tag.id }) {
+                                    tags.filter { it.id != tag.id }
+                                } else {
+                                    tags + tag
+                                }
                             onTagsChange(updated)
                         },
                         label = { Text(tag.name) },
@@ -663,8 +675,11 @@ private fun MediaFilterSheet(
                         selected = excludedTags.any { it.id == tag.id },
                         onClick = {
                             val updated =
-                                if (excludedTags.any { it.id == tag.id }) excludedTags.filter { it.id != tag.id }
-                                else excludedTags + tag
+                                if (excludedTags.any { it.id == tag.id }) {
+                                    excludedTags.filter { it.id != tag.id }
+                                } else {
+                                    excludedTags + tag
+                                }
                             onExcludedTagsChange(updated)
                         },
                         label = { Text(tag.name) },

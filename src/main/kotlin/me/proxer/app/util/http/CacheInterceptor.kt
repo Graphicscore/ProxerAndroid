@@ -147,7 +147,7 @@ class CacheInterceptor : Interceptor {
             url.contains(ProxerUrls.apiBase.toString()) -> {
                 response.peekBodyAndUseEncoded {
                     it.readUtf8(12).matches(apiSuccessRegex)
-                } ?: false
+                }
             }
 
             else -> {
@@ -171,16 +171,16 @@ class CacheInterceptor : Interceptor {
 
     private inline fun <R> Response.peekBodyAndUseEncoded(block: (BufferedSource) -> R) = this
         .body
-        ?.source()
-        ?.peek()
-        ?.let {
+        .source()
+        .peek()
+        .let {
             when {
                 this.hasContentEncoding("gzip") -> GzipSource(it)
                 this.hasContentEncoding("br") -> BrotliInputStream(it.inputStream()).source()
                 else -> it
             }
-        }?.buffer()
-        ?.use(block)
+        }.buffer()
+        .use(block)
 
     private class CacheInfo(
         private val applicableCallback: (Response) -> Boolean,

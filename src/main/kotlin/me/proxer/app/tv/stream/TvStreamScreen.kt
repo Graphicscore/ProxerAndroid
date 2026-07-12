@@ -113,9 +113,7 @@ fun TvStreamScreen(entryId: String, episode: Int, language: AnimeLanguage, entry
                     ).show()
             }
 
-            null -> {
-                Unit
-            }
+            null -> {}
         }
         if (resolutionResult != null) {
             showResolutionError = false

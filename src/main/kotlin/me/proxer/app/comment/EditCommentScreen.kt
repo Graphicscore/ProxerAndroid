@@ -14,9 +14,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.filled.FormatAlignLeft
 import androidx.compose.material.icons.automirrored.filled.FormatAlignRight
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.FormatAlignCenter
 import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatColorFill
@@ -32,11 +32,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -72,12 +72,7 @@ import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditCommentScreen(
-    id: String?,
-    entryId: String?,
-    name: String?,
-    onBack: () -> Unit,
-) {
+fun EditCommentScreen(id: String?, entryId: String?, name: String?, onBack: () -> Unit) {
     val viewModel = koinViewModel<EditCommentViewModel> { parametersOf(id, entryId) }
     val data by viewModel.data.observeAsState()
     val isLoading by viewModel.isLoading.observeAsState(false)
@@ -172,7 +167,11 @@ private fun EditCommentContent(
             TopAppBar(
                 title = {
                     Column {
-                        Text(stringResource(if (isUpdate) R.string.action_update_comment else R.string.action_create_comment))
+                        Text(
+                            stringResource(
+                                if (isUpdate) R.string.action_update_comment else R.string.action_create_comment,
+                            ),
+                        )
                         name?.trim()?.takeIf { it.isNotEmpty() }?.let { subtitle ->
                             Text(subtitle, style = MaterialTheme.typography.bodySmall)
                         }
@@ -223,6 +222,7 @@ private fun EditCommentContent(
                         onRatingChanged = onRatingChanged,
                         onInsertTag = onInsertTag,
                     )
+
                     1 -> PreviewTab(text = textFieldValue.text)
                 }
             }
@@ -312,91 +312,157 @@ private fun EditTab(
                 Icon(Icons.Default.FormatBold, contentDescription = stringResource(R.string.fragment_edit_comment_bold))
             }
             IconButton(onClick = { onInsertTag("i", "") }) {
-                Icon(Icons.Default.FormatItalic, contentDescription = stringResource(R.string.fragment_edit_comment_italic))
+                Icon(
+                    Icons.Default.FormatItalic,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_italic),
+                )
             }
             IconButton(onClick = { onInsertTag("u", "") }) {
-                Icon(Icons.Default.FormatUnderlined, contentDescription = stringResource(R.string.fragment_edit_comment_underline))
+                Icon(
+                    Icons.Default.FormatUnderlined,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_underline),
+                )
             }
             IconButton(onClick = { onInsertTag("s", "") }) {
-                Icon(Icons.Default.FormatStrikethrough, contentDescription = stringResource(R.string.fragment_edit_comment_strikethrough))
+                Icon(
+                    Icons.Default.FormatStrikethrough,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_strikethrough),
+                )
             }
             Box {
                 IconButton(onClick = { showSizeMenu = true }) {
-                    Icon(Icons.Default.FormatSize, contentDescription = stringResource(R.string.fragment_edit_comment_size))
+                    Icon(
+                        Icons.Default.FormatSize,
+                        contentDescription = stringResource(R.string.fragment_edit_comment_size),
+                    )
                 }
                 DropdownMenu(expanded = showSizeMenu, onDismissRequest = { showSizeMenu = false }) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_size_huge)) },
-                        onClick = { onInsertTag("size", "5"); showSizeMenu = false },
+                        onClick = {
+                            onInsertTag("size", "5")
+                            showSizeMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_size_large)) },
-                        onClick = { onInsertTag("size", "4"); showSizeMenu = false },
+                        onClick = {
+                            onInsertTag("size", "4")
+                            showSizeMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_size_normal)) },
-                        onClick = { onInsertTag("size", "3"); showSizeMenu = false },
+                        onClick = {
+                            onInsertTag("size", "3")
+                            showSizeMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_size_small)) },
-                        onClick = { onInsertTag("size", "2"); showSizeMenu = false },
+                        onClick = {
+                            onInsertTag("size", "2")
+                            showSizeMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_size_tiny)) },
-                        onClick = { onInsertTag("size", "1"); showSizeMenu = false },
+                        onClick = {
+                            onInsertTag("size", "1")
+                            showSizeMenu = false
+                        },
                     )
                 }
             }
             Box {
                 IconButton(onClick = { showColorMenu = true }) {
-                    Icon(Icons.Default.FormatColorFill, contentDescription = stringResource(R.string.fragment_edit_comment_color))
+                    Icon(
+                        Icons.Default.FormatColorFill,
+                        contentDescription = stringResource(R.string.fragment_edit_comment_color),
+                    )
                 }
                 DropdownMenu(expanded = showColorMenu, onDismissRequest = { showColorMenu = false }) {
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_red)) },
-                        onClick = { onInsertTag("color", "#e53935"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#e53935")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_purple)) },
-                        onClick = { onInsertTag("color", "#8e24aa"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#8e24aa")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_blue)) },
-                        onClick = { onInsertTag("color", "#1e88e5"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#1e88e5")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_green)) },
-                        onClick = { onInsertTag("color", "#43a047"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#43a047")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_yellow)) },
-                        onClick = { onInsertTag("color", "#fdd835"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#fdd835")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_orange)) },
-                        onClick = { onInsertTag("color", "#fb8c00"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#fb8c00")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_grey)) },
-                        onClick = { onInsertTag("color", "#757575"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#757575")
+                            showColorMenu = false
+                        },
                     )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.fragment_edit_comment_color_white)) },
-                        onClick = { onInsertTag("color", "#ffffff"); showColorMenu = false },
+                        onClick = {
+                            onInsertTag("color", "#ffffff")
+                            showColorMenu = false
+                        },
                     )
                 }
             }
             IconButton(onClick = { onInsertTag("left", "") }) {
-                Icon(Icons.AutoMirrored.Filled.FormatAlignLeft, contentDescription = stringResource(R.string.fragment_edit_comment_left))
+                Icon(
+                    Icons.AutoMirrored.Filled.FormatAlignLeft,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_left),
+                )
             }
             IconButton(onClick = { onInsertTag("center", "") }) {
-                Icon(Icons.Default.FormatAlignCenter, contentDescription = stringResource(R.string.fragment_edit_comment_center))
+                Icon(
+                    Icons.Default.FormatAlignCenter,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_center),
+                )
             }
             IconButton(onClick = { onInsertTag("right", "") }) {
-                Icon(Icons.AutoMirrored.Filled.FormatAlignRight, contentDescription = stringResource(R.string.fragment_edit_comment_right))
+                Icon(
+                    Icons.AutoMirrored.Filled.FormatAlignRight,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_right),
+                )
             }
             IconButton(onClick = { onInsertTag("spoiler", "") }) {
-                Icon(Icons.Default.VisibilityOff, contentDescription = stringResource(R.string.fragment_edit_comment_spoiler))
+                Icon(
+                    Icons.Default.VisibilityOff,
+                    contentDescription = stringResource(R.string.fragment_edit_comment_spoiler),
+                )
             }
         }
     }

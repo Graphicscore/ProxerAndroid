@@ -7,7 +7,6 @@ import io.reactivex.exceptions.CompositeException
 import io.reactivex.exceptions.Exceptions
 import io.reactivex.plugins.RxJavaPlugins
 import okhttp3.Call
-import java.io.IOException
 
 /**
  * @author Ruben Gees
@@ -27,16 +26,12 @@ class CallStringBodySingle(private val originalCall: Call) : Single<String>() {
 
         try {
             call.execute().use {
-                val body = it.body?.string()
+                val body = it.body.string()
 
                 if (!disposable.isDisposed) {
                     terminated = true
 
-                    if (body == null) {
-                        observer.onError(IOException(NullPointerException("body is null")))
-                    } else {
-                        observer.onSuccess(body)
-                    }
+                    observer.onSuccess(body)
                 }
             }
         } catch (t: Throwable) {

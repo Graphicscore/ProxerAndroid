@@ -303,9 +303,18 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
                 preferenceHelper.isAgeRestrictedMediaAllowed = false
             }
         },
-        onAutoBookmarkChange = { autoBookmark = it; preferenceHelper.areBookmarksAutomatic = it },
-        onCheckCellularChange = { checkCellular = it; preferenceHelper.shouldCheckCellular = it },
-        onCheckLinksChange = { checkLinks = it; preferenceHelper.shouldCheckLinks = it },
+        onAutoBookmarkChange = {
+            autoBookmark = it
+            preferenceHelper.areBookmarksAutomatic = it
+        },
+        onCheckCellularChange = {
+            checkCellular = it
+            preferenceHelper.shouldCheckCellular = it
+        },
+        onCheckLinksChange = {
+            checkLinks = it
+            preferenceHelper.shouldCheckLinks = it
+        },
         onExternalCacheChange = {
             externalCache = it
             preferenceHelper.shouldCacheExternally = it
@@ -330,8 +339,16 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
         },
         onNotificationsIntervalClick = { showNotificationsIntervalDialog = true },
         onHttpLogLevelClick = { showHttpLogLevelDialog = true },
-        onHttpVerboseChange = { httpVerbose = it; preferenceHelper.shouldLogHttpVerbose = it; restartTrigger++ },
-        onHttpRedactTokenChange = { httpRedactToken = it; preferenceHelper.shouldRedactToken = it; restartTrigger++ },
+        onHttpVerboseChange = {
+            httpVerbose = it
+            preferenceHelper.shouldLogHttpVerbose = it
+            restartTrigger++
+        },
+        onHttpRedactTokenChange = {
+            httpRedactToken = it
+            preferenceHelper.shouldRedactToken = it
+            restartTrigger++
+        },
     )
 }
 
@@ -388,7 +405,6 @@ private fun SettingsContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-
             // Profile link
             item {
                 ListItem(
@@ -406,8 +422,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_age_confirmation_title)) },
                     supportingContent = {
                         Text(
-                            if (ageRestricted) stringResource(R.string.preference_age_confirmation_summary_on)
-                            else stringResource(R.string.preference_age_confirmation_summary_off),
+                            if (ageRestricted) {
+                                stringResource(R.string.preference_age_confirmation_summary_on)
+                            } else {
+                                stringResource(R.string.preference_age_confirmation_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -424,8 +443,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_auto_bookmark_title)) },
                     supportingContent = {
                         Text(
-                            if (autoBookmark) stringResource(R.string.preference_auto_bookmark_summary_on)
-                            else stringResource(R.string.preference_auto_bookmark_summary_off),
+                            if (autoBookmark) {
+                                stringResource(R.string.preference_auto_bookmark_summary_on)
+                            } else {
+                                stringResource(R.string.preference_auto_bookmark_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -442,8 +464,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_check_wifi_title)) },
                     supportingContent = {
                         Text(
-                            if (checkCellular) stringResource(R.string.preference_check_wifi_summary_on)
-                            else stringResource(R.string.preference_check_wifi_summary_off),
+                            if (checkCellular) {
+                                stringResource(R.string.preference_check_wifi_summary_on)
+                            } else {
+                                stringResource(R.string.preference_check_wifi_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -460,8 +485,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_check_links_title)) },
                     supportingContent = {
                         Text(
-                            if (checkLinks) stringResource(R.string.preference_check_links_summary_on)
-                            else stringResource(R.string.preference_check_links_summary_off),
+                            if (checkLinks) {
+                                stringResource(R.string.preference_check_links_summary_on)
+                            } else {
+                                stringResource(R.string.preference_check_links_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -479,8 +507,11 @@ private fun SettingsContent(
                         headlineContent = { Text(stringResource(R.string.preference_external_cache_title)) },
                         supportingContent = {
                             Text(
-                                if (externalCache) stringResource(R.string.preference_external_cache_summary_on)
-                                else stringResource(R.string.preference_external_cache_summary_off),
+                                if (externalCache) {
+                                    stringResource(R.string.preference_external_cache_summary_on)
+                                } else {
+                                    stringResource(R.string.preference_external_cache_summary_off)
+                                },
                             )
                         },
                         trailingContent = {
@@ -520,8 +551,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_notifications_news_title)) },
                     supportingContent = {
                         Text(
-                            if (newsNotifications) stringResource(R.string.preference_notifications_summary_on)
-                            else stringResource(R.string.preference_notifications_summary_off),
+                            if (newsNotifications) {
+                                stringResource(R.string.preference_notifications_summary_on)
+                            } else {
+                                stringResource(R.string.preference_notifications_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -538,8 +572,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_notifications_account_title)) },
                     supportingContent = {
                         Text(
-                            if (accountNotifications) stringResource(R.string.preference_notifications_summary_on)
-                            else stringResource(R.string.preference_notifications_summary_off),
+                            if (accountNotifications) {
+                                stringResource(R.string.preference_notifications_summary_on)
+                            } else {
+                                stringResource(R.string.preference_notifications_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -556,8 +593,11 @@ private fun SettingsContent(
                     headlineContent = { Text(stringResource(R.string.preference_notifications_chat_title)) },
                     supportingContent = {
                         Text(
-                            if (chatNotifications) stringResource(R.string.preference_notifications_summary_on)
-                            else stringResource(R.string.preference_notifications_summary_off),
+                            if (chatNotifications) {
+                                stringResource(R.string.preference_notifications_summary_on)
+                            } else {
+                                stringResource(R.string.preference_notifications_summary_off)
+                            },
                         )
                     },
                     trailingContent = {
@@ -592,7 +632,11 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.preference_developer_options_http_log_level_title)) },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.preference_developer_options_http_log_level_title),
+                            )
+                        },
                         supportingContent = { Text(httpLogLevelTitle) },
                         modifier = Modifier.clickable(onClick = onHttpLogLevelClick),
                     )
@@ -600,7 +644,11 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.preference_developer_options_http_log_verbose_title)) },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.preference_developer_options_http_log_verbose_title),
+                            )
+                        },
                         supportingContent = {
                             Text(
                                 if (httpVerbose) {
@@ -621,7 +669,11 @@ private fun SettingsContent(
 
                 item {
                     ListItem(
-                        headlineContent = { Text(stringResource(R.string.preference_developer_options_http_redact_token_title)) },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.preference_developer_options_http_redact_token_title),
+                            )
+                        },
                         supportingContent = {
                             Text(
                                 if (httpRedactToken) {

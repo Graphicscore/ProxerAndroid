@@ -73,12 +73,27 @@ fun ProfileScreen(userId: String?, username: String?, initialTab: Int = 0, onBac
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             when (page) {
                 0 -> ProfileInfoScreen(userId = resolvedUserId, username = resolvedUsername)
+
                 1 -> ProfileAboutScreen(userId = resolvedUserId, username = resolvedUsername)
+
                 2 -> TopTenScreen(userId = resolvedUserId, username = resolvedUsername)
-                3 -> ProfileMediaListScreen(userId = resolvedUserId, username = resolvedUsername, category = Category.ANIME)
-                4 -> ProfileMediaListScreen(userId = resolvedUserId, username = resolvedUsername, category = Category.MANGA)
+
+                3 -> ProfileMediaListScreen(
+                    userId = resolvedUserId,
+                    username = resolvedUsername,
+                    category = Category.ANIME,
+                )
+
+                4 -> ProfileMediaListScreen(
+                    userId = resolvedUserId,
+                    username = resolvedUsername,
+                    category = Category.MANGA,
+                )
+
                 5 -> ProfileCommentScreen(userId = resolvedUserId, username = resolvedUsername)
+
                 6 -> HistoryScreen(userId = resolvedUserId, username = resolvedUsername)
+
                 else -> Unit
             }
         }

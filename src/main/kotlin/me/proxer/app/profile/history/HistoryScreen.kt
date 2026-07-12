@@ -38,7 +38,6 @@ import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.anime.AnimeActivity
 import me.proxer.app.manga.MangaActivity
-import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
@@ -141,6 +140,7 @@ private fun HistoryCard(entry: LocalUserHistoryEntry) {
                         entry.language.toAnimeLanguage(),
                         entry.name,
                     )
+
                     Category.MANGA, Category.NOVEL -> MangaActivity.navigateTo(
                         activity,
                         entry.entryId,

@@ -69,11 +69,7 @@ import org.threeten.bp.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MessengerScreen(
-    conference: LocalConference,
-    initialMessage: String? = null,
-    onBack: () -> Unit,
-) {
+fun MessengerScreen(conference: LocalConference, initialMessage: String? = null, onBack: () -> Unit) {
     val viewModel = koinViewModel<MessengerViewModel> { parametersOf(conference) }
     val reportViewModel = koinViewModel<MessengerReportViewModel>()
     val storageHelper: StorageHelper = koinInject()
@@ -143,7 +139,7 @@ private fun MessengerContent(
     var reportReason by remember { mutableStateOf("") }
 
     ObserveLiveDataEvent(draft) {
-        if (messageText.isBlank()) messageText = it ?: ""
+        if (messageText.isBlank()) messageText = it
     }
 
     ObserveLiveDataEvent(refreshError) { err ->
@@ -199,7 +195,10 @@ private fun MessengerContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { reportTarget = null; reportReason = "" }) {
+                TextButton(onClick = {
+                    reportTarget = null
+                    reportReason = ""
+                }) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },

@@ -67,6 +67,7 @@ class MediaActivity : BaseActivity() {
                 "forum" -> 5
                 else -> 0
             }
+
             else -> 0
         }
 

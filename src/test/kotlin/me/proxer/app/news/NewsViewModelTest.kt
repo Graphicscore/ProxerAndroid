@@ -196,6 +196,12 @@ class NewsViewModelTest : KoinTest {
 
         viewModel.load()
 
-        verify { preferenceHelper.lastNewsDate = firstDate.toInstant().let { org.threeten.bp.Instant.ofEpochMilli(it.toEpochMilli()) } }
+        verify {
+            preferenceHelper.lastNewsDate = firstDate.toInstant().let {
+                org.threeten.bp.Instant.ofEpochMilli(
+                    it.toEpochMilli(),
+                )
+            }
+        }
     }
 }

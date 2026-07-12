@@ -137,6 +137,7 @@ fun BookmarkScreen(onOpenDrawer: () -> Unit = {}) {
                         bookmark.language.toAnimeLanguage(),
                         bookmark.name,
                     )
+
                     Category.MANGA, Category.NOVEL -> MangaActivity.navigateTo(
                         it,
                         bookmark.entryId,

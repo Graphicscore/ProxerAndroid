@@ -89,12 +89,30 @@ private fun ProfileInfoBody(data: UserInfoWrapper) {
             modifier = Modifier.padding(bottom = 8.dp),
         )
 
-        ProfilePointRow(label = stringResource(R.string.fragment_profile_points_anime), value = userInfo.animePoints.toString())
-        ProfilePointRow(label = stringResource(R.string.fragment_profile_points_manga), value = userInfo.mangaPoints.toString())
-        ProfilePointRow(label = stringResource(R.string.fragment_profile_points_uploads), value = userInfo.uploadPoints.toString())
-        ProfilePointRow(label = stringResource(R.string.fragment_profile_points_forum), value = userInfo.forumPoints.toString())
-        ProfilePointRow(label = stringResource(R.string.fragment_profile_points_info), value = userInfo.infoPoints.toString())
-        ProfilePointRow(label = stringResource(R.string.fragment_profile_points_miscellaneous), value = userInfo.miscPoints.toString())
+        ProfilePointRow(
+            label = stringResource(R.string.fragment_profile_points_anime),
+            value = userInfo.animePoints.toString(),
+        )
+        ProfilePointRow(
+            label = stringResource(R.string.fragment_profile_points_manga),
+            value = userInfo.mangaPoints.toString(),
+        )
+        ProfilePointRow(
+            label = stringResource(R.string.fragment_profile_points_uploads),
+            value = userInfo.uploadPoints.toString(),
+        )
+        ProfilePointRow(
+            label = stringResource(R.string.fragment_profile_points_forum),
+            value = userInfo.forumPoints.toString(),
+        )
+        ProfilePointRow(
+            label = stringResource(R.string.fragment_profile_points_info),
+            value = userInfo.infoPoints.toString(),
+        )
+        ProfilePointRow(
+            label = stringResource(R.string.fragment_profile_points_miscellaneous),
+            value = userInfo.miscPoints.toString(),
+        )
         ProfilePointRow(label = stringResource(R.string.fragment_profile_points_total), value = totalPoints.toString())
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

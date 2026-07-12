@@ -247,7 +247,15 @@ class CommentsViewModelTest : KoinTest {
         viewModel.load()
 
         val target = viewModel.data.value!!.first()
-        val update = LocalComment(target.id, target.entryId, UserMediaProgress.WILL_WATCH, RatingDetails(9, 8, 7, 6, 5), "Updated", 9, target.episode)
+        val update = LocalComment(
+            target.id,
+            target.entryId,
+            UserMediaProgress.WILL_WATCH,
+            RatingDetails(9, 8, 7, 6, 5),
+            "Updated",
+            9,
+            target.episode,
+        )
 
         viewModel.updateComment(update)
 

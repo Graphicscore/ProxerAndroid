@@ -56,21 +56,16 @@ import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.library.util.ProxerUrls
-import me.proxer.app.ui.view.bbcode.BBCodeView
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopicScreen(
-    id: String,
-    categoryId: String,
-    subject: String?,
-    onBack: () -> Unit = {},
-) {
+fun TopicScreen(id: String, categoryId: String, subject: String?, onBack: () -> Unit = {}) {
     val context = LocalContext.current
     val resources = context.resources
     val viewModel = koinViewModel<TopicViewModel> { parametersOf(id, resources) }

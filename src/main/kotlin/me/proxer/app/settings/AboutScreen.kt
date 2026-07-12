@@ -32,10 +32,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.getSystemService
 import com.mikepenz.aboutlibraries.LibsBuilder
-import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.BuildConfig
 import me.proxer.app.R
 import me.proxer.app.settings.status.ServerStatusActivity
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.startActivityOrToast
 import me.proxer.app.util.extension.toast
 
@@ -91,6 +91,7 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     supportingContent = { Text(stringResource(R.string.about_licenses_description)) },
                     leadingContent = { Icon(Icons.Default.Code, contentDescription = null) },
                     modifier = Modifier.clickable {
+                        @Suppress("DEPRECATION")
                         LibsBuilder()
                             .withActivityTitle(context.getString(R.string.about_licenses_activity_title))
                             .start(context as Activity)

@@ -2,9 +2,9 @@ package me.proxer.app.ui.compose
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
  * Observes a one-shot LiveData event (e.g. a ResettingMutableLiveData error/success signal)

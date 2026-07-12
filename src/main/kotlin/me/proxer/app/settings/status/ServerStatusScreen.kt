@@ -100,8 +100,11 @@ private fun ServerStatusContent(
                         )
                         Text(
                             text = stringResource(
-                                if (allOnline) R.string.fragment_server_status_overall_online
-                                else R.string.fragment_server_status_overall_offline,
+                                if (allOnline) {
+                                    R.string.fragment_server_status_overall_online
+                                } else {
+                                    R.string.fragment_server_status_overall_offline
+                                },
                             ),
                             modifier = Modifier.padding(start = 8.dp),
                         )

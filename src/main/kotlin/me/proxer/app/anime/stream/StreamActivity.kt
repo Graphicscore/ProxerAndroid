@@ -134,10 +134,12 @@ class StreamActivity : BaseActivity() {
 
             when {
                 expected == null -> handleUIChange(systemBarsVisible)
+
                 systemBarsVisible == expected -> {
                     pendingSystemBarsVisible = null
                     mainHandler.removeCallbacks(clearPendingSystemBarsRunnable)
                 }
+
                 else -> Unit
             }
 

@@ -113,7 +113,9 @@ fun TranslatorGroupScreen(id: String, initialName: String?, onBack: () -> Unit) 
                         .startChooser()
                 }
             }
-        } else null,
+        } else {
+            null
+        },
     ) {
         HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
             when (page) {

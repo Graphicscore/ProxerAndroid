@@ -12,8 +12,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.IntentCompat
 import androidx.core.view.WindowCompat
-import com.rubengees.introduction.IntroductionBuilder
 import com.rubengees.introduction.IntroductionActivity.OPTION_RESULT
+import com.rubengees.introduction.IntroductionBuilder
 import com.rubengees.introduction.Option
 import me.proxer.app.base.BaseActivity
 import me.proxer.app.notification.NotificationWorker
@@ -23,8 +23,8 @@ import me.proxer.app.settings.theme.ThemeVariant
 import me.proxer.app.ui.compose.MainScreen
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.extension.intentFor
-import me.proxer.app.util.wrapper.IntroductionWrapper
 import me.proxer.app.util.wrapper.DrawerItem
+import me.proxer.app.util.wrapper.IntroductionWrapper
 
 /**
  * @author Ruben Gees

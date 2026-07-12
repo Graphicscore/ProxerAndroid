@@ -197,32 +197,44 @@ private fun MediaInfoBody(
                     Icon(
                         Icons.Default.BookmarkAdd,
                         contentDescription = stringResource(R.string.fragment_media_info_note),
-                        tint = if (userInfo?.isNoted == true) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
+                        tint = if (userInfo?.isNoted == true) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                 }
                 IconButton(onClick = onFavorite) {
                     Icon(
                         Icons.Default.Star,
                         contentDescription = stringResource(R.string.fragment_media_info_favor),
-                        tint = if (userInfo?.isTopTen == true) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
+                        tint = if (userInfo?.isTopTen == true) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                 }
                 IconButton(onClick = onFinish) {
                     Icon(
                         Icons.Default.Check,
                         contentDescription = stringResource(R.string.fragment_media_info_finish),
-                        tint = if (userInfo?.isFinished == true) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
+                        tint = if (userInfo?.isFinished == true) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                 }
                 IconButton(onClick = onSubscribe) {
                     Icon(
                         Icons.Default.Notifications,
                         contentDescription = stringResource(R.string.fragment_media_info_subscribe),
-                        tint = if (userInfo?.isSubscribed == true) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface,
+                        tint = if (userInfo?.isSubscribed == true) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                 }
             }
@@ -292,7 +304,9 @@ private fun MediaInfoBody(
                                 medium?.toCategory(),
                             )
                         }
-                    } else null,
+                    } else {
+                        null
+                    },
                 )
             }
         }

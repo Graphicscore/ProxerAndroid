@@ -31,10 +31,14 @@ fun WebViewScreen(url: String, onBack: () -> Unit) {
     val isInPreview = LocalInspectionMode.current
 
     val webView = remember {
-        if (isInPreview) null else WebView(context).apply {
-            webViewClient = WebViewClient()
-            settings.javaScriptEnabled = true
-            loadUrl(url)
+        if (isInPreview) {
+            null
+        } else {
+            WebView(context).apply {
+                webViewClient = WebViewClient()
+                settings.javaScriptEnabled = true
+                loadUrl(url)
+            }
         }
     }
 

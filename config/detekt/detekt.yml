@@ -19,10 +19,12 @@ ktlint:
   MaximumLineLength:
     active: true
     maxLineLength: 120
+  # detekt-rules-ktlint-wrapper 2.0.0-alpha.5 hardcodes FunctionNamingRule's
+  # IGNORE_WHEN_ANNOTATED_WITH_PROPERTY override to "", so .editorconfig's
+  # ktlint_function_naming_ignore_when_annotated_with is never read - @Composable
+  # PascalCase functions can't be excluded short of disabling the rule outright.
   FunctionName:
-    active: true
-    excludes:
-      - "**/tv/**"
+    active: false
 
 naming:
   FunctionNaming:

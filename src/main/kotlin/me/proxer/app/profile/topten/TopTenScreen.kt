@@ -167,7 +167,13 @@ private fun TopTenCard(entry: LocalTopTenEntry, onDelete: (LocalTopTenEntry) -> 
         onClick = {
             if (activity != null) {
                 when (entry) {
-                    is LocalTopTenEntry.Ucp -> MediaActivity.navigateTo(activity, entry.entryId, entry.name, entry.category)
+                    is LocalTopTenEntry.Ucp -> MediaActivity.navigateTo(
+                        activity,
+                        entry.entryId,
+                        entry.name,
+                        entry.category,
+                    )
+
                     else -> MediaActivity.navigateTo(activity, entry.id, entry.name, entry.category)
                 }
             }

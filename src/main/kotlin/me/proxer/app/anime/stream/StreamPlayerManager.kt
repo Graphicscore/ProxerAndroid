@@ -243,7 +243,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
             localPlayer.setMediaSource(localMediaSource, false)
             localPlayer.prepare()
         } else if (currentPlayer == castPlayer) {
-            castPlayer?.run {
+            castPlayer.run {
                 setMediaItem(castMediaItem)
                 seekTo(lastPosition)
                 prepare()

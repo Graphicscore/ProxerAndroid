@@ -68,9 +68,9 @@ import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.Utils
+import me.proxer.app.util.compat.isConnectedToCellular
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
-import me.proxer.app.util.compat.isConnectedToCellular
 import me.proxer.app.util.extension.toEpisodeAppString
 import me.proxer.app.util.extension.toLocalDateTime
 import me.proxer.library.enums.AnimeLanguage
@@ -130,16 +130,24 @@ fun AnimeScreen(
         when (result) {
             is StreamResolutionResult.Video -> {
                 result.play(
-                    context, id, name, episode, language,
-                    ProxerUrls.entryImage(id).toString().let { Uri.parse(it) }, true,
+                    context,
+                    id,
+                    name,
+                    episode,
+                    language,
+                    ProxerUrls.entryImage(id).toString().let { Uri.parse(it) },
+                    true,
                 )
             }
+
             is StreamResolutionResult.Link -> {
                 context.startActivity(result.makeIntent())
             }
+
             is StreamResolutionResult.App -> {
                 result.navigate(context)
             }
+
             is StreamResolutionResult.Message -> {
                 // Messages are shown inline in the stream list item.
             }

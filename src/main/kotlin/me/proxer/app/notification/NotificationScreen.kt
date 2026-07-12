@@ -214,7 +214,9 @@ private fun NotificationContent(
                             ) {
                                 Icon(
                                     Icons.Default.Delete,
-                                    contentDescription = stringResource(R.string.fragment_notification_delete_content_description),
+                                    contentDescription = stringResource(
+                                        R.string.fragment_notification_delete_content_description,
+                                    ),
                                     tint = MaterialTheme.colorScheme.error,
                                 )
                             }

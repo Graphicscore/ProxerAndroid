@@ -28,7 +28,11 @@ class InAppUpdateFlow {
     private var progressListener: InstallStateUpdatedListener? = null
     private var failureListener: OnFailureListener? = null
 
-    fun start(activity: Activity, onUpdateAvailable: (download: () -> Unit) -> Unit, onUpdateReady: (install: () -> Unit) -> Unit) {
+    fun start(
+        activity: Activity,
+        onUpdateAvailable: (download: () -> Unit) -> Unit,
+        onUpdateReady: (install: () -> Unit) -> Unit,
+    ) {
         if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(activity) == ConnectionResult.SUCCESS) {
             appUpdateManager =
                 AppUpdateManagerFactory.create(activity).also { appUpdateManager ->

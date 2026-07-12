@@ -52,12 +52,7 @@ fun RelationScreen(mediaId: String) {
 }
 
 @Composable
-private fun RelationContent(
-    data: List<Relation>?,
-    error: ErrorAction?,
-    isLoading: Boolean,
-    onRetry: () -> Unit,
-) {
+private fun RelationContent(data: List<Relation>?, error: ErrorAction?, isLoading: Boolean, onRetry: () -> Unit) {
     ContentScreen(
         isLoading = isLoading,
         error = error,
