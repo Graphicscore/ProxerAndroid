@@ -27,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.launch
 import me.proxer.app.R
+import me.proxer.library.enums.Category
 import me.proxer.app.media.comments.CommentsScreen
 import me.proxer.app.media.discussion.DiscussionScreen
 import me.proxer.app.media.episode.EpisodeScreen
@@ -37,9 +38,14 @@ import me.proxer.app.ui.compose.ProxerTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+internal fun episodeTabTitleRes(category: Category?): Int = when (category) {
+    Category.MANGA -> R.string.category_manga_episodes_title
+    else -> R.string.category_anime_episodes_title
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MediaScreen(id: String, name: String, initialTab: Int = 0, onBack: () -> Unit) {
+fun MediaScreen(id: String, name: String, category: Category? = null, initialTab: Int = 0, onBack: () -> Unit) {
     val viewModel = koinViewModel<MediaInfoViewModel> { parametersOf(id) }
     val data by viewModel.data.observeAsState()
 
@@ -50,7 +56,7 @@ fun MediaScreen(id: String, name: String, initialTab: Int = 0, onBack: () -> Uni
     val tabs = listOf(
         R.string.section_media_info,
         R.string.section_comments,
-        R.string.category_anime_episodes_title,
+        episodeTabTitleRes(category),
         R.string.section_relations,
         R.string.section_recommendations,
         R.string.section_discussions,

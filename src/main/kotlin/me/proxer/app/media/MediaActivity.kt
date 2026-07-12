@@ -78,6 +78,7 @@ class MediaActivity : BaseActivity() {
                 MediaScreen(
                     id = id,
                     name = name ?: "",
+                    category = category,
                     initialTab = initialTab,
                     onBack = { finish() },
                 )
