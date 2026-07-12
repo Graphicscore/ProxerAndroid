@@ -116,7 +116,7 @@ dependencies {
 
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
-    testImplementation "io.mockk:mockk:1.13.12"
+    testImplementation "io.mockk:mockk:1.14.11"
     testImplementation "io.insert-koin:koin-test:$koinVersion"
     testImplementation "io.insert-koin:koin-test-junit4:$koinVersion"
     testImplementation "androidx.arch.core:core-testing:2.2.0"
