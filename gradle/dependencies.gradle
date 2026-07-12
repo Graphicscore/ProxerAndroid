@@ -131,5 +131,5 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
     androidTestImplementation "androidx.compose.ui:ui-test-manifest"
     androidTestImplementation "androidx.test.ext:junit:1.2.1"
-    androidTestImplementation "io.mockk:mockk-android:1.13.12"
+    androidTestImplementation "io.mockk:mockk-android:1.14.11"
 }
