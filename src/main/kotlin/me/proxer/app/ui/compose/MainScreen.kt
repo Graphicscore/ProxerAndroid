@@ -15,12 +15,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Bookmarks
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.OndemandVideo
 import androidx.compose.material.icons.filled.Settings
@@ -78,11 +78,7 @@ import me.proxer.library.enums.Category
 import me.proxer.library.util.ProxerUrls
 import org.koin.compose.koinInject
 
-private data class DrawerEntry(
-    val item: DrawerItem,
-    val labelRes: Int,
-    val icon: ImageVector,
-)
+private data class DrawerEntry(val item: DrawerItem, val labelRes: Int, val icon: ImageVector)
 
 private val drawerEntries = listOf(
     DrawerEntry(DrawerItem.NEWS, R.string.section_news, Icons.Default.Notifications),

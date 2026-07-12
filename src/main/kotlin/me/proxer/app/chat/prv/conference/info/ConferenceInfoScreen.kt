@@ -52,10 +52,7 @@ import org.threeten.bp.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConferenceInfoScreen(
-    conference: LocalConference,
-    onBack: () -> Unit,
-) {
+fun ConferenceInfoScreen(conference: LocalConference, onBack: () -> Unit) {
     val viewModel = koinViewModel<ConferenceInfoViewModel> { parametersOf(conference.id.toString()) }
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
@@ -149,10 +146,7 @@ private fun ConferenceInfoScreenContentPreview() {
 }
 
 @Composable
-private fun ConferenceInfoContent(
-    info: ConferenceInfo,
-    onParticipantClick: (ConferenceParticipant) -> Unit,
-) {
+private fun ConferenceInfoContent(info: ConferenceInfo, onParticipantClick: (ConferenceParticipant) -> Unit) {
     val dateTime = info.firstMessageTime.toLocalDateTimeBP()
     val creationDate = Utils.dateFormatter.format(dateTime)
     val creationTime = Utils.timeFormatter.format(dateTime)
@@ -176,11 +170,7 @@ private fun ConferenceInfoContent(
 }
 
 @Composable
-private fun ParticipantItem(
-    participant: ConferenceParticipant,
-    isLeader: Boolean,
-    onClick: () -> Unit,
-) {
+private fun ParticipantItem(participant: ConferenceParticipant, isLeader: Boolean, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()

@@ -609,6 +609,7 @@ object ErrorUtils {
                         is HttpUrl -> {
                             { activity.showPage(link, skipCheck = true) }
                         }
+
                         else -> null
                     }
                 }

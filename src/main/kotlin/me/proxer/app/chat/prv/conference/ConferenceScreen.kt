@@ -41,30 +41,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import me.proxer.app.R
 import me.proxer.app.chat.prv.ConferenceWithMessage
-import me.proxer.app.chat.prv.LocalConference
 import me.proxer.app.chat.prv.PrvMessengerActivity
 import me.proxer.app.ui.compose.ContentScreen
+import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toLocalDateTime
 import me.proxer.library.util.ProxerUrls
-import androidx.compose.ui.tooling.preview.Preview
-import me.proxer.app.ui.compose.ProxerTheme
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 /** Standalone conference list screen — used from PrvMessengerActivity in send-to mode. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ConferenceScreen(
-    initialMessage: String? = null,
-    onBack: () -> Unit,
-) {
+fun ConferenceScreen(initialMessage: String? = null, onBack: () -> Unit) {
     val viewModel = koinViewModel<ConferenceViewModel> { parametersOf("") }
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()
@@ -170,8 +166,11 @@ private fun ConferenceListContent(
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
                     stringResource(
-                        if (searchQuery.isBlank()) R.string.error_no_data_conferences
-                        else R.string.error_no_data_search,
+                        if (searchQuery.isBlank()) {
+                            R.string.error_no_data_conferences
+                        } else {
+                            R.string.error_no_data_search
+                        },
                     ),
                 )
             }

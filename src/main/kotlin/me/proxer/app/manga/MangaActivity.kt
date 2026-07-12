@@ -57,6 +57,7 @@ class MangaActivity : BaseActivity() {
         get() =
             when (intent.hasExtra(EPISODE_EXTRA)) {
                 true -> intent.getIntExtra(EPISODE_EXTRA, 1)
+
                 false ->
                     intent.data
                         ?.pathSegments

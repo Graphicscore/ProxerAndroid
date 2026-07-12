@@ -62,6 +62,7 @@ fun ContentScreen(
                     CircularProgressIndicator()
                 }
             }
+
             error != null -> {
                 Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
                     Column(
@@ -73,7 +74,9 @@ fun ContentScreen(
                                 onClick = {
                                     when (error.buttonAction) {
                                         ButtonAction.LOGIN -> showLoginDialog = true
+
                                         ButtonAction.AGE_CONFIRMATION -> showAgeConfirmationDialog = true
+
                                         ButtonAction.CAPTCHA,
                                         ButtonAction.NETWORK_SETTINGS,
                                         ButtonAction.OPEN_LINK,
@@ -82,6 +85,7 @@ fun ContentScreen(
                                                 error.toClickListener(activity)?.invoke()
                                             }
                                         }
+
                                         else -> onRetry()
                                     }
                                 },
@@ -97,6 +101,7 @@ fun ContentScreen(
                     }
                 }
             }
+
             else -> content()
         }
     }

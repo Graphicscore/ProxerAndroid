@@ -57,6 +57,7 @@ class ProfileActivity : BaseActivity() {
                 "chronik" -> 6
                 else -> 0
             }
+
             else -> 0
         }
 

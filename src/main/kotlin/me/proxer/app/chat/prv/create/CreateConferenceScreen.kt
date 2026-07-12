@@ -36,7 +36,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -45,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.chat.prv.Participant
 import me.proxer.app.chat.prv.PrvMessengerActivity
@@ -55,11 +55,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateConferenceScreen(
-    isGroup: Boolean,
-    initialParticipant: Participant? = null,
-    onBack: () -> Unit,
-) {
+fun CreateConferenceScreen(isGroup: Boolean, initialParticipant: Participant? = null, onBack: () -> Unit) {
     val viewModel = koinViewModel<CreateConferenceViewModel>()
     val isLoading by viewModel.isLoading.observeAsState(false)
     val context = LocalContext.current
@@ -141,7 +137,10 @@ private fun CreateConferenceContent(
             if (isGroup) {
                 OutlinedTextField(
                     value = topic,
-                    onValueChange = { topic = it; topicError = null },
+                    onValueChange = {
+                        topic = it
+                        topicError = null
+                    },
                     label = { Text(stringResource(R.string.fragment_create_conference_topic_hint)) },
                     isError = topicError != null,
                     supportingText = topicError?.let { { Text(it) } },
@@ -185,8 +184,15 @@ private fun CreateConferenceContent(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 OutlinedTextField(
                                     value = newParticipantName,
-                                    onValueChange = { newParticipantName = it; participantError = null },
-                                    label = { Text(stringResource(R.string.fragment_create_conference_add_participant_hint)) },
+                                    onValueChange = {
+                                        newParticipantName = it
+                                        participantError = null
+                                    },
+                                    label = {
+                                        Text(
+                                            stringResource(R.string.fragment_create_conference_add_participant_hint),
+                                        )
+                                    },
                                     isError = participantError != null,
                                     supportingText = participantError?.let { { Text(it) } },
                                     modifier = Modifier.weight(1f),
@@ -196,9 +202,15 @@ private fun CreateConferenceContent(
                                     onClick = {
                                         val name = newParticipantName.trim()
                                         when {
-                                            name.isBlank() -> participantError = context.getString(R.string.error_input_empty)
+                                            name.isBlank() -> participantError = context.getString(
+                                                R.string.error_input_empty,
+                                            )
+
                                             participants.any { it.username.equals(name, ignoreCase = true) } ->
-                                                participantError = context.getString(R.string.error_duplicate_participant)
+                                                participantError = context.getString(
+                                                    R.string.error_duplicate_participant,
+                                                )
+
                                             else -> {
                                                 participants.add(Participant(name))
                                                 newParticipantName = ""
@@ -209,7 +221,10 @@ private fun CreateConferenceContent(
                                 ) {
                                     Icon(Icons.Default.Add, contentDescription = null)
                                 }
-                                IconButton(onClick = { showAddParticipant = false; newParticipantName = "" }) {
+                                IconButton(onClick = {
+                                    showAddParticipant = false
+                                    newParticipantName = ""
+                                }) {
                                     Icon(Icons.Default.Close, contentDescription = null)
                                 }
                             }
@@ -234,17 +249,21 @@ private fun CreateConferenceContent(
                         isGroup && trimmedTopic.isBlank() -> {
                             topicError = context.getString(R.string.error_input_empty)
                         }
+
                         trimmedMessage.isBlank() -> {
                             scope.launch {
                                 snackbarHostState.showSnackbar(context.getString(R.string.error_input_empty))
                             }
                         }
+
                         participants.isEmpty() -> {
                             scope.launch {
                                 snackbarHostState.showSnackbar(context.getString(R.string.error_input_empty))
                             }
                         }
+
                         isGroup -> onCreateGroup(trimmedTopic, trimmedMessage, participants.toList())
+
                         else -> onCreateChat(trimmedMessage, participants.first())
                     }
                 },

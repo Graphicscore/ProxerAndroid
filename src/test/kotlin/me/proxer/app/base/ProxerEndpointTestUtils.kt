@@ -40,9 +40,7 @@ fun <T : Any> Endpoint<T>.stubSuccess(value: T) {
 }
 
 /** Stubs this mocked [Endpoint] so `buildSingle()` errors with [exception]. */
-fun <T : Any> Endpoint<T>.stubError(
-    exception: ProxerException = ProxerException(ProxerException.ErrorType.IO),
-) {
+fun <T : Any> Endpoint<T>.stubError(exception: ProxerException = ProxerException(ProxerException.ErrorType.IO)) {
     every { build() } returns mockProxerCallError(exception)
 }
 

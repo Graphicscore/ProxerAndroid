@@ -30,7 +30,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
@@ -39,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
@@ -198,7 +198,6 @@ private fun ProfileSettingsContent(
         val currentSettings = settings ?: return@Scaffold
 
         LazyColumn(modifier = Modifier.fillMaxSize().padding(padding)) {
-
             // ---- Ads category (bannerAdsEnabled hidden per original) ----
             item {
                 ProfileCategoryHeader(stringResource(R.string.profile_preference_ads_category_title))

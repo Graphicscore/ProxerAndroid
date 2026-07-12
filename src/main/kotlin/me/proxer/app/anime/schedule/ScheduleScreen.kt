@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -229,12 +229,14 @@ private fun ScheduleEntryCard(entry: CalendarEntry, onClick: () -> Unit) {
                         context.getString(R.string.fragment_schedule_uploaded)
                     }
                 }
+
                 airDateTime.isBefore(now) -> {
                     context.getString(
                         R.string.fragment_schedule_aired_remaining_time,
                         now.formattedDistanceTo(uploadDateTime),
                     )
                 }
+
                 else -> {
                     context.getString(
                         R.string.fragment_schedule_remaining_time,

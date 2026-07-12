@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
-import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,11 +45,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.cast.CastPlayer
 import androidx.media3.ui.PlayerView
+import androidx.mediarouter.app.MediaRouteButton
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.gms.cast.framework.CastButtonFactory
-import androidx.mediarouter.app.MediaRouteButton
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.coroutines.delay
@@ -63,10 +63,7 @@ import me.proxer.library.enums.Category
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StreamScreen(
-    activity: StreamActivity,
-    playerManager: StreamPlayerManager,
-) {
+fun StreamScreen(activity: StreamActivity, playerManager: StreamPlayerManager) {
     var playerState by remember { mutableStateOf(PlayerState.LOADING) }
     var error by remember { mutableStateOf<ErrorAction?>(null) }
     var isToolbarVisible by remember { mutableStateOf(false) }
@@ -246,8 +243,13 @@ fun StreamScreen(
                     },
                 )
             }
-        } else null,
-        onBack = { @Suppress("DEPRECATION") activity.onBackPressed() },
+        } else {
+            null
+        },
+        onBack = {
+            @Suppress("DEPRECATION")
+            activity.onBackPressed()
+        },
         onRewindClick = {
             activity.playerView.rewind()
             rewindCount += 10
@@ -258,7 +260,10 @@ fun StreamScreen(
             ffCount += 10
             ffHideKey++
         },
-        onRetry = { playerManager.retry(); error = null },
+        onRetry = {
+            playerManager.retry()
+            error = null
+        },
         onFinish = { activity.finish() },
         onOpenInOtherApp = { activity.openInOtherApp() },
         onToggleOrientation = { activity.toggleOrientation() },

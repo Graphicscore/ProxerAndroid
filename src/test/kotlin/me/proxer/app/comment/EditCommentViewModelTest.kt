@@ -107,7 +107,10 @@ class EditCommentViewModelTest : KoinTest {
         assertEquals(ENTRY_ID, viewModel.data.value?.entryId)
         assertEquals("", viewModel.data.value?.content)
         assertEquals(UserMediaProgress.WATCHED, viewModel.data.value?.mediaProgress)
-        assertEquals(RatingDetails(genre = 1, story = 2, animation = 3, characters = 4, music = 5), viewModel.data.value?.ratingDetails)
+        assertEquals(
+            RatingDetails(genre = 1, story = 2, animation = 3, characters = 4, music = 5),
+            viewModel.data.value?.ratingDetails,
+        )
         assertEquals(8, viewModel.data.value?.overallRating)
         assertEquals(5, viewModel.data.value?.episode)
         assertNull(viewModel.error.value)
@@ -170,7 +173,10 @@ class EditCommentViewModelTest : KoinTest {
         assertEquals(ENTRY_ID, viewModel.data.value?.entryId)
         assertEquals("", viewModel.data.value?.content)
         assertEquals(UserMediaProgress.WATCHED, viewModel.data.value?.mediaProgress)
-        assertEquals(RatingDetails(genre = 1, story = 2, animation = 3, characters = 4, music = 5), viewModel.data.value?.ratingDetails)
+        assertEquals(
+            RatingDetails(genre = 1, story = 2, animation = 3, characters = 4, music = 5),
+            viewModel.data.value?.ratingDetails,
+        )
         assertEquals(8, viewModel.data.value?.overallRating)
         assertEquals(5, viewModel.data.value?.episode)
         assertNull(viewModel.error.value)

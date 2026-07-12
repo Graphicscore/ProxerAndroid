@@ -87,12 +87,20 @@ private fun ProfileAboutBody(about: UserAbout) {
     }
 
     val fields = buildList {
-        if (about.occupation.isNotBlank()) add(context.getString(R.string.fragment_about_occupation) to about.occupation)
+        if (about.occupation.isNotBlank()) {
+            add(
+                context.getString(R.string.fragment_about_occupation) to about.occupation,
+            )
+        }
         if (about.interests.isNotBlank()) add(context.getString(R.string.fragment_about_interests) to about.interests)
         if (about.city.isNotBlank()) add(context.getString(R.string.fragment_about_city) to about.city)
         if (about.country.isNotBlank()) add(context.getString(R.string.fragment_about_country) to about.country)
         if (normalizedGender != null) add(context.getString(R.string.fragment_about_gender) to normalizedGender)
-        if (normalizedRelationshipStatus != null) add(context.getString(R.string.fragment_about_relationship_status) to normalizedRelationshipStatus)
+        if (normalizedRelationshipStatus != null) {
+            add(
+                context.getString(R.string.fragment_about_relationship_status) to normalizedRelationshipStatus,
+            )
+        }
         if (normalizedBirthday != null) add(context.getString(R.string.fragment_about_birthday) to normalizedBirthday)
         if (about.website.isNotBlank()) add(context.getString(R.string.fragment_about_website) to about.website)
         if (about.facebook.isNotBlank()) add(context.getString(R.string.fragment_about_facebook) to about.facebook)
@@ -100,7 +108,11 @@ private fun ProfileAboutBody(about: UserAbout) {
         if (about.chatango.isNotBlank()) add(context.getString(R.string.fragment_about_chatango) to about.chatango)
         if (about.twitter.isNotBlank()) add(context.getString(R.string.fragment_about_twitter) to about.twitter)
         if (about.skype.isNotBlank()) add(context.getString(R.string.fragment_about_skype) to about.skype)
-        if (about.deviantart.isNotBlank()) add(context.getString(R.string.fragment_about_deviantart) to about.deviantart)
+        if (about.deviantart.isNotBlank()) {
+            add(
+                context.getString(R.string.fragment_about_deviantart) to about.deviantart,
+            )
+        }
     }
 
     Column(

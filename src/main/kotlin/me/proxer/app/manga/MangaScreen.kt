@@ -381,13 +381,7 @@ private fun MangaContentPreview() {
 }
 
 @Composable
-private fun MangaPage(
-    page: Page,
-    chapter: Chapter,
-    isVertical: Boolean,
-    screenWidth: Int,
-    onLowMemory: () -> Unit,
-) {
+private fun MangaPage(page: Page, chapter: Chapter, isVertical: Boolean, screenWidth: Int, onLowMemory: () -> Unit) {
     if (page.decodedName.endsWith(".gif", ignoreCase = true)) {
         MangaGifPage(page = page, chapter = chapter, isVertical = isVertical, screenWidth = screenWidth)
     } else {
@@ -518,12 +512,7 @@ private fun MangaImagePage(
 }
 
 @Composable
-private fun MangaGifPage(
-    page: Page,
-    chapter: Chapter,
-    isVertical: Boolean,
-    screenWidth: Int,
-) {
+private fun MangaGifPage(page: Page, chapter: Chapter, isVertical: Boolean, screenWidth: Int) {
     val pageUrl = remember(chapter.server, chapter.entryId, chapter.id, page.decodedName) {
         ProxerUrls.mangaPageImage(chapter.server, chapter.entryId, chapter.id, page.decodedName).toString()
     }
