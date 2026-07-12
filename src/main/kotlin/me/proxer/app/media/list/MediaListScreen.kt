@@ -96,12 +96,16 @@ import me.proxer.library.util.ProxerUrls
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
+internal fun mediaListViewModelKey(category: Category): String = "media_list_${category.name}"
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun MediaListScreen(category: Category, onOpenDrawer: () -> Unit = {}) {
     val defaultType = if (category == Category.ANIME) MediaType.ALL_ANIME else MediaType.ALL_MANGA
 
-    val viewModel = koinViewModel<MediaListViewModel> {
+    val viewModel = koinViewModel<MediaListViewModel>(
+        key = mediaListViewModelKey(category),
+    ) {
         parametersOf(
             MediaSearchSortCriteria.RATING,
             defaultType,
