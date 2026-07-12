@@ -19,7 +19,7 @@ class TvSearchScreenTest {
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    @Test fun `search field is visible`() {
+    @Test fun `search_field_is_visible`() {
         composeTestRule.setContent {
             TvTheme {
                 TvSearchScreenContent(
@@ -36,7 +36,7 @@ class TvSearchScreenTest {
         composeTestRule.onNodeWithText(context.getString(R.string.error_unknown)).assertDoesNotExist()
     }
 
-    @Test fun `results grid shows entry names`() {
+    @Test fun `results_grid_shows_entry_names`() {
         val entries = listOf(
             fakeMediaListEntry(id = "1", name = "Attack on Titan"),
             fakeMediaListEntry(id = "2", name = "Sword Art Online"),
@@ -58,7 +58,7 @@ class TvSearchScreenTest {
         composeTestRule.onNodeWithText("Sword Art Online").assertIsDisplayed()
     }
 
-    @Test fun `query text is shown in search field`() {
+    @Test fun `query_text_is_shown_in_search_field`() {
         composeTestRule.setContent {
             TvTheme {
                 TvSearchScreenContent(
@@ -75,7 +75,7 @@ class TvSearchScreenTest {
         composeTestRule.onNodeWithText("naruto").assertIsDisplayed()
     }
 
-    @Test fun `error state shows error message`() {
+    @Test fun `error_state_shows_error_message`() {
         composeTestRule.setContent {
             TvTheme {
                 TvSearchScreenContent(

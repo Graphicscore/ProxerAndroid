@@ -21,7 +21,7 @@ class TvErrorViewTest {
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    @Test fun `generic error shows Retry button`() {
+    @Test fun `generic_error_shows_Retry_button`() {
         composeTestRule.setContent {
             TvTheme {
                 TvErrorView(
@@ -34,7 +34,7 @@ class TvErrorViewTest {
         composeTestRule.onNodeWithText(label).assertIsDisplayed()
     }
 
-    @Test fun `LOGIN action shows login button`() {
+    @Test fun `LOGIN_action_shows_login_button`() {
         composeTestRule.setContent {
             TvTheme {
                 TvErrorView(
@@ -52,7 +52,7 @@ class TvErrorViewTest {
         composeTestRule.onNodeWithText(label).assertIsDisplayed()
     }
 
-    @Test fun `AGE_CONFIRMATION action shows age button`() {
+    @Test fun `AGE_CONFIRMATION_action_shows_age_button`() {
         composeTestRule.setContent {
             TvTheme {
                 TvErrorView(
@@ -70,7 +70,7 @@ class TvErrorViewTest {
         composeTestRule.onNodeWithText(label).assertIsDisplayed()
     }
 
-    @Test fun `AGE_CONFIRMATION click shows AlertDialog`() {
+    @Test fun `AGE_CONFIRMATION_click_shows_AlertDialog`() {
         composeTestRule.setContent {
             TvTheme {
                 TvErrorView(
@@ -91,7 +91,7 @@ class TvErrorViewTest {
         composeTestRule.onNodeWithText(dialogContent, substring = true).assertIsDisplayed()
     }
 
-    @Test fun `ACTION_MESSAGE_HIDE removes button`() {
+    @Test fun `ACTION_MESSAGE_HIDE_removes_button`() {
         composeTestRule.setContent {
             TvTheme {
                 TvErrorView(
@@ -107,7 +107,7 @@ class TvErrorViewTest {
         composeTestRule.onNodeWithText(retryLabel).assertDoesNotExist()
     }
 
-    @Test fun `error message text is displayed`() {
+    @Test fun `error_message_text_is_displayed`() {
         composeTestRule.setContent {
             TvTheme {
                 TvErrorView(

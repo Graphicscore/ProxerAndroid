@@ -19,7 +19,7 @@ class TvMediaDetailScreenTest {
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    @Test fun `populated state shows entry name`() {
+    @Test fun `populated_state_shows_entry_name`() {
         composeTestRule.setContent {
             TvTheme {
                 TvMediaDetailScreenContent(
@@ -39,7 +39,7 @@ class TvMediaDetailScreenTest {
         composeTestRule.onNodeWithText("Attack on Titan").assertIsDisplayed()
     }
 
-    @Test fun `populated state shows description`() {
+    @Test fun `populated_state_shows_description`() {
         composeTestRule.setContent {
             TvTheme {
                 TvMediaDetailScreenContent(
@@ -59,7 +59,7 @@ class TvMediaDetailScreenTest {
         composeTestRule.onNodeWithText("Humanity fights giant humanoid creatures.").assertIsDisplayed()
     }
 
-    @Test fun `error state shows error message`() {
+    @Test fun `error_state_shows_error_message`() {
         composeTestRule.setContent {
             TvTheme {
                 TvMediaDetailScreenContent(
@@ -80,7 +80,7 @@ class TvMediaDetailScreenTest {
         composeTestRule.onNodeWithText(errorText).assertIsDisplayed()
     }
 
-    @Test fun `loading state does not show description`() {
+    @Test fun `loading_state_does_not_show_description`() {
         composeTestRule.setContent {
             TvTheme {
                 TvMediaDetailScreenContent(

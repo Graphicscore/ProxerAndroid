@@ -19,7 +19,7 @@ class TvEpisodeScreenTest {
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    @Test fun `entry name is shown in header`() {
+    @Test fun `entry_name_is_shown_in_header`() {
         composeTestRule.setContent {
             TvTheme {
                 TvEpisodeScreenContent(
@@ -36,7 +36,7 @@ class TvEpisodeScreenTest {
         composeTestRule.onNodeWithText("Sword Art Online").assertIsDisplayed()
     }
 
-    @Test fun `episodes list shows episode numbers`() {
+    @Test fun `episodes_list_shows_episode_numbers`() {
         val episodes = listOf(
             fakeEpisodeRow(number = 1),
             fakeEpisodeRow(number = 2),
@@ -59,7 +59,7 @@ class TvEpisodeScreenTest {
         composeTestRule.onNodeWithText("Episode 2").assertIsDisplayed()
     }
 
-    @Test fun `error state shows error message`() {
+    @Test fun `error_state_shows_error_message`() {
         composeTestRule.setContent {
             TvTheme {
                 TvEpisodeScreenContent(
@@ -77,7 +77,7 @@ class TvEpisodeScreenTest {
         composeTestRule.onNodeWithText(errorText).assertIsDisplayed()
     }
 
-    @Test fun `loading state with no episodes does not show entry list`() {
+    @Test fun `loading_state_with_no_episodes_does_not_show_entry_list`() {
         composeTestRule.setContent {
             TvTheme {
                 TvEpisodeScreenContent(
