@@ -139,8 +139,9 @@ On the device:
 3. Rotate to landscape (fullscreen), repeat the tap test — same result.
 4. Enter and exit multi-window/split-screen mode while the stream plays — system bars and controls still toggle correctly.
 5. If ad playback is reachable in test conditions, let an ad play through to confirm the fullscreen re-entry after ad end (`adFullscreenHandler` path) still works.
+6. Right after that ad-end fullscreen re-entry (a `toggleFullscreen()` call made when the bars are already at the target state, so no insets dispatch occurs), manually edge-swipe to reveal the system bar and confirm the controller still responds. This exercises the 500ms self-clearing timeout's failure mode specifically — if the timeout were broken or removed, the guard would stay stuck and this swipe would be silently ignored.
 
-Expected: no case where tapping the player shows and then immediately hides the controls.
+Expected: no case where tapping the player shows and then immediately hides the controls, and the swipe in step 6 still reveals the controller.
 
 ---
 
