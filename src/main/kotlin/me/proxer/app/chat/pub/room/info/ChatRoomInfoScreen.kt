@@ -32,11 +32,11 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
@@ -49,11 +49,7 @@ import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatRoomInfoScreen(
-    chatRoomId: String,
-    chatRoomName: String,
-    onBack: () -> Unit,
-) {
+fun ChatRoomInfoScreen(chatRoomId: String, chatRoomName: String, onBack: () -> Unit) {
     val viewModel = koinViewModel<ChatRoomInfoViewModel> { parametersOf(chatRoomId) }
     val data by viewModel.data.observeAsState()
     val error by viewModel.error.observeAsState()

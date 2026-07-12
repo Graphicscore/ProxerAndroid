@@ -223,7 +223,7 @@ constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
                     val mimeType = contentType.getOrNull(0)
                     val encoding = contentType.getOrNull(1)
 
-                    WebResourceResponse(mimeType, encoding, response.body?.byteStream())
+                    WebResourceResponse(mimeType, encoding, response.body.byteStream())
                 } catch (error: Throwable) {
                     Timber.e(error)
 

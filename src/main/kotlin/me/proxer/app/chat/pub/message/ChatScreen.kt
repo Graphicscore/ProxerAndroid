@@ -45,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -54,6 +53,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import me.proxer.app.R
@@ -74,12 +74,7 @@ import org.koin.core.parameter.parametersOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreen(
-    chatRoomId: String,
-    chatRoomName: String,
-    chatRoomIsReadOnly: Boolean,
-    onBack: () -> Unit,
-) {
+fun ChatScreen(chatRoomId: String, chatRoomName: String, chatRoomIsReadOnly: Boolean, onBack: () -> Unit) {
     val viewModel = koinViewModel<ChatViewModel> { parametersOf(chatRoomId) }
     val reportViewModel = koinViewModel<ChatReportViewModel>()
     val storageHelper: StorageHelper = koinInject()
@@ -217,7 +212,10 @@ private fun ChatScreenContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { reportTarget = null; reportReason = "" }) {
+                TextButton(onClick = {
+                    reportTarget = null
+                    reportReason = ""
+                }) {
                     Text(stringResource(android.R.string.cancel))
                 }
             },
