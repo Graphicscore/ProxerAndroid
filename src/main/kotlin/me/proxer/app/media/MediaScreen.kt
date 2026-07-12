@@ -39,7 +39,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 internal fun episodeTabTitleRes(category: Category?): Int = when (category) {
-    Category.MANGA -> R.string.category_manga_episodes_title
+    Category.MANGA, Category.NOVEL -> R.string.category_manga_episodes_title
     else -> R.string.category_anime_episodes_title
 }
 

@@ -21,4 +21,9 @@ class MediaScreenTest {
     fun `episodeTabTitleRes falls back to episodes title for null category`() {
         assertEquals(R.string.category_anime_episodes_title, episodeTabTitleRes(null))
     }
+
+    @Test
+    fun `episodeTabTitleRes returns chapters title for novel`() {
+        assertEquals(R.string.category_manga_episodes_title, episodeTabTitleRes(Category.NOVEL))
+    }
 }
