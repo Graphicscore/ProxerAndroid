@@ -110,6 +110,7 @@ dependencies {
     implementation "androidx.activity:activity-compose:$activityComposeVersion"
     implementation "io.insert-koin:koin-androidx-compose:$koinVersion"
     implementation "io.coil-kt:coil-compose:$coilVersion"
+    implementation "androidx.compose.ui:ui-tooling-preview"
     debugImplementation "androidx.compose.ui:ui-tooling"
 
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:$detektPluginVersion")
