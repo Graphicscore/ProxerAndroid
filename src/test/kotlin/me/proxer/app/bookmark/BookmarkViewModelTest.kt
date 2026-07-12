@@ -180,6 +180,17 @@ class BookmarkViewModelTest : KoinTest {
     }
 
     @Test
+    fun `load dedups entries that share an id within a single page`() {
+        val endpoint = mockBookmarksEndpoint()
+        val duplicate = bookmark("dup")
+        endpoint.stubPagingSuccess(listOf(duplicate, bookmark("unique"), duplicate.copy()))
+
+        viewModel.load()
+
+        assertEquals(listOf("dup", "unique"), viewModel.data.value?.map { it.id })
+    }
+
+    @Test
     fun `hasReachedEnd stops further loads via loadIfPossible`() {
         val endpoint = mockBookmarksEndpoint()
         val lastPage = listOf(bookmark("last-0"), bookmark("last-1"))

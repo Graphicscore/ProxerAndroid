@@ -80,8 +80,12 @@ abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
         else -> old == new
     }
 
-    protected open fun mergeNewDataWithExistingData(existingData: List<T>, newData: List<T>, currentPage: Int) =
-        when (currentPage) {
+    protected open fun mergeNewDataWithExistingData(
+        existingData: List<T>,
+        newData: List<T>,
+        currentPage: Int,
+    ): List<T> {
+        val combined = when (currentPage) {
             0 -> {
                 newData +
                     existingData.filter { oldItem ->
@@ -95,4 +99,11 @@ abstract class PagedViewModel<T> : BaseViewModel<List<T>>() {
                 } + newData
             }
         }
+
+        // A single page can itself contain a repeated entry (seen from the search endpoint). Lazy
+        // list/grid Composables key items by id and crash on duplicates, so this must never leak through.
+        return combined.fold(mutableListOf()) { deduped, item ->
+            deduped.apply { if (none { areItemsTheSame(it, item) }) add(item) }
+        }
+    }
 }
