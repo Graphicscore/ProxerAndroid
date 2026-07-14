@@ -3,6 +3,8 @@ package me.proxer.app.media.list
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import io.reactivex.Observable
 import me.proxer.app.base.RxTrampolineRule
@@ -29,6 +31,7 @@ import me.proxer.library.enums.MediaType
 import me.proxer.library.enums.Medium
 import me.proxer.library.enums.TagSubType
 import me.proxer.library.enums.TagType
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -40,6 +43,8 @@ import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
 import org.koin.test.inject
 import org.threeten.bp.Instant
+import org.threeten.bp.ZoneId
+import org.threeten.bp.ZoneOffset
 import java.util.EnumSet
 
 class MediaListViewModelTest : KoinTest {
@@ -122,12 +127,24 @@ class MediaListViewModelTest : KoinTest {
 
     @Before
     fun setup() {
+        // threetenabp resolves to the "no-tzdb" threetenbp classifier on the JVM test classpath, whose
+        // zone rules are only registered via AndroidThreeTen.init() at Android app startup. loadTags()
+        // calls ZoneId.systemDefault() (via Instant.toLocalDate()), which would otherwise throw
+        // ZoneRulesException here - stub it to a fixed offset that needs no zone rule lookup.
+        mockkStatic(ZoneId::class)
+        every { ZoneId.systemDefault() } returns ZoneOffset.UTC
+
         every { storageHelper.isLoggedInObservable } returns Observable.never()
         every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
         every { storageHelper.isLoggedIn } returns true
         every { api.list } returns listApi
 
         viewModel = newViewModel()
+    }
+
+    @After
+    fun tearDown() {
+        unmockkStatic(ZoneId::class)
     }
 
     @Test

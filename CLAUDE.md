@@ -42,7 +42,7 @@ Shared infra in `me.proxer.app.base`: `RxTrampolineRule`, `ProxerEndpointTestUti
 - Nullable endpoints (`Endpoint<T?>`) run through `ProxerCallNullableSingle.execute()` — use `stubNullableSuccess`/`stubNullableError`, not the non-null variants.
 - Entities with BBCode (`LocalComment`, `LocalMessage`, `ParsedPost`) call `.toSimpleBBTree()` on construction and crash on unmocked `SpannableStringBuilder` — stub `mockkObject(TextPrototype)` in `@Before`/`unmockkObject` in `@After`.
 - `ErrorUtils` binds `StorageHelper`/`PreferenceHelper` via `by lazy` once per JVM — first test touching it poisons the rest of the suite. `build.gradle` sets `forkEvery = 4` to bound this.
-- JVM tests hitting `ZoneId.systemDefault()` need `testImplementation "org.threeten:threetenbp:1.7.1"` (plain jar bundles `tzdb.dat`; `threetenabp`'s no-tzdb classifier expects Android-only init).
+- JVM tests hitting `ZoneId.systemDefault()`: `threetenabp` resolves to threetenbp's no-tzdb classifier on the test classpath (zone rules only load via `AndroidThreeTen.init()` on Android). Don't add `testImplementation "org.threeten:threetenbp:1.7.1"` — instead `mockkStatic(ZoneId::class)` and stub `ZoneId.systemDefault()` to `ZoneOffset.UTC` (a fixed offset needs no zone rule lookup). See `MediaListViewModelTest`.
 
 ## Toolchain
 
