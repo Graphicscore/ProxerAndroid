@@ -16,18 +16,47 @@
 - No Compose Navigation library is to be introduced. Follow the existing `onBack: () -> Unit` lambda + `TopAppBar` `navigationIcon` with `Icons.AutoMirrored.Filled.ArrowBack` convention already used across the codebase (e.g. `AnimeScreen.kt`, `ConferenceScreen.kt`).
 - Reuse the existing `R.string.about_licenses_activity_title` string resource for the new screen's title — no new strings.
 - No ViewModel or business logic is introduced; this is a UI-only change. No new unit tests apply — verification is via compilation + manual in-app check.
+- `aboutlibraries-compose-m3-android:15.0.3`'s runtime variant depends on `com.github.skydoves:compose-stability-runtime:0.10.0`, which is published on Maven Central (via Sonatype), not JitPack. This project's `gradle/repositories.gradle` currently excludes all `com.github.*` groups from Maven Central except an allowlist (line 20), and routes all `com.github.*` to JitPack (line 40) — JitPack has no such artifact for `skydoves` (it publishes directly to Central), so resolution fails unless `skydoves` is added to the Maven Central allowlist.
 
 ---
 
 ### Task 1: Migrate AboutLibraries dependency and AboutScreen to Compose
 
 **Files:**
+- Modify: `gradle/repositories.gradle:20`
 - Modify: `gradle/versions.gradle:64`
 - Modify: `gradle/dependencies.gradle:53`
 - Modify: `src/main/kotlin/me/proxer/app/settings/AboutScreen.kt`
 
 **Interfaces:**
 - Produces: `LicensesScreen(onBack: () -> Unit)` — a private composable in `AboutScreen.kt`, the project's licenses sub-screen. No other file calls it; `AboutScreen` is its only caller.
+
+- [ ] **Step 0: Allow Maven Central to serve `com.github.skydoves` artifacts**
+
+`aboutlibraries-compose-m3-android:15.0.3` transitively requires
+`com.github.skydoves:compose-stability-runtime:0.10.0`. That artifact is
+published on Maven Central (confirmed: `https://repo1.maven.org/maven2/com/github/skydoves/compose-stability-runtime/0.10.0/compose-stability-runtime-0.10.0.pom`
+returns 200), not on JitPack — but `gradle/repositories.gradle` currently
+routes every `com.github.*` group to JitPack only, except a small allowlist
+that's still permitted to resolve from Maven Central.
+
+In `gradle/repositories.gradle:20`, change:
+
+```groovy
+            excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad|ajalt).*"
+```
+
+to:
+
+```groovy
+            excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad|ajalt|skydoves).*"
+```
+
+This is additive only: it lets Maven Central also be tried for
+`com.github.skydoves:*` artifacts. The existing JitPack repository
+(`gradle/repositories.gradle:37-41`) still matches `com.github.*` too, so if
+a future `skydoves` artifact isn't on Central, resolution still falls
+through to JitPack as before.
 
 - [ ] **Step 1: Bump the version**
 
@@ -355,7 +384,7 @@ Run: `./gradlew installDebug` (requires a connected device/emulator), then in th
 - [ ] **Step 8: Commit**
 
 ```bash
-git add gradle/versions.gradle gradle/dependencies.gradle src/main/kotlin/me/proxer/app/settings/AboutScreen.kt
+git add gradle/repositories.gradle gradle/versions.gradle gradle/dependencies.gradle src/main/kotlin/me/proxer/app/settings/AboutScreen.kt
 git commit -m "$(cat <<'EOF'
 feat: migrate AboutLibraries to Compose (aboutlibraries-compose-m3 15.0.3)
 
@@ -363,6 +392,12 @@ Legacy com.mikepenz:aboutlibraries Activity API is discontinued past
 14.2.1. Replace LibsBuilder().start() with an in-place LicensesScreen
 composable, following the project's existing onBack + ArrowBack
 navigation convention (no Compose Navigation library in use).
+
+Also allow Maven Central to serve com.github.skydoves artifacts:
+aboutlibraries-compose-m3's transitive compose-stability-runtime
+dependency is published on Central (via Sonatype), not JitPack, and
+was previously unresolvable because repositories.gradle routed all
+com.github.* groups to JitPack only.
 EOF
 )"
 ```
