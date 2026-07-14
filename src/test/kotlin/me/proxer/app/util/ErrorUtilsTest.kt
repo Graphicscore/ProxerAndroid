@@ -1,6 +1,5 @@
 package me.proxer.app.util
 
-import io.mockk.every
 import me.proxer.app.R
 import me.proxer.app.base.fakeAppModule
 import me.proxer.app.comment.CommentInvalidProgressException
@@ -15,7 +14,6 @@ import me.proxer.app.manga.MangaNotAvailableException
 import me.proxer.app.util.ErrorUtils.ErrorAction.ButtonAction
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_DEFAULT
 import me.proxer.app.util.ErrorUtils.ErrorAction.Companion.ACTION_MESSAGE_HIDE
-import me.proxer.app.util.data.StorageHelper
 import me.proxer.library.ProxerException
 import me.proxer.library.ProxerException.ErrorType
 import me.proxer.library.ProxerException.ServerErrorType
@@ -26,7 +24,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.koin.test.KoinTest
 import org.koin.test.KoinTestRule
-import org.koin.test.inject
 import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.net.ssl.SSLPeerUnverifiedException
@@ -35,8 +32,6 @@ class ErrorUtilsTest : KoinTest {
 
     @get:Rule
     val koinTestRule = KoinTestRule.create { modules(fakeAppModule()) }
-
-    private val storageHelper: StorageHelper by inject()
 
     // ── getMessage ──────────────────────────────────────────────────────────
 
@@ -85,18 +80,11 @@ class ErrorUtilsTest : KoinTest {
         assertEquals(R.string.error_login_credentials, ErrorUtils.getMessage(ex))
     }
 
-    // ErrorUtils resolves `storageHelper` through a `by safeInject<StorageHelper>()` delegate — a `by lazy`
-    // that binds once per JVM and never re-resolves. Splitting this into two @Test methods would let the
-    // first one's KoinTestRule mock get cached forever, so both login states are asserted here in one test
-    // against that same cached mock instead.
     @Test fun `SERVER USER_INSUFFICIENT_PERMISSIONS message depends on login state`() {
         val ex = ProxerException(ErrorType.SERVER, ServerErrorType.USER_INSUFFICIENT_PERMISSIONS)
 
-        every { storageHelper.isLoggedIn } returns true
-        assertEquals(R.string.error_insufficient_permissions_logged_in, ErrorUtils.getMessage(ex))
-
-        every { storageHelper.isLoggedIn } returns false
-        assertEquals(R.string.error_insufficient_permissions, ErrorUtils.getMessage(ex))
+        assertEquals(R.string.error_insufficient_permissions_logged_in, ErrorUtils.getMessage(ex, isLoggedIn = true))
+        assertEquals(R.string.error_insufficient_permissions, ErrorUtils.getMessage(ex, isLoggedIn = false))
     }
 
     @Test fun `SERVER USER_2FA_SECRET_REQUIRED maps to error_login_two_factor_authentication`() {
