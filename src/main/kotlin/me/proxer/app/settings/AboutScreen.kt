@@ -5,11 +5,13 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
@@ -26,12 +28,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.content.getSystemService
-import com.mikepenz.aboutlibraries.LibsBuilder
+import com.mikepenz.aboutlibraries.ui.compose.android.produceLibraries
+import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 import me.proxer.app.BuildConfig
 import me.proxer.app.R
 import me.proxer.app.settings.status.ServerStatusActivity
@@ -53,6 +60,14 @@ private const val REPOSITORY_URL = "https://github.com/proxer/ProxerAndroid"
 @Composable
 fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
     val context = LocalContext.current
+    var showLicenses by remember { mutableStateOf(false) }
+
+    BackHandler(enabled = showLicenses) { showLicenses = false }
+
+    if (showLicenses) {
+        LicensesScreen(onBack = { showLicenses = false })
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -90,12 +105,7 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                     headlineContent = { Text(stringResource(R.string.about_licenses_title)) },
                     supportingContent = { Text(stringResource(R.string.about_licenses_description)) },
                     leadingContent = { Icon(Icons.Default.Code, contentDescription = null) },
-                    modifier = Modifier.clickable {
-                        @Suppress("DEPRECATION")
-                        LibsBuilder()
-                            .withActivityTitle(context.getString(R.string.about_licenses_activity_title))
-                            .start(context as Activity)
-                    },
+                    modifier = Modifier.clickable { showLicenses = true },
                 )
             }
             item {
@@ -214,6 +224,30 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LicensesScreen(onBack: () -> Unit) {
+    val libraries by produceLibraries(R.raw.aboutlibraries)
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.about_licenses_activity_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                    }
+                },
+            )
+        },
+    ) { padding ->
+        LibrariesContainer(
+            libraries = libraries,
+            modifier = Modifier.fillMaxSize().padding(padding),
+        )
     }
 }
 

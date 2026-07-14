@@ -17,7 +17,7 @@ repositories {
             excludeGroupByRegex "androidx.*"
             excludeGroupByRegex "zipflinger.*"
             excludeGroupByRegex "com\\.android.*"
-            excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad|ajalt).*"
+            excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad|ajalt|skydoves).*"
             excludeModuleByRegex "org\\.jetbrains\\.kotlin.*", "kotlin-symbol-processing-api"
         }
     }
