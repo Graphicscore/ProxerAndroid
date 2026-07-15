@@ -128,7 +128,7 @@ class NotificationScreenTest : InstrumentedTestBase() {
             composeTestRule.waitUntil(timeoutMillis = 15_000) {
                 try {
                     composeTestRule.onNode(hasScrollAction()).performScrollToIndex(30)
-                } catch (expected: AssertionError) {
+                } catch (expected: IllegalArgumentException) {
                     // Next page hasn't loaded yet, so index 30 doesn't exist. Keep polling.
                 }
 

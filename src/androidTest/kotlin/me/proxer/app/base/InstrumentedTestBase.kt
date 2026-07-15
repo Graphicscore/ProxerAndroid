@@ -50,7 +50,6 @@ open class InstrumentedTestBase {
             koin.get<TagDao>(),
             koin.get<WorkManager>(),
             koin.get<MessengerDatabase>(),
-            answers = false,
         )
     }
 }
