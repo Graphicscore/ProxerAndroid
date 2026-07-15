@@ -1,3 +1,105 @@
+# AboutLibraries Compose Migration Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Replace the deprecated `com.mikepenz:aboutlibraries` Activity-launch licenses flow in `AboutScreen.kt` with the Compose-native `LibrariesContainer` from `aboutlibraries-compose-m3` 15.0.3.
+
+**Architecture:** Bump `aboutLibrariesVersion` to `15.0.3` (drives both the Gradle plugin and the runtime dependency), swap the runtime dependency from the discontinued legacy `com.mikepenz:aboutlibraries` artifact (not published past `14.2.1`) to `com.mikepenz:aboutlibraries-compose` + `com.mikepenz:aboutlibraries-compose-m3`, and replace the `LibsBuilder().start(activity)` call with a local `showLicenses` state toggle in `AboutScreen` that swaps in a small `LicensesScreen` composable — following the project's existing `onBack: () -> Unit` + `ArrowBack` navigation convention (see `AnimeScreen.kt:390-406`) since there is no Compose Navigation library in this project.
+
+**Tech Stack:** Kotlin, Jetpack Compose (Material3), `com.mikepenz:aboutlibraries-compose-m3:15.0.3`, `com.mikepenz:aboutlibraries-compose:15.0.3` (for the `produceLibraries()` loader), `androidx.activity.compose.BackHandler`.
+
+## Global Constraints
+
+- `aboutLibrariesVersion` bumps to `15.0.3` (spec: latest upstream release).
+- The legacy `com.mikepenz:aboutlibraries` artifact must be removed — it is not published past `14.2.1` and no longer contains `LibsBuilder`/Activity APIs at `15.0.3`.
+- No new Gradle plugin configuration block is needed — the AboutLibraries plugin's default behavior (no explicit `aboutLibraries { }` block exists today) continues to generate `R.raw.aboutlibraries` per variant automatically.
+- No Compose Navigation library is to be introduced. Follow the existing `onBack: () -> Unit` lambda + `TopAppBar` `navigationIcon` with `Icons.AutoMirrored.Filled.ArrowBack` convention already used across the codebase (e.g. `AnimeScreen.kt`, `ConferenceScreen.kt`).
+- Reuse the existing `R.string.about_licenses_activity_title` string resource for the new screen's title — no new strings.
+- No ViewModel or business logic is introduced; this is a UI-only change. No new unit tests apply — verification is via compilation + manual in-app check.
+- `aboutlibraries-compose-m3-android:15.0.3`'s runtime variant depends on `com.github.skydoves:compose-stability-runtime:0.10.0`, which is published on Maven Central (via Sonatype), not JitPack. This project's `gradle/repositories.gradle` currently excludes all `com.github.*` groups from Maven Central except an allowlist (line 20), and routes all `com.github.*` to JitPack (line 40) — JitPack has no such artifact for `skydoves` (it publishes directly to Central), so resolution fails unless `skydoves` is added to the Maven Central allowlist.
+
+---
+
+### Task 1: Migrate AboutLibraries dependency and AboutScreen to Compose
+
+**Files:**
+- Modify: `gradle/repositories.gradle:20`
+- Modify: `gradle/versions.gradle:64`
+- Modify: `gradle/dependencies.gradle:53`
+- Modify: `src/main/kotlin/me/proxer/app/settings/AboutScreen.kt`
+
+**Interfaces:**
+- Produces: `LicensesScreen(onBack: () -> Unit)` — a private composable in `AboutScreen.kt`, the project's licenses sub-screen. No other file calls it; `AboutScreen` is its only caller.
+
+- [ ] **Step 0: Allow Maven Central to serve `com.github.skydoves` artifacts**
+
+`aboutlibraries-compose-m3-android:15.0.3` transitively requires
+`com.github.skydoves:compose-stability-runtime:0.10.0`. That artifact is
+published on Maven Central (confirmed: `https://repo1.maven.org/maven2/com/github/skydoves/compose-stability-runtime/0.10.0/compose-stability-runtime-0.10.0.pom`
+returns 200), not on JitPack — but `gradle/repositories.gradle` currently
+routes every `com.github.*` group to JitPack only, except a small allowlist
+that's still permitted to resolve from Maven Central.
+
+In `gradle/repositories.gradle:20`, change:
+
+```groovy
+            excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad|ajalt).*"
+```
+
+to:
+
+```groovy
+            excludeGroupByRegex "com\\.github\\.(?!bumptech|rubensousa|shyiko|anrwatchdog|pengrad|ajalt|skydoves).*"
+```
+
+This is additive only: it lets Maven Central also be tried for
+`com.github.skydoves:*` artifacts. The existing JitPack repository
+(`gradle/repositories.gradle:37-41`) still matches `com.github.*` too, so if
+a future `skydoves` artifact isn't on Central, resolution still falls
+through to JitPack as before.
+
+- [ ] **Step 1: Bump the version**
+
+In `gradle/versions.gradle:64`, change:
+
+```groovy
+    aboutLibrariesVersion = "14.2.1"
+```
+
+to:
+
+```groovy
+    aboutLibrariesVersion = "15.0.3"
+```
+
+- [ ] **Step 2: Swap the dependency**
+
+In `gradle/dependencies.gradle:53`, change:
+
+```groovy
+    implementation "com.mikepenz:aboutlibraries:$aboutLibrariesVersion"
+```
+
+to:
+
+```groovy
+    implementation "com.mikepenz:aboutlibraries-compose:$aboutLibrariesVersion"
+    implementation "com.mikepenz:aboutlibraries-compose-m3:$aboutLibrariesVersion"
+```
+
+(`aboutlibraries-compose` provides the Android `produceLibraries()` loader; `aboutlibraries-compose-m3` provides the Material3 `LibrariesContainer`. Both pull in `aboutlibraries-core` transitively.)
+
+- [ ] **Step 3: Confirm the expected compile failure**
+
+Run: `./gradlew compileDebugKotlin`
+
+Expected: FAIL — `AboutScreen.kt` still imports `com.mikepenz.aboutlibraries.LibsBuilder`, which no longer resolves now that the legacy artifact is gone. This confirms the dependency swap took effect and that Step 4 is necessary before the build is green again.
+
+- [ ] **Step 4: Rewrite AboutScreen.kt**
+
+Replace the full contents of `src/main/kotlin/me/proxer/app/settings/AboutScreen.kt` with:
+
+```kotlin
 package me.proxer.app.settings
 
 import android.app.Activity
@@ -258,3 +360,44 @@ private fun AboutScreenPreview() {
         AboutScreen()
     }
 }
+```
+
+- [ ] **Step 5: Confirm compilation passes**
+
+Run: `./gradlew compileDebugKotlin`
+
+Expected: PASS (no `:app:` prefix needed per this project's Gradle setup).
+
+- [ ] **Step 6: Full debug build sanity check**
+
+Run: `./gradlew assembleDebug`
+
+Expected: PASS — confirms the AboutLibraries Gradle plugin generates `R.raw.aboutlibraries` correctly for the debug variant and the new dependencies resolve and package cleanly.
+
+- [ ] **Step 7: Manual verification**
+
+Run: `./gradlew installDebug` (requires a connected device/emulator), then in the app: open the drawer → Info → tap "Lizenzen" (Licenses). Confirm:
+- The licenses list renders in place (no separate Activity/window opens).
+- Tapping the back arrow in the licenses screen's top bar returns to the About list.
+- Re-opening licenses and pressing the system back button also returns to the About list (not exiting the app).
+
+- [ ] **Step 8: Commit**
+
+```bash
+git add gradle/repositories.gradle gradle/versions.gradle gradle/dependencies.gradle src/main/kotlin/me/proxer/app/settings/AboutScreen.kt
+git commit -m "$(cat <<'EOF'
+feat: migrate AboutLibraries to Compose (aboutlibraries-compose-m3 15.0.3)
+
+Legacy com.mikepenz:aboutlibraries Activity API is discontinued past
+14.2.1. Replace LibsBuilder().start() with an in-place LicensesScreen
+composable, following the project's existing onBack + ArrowBack
+navigation convention (no Compose Navigation library in use).
+
+Also allow Maven Central to serve com.github.skydoves artifacts:
+aboutlibraries-compose-m3's transitive compose-stability-runtime
+dependency is published on Central (via Sonatype), not JitPack, and
+was previously unresolvable because repositories.gradle routed all
+com.github.* groups to JitPack only.
+EOF
+)"
+```
