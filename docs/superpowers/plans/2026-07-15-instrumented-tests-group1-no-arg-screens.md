@@ -452,7 +452,9 @@ git commit -m "test: add ScheduleScreen instrumented smoke and logged-out tests"
 
 ### Task 4: MediaListScreen smoke test
 
-**Goal:** Prove `MediaListScreen` renders a media entry, including the `loadTags()` wiring its `LaunchedEffect` performs alongside `load()`.
+**Goal:** Prove `MediaListScreen` renders a media entry. `loadTags()`, which the screen's `LaunchedEffect` calls alongside `load()`, is stubbed onto its cached branch so it resolves in-memory and cannot interfere with the load.
+
+**The tag data itself is deliberately not asserted, and this test does _not_ verify the `loadTags()` wiring** — an earlier draft of this goal claimed it did, which was wrong. Two independent reasons, both confirmed in source: tags render only inside the filter `ModalBottomSheet` (`MediaListScreen.kt:277`), which is hidden by default, so nothing tag-derived is on screen at smoke scope; and `loadTags()` terminates in `subscribeAndLogErrors` (`RxExtionsions.kt:88-91`), which swallows every failure into `Timber.e` without touching `error` LiveData — so a totally broken `loadTags()` would leave this test green. The only thing the test does establish is that `loadTags()` doesn't throw synchronously and wedge the `LaunchedEffect` before `load()` runs, since it is called first.
 
 **Files:**
 - Create: `src/androidTest/kotlin/me/proxer/app/media/list/MediaListScreenTest.kt`
