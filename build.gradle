@@ -41,7 +41,7 @@ android {
         vectorDrawables.useSupportLibrary = true
         resConfigs "de"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "me.proxer.app.base.TestRunner"
     }
 
     sourceSets {
