@@ -13,19 +13,15 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.every
 import io.mockk.mockk
 import me.proxer.app.R
+import me.proxer.app.base.InstrumentedTestBase
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.base.stubLoggedOut
-import me.proxer.app.util.Validators
 import me.proxer.app.util.extension.ProxerNotification
-import me.proxer.app.util.extension.safeInject
-import me.proxer.library.ProxerApi
 import me.proxer.library.ProxerCall
 import me.proxer.library.ProxerException
 import me.proxer.library.api.notifications.NotificationsEndpoint
 import me.proxer.library.entity.notifications.Notification
 import me.proxer.library.enums.NotificationType
-import me.proxer.app.util.data.PreferenceHelper
-import me.proxer.app.util.data.StorageHelper
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import org.junit.Before
 import org.junit.Rule
@@ -34,14 +30,9 @@ import org.junit.runner.RunWith
 import java.util.Date
 
 @RunWith(AndroidJUnit4::class)
-class NotificationScreenTest {
+class NotificationScreenTest : InstrumentedTestBase() {
 
     @get:Rule val composeTestRule = createEmptyComposeRule()
-
-    private val api: ProxerApi by safeInject()
-    private val storageHelper: StorageHelper by safeInject()
-    private val preferenceHelper: PreferenceHelper by safeInject()
-    private val validators: Validators by safeInject()
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
@@ -137,7 +128,7 @@ class NotificationScreenTest {
             composeTestRule.waitUntil(timeoutMillis = 15_000) {
                 try {
                     composeTestRule.onNode(hasScrollAction()).performScrollToIndex(30)
-                } catch (expected: Throwable) {
+                } catch (expected: AssertionError) {
                     // Next page hasn't loaded yet, so index 30 doesn't exist. Keep polling.
                 }
 
