@@ -921,6 +921,13 @@ Report to the user: baseline, after, absolute delta, per-test average for the 7 
 
 **Shared-mock bleed.** Koin starts once per process and all test classes share the `fakeAppModule` mocks. Every task extends `InstrumentedTestBase` so `resetFakeAppModuleMocks` clears stubs between tests. Do not add `clearAllMocks()` — it would reset mocks belonging to other test classes.
 
-**CLAUDE.md is stale on two points** discovered while writing this plan. Worth fixing separately, out of scope here:
-- It claims ProxerLibJava source is checked out at `../ProxerLibJava`. It is not present. Entity constructors in this plan were taken from the existing JVM tests instead.
-- It references `BaseContentFragment.onViewCreated` for the no-auto-load behaviour; Fragments are gone since the Compose migration. The infra design spec already flagged this.
+**CLAUDE.md was stale on four points** discovered while writing and executing this plan. All four are now corrected (commit `8dfa60e9`): the `--tests` filter syntax, "only `ServerStatusViewModel` opts out" of the login gate, `BaseContentFragment.onViewCreated`, and the missing `../ProxerLibJava` checkout. The API 31 floor for instrumented tests was added at the same time.
+
+## Inputs for Group 2's spec
+
+Discovered during Group 1, deliberately not fixed here:
+
+- **Hoist `mockProxerCall` into a shared fixture.** The `clone()` + `safeExecute()` `ProxerCall` mock helper is now duplicated across `NotificationScreenTest`, `NewsScreenTest`, `BookmarkScreenTest`, `ScheduleScreenTest`, `MediaListScreenTest` and `ProfileSettingsScreenTest`. Group 2 adds ~19 more screens that all need it. A generic `base/ProxerCallFixtures.kt` (`fun <T : Any> mockProxerCall(value: T)` / `mockProxerErrorCall()`) would collapse them and give the clone-gotcha comment one home — the same argument that justified hoisting `grantStoragePermission` during Task 1, and worth doing *before* the copies multiply.
+- **Beware cache-seeded ViewModels.** Task 6's originally-specified assertion was vacuous: `ProfileSettingsViewModel.init` seeds `data` from `storageHelper.profileSettings` before `refresh()`, so the screen composes past its null-guard from cache alone and renders identically whether or not the network fetch succeeds. Any Group 2 screen that seeds from cache needs a fixture whose fetched value *differs* from the cached one, plus an assertion on the difference. Verify with a negative control (make the endpoint throw; the test must fail).
+- **`ConstraintListItem` fails silently.** `ProfileSettingsScreen.kt:513` uses `getOrElse(constraint.ordinal) { "" }`, so an enum/array divergence renders a blank row rather than failing loudly. Pre-existing production behaviour, not touched here.
+- **detekt is red on master**, 4 pre-existing violations at `src/main/kotlin/me/proxer/app/util/ErrorUtils.kt:235`. Unrelated to this work and untouched by it, but it will block any CI gate that runs detekt.
