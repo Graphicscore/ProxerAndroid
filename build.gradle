@@ -142,7 +142,16 @@ android {
         exclude "META-INF/LICENSE*"
         exclude "META-INF/NOTICE*"
         exclude "META-INF/nanohttpd/**"
-        exclude "kotlin/**"
+        // NOTE: no longer excluding "kotlin/**" here (previously did, going back to a 2019 APK-size cleanup).
+        // That pattern also matched kotlin-stdlib's kotlin/*.kotlin_builtins resources (~50KB total), which
+        // kotlin-reflect needs at runtime to resolve built-in types like kotlin.Any. mockk-android (used only
+        // in androidTest, added when the instrumented UI test harness was built) pulls in kotlin-reflect, so
+        // stripping those resources broke every MockK `every {}`/`mockk<T>()` call on-device with
+        // "AssertionError: Built-in class kotlin.Any is not found". A variant-scoped override (excluding it
+        // only for the androidTest APK via `androidComponents.onVariants { variant.androidTest.packaging... }`)
+        // was tried first, but AGP 9.2.1 re-applies the module-level excludes to the androidTest packaging
+        // after onVariants runs, silently discarding that override, so the exclusion is dropped globally.
+        // ~50KB extra in the release APK is an acceptable trade for a working test harness.
         exclude "kotlinx/**"
         exclude "third_party/**"
         exclude "jsr305_annotations/**"
@@ -151,6 +160,11 @@ android {
         exclude "build-data.properties"
         exclude "androidsupportmultidexversion.txt"
         exclude "play-services-*.properties"
+        // mockk-android/kotlin-reflect and their androidTest-only dependency graph bring in many jars that
+        // all carry META-INF/MANIFEST.MF and LICENSE.txt; any one of them is fine at runtime. The main app's
+        // own dependency graph has no such duplicates, so this is a no-op there.
+        pickFirst "META-INF/MANIFEST.MF"
+        pickFirst "LICENSE.txt"
     }
 
     bundle {
