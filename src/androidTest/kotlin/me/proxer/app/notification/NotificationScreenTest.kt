@@ -14,6 +14,8 @@ import io.mockk.every
 import io.mockk.mockk
 import me.proxer.app.R
 import me.proxer.app.base.stubLoggedIn
+import me.proxer.app.base.stubLoggedOut
+import me.proxer.app.util.Validators
 import me.proxer.app.util.extension.ProxerNotification
 import me.proxer.app.util.extension.safeInject
 import me.proxer.library.ProxerApi
@@ -39,6 +41,7 @@ class NotificationScreenTest {
     private val api: ProxerApi by safeInject()
     private val storageHelper: StorageHelper by safeInject()
     private val preferenceHelper: PreferenceHelper by safeInject()
+    private val validators: Validators by safeInject()
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
@@ -185,6 +188,21 @@ class NotificationScreenTest {
             }
 
             composeTestRule.onNodeWithText("text-u0").assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun logged_out_user_sees_login_required_message_instead_of_content() {
+        stubLoggedOut(storageHelper, preferenceHelper, validators)
+
+        ActivityScenario.launch(NotificationActivity::class.java).use {
+            val loginRequiredText = context.getString(R.string.error_login_required)
+
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                composeTestRule.onAllNodesWithText(loginRequiredText).fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onNodeWithText(loginRequiredText).assertIsDisplayed()
         }
     }
 }
