@@ -250,7 +250,7 @@ private val applicationModules =
         single { LoginHandler(get(), get(), get(), get()) }
     }
 
-private val viewModelModule =
+internal val viewModelModule =
     module {
         viewModel { LoginViewModel() }
         viewModel { LogoutViewModel() }
