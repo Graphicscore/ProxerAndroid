@@ -11,10 +11,10 @@ fun stubLoggedIn(storageHelper: StorageHelper, preferenceHelper: PreferenceHelpe
     every { storageHelper.isLoggedInObservable } returns Observable.never()
     every { storageHelper.isLoggedIn } returns true
     every { preferenceHelper.isAgeRestrictedMediaAllowedObservable } returns Observable.never()
-    // PreferenceHelper.themeObservable is a real io.reactivex.Observable<String>, not an interface. Left
-    // unstubbed on the relaxed PreferenceHelper mock, MockK's relaxed-mode auto value generation on Android
-    // hands BaseActivity.onCreate()'s `.autoDisposable(scope())` chain an object that isn't a real Observable,
-    // crashing every BaseActivity-based screen with a ClassCastException on launch.
+    // PreferenceHelper.themeObservable is a real io.reactivex.Observable<ThemeContainer>, not an interface.
+    // Left unstubbed on the relaxed PreferenceHelper mock, MockK's relaxed-mode auto value generation on
+    // Android hands BaseActivity.onCreate()'s `.autoDisposable(scope())` chain an object that isn't a real
+    // Observable, crashing every BaseActivity-based screen on launch.
     every { preferenceHelper.themeObservable } returns Observable.never()
 }
 

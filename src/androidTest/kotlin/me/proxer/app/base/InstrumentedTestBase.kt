@@ -40,16 +40,26 @@ open class InstrumentedTestBase {
     fun resetFakeAppModuleMocks() {
         val koin = GlobalContext.get()
 
+        // Resolved to named locals (rather than inline inside clearMocks's vararg) so that if a future Koin
+        // binding rename makes one of these resolutions throw, the failure points at this specific line instead
+        // of an opaque vararg call -- and, since Kotlin evaluates all of these before clearMocks runs either
+        // way, at least the exception is attributable to the exact missing binding.
+        val messengerDao = koin.get<MessengerDao>()
+        val okHttpClient = koin.get<OkHttpClient>()
+        val tagDao = koin.get<TagDao>()
+        val workManager = koin.get<WorkManager>()
+        val messengerDatabase = koin.get<MessengerDatabase>()
+
         clearMocks(
             api,
             storageHelper,
             preferenceHelper,
             validators,
-            koin.get<MessengerDao>(),
-            koin.get<OkHttpClient>(),
-            koin.get<TagDao>(),
-            koin.get<WorkManager>(),
-            koin.get<MessengerDatabase>(),
+            messengerDao,
+            okHttpClient,
+            tagDao,
+            workManager,
+            messengerDatabase,
         )
     }
 }
