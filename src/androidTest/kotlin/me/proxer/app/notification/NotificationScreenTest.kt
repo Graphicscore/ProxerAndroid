@@ -5,16 +5,20 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.every
 import io.mockk.mockk
+import me.proxer.app.R
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.util.extension.ProxerNotification
 import me.proxer.app.util.extension.safeInject
 import me.proxer.library.ProxerApi
 import me.proxer.library.ProxerCall
+import me.proxer.library.ProxerException
 import me.proxer.library.api.notifications.NotificationsEndpoint
 import me.proxer.library.entity.notifications.Notification
 import me.proxer.library.enums.NotificationType
@@ -35,6 +39,8 @@ class NotificationScreenTest {
     private val api: ProxerApi by safeInject()
     private val storageHelper: StorageHelper by safeInject()
     private val preferenceHelper: PreferenceHelper by safeInject()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun notification(id: String, text: String = "text-$id") = Notification(
         id,
@@ -63,6 +69,15 @@ class NotificationScreenTest {
 
         every { call.clone() } returns call
         every { call.safeExecute() } returns value
+
+        return call
+    }
+
+    private fun mockErrorCall(): ProxerCall<List<ProxerNotification>> {
+        val call = mockk<ProxerCall<List<ProxerNotification>>>(relaxed = true)
+
+        every { call.clone() } returns call
+        every { call.safeExecute() } throws ProxerException(ProxerException.ErrorType.IO)
 
         return call
     }
@@ -127,6 +142,49 @@ class NotificationScreenTest {
             }
 
             composeTestRule.onNodeWithText("page-two-item").assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun error_shows_io_error_message_and_retry_button() {
+        val endpoint = mockNotificationsEndpoint()
+        every { endpoint.build() } returns mockErrorCall()
+
+        ActivityScenario.launch(NotificationActivity::class.java).use {
+            val errorText = context.getString(R.string.error_io)
+            val retryText = context.getString(R.string.error_action_retry)
+
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                composeTestRule.onAllNodesWithText(errorText).fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onNodeWithText(errorText).assertIsDisplayed()
+            composeTestRule.onNodeWithText(retryText).assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun retry_replaces_error_with_content_on_success() {
+        val endpoint = mockNotificationsEndpoint()
+        val unread = listOf(notification("u0"))
+        val read = listOf(notification("r0"))
+        every { endpoint.build() } returns mockErrorCall()
+
+        ActivityScenario.launch(NotificationActivity::class.java).use {
+            val retryText = context.getString(R.string.error_action_retry)
+
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                composeTestRule.onAllNodesWithText(retryText).fetchSemanticsNodes().isNotEmpty()
+            }
+
+            every { endpoint.build() } returnsMany listOf(mockCall(unread), mockCall(read))
+            composeTestRule.onNodeWithText(retryText).performClick()
+
+            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+                composeTestRule.onAllNodesWithText("text-u0").fetchSemanticsNodes().isNotEmpty()
+            }
+
+            composeTestRule.onNodeWithText("text-u0").assertIsDisplayed()
         }
     }
 }
