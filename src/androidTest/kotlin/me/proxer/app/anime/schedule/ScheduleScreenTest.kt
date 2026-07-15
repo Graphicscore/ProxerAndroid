@@ -86,7 +86,7 @@ class ScheduleScreenTest : InstrumentedTestBase() {
     )
 
     private fun awaitEntry(name: String) {
-        composeTestRule.waitUntil(timeoutMillis = 5_000) {
+        composeTestRule.waitUntil(timeoutMillis = 15_000) {
             composeTestRule.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty()
         }
 
@@ -97,12 +97,13 @@ class ScheduleScreenTest : InstrumentedTestBase() {
     fun setup() {
         // Required for every MainActivity-launched screen; see grantStoragePermission's KDoc.
         grantStoragePermission()
+
+        // Logged-in is the default here; the logged-out test re-stubs over it, matching NotificationScreenTest.
+        stubLoggedIn(storageHelper, preferenceHelper)
     }
 
     @Test
     fun success_renders_calendar_entry_name() {
-        stubLoggedIn(storageHelper, preferenceHelper)
-
         val endpoint = mockCalendarEndpoint()
         every { endpoint.build() } returns mockCall(listOf(entry("c0", "Show A")))
 

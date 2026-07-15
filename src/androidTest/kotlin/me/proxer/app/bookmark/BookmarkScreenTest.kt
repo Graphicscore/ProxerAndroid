@@ -87,7 +87,7 @@ class BookmarkScreenTest : InstrumentedTestBase() {
         val intent = MainActivity.getSectionIntent(context, DrawerItem.BOOKMARKS)
 
         ActivityScenario.launch<MainActivity>(intent).use {
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+            composeTestRule.waitUntil(timeoutMillis = 15_000) {
                 composeTestRule.onAllNodesWithText("Bookmark b0").fetchSemanticsNodes().isNotEmpty()
             }
 

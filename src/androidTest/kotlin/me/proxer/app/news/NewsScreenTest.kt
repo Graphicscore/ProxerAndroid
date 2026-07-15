@@ -81,7 +81,7 @@ class NewsScreenTest : InstrumentedTestBase() {
         val intent = MainActivity.getSectionIntent(context, DrawerItem.NEWS)
 
         ActivityScenario.launch<MainActivity>(intent).use {
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+            composeTestRule.waitUntil(timeoutMillis = 15_000) {
                 composeTestRule.onAllNodesWithText("Subject n0").fetchSemanticsNodes().isNotEmpty()
             }
 

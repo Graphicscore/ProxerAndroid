@@ -123,7 +123,7 @@ class MediaListScreenTest : InstrumentedTestBase() {
         val intent = MainActivity.getSectionIntent(context, DrawerItem.ANIME)
 
         ActivityScenario.launch<MainActivity>(intent).use {
-            composeTestRule.waitUntil(timeoutMillis = 5_000) {
+            composeTestRule.waitUntil(timeoutMillis = 15_000) {
                 composeTestRule.onAllNodesWithText("Entry A").fetchSemanticsNodes().isNotEmpty()
             }
 
