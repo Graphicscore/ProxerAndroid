@@ -37,6 +37,8 @@ if (shouldIntroduce) { … return }   // setContent NEVER runs
 
 `MainActivity.getSectionIntent` sets action `"me.proxer.app.intent.action.NEWS"`, so `shouldIntroduce` is false. Always launch drawer sections via `ActivityScenario.launch<MainActivity>(MainActivity.getSectionIntent(context, DrawerItem.X))`.
 
+**Every MainActivity-based test must call `grantStoragePermission()` in `@Before`** (shared fixture in `me.proxer.app.base`, alongside `stubLoggedIn`). Discovered while implementing Task 1: `MainActivity.kt:49-52` runtime-requests `WRITE_EXTERNAL_STORAGE` whenever `BuildConfig.LOG` is set — which it is for debug builds (`build.gradle:100`) — and `src/debug/AndroidManifest.xml` declares that permission with no `maxSdkVersion`, so it stays requestable. Left ungranted, the system permission dialog launches over `MainActivity` and pauses it before the test can read the compose tree, failing every assertion with `No compose hierarchies found in the app`. This affects Tasks 1–4 (all drawer sections). It does **not** affect Tasks 5–6 or the POC, whose Activities never hit that code path. Note `androidx.test:rules` (and therefore `GrantPermissionRule`) is not on the androidTest classpath, so the grant goes through `UiAutomation`.
+
 **Timeouts.** Use `15_000` for `MainActivity`-hosted screens (cold launch + drawer + `InAppUpdateFlow` make these slower than the POC's 2-item case) and `5_000` for the two standalone Activities. The POC observed up to ~8s for a 30-item cold launch (`NotificationScreenTest.kt:113-116`).
 
 **Keep fixture item names short and unique** (e.g. `"Subject n0"`). Several screens apply `maxLines` + `TextOverflow.Ellipsis`, which breaks `onNodeWithText` on long strings.
