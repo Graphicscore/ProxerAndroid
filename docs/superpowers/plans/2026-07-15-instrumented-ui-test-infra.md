@@ -12,7 +12,7 @@
 
 - Always use `./gradlew`, never system `gradle` (7.6.3 incompatible with Java 21 JBR). Always run with the daemon on.
 - Never run `./gradlew test*` concurrently on the same checkout — corrupts `build/test-results`; fix with `rm -rf build`.
-- Filter instrumented tests with `--tests "..."` (works for `connectedDebugAndroidTest`, unlike the plain `test` task).
+- Filter instrumented tests with `-Pandroid.testInstrumentationRunnerArguments.class=<FQCN>` (`--tests` is NOT accepted by `connectedDebugAndroidTest` on this AGP version, despite CLAUDE.md; confirmed empirically during Task 2 — CLAUDE.md needs correcting separately).
 - `secrets.properties` must exist (gitignored). If missing for build-testing only: `echo "PROXER_API_KEY=dummy_build_key" > secrets.properties`. **Never overwrite an existing one.**
 - Endpoints often return concrete subtypes (e.g. `NotificationsEndpoint`) — mock the concrete type, not `Endpoint<T>`.
 - `BaseViewModel.isLoggedInObservable` uses `.skip(1)` — cold-start screens rely on the explicit `LaunchedEffect(Unit) { viewModel.load() }` call, not the reactive path, to surface a logged-out state.
@@ -163,7 +163,7 @@ After:
 
 The TV tests (`TvSearchScreenTest` etc.) render stateless composables directly and don't touch Koin, so they should be unaffected by swapping `MainApplication` for `TestApplication` — but this needs verifying since the change applies to the whole `androidTest` variant, not just new tests.
 
-Run: `./gradlew connectedDebugAndroidTest --tests "me.proxer.app.tv.*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.package=me.proxer.app.tv`
 Expected: `BUILD SUCCESSFUL`, all existing TV tests pass.
 
 - [ ] **Step 6: Commit**
@@ -360,7 +360,7 @@ class NotificationScreenTest {
 
 - [ ] **Step 2: Run the tests**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "me.proxer.app.notification.NotificationScreenTest"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.notification.NotificationScreenTest`
 Expected: `BUILD SUCCESSFUL`, both tests pass.
 
 - [ ] **Step 3: Commit**
@@ -456,7 +456,7 @@ import androidx.compose.ui.test.performClick
 
 - [ ] **Step 2: Run the tests**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "me.proxer.app.notification.NotificationScreenTest"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.notification.NotificationScreenTest`
 Expected: `BUILD SUCCESSFUL`, all four tests pass.
 
 - [ ] **Step 3: Commit**
@@ -508,7 +508,7 @@ Note: this test calls `stubLoggedIn` in `@Before` first (existing setup), then o
 
 - [ ] **Step 2: Run the tests**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "me.proxer.app.notification.NotificationScreenTest"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.notification.NotificationScreenTest`
 Expected: `BUILD SUCCESSFUL`, all five tests pass.
 
 - [ ] **Step 3: Commit**
