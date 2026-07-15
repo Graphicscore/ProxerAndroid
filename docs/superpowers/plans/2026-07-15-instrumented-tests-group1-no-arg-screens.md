@@ -56,7 +56,7 @@ if (shouldIntroduce) { … return }   // setContent NEVER runs
 - [ ] Test extends `InstrumentedTestBase` and calls `stubLoggedIn` in `@Before`
 - [ ] No assertion duplicates `NewsViewModelTest` (no error/pagination cases)
 
-**Verify:** `./gradlew connectedDebugAndroidTest --tests "*NewsScreenTest*"` → `BUILD SUCCESSFUL`, 1 test passed
+**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.news.NewsScreenTest` → `BUILD SUCCESSFUL`, 1 test passed
 
 **Steps:**
 
@@ -156,7 +156,7 @@ class NewsScreenTest : InstrumentedTestBase() {
 
 - [ ] **Step 2: Run the test — expect it to pass**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "*NewsScreenTest*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.news.NewsScreenTest`
 Expected: `BUILD SUCCESSFUL`, 1 test passed.
 
 This is a characterisation test of working code, so it should pass on the first run. If it fails, that is a real finding — do not weaken the assertion to make it green. Two likely causes, both worth reporting rather than papering over:
@@ -185,7 +185,7 @@ git commit -m "test: add NewsScreen instrumented smoke test"
 - [ ] Test extends `InstrumentedTestBase` and calls `stubLoggedIn` in `@Before`
 - [ ] No swipe gesture is performed (items are wrapped in `SwipeToDismissBox`; a stray swipe triggers deletion)
 
-**Verify:** `./gradlew connectedDebugAndroidTest --tests "*BookmarkScreenTest*"` → `BUILD SUCCESSFUL`, 1 test passed
+**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.bookmark.BookmarkScreenTest` → `BUILD SUCCESSFUL`, 1 test passed
 
 **Steps:**
 
@@ -288,7 +288,7 @@ class BookmarkScreenTest : InstrumentedTestBase() {
 
 - [ ] **Step 2: Run the test**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "*BookmarkScreenTest*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.bookmark.BookmarkScreenTest`
 Expected: `BUILD SUCCESSFUL`, 1 test passed.
 
 - [ ] **Step 3: Commit**
@@ -313,7 +313,7 @@ git commit -m "test: add BookmarkScreen instrumented smoke test"
 - [ ] `CalendarEndpoint` is stubbed with **no** `page`/`limit` builders (it is a plain `Endpoint`, not a `PagingLimitEndpoint`)
 - [ ] No assertion on `airingInfoText` / `statusText` / rating (time-dependent, recomputed every second)
 
-**Verify:** `./gradlew connectedDebugAndroidTest --tests "*ScheduleScreenTest*"` → `BUILD SUCCESSFUL`, 2 tests passed
+**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.anime.schedule.ScheduleScreenTest` → `BUILD SUCCESSFUL`, 2 tests passed
 
 **Steps:**
 
@@ -434,7 +434,7 @@ class ScheduleScreenTest : InstrumentedTestBase() {
 
 - [ ] **Step 2: Run the tests**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "*ScheduleScreenTest*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.anime.schedule.ScheduleScreenTest`
 Expected: `BUILD SUCCESSFUL`, 2 tests passed.
 
 If `logged_out_user_still_sees_content_since_login_is_not_required` fails with `error_login_required` visible, that is a genuine regression in the `isLoginRequired = false` path — report it, do not adjust the test.
@@ -461,7 +461,7 @@ git commit -m "test: add ScheduleScreen instrumented smoke and logged-out tests"
 - [ ] `api.list` is pinned to a single `ListApi` mock instance
 - [ ] `preferenceHelper.lastTagUpdateDate` and `tagDao.getTags()` are stubbed so `loadTags()` resolves from cache and issues no remote tag fetch
 
-**Verify:** `./gradlew connectedDebugAndroidTest --tests "*MediaListScreenTest*"` → `BUILD SUCCESSFUL`, 1 test passed
+**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.media.list.MediaListScreenTest` → `BUILD SUCCESSFUL`, 1 test passed
 
 **Steps:**
 
@@ -602,7 +602,7 @@ class MediaListScreenTest : InstrumentedTestBase() {
 
 - [ ] **Step 2: Run the test**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "*MediaListScreenTest*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.media.list.MediaListScreenTest`
 Expected: `BUILD SUCCESSFUL`, 1 test passed.
 
 If it fails inside `loadTags()` with a MockK "final class" or child-mock error on `Instant`, the `lastTagUpdateDate` stub is not taking effect — check that `@Before` ordering puts it before `ActivityScenario.launch`.
@@ -629,7 +629,7 @@ git commit -m "test: add MediaListScreen instrumented smoke test"
 - [ ] The `OkHttpClient` is obtained via `safeInject`, not `koin-test`'s `inject()`
 - [ ] Test still calls `stubLoggedIn` despite `isLoginRequired = false`
 
-**Verify:** `./gradlew connectedDebugAndroidTest --tests "*ServerStatusScreenTest*"` → `BUILD SUCCESSFUL`, 1 test passed
+**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.settings.status.ServerStatusScreenTest` → `BUILD SUCCESSFUL`, 1 test passed
 
 **Steps:**
 
@@ -724,7 +724,7 @@ class ServerStatusScreenTest : InstrumentedTestBase() {
 
 - [ ] **Step 2: Run the test**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "*ServerStatusScreenTest*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.settings.status.ServerStatusScreenTest`
 Expected: `BUILD SUCCESSFUL`, 1 test passed.
 
 - [ ] **Step 3: Commit**
@@ -749,7 +749,7 @@ git commit -m "test: add ServerStatusScreen instrumented smoke test"
 - [ ] Assertions use `context.getString(...)`, not hardcoded German
 - [ ] No assertion on `profile_preference_banner_ads_title` (that row is deliberately not rendered)
 
-**Verify:** `./gradlew connectedDebugAndroidTest --tests "*ProfileSettingsScreenTest*"` → `BUILD SUCCESSFUL`, 1 test passed
+**Verify:** `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.profile.settings.ProfileSettingsScreenTest` → `BUILD SUCCESSFUL`, 1 test passed
 
 **Steps:**
 
@@ -836,7 +836,7 @@ class ProfileSettingsScreenTest : InstrumentedTestBase() {
 
 - [ ] **Step 2: Run the test**
 
-Run: `./gradlew connectedDebugAndroidTest --tests "*ProfileSettingsScreenTest*"`
+Run: `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.profile.settings.ProfileSettingsScreenTest`
 Expected: `BUILD SUCCESSFUL`, 1 test passed.
 
 If only the TopAppBar renders and the header never appears, `settings` is null — `ProfileSettingsScreen.kt:198` early-returns (`val currentSettings = settings ?: return@Scaffold`), which means the `storageHelper.profileSettings` stub is not landing before VM construction.
