@@ -5,25 +5,25 @@
     {
       "id": 18,
       "subject": "G2 Task 1: Hoist the ProxerCall fixture",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/base/ProxerCallFixtures.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest\"}\n```"
     },
     {
       "id": 19,
       "subject": "G2 Task 2: Add ProfileActivity.getIntent",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/profile/ProfileActivity.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin\"}\n```"
     },
     {
       "id": 20,
       "subject": "G2 Task 3: Add the tab-switch helper",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/base/TabFixtures.kt\"], \"verifyCommand\": \"./gradlew assembleDebugAndroidTest\"}\n```"
     },
     {
       "id": 21,
       "subject": "G2 Task 4: MediaScreen tab tests",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/media/MediaScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.media.MediaScreenTest\"}\n```",
       "blockedBy": [
         18,
@@ -33,7 +33,7 @@
     {
       "id": 22,
       "subject": "G2 Task 5: ProfileScreen tab tests",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/profile/ProfileScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.profile.ProfileScreenTest\"}\n```",
       "blockedBy": [
         18,
@@ -44,7 +44,7 @@
     {
       "id": 23,
       "subject": "G2 Task 6: TopicScreen test",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/forum/TopicScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.forum.TopicScreenTest\"}\n```",
       "blockedBy": [
         18
@@ -53,7 +53,7 @@
     {
       "id": 24,
       "subject": "G2 Task 7: EditCommentScreen test",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/comment/EditCommentScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.comment.EditCommentScreenTest\"}\n```",
       "blockedBy": [
         18
@@ -62,7 +62,7 @@
     {
       "id": 25,
       "subject": "G2 Task 8: CreateConferenceScreen test",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/prv/create/CreateConferenceScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.prv.create.CreateConferenceScreenTest\"}\n```",
       "blockedBy": [
         18
@@ -71,7 +71,7 @@
     {
       "id": 26,
       "subject": "G2 Task 9: Full-suite verification",
-      "status": "pending",
+      "status": "completed",
       "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group2-tabbed-containers.md\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest\"}\n```",
       "blockedBy": [
         18,
@@ -85,5 +85,14 @@
       ]
     }
   ],
-  "lastUpdated": "2026-07-16T00:00:00Z"
+  "lastUpdated": "2026-07-16T12:00:00Z",
+  "outcome": {
+    "result": "All 9 tasks complete. Full suite 46/46 green in 52s (30 existing + 16 new).",
+    "harness": "ProxerCallFixtures (hoisted), ProfileActivity.getIntent (prod seam), TabFixtures.switchToTab, TestApplication emoji-provider install",
+    "keyFindings": [
+      "BBCodeView ISE crash root-caused to missing emoji provider in TestApplication, not a production defect; no src/main change to BBCodeView",
+      "switchToTab needed performScrollTo: performClick on a fully-clipped tab silently dispatches nothing",
+      "ProfileActivity.navigateTo image param is dead (recorded follow-up)"
+    ]
+  }
 }
