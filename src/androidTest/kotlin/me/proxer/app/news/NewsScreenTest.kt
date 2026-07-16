@@ -12,9 +12,9 @@ import io.mockk.mockk
 import me.proxer.app.MainActivity
 import me.proxer.app.base.InstrumentedTestBase
 import me.proxer.app.base.grantStoragePermission
+import me.proxer.app.base.mockProxerCall
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.util.wrapper.DrawerItem
-import me.proxer.library.ProxerCall
 import me.proxer.library.api.notifications.NewsEndpoint
 import me.proxer.library.entity.notifications.NewsArticle
 import org.junit.Before
@@ -56,15 +56,6 @@ class NewsScreenTest : InstrumentedTestBase() {
         return endpoint
     }
 
-    private fun mockCall(value: List<NewsArticle>): ProxerCall<List<NewsArticle>> {
-        val call = mockk<ProxerCall<List<NewsArticle>>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns value
-
-        return call
-    }
-
     @Before
     fun setup() {
         // Required for every MainActivity-launched screen; see grantStoragePermission's KDoc.
@@ -76,7 +67,7 @@ class NewsScreenTest : InstrumentedTestBase() {
     @Test
     fun success_renders_article_subject() {
         val endpoint = mockNewsEndpoint()
-        every { endpoint.build() } returns mockCall(listOf(article("n0")))
+        every { endpoint.build() } returns mockProxerCall(listOf(article("n0")))
 
         val intent = MainActivity.getSectionIntent(context, DrawerItem.NEWS)
 

@@ -12,12 +12,12 @@ import io.mockk.mockk
 import me.proxer.app.MainActivity
 import me.proxer.app.base.InstrumentedTestBase
 import me.proxer.app.base.grantStoragePermission
+import me.proxer.app.base.mockProxerCall
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.media.LocalTag
 import me.proxer.app.media.TagDao
 import me.proxer.app.util.extension.safeInject
 import me.proxer.app.util.wrapper.DrawerItem
-import me.proxer.library.ProxerCall
 import me.proxer.library.api.list.ListApi
 import me.proxer.library.api.list.MediaSearchEndpoint
 import me.proxer.library.entity.list.MediaListEntry
@@ -83,15 +83,6 @@ class MediaListScreenTest : InstrumentedTestBase() {
         return endpoint
     }
 
-    private fun mockCall(value: List<MediaListEntry>): ProxerCall<List<MediaListEntry>> {
-        val call = mockk<ProxerCall<List<MediaListEntry>>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns value
-
-        return call
-    }
-
     @Before
     fun setup() {
         // Required for every MainActivity-launched screen; see grantStoragePermission's KDoc.
@@ -118,7 +109,7 @@ class MediaListScreenTest : InstrumentedTestBase() {
     @Test
     fun success_renders_media_entry_name() {
         val endpoint = mockMediaSearchEndpoint()
-        every { endpoint.build() } returns mockCall(listOf(entry("m0", "Entry A")))
+        every { endpoint.build() } returns mockProxerCall(listOf(entry("m0", "Entry A")))
 
         val intent = MainActivity.getSectionIntent(context, DrawerItem.ANIME)
 

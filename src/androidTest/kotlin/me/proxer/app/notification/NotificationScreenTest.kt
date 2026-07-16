@@ -14,11 +14,11 @@ import io.mockk.every
 import io.mockk.mockk
 import me.proxer.app.R
 import me.proxer.app.base.InstrumentedTestBase
+import me.proxer.app.base.mockProxerCall
+import me.proxer.app.base.mockProxerErrorCall
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.base.stubLoggedOut
 import me.proxer.app.util.extension.ProxerNotification
-import me.proxer.library.ProxerCall
-import me.proxer.library.ProxerException
 import me.proxer.library.api.notifications.NotificationsEndpoint
 import me.proxer.library.entity.notifications.Notification
 import me.proxer.library.enums.NotificationType
@@ -58,24 +58,6 @@ class NotificationScreenTest : InstrumentedTestBase() {
         return endpoint
     }
 
-    private fun mockCall(value: List<ProxerNotification>): ProxerCall<List<ProxerNotification>> {
-        val call = mockk<ProxerCall<List<ProxerNotification>>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns value
-
-        return call
-    }
-
-    private fun mockErrorCall(): ProxerCall<List<ProxerNotification>> {
-        val call = mockk<ProxerCall<List<ProxerNotification>>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } throws ProxerException(ProxerException.ErrorType.IO)
-
-        return call
-    }
-
     @Before
     fun setup() {
         stubLoggedIn(storageHelper, preferenceHelper)
@@ -86,7 +68,7 @@ class NotificationScreenTest : InstrumentedTestBase() {
         val endpoint = mockNotificationsEndpoint()
         val unread = listOf(notification("u0"))
         val read = listOf(notification("r0"))
-        every { endpoint.build() } returnsMany listOf(mockCall(unread), mockCall(read))
+        every { endpoint.build() } returnsMany listOf(mockProxerCall(unread), mockProxerCall(read))
 
         ActivityScenario.launch(NotificationActivity::class.java).use {
             composeTestRule.waitUntil(timeoutMillis = 5_000) {
@@ -104,9 +86,9 @@ class NotificationScreenTest : InstrumentedTestBase() {
         val firstPageUnread = (0 until 30).map { notification("u$it") }
         val secondPageItem = notification("p2-0", text = "page-two-item")
         every { endpoint.build() } returnsMany listOf(
-            mockCall(firstPageUnread),
-            mockCall(emptyList()),
-            mockCall(listOf(secondPageItem)),
+            mockProxerCall(firstPageUnread),
+            mockProxerCall(emptyList()),
+            mockProxerCall(listOf(secondPageItem)),
         )
 
         ActivityScenario.launch(NotificationActivity::class.java).use {
@@ -142,7 +124,7 @@ class NotificationScreenTest : InstrumentedTestBase() {
     @Test
     fun error_shows_io_error_message_and_retry_button() {
         val endpoint = mockNotificationsEndpoint()
-        every { endpoint.build() } returns mockErrorCall()
+        every { endpoint.build() } returns mockProxerErrorCall<List<ProxerNotification>>()
 
         ActivityScenario.launch(NotificationActivity::class.java).use {
             val errorText = context.getString(R.string.error_io)
@@ -162,7 +144,7 @@ class NotificationScreenTest : InstrumentedTestBase() {
         val endpoint = mockNotificationsEndpoint()
         val unread = listOf(notification("u0"))
         val read = listOf(notification("r0"))
-        every { endpoint.build() } returns mockErrorCall()
+        every { endpoint.build() } returns mockProxerErrorCall<List<ProxerNotification>>()
 
         ActivityScenario.launch(NotificationActivity::class.java).use {
             val retryText = context.getString(R.string.error_action_retry)
@@ -171,7 +153,7 @@ class NotificationScreenTest : InstrumentedTestBase() {
                 composeTestRule.onAllNodesWithText(retryText).fetchSemanticsNodes().isNotEmpty()
             }
 
-            every { endpoint.build() } returnsMany listOf(mockCall(unread), mockCall(read))
+            every { endpoint.build() } returnsMany listOf(mockProxerCall(unread), mockProxerCall(read))
             composeTestRule.onNodeWithText(retryText).performClick()
 
             composeTestRule.waitUntil(timeoutMillis = 5_000) {

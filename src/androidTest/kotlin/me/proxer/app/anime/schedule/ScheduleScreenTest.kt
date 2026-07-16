@@ -12,10 +12,10 @@ import io.mockk.mockk
 import me.proxer.app.MainActivity
 import me.proxer.app.base.InstrumentedTestBase
 import me.proxer.app.base.grantStoragePermission
+import me.proxer.app.base.mockProxerCall
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.base.stubLoggedOut
 import me.proxer.app.util.wrapper.DrawerItem
-import me.proxer.library.ProxerCall
 import me.proxer.library.api.media.CalendarEndpoint
 import me.proxer.library.entity.media.CalendarEntry
 import me.proxer.library.enums.CalendarDay
@@ -72,15 +72,6 @@ class ScheduleScreenTest : InstrumentedTestBase() {
         return endpoint
     }
 
-    private fun mockCall(value: List<CalendarEntry>): ProxerCall<List<CalendarEntry>> {
-        val call = mockk<ProxerCall<List<CalendarEntry>>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns value
-
-        return call
-    }
-
     private fun launchSchedule() = ActivityScenario.launch<MainActivity>(
         MainActivity.getSectionIntent(context, DrawerItem.SCHEDULE),
     )
@@ -105,7 +96,7 @@ class ScheduleScreenTest : InstrumentedTestBase() {
     @Test
     fun success_renders_calendar_entry_name() {
         val endpoint = mockCalendarEndpoint()
-        every { endpoint.build() } returns mockCall(listOf(entry("c0", "Show A")))
+        every { endpoint.build() } returns mockProxerCall(listOf(entry("c0", "Show A")))
 
         launchSchedule().use {
             awaitEntry("Show A")
@@ -124,7 +115,7 @@ class ScheduleScreenTest : InstrumentedTestBase() {
         stubLoggedOut(storageHelper, preferenceHelper, validators)
 
         val endpoint = mockCalendarEndpoint()
-        every { endpoint.build() } returns mockCall(listOf(entry("c0", "Show A")))
+        every { endpoint.build() } returns mockProxerCall(listOf(entry("c0", "Show A")))
 
         launchSchedule().use {
             awaitEntry("Show A")

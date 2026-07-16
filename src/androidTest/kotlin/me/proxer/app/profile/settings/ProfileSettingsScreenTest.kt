@@ -11,10 +11,9 @@ import io.mockk.every
 import io.mockk.mockk
 import me.proxer.app.R
 import me.proxer.app.base.InstrumentedTestBase
+import me.proxer.app.base.mockProxerCall
 import me.proxer.app.base.stubLoggedIn
-import me.proxer.library.ProxerCall
 import me.proxer.library.api.ucp.SettingsEndpoint
-import me.proxer.library.entity.ucp.UcpSettings
 import me.proxer.library.enums.UcpSettingConstraint
 import org.junit.Before
 import org.junit.Rule
@@ -45,17 +44,6 @@ class ProfileSettingsScreenTest : InstrumentedTestBase() {
         .copy(profileVisibility = UcpSettingConstraint.PRIVATE)
         .toNonLocalSettings()
 
-    private fun mockCall(value: UcpSettings): ProxerCall<UcpSettings> {
-        val call = mockk<ProxerCall<UcpSettings>>(relaxed = true)
-
-        // ProxerCallSingle clones the call before executing it, so an unstubbed clone() would hand back a
-        // different mock whose safeExecute() is not stubbed.
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns value
-
-        return call
-    }
-
     @Before
     fun setup() {
         stubLoggedIn(storageHelper, preferenceHelper)
@@ -65,7 +53,7 @@ class ProfileSettingsScreenTest : InstrumentedTestBase() {
         val endpoint = mockk<SettingsEndpoint>(relaxed = true)
 
         every { api.ucp.settings() } returns endpoint
-        every { endpoint.build() } returns mockCall(fetchedSettings)
+        every { endpoint.build() } returns mockProxerCall(fetchedSettings)
     }
 
     @Test

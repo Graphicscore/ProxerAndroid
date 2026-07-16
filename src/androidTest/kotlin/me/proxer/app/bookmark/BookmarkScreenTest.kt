@@ -12,9 +12,9 @@ import io.mockk.mockk
 import me.proxer.app.MainActivity
 import me.proxer.app.base.InstrumentedTestBase
 import me.proxer.app.base.grantStoragePermission
+import me.proxer.app.base.mockProxerCall
 import me.proxer.app.base.stubLoggedIn
 import me.proxer.app.util.wrapper.DrawerItem
-import me.proxer.library.ProxerCall
 import me.proxer.library.api.ucp.BookmarksEndpoint
 import me.proxer.library.entity.ucp.Bookmark
 import me.proxer.library.enums.Category
@@ -62,15 +62,6 @@ class BookmarkScreenTest : InstrumentedTestBase() {
         return endpoint
     }
 
-    private fun mockCall(value: List<Bookmark>): ProxerCall<List<Bookmark>> {
-        val call = mockk<ProxerCall<List<Bookmark>>>(relaxed = true)
-
-        every { call.clone() } returns call
-        every { call.safeExecute() } returns value
-
-        return call
-    }
-
     @Before
     fun setup() {
         // Required for every MainActivity-launched screen; see grantStoragePermission's KDoc.
@@ -82,7 +73,7 @@ class BookmarkScreenTest : InstrumentedTestBase() {
     @Test
     fun success_renders_bookmark_name() {
         val endpoint = mockBookmarksEndpoint()
-        every { endpoint.build() } returns mockCall(listOf(bookmark("b0")))
+        every { endpoint.build() } returns mockProxerCall(listOf(bookmark("b0")))
 
         val intent = MainActivity.getSectionIntent(context, DrawerItem.BOOKMARKS)
 
