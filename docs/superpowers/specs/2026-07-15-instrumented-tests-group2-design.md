@@ -80,7 +80,9 @@ Three, in dependency order. The first two must land before any test is written.
 
 The `clone()` + `safeExecute()` helper is copy-pasted across six files today (the `NotificationScreen` POC plus all five Group 1 tests), and the clone-gotcha comment survives in only two of them. Group 2 adds 16 more call sites.
 
-Provides `fun <T : Any> mockProxerCall(value: T)` and `mockProxerErrorCall<T>()`, plus a **nullable** variant `mockProxerNullableCall` that stubs `execute()` rather than `safeExecute()`. The nullable variant matters: `EditComment`'s publish path is `UpdateCommentEndpoint : Endpoint<Unit?>`, the only nullable endpoint in this group, and stubbing `safeExecute()` on that path silently fails to intercept.
+Provides `fun <T : Any> mockProxerCall(value: T)` and `mockProxerErrorCall<T>()`, plus a **nullable** variant `mockProxerNullableCall` that stubs `execute()` rather than `safeExecute()` (nullable `Endpoint<T?>` resolves through `ProxerCallNullableSingle`, where stubbing `safeExecute()` is inert).
+
+**Update, post-implementation:** the nullable variant shipped **unused**. The original rationale here — that `EditComment`'s publish path (`UpdateCommentEndpoint : Endpoint<Unit?>`) needs it — was wrong: that publish path is out of Group 2's smoke scope, so nothing exercises `mockProxerNullableCall`. It is kept because it is verified correct against `ProxerCallNullableSingle` and mirrors the working `mockProxerCallNullableSuccess` in the JVM test utils, but the first Group 3–5 task to actually use it should treat it as unproven (no green suite has run through it). See commit `fa6feb2a`.
 
 Migrating the six existing files is mechanical and the suite is green, so regressions surface immediately. This mirrors the `grantStoragePermission` hoist in Group 1 — done before the copies multiply, not after.
 
