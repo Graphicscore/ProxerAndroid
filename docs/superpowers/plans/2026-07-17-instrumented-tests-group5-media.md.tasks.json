@@ -4,28 +4,28 @@
     {
       "id": 1,
       "subject": "Task 1: ImageDetail seams + smoke test",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Add ImageDetailActivity.getIntent and a real Refresh-icon contentDescription, then a smoke test asserting the error-state icon is displayed.\n\n**Files:**\n- Modify: src/main/kotlin/me/proxer/app/ui/ImageDetailActivity.kt (add getIntent(Context, HttpUrl): Intent; navigateTo delegates)\n- Modify: src/main/kotlin/me/proxer/app/ui/ImageDetailScreen.kt (Refresh Icon contentDescription null -> stringResource(R.string.error_action_retry))\n- Create: src/androidTest/kotlin/me/proxer/app/ui/ImageDetailScreenTest.kt (1 smoke)\n\n**Acceptance Criteria:**\n- getIntent(context,url) returns intent with URL_EXTRA and navigateTo delegates\n- Refresh Icon contentDescription = stringResource(R.string.error_action_retry)\n- test asserts Refresh icon displayed by content description after load fails\n- test passes on API 31 AVD\n\n**Verify:** ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.ui.ImageDetailScreenTest -> BUILD SUCCESSFUL, 1 test, 0 failures.\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/ui/ImageDetailActivity.kt\", \"src/main/kotlin/me/proxer/app/ui/ImageDetailScreen.kt\", \"src/androidTest/kotlin/me/proxer/app/ui/ImageDetailScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.ui.ImageDetailScreenTest\", \"acceptanceCriteria\": [\"getIntent(context,url) returns intent with URL_EXTRA and navigateTo delegates\", \"Refresh Icon contentDescription = stringResource(R.string.error_action_retry)\", \"test asserts Refresh icon displayed by content description after load fails\", \"test passes on API 31 AVD\"]}\n```"
     },
     {
       "id": 2,
       "subject": "Task 2: Manga reader testTag seam + smoke test",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Add a testTag to the Manga reader containers, then a smoke test that stubs a valid empty-pages chapter and asserts the reader container is displayed after the happy path hides all chrome.\n\n**Files:**\n- Modify: src/main/kotlin/me/proxer/app/manga/MangaScreen.kt (add internal const val MANGA_READER_TEST_TAG = \"mangaReader\" + testTag import; apply .testTag(MANGA_READER_TEST_TAG) to both LazyColumn and HorizontalPager reader containers)\n- Create: src/androidTest/kotlin/me/proxer/app/manga/MangaScreenTest.kt (1 smoke)\n\n**Acceptance Criteria:**\n- MangaScreen.kt declares internal const val MANGA_READER_TEST_TAG = \"mangaReader\"\n- both LazyColumn (vertical) and HorizontalPager (horizontal) carry .testTag(MANGA_READER_TEST_TAG)\n- test launches Manga via bare Intent, stubs entryCore(-1)+chapter(-1,1,ENGLISH) pages=emptyList, asserts mangaReader displayed\n- test passes on API 31 AVD\n\n**Verify:** ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.manga.MangaScreenTest -> BUILD SUCCESSFUL, 1 test, 0 failures.\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/manga/MangaScreen.kt\", \"src/androidTest/kotlin/me/proxer/app/manga/MangaScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.manga.MangaScreenTest\", \"acceptanceCriteria\": [\"MANGA_READER_TEST_TAG const declared\", \"both LazyColumn and HorizontalPager carry .testTag(MANGA_READER_TEST_TAG)\", \"test stubs entryCore(-1)+chapter(-1,1,ENGLISH) pages=emptyList and asserts mangaReader displayed\", \"test passes on API 31 AVD\"]}\n```"
     },
     {
       "id": 3,
       "subject": "Task 3: Anime smoke + deep tests",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Two Anime tests in one file — an empty-state smoke test (reuses emptyList() streams stub, asserts error_no_data_anime) and a populated deep test (builds AnimeStream, asserts Text(hosterName)). No production seam.\n\n**Files:**\n- Create: src/androidTest/kotlin/me/proxer/app/anime/AnimeScreenTest.kt (2 tests)\n\n**Acceptance Criteria:**\n- launches Anime via bare Intent, stubbing entryCore(-1) + streams(-1, 1, AnimeLanguage.ENGLISH_SUB)\n- smoke test stubs streams = emptyList() and asserts R.string.error_no_data_anime displayed\n- deep test stubs streams = [AnimeStream] (resolutionResult=null) and asserts hosterName Text displayed\n- neither test taps Play\n- both tests pass on API 31 AVD\n\n**Verify:** ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.anime.AnimeScreenTest -> BUILD SUCCESSFUL, 2 tests, 0 failures.\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/anime/AnimeScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.anime.AnimeScreenTest\", \"acceptanceCriteria\": [\"bare-Intent launch stubs entryCore(-1)+streams(-1,1,ENGLISH_SUB)\", \"smoke asserts error_no_data_anime with emptyList streams\", \"deep builds AnimeStream (resolutionResult=null) and asserts hosterName Text\", \"neither taps Play\", \"both pass on API 31 AVD\"]}\n```"
     },
     {
       "id": 4,
       "subject": "Task 4: Full-suite verification (62 tests)",
-      "status": "pending",
+      "status": "completed",
       "blockedBy": [1, 2, 3],
       "description": "**Goal:** Run the entire instrumented suite and confirm 62 tests pass (58 existing + 4 new), recording the wall-clock delta against Group 4's ~63s baseline.\n\n**Files:** none (verification only).\n\n**Acceptance Criteria:**\n- ./gradlew connectedDebugAndroidTest reports Starting 62 tests, 0 failed\n- wall-clock recorded and compared to ~63s Group 4 baseline\n- TV stateless-content tests (TvSearchScreenTest et al.) among the passing tests\n\n**Verify:** ./gradlew connectedDebugAndroidTest -> BUILD SUCCESSFUL, Starting 62 tests, 0 failed.\n\nIf a happy-path test surfaces a first-frame data!! NPE (like Group 3 ConferenceInfoScreen), STOP and escalate to user before changing src/main.\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest\", \"acceptanceCriteria\": [\"Starting 62 tests, 0 failed\", \"wall-clock recorded vs ~63s baseline\", \"TV tests among passing set\"]}\n```"
     }
   ],
-  "lastUpdated": "2026-07-17T00:00:00Z"
+  "lastUpdated": "2026-07-17T12:00:00Z"
 }
