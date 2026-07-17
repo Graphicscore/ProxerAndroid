@@ -1,0 +1,62 @@
+{
+  "planPath": "docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md",
+  "specPath": "docs/superpowers/specs/2026-07-17-instrumented-tests-group4-design.md",
+  "tasks": [
+    {
+      "id": 42,
+      "subject": "G4 Task 1: WorkManagerFixtures.stubWorkManagerIdle",
+      "status": "pending",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/base/WorkManagerFixtures.kt\"], \"verifyCommand\": \"./gradlew assembleDebugAndroidTest\"}\n```"
+    },
+    {
+      "id": 43,
+      "subject": "G4 Task 2: MessengerDaoFixtures",
+      "status": "pending",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/base/MessengerDaoFixtures.kt\"], \"verifyCommand\": \"./gradlew assembleDebugAndroidTest\"}\n```"
+    },
+    {
+      "id": 44,
+      "subject": "G4 Task 3: MessengerScreen test",
+      "status": "pending",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/prv/message/MessengerScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.prv.message.MessengerScreenTest\"}\n```",
+      "blockedBy": [
+        42,
+        43
+      ]
+    },
+    {
+      "id": 45,
+      "subject": "G4 Task 4: ConferenceScreen tests (populated + empty)",
+      "status": "pending",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/prv/conference/ConferenceScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.prv.conference.ConferenceScreenTest\"}\n```",
+      "blockedBy": [
+        42,
+        43
+      ]
+    },
+    {
+      "id": 46,
+      "subject": "G4 Task 5: ChatContainerScreen tests (both tabs)",
+      "status": "pending",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/ChatContainerScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.ChatContainerScreenTest\"}\n```",
+      "blockedBy": [
+        42,
+        43
+      ]
+    },
+    {
+      "id": 47,
+      "subject": "G4 Task 6: Full-suite verification",
+      "status": "pending",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-17-instrumented-tests-group4-room-backed-chat.md\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest\"}\n```",
+      "blockedBy": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ]
+    }
+  ],
+  "lastUpdated": "2026-07-17T10:00:00Z"
+}
