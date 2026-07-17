@@ -18,11 +18,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.davemorrissey.labs.subscaleview.ImageSource
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
+import me.proxer.app.R
 import me.proxer.app.ui.compose.ProxerTheme
 import timber.log.Timber
 
@@ -41,7 +43,7 @@ fun ImageDetailScreen(url: String, onClose: () -> Unit) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.error_action_retry),
                     tint = Color.White,
                     modifier = Modifier
                         .size(64.dp)

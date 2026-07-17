@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -89,6 +90,8 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import java.io.File
+
+internal const val MANGA_READER_TEST_TAG = "mangaReader"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -316,7 +319,7 @@ private fun MangaContent(
             when (readerOrientation) {
                 MangaReaderOrientation.VERTICAL -> {
                     val screenWidth = remember { DeviceUtils.getScreenWidth(context) }
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(modifier = Modifier.fillMaxSize().testTag(MANGA_READER_TEST_TAG)) {
                         items(pages, key = { it.decodedName }) { page ->
                             MangaPage(
                                 page = page,
@@ -338,7 +341,7 @@ private fun MangaContent(
                     val pagerState = rememberPagerState { displayPages.size }
                     HorizontalPager(
                         state = pagerState,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().testTag(MANGA_READER_TEST_TAG),
                     ) { pageIndex ->
                         MangaPage(
                             page = displayPages[pageIndex],
