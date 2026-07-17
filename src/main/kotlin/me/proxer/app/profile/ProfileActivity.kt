@@ -1,6 +1,7 @@
 package me.proxer.app.profile
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
@@ -30,12 +31,16 @@ class ProfileActivity : BaseActivity() {
                 return
             }
 
-            context
-                .intentFor<ProfileActivity>(
-                    USER_ID_EXTRA to userId,
-                    USERNAME_EXTRA to username,
-                ).let { ActivityUtils.navigateToWithImageTransition(it, context, imageView) }
+            getIntent(context, userId, username).let {
+                ActivityUtils.navigateToWithImageTransition(it, context, imageView)
+            }
         }
+
+        fun getIntent(context: Context, userId: String? = null, username: String? = null): Intent =
+            context.intentFor<ProfileActivity>(
+                USER_ID_EXTRA to userId,
+                USERNAME_EXTRA to username,
+            )
     }
 
     val userId: String?

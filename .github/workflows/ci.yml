@@ -86,7 +86,6 @@ jobs:
   instrumented-tests:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -121,7 +120,13 @@ jobs:
       - name: Instrumented tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          # API 31 is the floor for this suite, not a preference. mockk-android's agent instruments
+          # Object.toString(), which Espresso calls on every Activity launch; resolving
+          # ComponentActivity.onPictureInPictureUiStateChanged's parameter type then requires
+          # android.app.PictureInPictureUiState, added in API 31. On API 30 that throws
+          # NoClassDefFoundError and crashes the whole instrumentation process. Verified 2026-07-15:
+          # API 30 dies after 1/23 tests; API 31 passes 23/23.
+          api-level: 31
           arch: x86_64
           profile: Nexus 6
           script: ./gradlew connectedDebugAndroidTest --no-daemon --max-workers 2

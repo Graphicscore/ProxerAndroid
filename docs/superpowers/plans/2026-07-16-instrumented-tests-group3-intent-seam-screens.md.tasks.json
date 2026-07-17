@@ -1,0 +1,72 @@
+{
+  "planPath": "docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md",
+  "specPath": "docs/superpowers/specs/2026-07-16-instrumented-tests-group3-design.md",
+  "tasks": [
+    {
+      "id": 31,
+      "subject": "G3 Task 1: Add 5 getIntent factories",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [\"src/main/kotlin/me/proxer/app/info/industry/IndustryActivity.kt\", \"src/main/kotlin/me/proxer/app/info/translatorgroup/TranslatorGroupActivity.kt\", \"src/main/kotlin/me/proxer/app/chat/pub/message/ChatActivity.kt\", \"src/main/kotlin/me/proxer/app/chat/pub/room/info/ChatRoomInfoActivity.kt\", \"src/main/kotlin/me/proxer/app/chat/prv/conference/info/ConferenceInfoActivity.kt\"], \"verifyCommand\": \"./gradlew compileDebugKotlin\"}\n```"
+    },
+    {
+      "id": 32,
+      "subject": "G3 Task 2: IndustryScreen tab tests",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/info/industry/IndustryScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.info.industry.IndustryScreenTest\"}\n```",
+      "blockedBy": [
+        31
+      ]
+    },
+    {
+      "id": 33,
+      "subject": "G3 Task 3: TranslatorGroupScreen tab tests",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/info/translatorgroup/TranslatorGroupScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.info.translatorgroup.TranslatorGroupScreenTest\"}\n```",
+      "blockedBy": [
+        31
+      ]
+    },
+    {
+      "id": 34,
+      "subject": "G3 Task 4: ChatScreen test",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/pub/message/ChatScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.pub.message.ChatScreenTest\"}\n```",
+      "blockedBy": [
+        31
+      ]
+    },
+    {
+      "id": 35,
+      "subject": "G3 Task 5: ChatRoomInfoScreen test",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/pub/room/info/ChatRoomInfoScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.pub.room.info.ChatRoomInfoScreenTest\"}\n```",
+      "blockedBy": [
+        31
+      ]
+    },
+    {
+      "id": 36,
+      "subject": "G3 Task 6: ConferenceInfoScreen test",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [\"src/androidTest/kotlin/me/proxer/app/chat/prv/conference/info/ConferenceInfoScreenTest.kt\"], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=me.proxer.app.chat.prv.conference.info.ConferenceInfoScreenTest\"}\n```",
+      "blockedBy": [
+        31
+      ]
+    },
+    {
+      "id": 37,
+      "subject": "G3 Task 7: Full-suite verification",
+      "status": "completed",
+      "description": "See the plan doc section for this task: docs/superpowers/plans/2026-07-16-instrumented-tests-group3-intent-seam-screens.md\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"./gradlew connectedDebugAndroidTest\"}\n```",
+      "blockedBy": [
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ]
+    }
+  ],
+  "lastUpdated": "2026-07-16T16:00:00Z"
+}

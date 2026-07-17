@@ -100,7 +100,12 @@ private fun ConferenceInfoScreenContent(
         },
     ) { padding ->
         ContentScreen(
-            isLoading = isLoading == true && data == null,
+            // `isLoading != false`, not `== true`: isLoading is a MutableLiveData<Boolean?> with no initial
+            // value (observeAsState above has no default), so on the first frame it is null -- before the
+            // LaunchedEffect runs load(). With `== true` that null made ContentScreen fall through to content(),
+            // which dereferences `data!!` while data is still null, crashing with an NPE. Treating null as
+            // "still loading" shows the spinner until data or an error arrives.
+            isLoading = isLoading != false && data == null,
             error = if (data == null) error else null,
             onRetry = onRetry,
             modifier = Modifier

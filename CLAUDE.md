@@ -19,13 +19,13 @@ Requires `secrets.properties` in project root (gitignored) with at least `PROXER
 ./gradlew lint                # Android lint
 ```
 
-Gradle JBR: `/opt/android-studio/jbr` (set via `org.gradle.java.home`). Filter tests with `--tests "..."` (the plain `test` task doesn't accept it here). Never run `./gradlew test*` concurrently on the same checkout — corrupts `build/test-results`; fix with `rm -rf build`.
+Gradle JBR: `/opt/android-studio/jbr` (set via `org.gradle.java.home`). Filter **JVM** tests with `--tests "..."` (the plain `test` task doesn't accept it here). **`connectedDebugAndroidTest` does NOT accept `--tests`** — filter it with `-Pandroid.testInstrumentationRunnerArguments.class=<FQCN>` (or `.package=<pkg>`). Never run `./gradlew test*` concurrently on the same checkout — corrupts `build/test-results`; fix with `rm -rf build`.
 
 ## Architecture
 
 MVVM, RxJava 2, no coroutines. Package layout under `me.proxer.app/`: `base/` (Activity/Fragment/ViewModel base classes), `anime/` (Media3 player), `auth/`, `chat/` (prv/pub), `manga/` (SubsamplingScaleImageView reader), `media/`, `news/`, `profile/`, `settings/`, `ui/` (shared views, BBCode renderer), `util/` (ErrorUtils, HTTP interceptors).
 
-- `BaseViewModel` — RxJava `Single<T>` → `LiveData`. `isLoginRequired = true` by default (only `ServerStatusViewModel` opts out). **No auto-load** — `BaseContentFragment.onViewCreated` calls `viewModel.load()`; Compose screens need `LaunchedEffect(Unit) { viewModel.load() }` manually. `isLoggedInObservable` uses `.skip(1)`, so already-logged-in users at cold start rely on the explicit `load()` call, not the reactive path.
+- `BaseViewModel` — RxJava `Single<T>` → `LiveData`. `isLoginRequired = true` by default; exactly two ViewModels override it to `false` (`ServerStatusViewModel.kt:25`, `ScheduleViewModel.kt:13`). `MediaListViewModel.kt:52-53` reads `super.isLoginRequired || type.isAgeRestricted()`, which is **unconditionally true** since `super` is `true`. **No auto-load** — Compose screens need `LaunchedEffect(Unit) { viewModel.load() }` manually (Fragments are gone since the Compose migration; there is no `BaseContentFragment`). `isLoggedInObservable` uses `.skip(1)`, so already-logged-in users at cold start rely on the explicit `load()` call, not the reactive path.
 - DI: Koin 4.2.1, modules in `MainModules.kt`, inject via `safeInject<Type>()`. In composables use `koinInject<T>()` (`get()`/`sharedViewModel` don't exist in 4.x).
 - Always wrap subscriptions with AutoDispose: `.autoDisposable(scope()).subscribe(...)` — missing it leaks.
 - Persistence: Room (`MessengerDatabase`/chat.db, `TagDatabase`/tag.db, migrate on schema change), `StorageHelper` (EncryptedSharedPreferences, login tokens), `PreferenceHelper` (non-sensitive settings).
@@ -37,7 +37,7 @@ TV frontend lives on the `tv-support` branch (`me.proxer.app.tv`), all Compose (
 
 Shared infra in `me.proxer.app.base`: `RxTrampolineRule`, `ProxerEndpointTestUtils.kt`, `FakeAppModule.kt`.
 
-- Need ProxerLibJava internals (endpoint/entity source, not just the jar)? Source checked out at `../ProxerLibJava` — read it there instead of decompiling/extracting the jar.
+- Need ProxerLibJava internals (endpoint/entity source, not just the jar)? **The `../ProxerLibJava` checkout is NOT present** — check before relying on it. The cheapest ground truth for entity constructors and endpoint chains is the existing JVM tests in `src/test/kotlin/me/proxer/app/`, which already build these types.
 - ProxerLibJava endpoints often return concrete subtypes (e.g. `EntryCoreEndpoint`) — mock the concrete type, not `Endpoint<T>`.
 - Nullable endpoints (`Endpoint<T?>`) run through `ProxerCallNullableSingle.execute()` — use `stubNullableSuccess`/`stubNullableError`, not the non-null variants.
 - Entities with BBCode (`LocalComment`, `LocalMessage`, `ParsedPost`) call `.toSimpleBBTree()` on construction and crash on unmocked `SpannableStringBuilder` — stub `mockkObject(TextPrototype)` in `@Before`/`unmockkObject` in `@After`.
@@ -74,3 +74,4 @@ Shared infra in `me.proxer.app.base`: `RxTrampolineRule`, `ProxerEndpointTestUti
 - `androidx.tv.material3.NavigationDrawerItem` is a `NavigationDrawerScope` extension — callers must themselves be declared `fun NavigationDrawerScope.Foo(...)`.
 - Standalone ViewModels (not extending `BaseViewModel`) must seed `MutableLiveData` with `storageHelper.user` in the constructor, then subscribe (`isLoggedInObservable` skips the current value).
 - `.superpowers/` dir from brainstorming tool — keep in `.gitignore`.
+- **Instrumented tests require API 31+.** mockk-android's agent instruments `Object.toString()` process-wide; Espresso's `ActivityLifecycleMonitorImpl.signalLifecycleChange` calls it on every Activity launch, which reflects over `ComponentActivity.onPictureInPictureUiStateChanged(PictureInPictureUiState)` — an **API 31+** class. On API 30 that throws `NoClassDefFoundError` and crashes the whole instrumentation process (not just one test). Verified 2026-07-15: API 30 dies after 1/23 tests; API 37 passes 23/23 in ~40s.
