@@ -63,10 +63,12 @@ fun stubConference(dao: MessengerDao, conferenceId: Long, conference: LocalConfe
 
 /**
  * getMessagesLiveDataForConference is an OPEN concrete method returning MediatorLiveData; a relaxed mock
- * replaces its body, so it must be stubbed directly (its abstract helpers are inert). MediatorLiveData extends
- * MutableLiveData, so setting .value gives the observer a value once the LiveData becomes active.
+ * replaces its body, so it must be stubbed directly (its abstract helpers are inert). The initial value is
+ * seeded via the MediatorLiveData(value) constructor (not `.apply { value = ... }`): tests register this stub
+ * from @Before, which runs on the instrumentation thread, and MutableLiveData.setValue asserts the main thread,
+ * whereas the value constructor sets it directly. The observer receives it once the LiveData becomes active.
  */
 fun stubMessages(dao: MessengerDao, conferenceId: Long, messages: List<LocalMessage>) {
     every { dao.getMessagesLiveDataForConference(conferenceId) } returns
-        MediatorLiveData<List<LocalMessage>>().apply { value = messages }
+        MediatorLiveData(messages)
 }
