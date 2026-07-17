@@ -69,7 +69,7 @@ Shared infra in `me.proxer.app.base`: `RxTrampolineRule`, `ProxerEndpointTestUti
 - `lifecycle`/`core-ktx` ceiling: 2.10.0 / 1.18.0 (newer needs compileSdk 37 stable).
 - `concealVersion` deleted — Hawk/Conceal removed for 16KB page size compat.
 - `CommunityMaterial.Icon.cmd_discord` removed in 7.x — Discord entry in `AboutFragment.kt` has no icon currently.
-- `gh` CLI not installed — use `git push` + open PRs manually at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
+- `gh` CLI is installed at `/usr/bin/gh` and authenticated (account `Graphicscore`, ssh, scopes incl. `repo`/`workflow`) — use it for PRs/merges/checks (`gh pr view/checks/merge`). Fallback: `git push` + open PRs manually at `https://github.com/Graphicscore/ProxerAndroid/compare/<base>...<branch>`.
 - Source root is `src/` (no `app/` subdir). Exclude `.claude/worktrees/` from `find`.
 - `androidx.tv.material3.NavigationDrawerItem` is a `NavigationDrawerScope` extension — callers must themselves be declared `fun NavigationDrawerScope.Foo(...)`.
 - Standalone ViewModels (not extending `BaseViewModel`) must seed `MutableLiveData` with `storageHelper.user` in the constructor, then subscribe (`isLoggedInObservable` skips the current value).
