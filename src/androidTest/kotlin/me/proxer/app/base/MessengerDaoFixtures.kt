@@ -51,9 +51,25 @@ fun localMessage(
     device = Device.MOBILE,
 )
 
-/** getConferencesLiveData returns LiveData<List<ConferenceWithMessage>>; MutableLiveData satisfies it. */
+/**
+ * getConferencesLiveData returns LiveData<List<ConferenceWithMessage>>. The value is delivered ASYNC via
+ * onActive/postValue -- not pre-set with the constructor -- to mimic Room's ComputableLiveData.
+ *
+ * ConferenceViewModel extends BaseViewModel, whose load() clears data.value = null on subscribe. A
+ * synchronously-valued MutableLiveData delivers its value to the mediator BEFORE that clear, so after the clear
+ * the value is lost and never re-emitted (a MutableLiveData with an unchanged value pushes nothing) -- an
+ * infinite spinner. The standalone ConferenceScreen survives only because its `LaunchedEffect(searchQuery)`
+ * reassigns and re-adds the source; the embedded ConferenceList has no such re-add. Real Room posts async on
+ * becoming active, arriving AFTER the clear, so both work for real users. Posting async here reproduces that.
+ */
 fun stubConferences(dao: MessengerDao, conferences: List<ConferenceWithMessage>) {
-    every { dao.getConferencesLiveData(any()) } returns MutableLiveData(conferences)
+    val liveData = object : MutableLiveData<List<ConferenceWithMessage>>() {
+        override fun onActive() {
+            postValue(conferences)
+        }
+    }
+
+    every { dao.getConferencesLiveData(any()) } returns liveData
 }
 
 /** getConferenceLiveData(id) returns LiveData<LocalConference?> -- the MessengerScreen header. */
