@@ -1,6 +1,8 @@
 package me.proxer.app.ui
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.activity.compose.setContent
@@ -19,10 +21,11 @@ class ImageDetailActivity : BaseActivity() {
     companion object {
         private const val URL_EXTRA = "url"
 
+        fun getIntent(context: Context, url: HttpUrl): Intent =
+            context.intentFor<ImageDetailActivity>(URL_EXTRA to url.toString())
+
         fun navigateTo(context: Activity, url: HttpUrl, imageView: ImageView? = null) {
-            context.intentFor<ImageDetailActivity>(URL_EXTRA to url.toString()).let {
-                ActivityUtils.navigateToWithImageTransition(it, context, imageView)
-            }
+            ActivityUtils.navigateToWithImageTransition(getIntent(context, url), context, imageView)
         }
     }
 
