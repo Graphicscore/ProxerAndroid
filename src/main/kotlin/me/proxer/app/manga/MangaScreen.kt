@@ -157,14 +157,28 @@ fun MangaScreen(
         }
     }
 
-    // Auto-enter immersive when content becomes ready; leave it when loading/error
     val isContentReady = data != null && error == null
-    LaunchedEffect(isContentReady) { isFullscreen = isContentReady }
 
-    // Apply system-bar visibility to match the fullscreen state
-    LaunchedEffect(isFullscreen, isContentReady) {
+    // Enter immersive once, the first time content becomes ready. Chapter navigation briefly
+    // nulls out data (reload), so re-firing here would flash the bars and clobber a manual
+    // tap-toggle — hence the one-shot guard.
+    var hasEnteredImmersive by remember { mutableStateOf(false) }
+    LaunchedEffect(isContentReady) {
+        if (isContentReady && !hasEnteredImmersive) {
+            hasEnteredImmersive = true
+            isFullscreen = true
+        }
+    }
+
+    // Surface the bars whenever an error appears so the user can retry or go back.
+    LaunchedEffect(error) {
+        if (error != null) isFullscreen = false
+    }
+
+    // Apply system-bar visibility to match the fullscreen intent (independent of reloads).
+    LaunchedEffect(isFullscreen) {
         val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
-        if (isContentReady && isFullscreen) {
+        if (isFullscreen) {
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
         } else {
@@ -178,8 +192,10 @@ fun MangaScreen(
 
     val chapter = data?.chapter
     val isLastChapter = totalEpisodes?.let { currentEpisode >= it } == true
-    val uploaderName = chapter?.uploaderName
-    val translatorGroupName = chapter?.scanGroupName
+    val uploaderName = chapter?.uploaderName?.takeIf { it.isNotBlank() }
+    // Only surface the (clickable) translator row when it can actually navigate — the
+    // scan-group id is nullable, and the click handler no-ops without it.
+    val translatorGroupName = chapter?.takeIf { it.scanGroupId != null }?.scanGroupName
     val dateText = remember(chapter) {
         chapter?.date?.let { Utils.dateFormatter.format(it.toLocalDateTimeBP()) }
     }
@@ -368,12 +384,12 @@ private fun MangaContent(
             val chapterData = data ?: return@ContentScreen
             val pages = chapterData.chapter.pages ?: return@ContentScreen
 
-            val orderedPages = if (readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT) {
-                pages.reversed()
-            } else {
-                pages
-            }
             val readerItems = remember(pages, readerOrientation) {
+                val orderedPages = if (readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT) {
+                    pages.reversed()
+                } else {
+                    pages
+                }
                 buildList<MangaReaderItem> {
                     add(MangaReaderItem.Header)
                     orderedPages.forEach { add(MangaReaderItem.PageItem(it)) }
