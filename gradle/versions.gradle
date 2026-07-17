@@ -61,7 +61,7 @@ ext {
     supportPreferenceVersion = "2.3.2"
     iconicsVersion = "5.5.0-compose01"
     communityMaterialTypefaceVersion = "7.0.96.2-kotlin"
-    aboutLibrariesVersion = "15.0.3"
+    aboutLibrariesVersion = "15.0.4"
     materialAboutVersion = "3.2.0-rc01"
     subsamplingScaleImageViewVersion = "3.10.0"
     materialDialogsVersion = "3.3.0"
