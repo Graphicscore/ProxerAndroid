@@ -4,6 +4,7 @@ import android.app.Activity
 import android.graphics.drawable.Drawable
 import android.widget.ImageView
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -24,6 +27,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +36,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -70,16 +75,20 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import me.proxer.app.R
+import me.proxer.app.info.translatorgroup.TranslatorGroupActivity
+import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.DeviceUtils
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.GLUtil
+import me.proxer.app.util.Utils
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.extension.decodedName
 import me.proxer.app.util.extension.subscribeAndLogErrors
 import me.proxer.app.util.extension.toEpisodeAppString
+import me.proxer.app.util.extension.toLocalDateTimeBP
 import me.proxer.app.util.wrapper.OriginalSizeGlideTarget
 import me.proxer.library.entity.manga.Chapter
 import me.proxer.library.entity.manga.Page
@@ -148,21 +157,47 @@ fun MangaScreen(
         }
     }
 
-    // Fullscreen: hide system bars when content is ready, show during loading/error
-    LaunchedEffect(data, error) {
+    val isContentReady = data != null && error == null
+
+    // Enter immersive once, the first time content becomes ready. Chapter navigation briefly
+    // nulls out data (reload), so re-firing here would flash the bars and clobber a manual
+    // tap-toggle — hence the one-shot guard.
+    var hasEnteredImmersive by remember { mutableStateOf(false) }
+    LaunchedEffect(isContentReady) {
+        if (isContentReady && !hasEnteredImmersive) {
+            hasEnteredImmersive = true
+            isFullscreen = true
+        }
+    }
+
+    // Surface the bars whenever an error appears so the user can retry or go back.
+    LaunchedEffect(error) {
+        if (error != null) isFullscreen = false
+    }
+
+    // Apply system-bar visibility to match the fullscreen intent (independent of reloads).
+    LaunchedEffect(isFullscreen) {
         val controller = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
-        if (data != null && error == null) {
+        if (isFullscreen) {
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             controller.hide(WindowInsetsCompat.Type.systemBars())
-            isFullscreen = true
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
-            isFullscreen = false
         }
     }
 
     val episodeLabel = remember(currentEpisode) {
         Category.MANGA.toEpisodeAppString(context, currentEpisode)
+    }
+
+    val chapter = data?.chapter
+    val isLastChapter = totalEpisodes?.let { currentEpisode >= it } == true
+    val uploaderName = chapter?.uploaderName?.takeIf { it.isNotBlank() }
+    // Only surface the (clickable) translator row when it can actually navigate — the
+    // scan-group id is nullable, and the click handler no-ops without it.
+    val translatorGroupName = chapter?.takeIf { it.scanGroupId != null }?.scanGroupName
+    val dateText = remember(chapter) {
+        chapter?.date?.let { Utils.dateFormatter.format(it.toLocalDateTimeBP()) }
     }
 
     MangaContent(
@@ -201,6 +236,30 @@ fun MangaScreen(
         },
         onRetry = { viewModel.load() },
         onLowMemory = { scope.launch { snackbarHostState.showSnackbar(lowMemoryMessage) } },
+        onToggleUi = { if (isContentReady) isFullscreen = !isFullscreen },
+        uploaderName = uploaderName,
+        translatorGroupName = translatorGroupName,
+        dateText = dateText,
+        isLastChapter = isLastChapter,
+        onUploaderClick = {
+            data?.chapter?.let { c -> ProfileActivity.navigateTo(activity, c.uploaderId, c.uploaderName) }
+        },
+        onTranslatorGroupClick = {
+            val c = data?.chapter
+            val groupId = c?.scanGroupId
+            if (c != null && groupId != null) {
+                TranslatorGroupActivity.navigateTo(activity, groupId, c.scanGroupName)
+            }
+        },
+        onMarkThisRead = { viewModel.bookmark(currentEpisode) },
+        onMarkReadUpToHereOrFinish = {
+            val total = totalEpisodes
+            if (total != null && currentEpisode >= total) {
+                viewModel.markAsFinished()
+            } else {
+                viewModel.bookmark(currentEpisode + 1)
+            }
+        },
     )
 }
 
@@ -224,6 +283,15 @@ private fun MangaContent(
     onNextEpisode: () -> Unit,
     onRetry: () -> Unit,
     onLowMemory: () -> Unit,
+    onToggleUi: () -> Unit,
+    uploaderName: String?,
+    translatorGroupName: String?,
+    dateText: String?,
+    isLastChapter: Boolean,
+    onUploaderClick: () -> Unit,
+    onTranslatorGroupClick: () -> Unit,
+    onMarkThisRead: () -> Unit,
+    onMarkReadUpToHereOrFinish: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -316,40 +384,127 @@ private fun MangaContent(
             val chapterData = data ?: return@ContentScreen
             val pages = chapterData.chapter.pages ?: return@ContentScreen
 
+            val readerItems = remember(pages, readerOrientation) {
+                val orderedPages = if (readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT) {
+                    pages.reversed()
+                } else {
+                    pages
+                }
+                buildList<MangaReaderItem> {
+                    add(MangaReaderItem.Header)
+                    orderedPages.forEach { add(MangaReaderItem.PageItem(it)) }
+                    add(MangaReaderItem.Footer)
+                }
+            }
+
+            val controlsTitle = displayChapterTitle?.takeIf { it.isNotBlank() } ?: episodeLabel
+
+            val itemKey: (MangaReaderItem) -> Any = { item ->
+                when (item) {
+                    MangaReaderItem.Header -> "manga-header"
+                    MangaReaderItem.Footer -> "manga-footer"
+                    is MangaReaderItem.PageItem -> item.page.decodedName
+                }
+            }
+
             when (readerOrientation) {
                 MangaReaderOrientation.VERTICAL -> {
                     val screenWidth = remember { DeviceUtils.getScreenWidth(context) }
                     LazyColumn(modifier = Modifier.fillMaxSize().testTag(MANGA_READER_TEST_TAG)) {
-                        items(pages, key = { it.decodedName }) { page ->
-                            MangaPage(
-                                page = page,
-                                chapter = chapterData.chapter,
-                                isVertical = true,
-                                screenWidth = screenWidth,
-                                onLowMemory = onLowMemory,
-                            )
+                        items(readerItems, key = itemKey) { item ->
+                            when (item) {
+                                MangaReaderItem.Header -> MangaChapterControls(
+                                    chapterTitle = controlsTitle,
+                                    uploaderName = uploaderName,
+                                    translatorGroupName = translatorGroupName,
+                                    dateText = dateText,
+                                    isLastChapter = isLastChapter,
+                                    showMetadata = true,
+                                    onUploaderClick = onUploaderClick,
+                                    onTranslatorGroupClick = onTranslatorGroupClick,
+                                    onMarkThisRead = onMarkThisRead,
+                                    onMarkReadUpToHereOrFinish = onMarkReadUpToHereOrFinish,
+                                )
+
+                                MangaReaderItem.Footer -> MangaChapterControls(
+                                    chapterTitle = controlsTitle,
+                                    uploaderName = uploaderName,
+                                    translatorGroupName = translatorGroupName,
+                                    dateText = dateText,
+                                    isLastChapter = isLastChapter,
+                                    showMetadata = false,
+                                    onUploaderClick = onUploaderClick,
+                                    onTranslatorGroupClick = onTranslatorGroupClick,
+                                    onMarkThisRead = onMarkThisRead,
+                                    onMarkReadUpToHereOrFinish = onMarkReadUpToHereOrFinish,
+                                )
+
+                                is MangaReaderItem.PageItem -> MangaPage(
+                                    page = item.page,
+                                    chapter = chapterData.chapter,
+                                    isVertical = true,
+                                    screenWidth = screenWidth,
+                                    onLowMemory = onLowMemory,
+                                    onToggleUi = onToggleUi,
+                                )
+                            }
                         }
                     }
                 }
 
                 MangaReaderOrientation.LEFT_TO_RIGHT, MangaReaderOrientation.RIGHT_TO_LEFT -> {
-                    val displayPages = if (readerOrientation == MangaReaderOrientation.RIGHT_TO_LEFT) {
-                        pages.reversed()
-                    } else {
-                        pages
-                    }
-                    val pagerState = rememberPagerState { displayPages.size }
+                    val pagerState = rememberPagerState { readerItems.size }
                     HorizontalPager(
                         state = pagerState,
+                        key = { index -> itemKey(readerItems[index]) },
                         modifier = Modifier.fillMaxSize().testTag(MANGA_READER_TEST_TAG),
                     ) { pageIndex ->
-                        MangaPage(
-                            page = displayPages[pageIndex],
-                            chapter = chapterData.chapter,
-                            isVertical = false,
-                            screenWidth = 0,
-                            onLowMemory = onLowMemory,
-                        )
+                        when (val item = readerItems[pageIndex]) {
+                            MangaReaderItem.Header -> Box(
+                                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                MangaChapterControls(
+                                    chapterTitle = controlsTitle,
+                                    uploaderName = uploaderName,
+                                    translatorGroupName = translatorGroupName,
+                                    dateText = dateText,
+                                    isLastChapter = isLastChapter,
+                                    showMetadata = true,
+                                    onUploaderClick = onUploaderClick,
+                                    onTranslatorGroupClick = onTranslatorGroupClick,
+                                    onMarkThisRead = onMarkThisRead,
+                                    onMarkReadUpToHereOrFinish = onMarkReadUpToHereOrFinish,
+                                )
+                            }
+
+                            MangaReaderItem.Footer -> Box(
+                                modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                MangaChapterControls(
+                                    chapterTitle = controlsTitle,
+                                    uploaderName = uploaderName,
+                                    translatorGroupName = translatorGroupName,
+                                    dateText = dateText,
+                                    isLastChapter = isLastChapter,
+                                    showMetadata = false,
+                                    onUploaderClick = onUploaderClick,
+                                    onTranslatorGroupClick = onTranslatorGroupClick,
+                                    onMarkThisRead = onMarkThisRead,
+                                    onMarkReadUpToHereOrFinish = onMarkReadUpToHereOrFinish,
+                                )
+                            }
+
+                            is MangaReaderItem.PageItem -> MangaPage(
+                                page = item.page,
+                                chapter = chapterData.chapter,
+                                isVertical = false,
+                                screenWidth = 0,
+                                onLowMemory = onLowMemory,
+                                onToggleUi = onToggleUi,
+                            )
+                        }
                     }
                 }
             }
@@ -379,14 +534,161 @@ private fun MangaContentPreview() {
             onNextEpisode = {},
             onRetry = {},
             onLowMemory = {},
+            onToggleUi = {},
+            uploaderName = "SomeUploader",
+            translatorGroupName = "SomeGroup",
+            dateText = "05.01.2024",
+            isLastChapter = false,
+            onUploaderClick = {},
+            onTranslatorGroupClick = {},
+            onMarkThisRead = {},
+            onMarkReadUpToHereOrFinish = {},
+        )
+    }
+}
+
+private sealed interface MangaReaderItem {
+    data object Header : MangaReaderItem
+    data object Footer : MangaReaderItem
+    data class PageItem(val page: Page) : MangaReaderItem
+}
+
+@Composable
+private fun MangaChapterControls(
+    chapterTitle: String,
+    uploaderName: String?,
+    translatorGroupName: String?,
+    dateText: String?,
+    isLastChapter: Boolean,
+    showMetadata: Boolean,
+    onUploaderClick: () -> Unit,
+    onTranslatorGroupClick: () -> Unit,
+    onMarkThisRead: () -> Unit,
+    onMarkReadUpToHereOrFinish: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                text = chapterTitle,
+                style = MaterialTheme.typography.titleMedium,
+            )
+
+            if (showMetadata) {
+                if (uploaderName != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onUploaderClick)
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.view_media_control_uploader),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = uploaderName, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+
+                if (translatorGroupName != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onTranslatorGroupClick)
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.view_media_control_translator_group),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = translatorGroupName, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+
+                if (dateText != null) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.view_media_control_date),
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = dateText, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                TextButton(onClick = onMarkThisRead) {
+                    Text(stringResource(R.string.fragment_manga_bookmark_this_chapter))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onMarkReadUpToHereOrFinish) {
+                    val label = if (isLastChapter) {
+                        stringResource(R.string.view_media_control_finish)
+                    } else {
+                        stringResource(R.string.fragment_manga_bookmark_next_chapter)
+                    }
+                    Text(label)
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MangaChapterControlsPreview() {
+    ProxerTheme {
+        MangaChapterControls(
+            chapterTitle = "Kapitel 3",
+            uploaderName = "SomeUploader",
+            translatorGroupName = "SomeGroup",
+            dateText = "05.01.2024",
+            isLastChapter = false,
+            showMetadata = true,
+            onUploaderClick = {},
+            onTranslatorGroupClick = {},
+            onMarkThisRead = {},
+            onMarkReadUpToHereOrFinish = {},
         )
     }
 }
 
 @Composable
-private fun MangaPage(page: Page, chapter: Chapter, isVertical: Boolean, screenWidth: Int, onLowMemory: () -> Unit) {
+private fun MangaPage(
+    page: Page,
+    chapter: Chapter,
+    isVertical: Boolean,
+    screenWidth: Int,
+    onLowMemory: () -> Unit,
+    onToggleUi: () -> Unit,
+) {
     if (page.decodedName.endsWith(".gif", ignoreCase = true)) {
-        MangaGifPage(page = page, chapter = chapter, isVertical = isVertical, screenWidth = screenWidth)
+        MangaGifPage(
+            page = page,
+            chapter = chapter,
+            isVertical = isVertical,
+            screenWidth = screenWidth,
+            onToggleUi = onToggleUi,
+        )
     } else {
         MangaImagePage(
             page = page,
@@ -394,6 +696,7 @@ private fun MangaPage(page: Page, chapter: Chapter, isVertical: Boolean, screenW
             isVertical = isVertical,
             screenWidth = screenWidth,
             onLowMemory = onLowMemory,
+            onToggleUi = onToggleUi,
         )
     }
 }
@@ -405,6 +708,7 @@ private fun MangaImagePage(
     isVertical: Boolean,
     screenWidth: Int,
     onLowMemory: () -> Unit,
+    onToggleUi: () -> Unit,
 ) {
     val context = LocalContext.current
     val pageUrl = remember(chapter.server, chapter.entryId, chapter.id, page.decodedName) {
@@ -479,6 +783,8 @@ private fun MangaImagePage(
                         setPanLimit(PAN_LIMIT_INSIDE)
                         setMinimumTileDpi(196)
                         setMinimumDpi(90)
+                        isClickable = true
+                        setOnClickListener { onToggleUi() }
 
                         setOnImageEventListener(
                             object : SubsamplingScaleImageView.OnImageEventListener {
@@ -515,7 +821,7 @@ private fun MangaImagePage(
 }
 
 @Composable
-private fun MangaGifPage(page: Page, chapter: Chapter, isVertical: Boolean, screenWidth: Int) {
+private fun MangaGifPage(page: Page, chapter: Chapter, isVertical: Boolean, screenWidth: Int, onToggleUi: () -> Unit) {
     val pageUrl = remember(chapter.server, chapter.entryId, chapter.id, page.decodedName) {
         ProxerUrls.mangaPageImage(chapter.server, chapter.entryId, chapter.id, page.decodedName).toString()
     }
@@ -559,6 +865,7 @@ private fun MangaGifPage(page: Page, chapter: Chapter, isVertical: Boolean, scre
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                             android.view.ViewGroup.LayoutParams.MATCH_PARENT,
                         )
+                        setOnClickListener { onToggleUi() }
                     }
                 },
                 update = { view ->
