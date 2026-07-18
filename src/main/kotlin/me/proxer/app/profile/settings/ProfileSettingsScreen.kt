@@ -7,12 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -21,7 +17,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -42,6 +37,7 @@ import kotlinx.coroutines.launch
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.library.enums.UcpSettingConstraint
 import org.koin.androidx.compose.koinViewModel
@@ -184,13 +180,9 @@ private fun ProfileSettingsContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_profile_settings)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
+                onBack = onBack,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },

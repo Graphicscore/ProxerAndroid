@@ -34,6 +34,18 @@
     </style>
 
     <style name="Base.Theme.App.DayNight" parent="Base.Theme.App">
+        <!--
+          The app bar is the accent color and paints behind the status bar on the edge-to-edge
+          Compose hosts, so status-bar icons must stay light. The Material3 DayNight parent would
+          otherwise turn them dark in day mode, leaving dark icons on dark red.
+
+          This belongs here rather than on Base.Theme.App: the splash placeholders descend from
+          Base.Theme.App directly, keep the light Material3 window background, and are the
+          application-level theme, so forcing light icons there would make the status bar invisible
+          during cold start. Night mode needs no entry — the parent already resolves to false.
+        -->
+        <item name="android:windowLightStatusBar">false</item>
+
         <item name="android:windowBackground">@color/background</item>
         <item name="colorOnBackground">@color/on_background</item>
         <item name="colorSelectedBackground">@color/selected_background</item>

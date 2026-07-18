@@ -21,7 +21,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
@@ -80,6 +79,7 @@ import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.DeviceUtils
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.GLUtil
@@ -298,7 +298,7 @@ private fun MangaContent(
     Scaffold(
         topBar = {
             if (!isFullscreen) {
-                TopAppBar(
+                ProxerTopAppBar(
                     title = {
                         Column {
                             val name = displayName
@@ -314,14 +314,7 @@ private fun MangaContent(
                             )
                         }
                     },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = null,
-                            )
-                        }
-                    },
+                    onBack = onBack,
                     actions = {
                         IconButton(onClick = onToggleOrientation) {
                             Icon(

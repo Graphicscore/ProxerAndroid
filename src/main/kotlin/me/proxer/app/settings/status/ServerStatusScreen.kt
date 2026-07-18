@@ -22,7 +22,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import org.koin.androidx.compose.koinViewModel
 
@@ -69,7 +69,7 @@ private fun ServerStatusContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(stringResource(R.string.section_server_status)) })
+            ProxerTopAppBar(title = { Text(stringResource(R.string.section_server_status)) })
         },
     ) { padding ->
         ContentScreen(

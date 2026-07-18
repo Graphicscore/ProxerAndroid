@@ -26,7 +26,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +49,7 @@ import me.proxer.app.forum.TopicActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.library.entity.notifications.NewsArticle
@@ -120,11 +120,11 @@ private fun NewsContent(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_news)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
             )

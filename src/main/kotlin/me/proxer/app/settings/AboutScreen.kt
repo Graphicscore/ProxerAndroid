@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
@@ -26,7 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +41,7 @@ import me.proxer.app.BuildConfig
 import me.proxer.app.R
 import me.proxer.app.settings.status.ServerStatusActivity
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.extension.startActivityOrToast
 import me.proxer.app.util.extension.toast
 
@@ -71,11 +70,11 @@ fun AboutScreen(onOpenDrawer: () -> Unit = {}) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_info)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
             )
@@ -234,13 +233,9 @@ private fun LicensesScreen(onBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.about_licenses_activity_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
+                onBack = onBack,
             )
         },
     ) { padding ->

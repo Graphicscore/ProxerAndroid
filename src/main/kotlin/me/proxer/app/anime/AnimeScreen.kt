@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -33,7 +32,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -66,6 +64,7 @@ import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.Utils
 import me.proxer.app.util.compat.isConnectedToCellular
@@ -385,7 +384,7 @@ private fun AnimeContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = {
                     Column(
                         modifier = Modifier.clickable { onMediaClick() },
@@ -399,11 +398,7 @@ private fun AnimeContent(
                         )
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
+                onBack = onBack,
                 actions = {
                     if (name != null) {
                         IconButton(onClick = onShare) {

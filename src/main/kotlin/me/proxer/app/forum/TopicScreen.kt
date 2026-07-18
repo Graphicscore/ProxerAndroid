@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ThumbUp
@@ -31,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +54,7 @@ import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
@@ -128,7 +127,7 @@ private fun TopicContent(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = {
                     Text(
                         text = displaySubject ?: "",
@@ -136,11 +135,7 @@ private fun TopicContent(
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
+                onBack = onBack,
                 actions = {
                     val shareSubject = displaySubject
                     if (shareSubject != null) {

@@ -371,6 +371,8 @@ private fun StreamContent(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.TopStart),
         ) {
+            // Not ProxerTopAppBar: this bar floats over the video, so it needs a translucent
+            // container and white tints rather than the app's opaque accent color.
             TopAppBar(
                 title = {
                     Column {

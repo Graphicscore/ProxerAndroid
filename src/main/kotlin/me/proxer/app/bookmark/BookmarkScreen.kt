@@ -37,7 +37,6 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -64,6 +63,7 @@ import me.proxer.app.manga.MangaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.toAnimeLanguage
 import me.proxer.app.util.extension.toAppString
@@ -232,11 +232,11 @@ private fun BookmarkContent(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_bookmarks)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
                 actions = {
