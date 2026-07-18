@@ -107,8 +107,10 @@ class StreamActivityTest : InstrumentedTestBase() {
             // Context the swap has to carry over from the outgoing intent.
             assertEquals("1337", activity.id)
             assertEquals(12, activity.episodeAmount)
-            assertEquals("Test Hoster", activity.hosterName)
             assertEquals(AnimeLanguage.ENGLISH_SUB, activity.language)
+            // The hoster is the exception: the one that actually resolved wins over the outgoing
+            // one, so a hoster that already fell through is not re-tried on the next navigation.
+            assertEquals("Proxer", activity.hosterName)
 
             assertEquals(90_000L, activity.playerManager.currentPlayer.currentPosition)
         }
@@ -141,4 +143,5 @@ class StreamActivityTest : InstrumentedTestBase() {
             verify { storageHelper.putLastAnimePosition("1337", 3, AnimeLanguage.ENGLISH_SUB, 0) }
         }
     }
+
 }
