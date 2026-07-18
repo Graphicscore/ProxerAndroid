@@ -26,10 +26,13 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import me.proxer.app.R
+import me.proxer.app.anime.resolver.AnimeStreamContext
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.AD_TAG_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.COVER_EXTRA
+import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.EPISODE_AMOUNT_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.EPISODE_EXTRA
+import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.HOSTER_NAME_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.ID_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.INTERNAL_PLAYER_ONLY_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.LANGUAGE_EXTRA
@@ -65,6 +68,30 @@ class StreamActivity : BaseActivity() {
 
     internal val episode: Int
         get() = intent.getIntExtra(EPISODE_EXTRA, -1).let { if (it <= 0) 1 else it }
+
+    /**
+     * The total number of episodes of this anime, or -1 when the launching screen did not know it.
+     */
+    internal val episodeAmount: Int
+        get() = intent.getIntExtra(EPISODE_AMOUNT_EXTRA, -1)
+
+    /**
+     * The hoster the currently playing stream came from, or null when unknown.
+     */
+    internal val hosterName: String?
+        get() = intent.getStringExtra(HOSTER_NAME_EXTRA)
+
+    /**
+     * Whether an episode before the current one exists. False while [episodeAmount] is unknown.
+     */
+    internal val hasPreviousEpisode: Boolean
+        get() = episodeAmount > 0 && episode > 1
+
+    /**
+     * Whether an episode after the current one exists. False while [episodeAmount] is unknown.
+     */
+    internal val hasNextEpisode: Boolean
+        get() = episodeAmount > 0 && episode < episodeAmount
 
     internal val language: AnimeLanguage
         get() =
@@ -189,11 +216,47 @@ class StreamActivity : BaseActivity() {
         super.onNewIntent(intent)
 
         if (intent.data != null && intent.data != this.intent.data) {
-            this.intent = intent
-
-            playerManager.reset()
-            contentKey++
+            applyStreamIntent(intent)
         }
+    }
+
+    /**
+     * Swaps in a new episode without recreating the activity. The outgoing position is persisted
+     * first: [clearOutgoingPosition] is set when the episode ended naturally, so that reopening it
+     * later starts from the beginning instead of the credits.
+     */
+    internal fun switchToEpisode(
+        episode: Int,
+        video: StreamResolutionResult.Video,
+        clearOutgoingPosition: Boolean = false,
+    ) {
+        storageHelper.putLastAnimePosition(
+            id,
+            this.episode,
+            language,
+            if (clearOutgoingPosition) 0 else playerManager.currentPlayer.currentPosition,
+        )
+
+        val streamContext =
+            AnimeStreamContext(
+                id = id,
+                name = name,
+                episode = episode,
+                episodeAmount = episodeAmount,
+                language = language,
+                coverUri = coverUri,
+                hosterName = hosterName,
+            )
+
+        applyStreamIntent(video.makeIntent(this, streamContext, forceInternal = true))
+    }
+
+    private fun applyStreamIntent(intent: Intent) {
+        // Assign first, so id, episode and language already read from the new intent below.
+        this.intent = intent
+
+        playerManager.reset(storageHelper.getLastAnimePosition(id, episode, language) ?: -1)
+        contentKey++
     }
 
     override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {

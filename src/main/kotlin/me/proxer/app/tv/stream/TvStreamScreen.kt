@@ -37,6 +37,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import me.proxer.app.anime.AnimeStream
 import me.proxer.app.anime.AnimeViewModel
+import me.proxer.app.anime.resolver.AnimeStreamContext
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.tv.TvTheme
 import me.proxer.app.tv.fakeAnimeStream
@@ -77,12 +78,17 @@ fun TvStreamScreen(entryId: String, episode: Int, language: AnimeLanguage, entry
             is StreamResolutionResult.Video -> {
                 result.play(
                     context,
-                    entryId,
-                    entryName,
-                    episode,
-                    language,
-                    ProxerUrls.entryImage(entryId).androidUri(),
-                    true,
+                    AnimeStreamContext(
+                        id = entryId,
+                        name = entryName,
+                        episode = episode,
+                        // The TV frontend has no episode navigation, so it opts out of the extra controls.
+                        episodeAmount = -1,
+                        language = language,
+                        coverUri = ProxerUrls.entryImage(entryId).androidUri(),
+                        hosterName = null,
+                    ),
+                    forceInternal = true,
                 )
             }
 

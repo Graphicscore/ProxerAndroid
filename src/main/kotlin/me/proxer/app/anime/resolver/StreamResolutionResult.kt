@@ -12,6 +12,20 @@ import me.proxer.library.enums.AnimeLanguage
 import okhttp3.HttpUrl
 
 /**
+ * Everything the internal player needs to know about the episode it is playing, beyond the
+ * resolved video URL itself. Passed as intent extras by [StreamResolutionResult.Video.makeIntent].
+ */
+data class AnimeStreamContext(
+    val id: String,
+    val name: String?,
+    val episode: Int,
+    val episodeAmount: Int,
+    val language: AnimeLanguage,
+    val coverUri: Uri?,
+    val hosterName: String?,
+)
+
+/**
  * @author Ruben Gees
  */
 sealed class StreamResolutionResult {
@@ -26,6 +40,8 @@ sealed class StreamResolutionResult {
             const val ID_EXTRA = "id"
             const val NAME_EXTRA = "name"
             const val EPISODE_EXTRA = "episode"
+            const val EPISODE_AMOUNT_EXTRA = "episode_amount"
+            const val HOSTER_NAME_EXTRA = "hoster_name"
             const val LANGUAGE_EXTRA = "language"
             const val COVER_EXTRA = "cover"
             const val REFERER_EXTRA = "referer"
@@ -43,30 +59,25 @@ sealed class StreamResolutionResult {
 
         fun makeIntent(
             context: Context,
-            id: String? = null,
-            name: String? = null,
-            episode: Int? = null,
-            language: AnimeLanguage? = null,
-            coverUri: Uri? = null,
+            streamContext: AnimeStreamContext? = null,
             forceInternal: Boolean = false,
         ): Intent = intent
             .apply { if (forceInternal) component = ComponentName(context, StreamActivity::class.java) }
-            .apply { if (id != null) putExtra(ID_EXTRA, id) }
-            .apply { if (name != null) putExtra(NAME_EXTRA, name) }
-            .apply { if (episode != null) putExtra(EPISODE_EXTRA, episode) }
-            .apply { if (language != null) putExtra(LANGUAGE_EXTRA, language) }
-            .apply { if (coverUri != null) putExtra(COVER_EXTRA, coverUri) }
+            .apply {
+                if (streamContext != null) {
+                    putExtra(ID_EXTRA, streamContext.id)
+                    putExtra(EPISODE_EXTRA, streamContext.episode)
+                    putExtra(EPISODE_AMOUNT_EXTRA, streamContext.episodeAmount)
+                    putExtra(LANGUAGE_EXTRA, streamContext.language)
 
-        fun play(
-            context: Context,
-            id: String?,
-            name: String?,
-            episode: Int?,
-            language: AnimeLanguage? = null,
-            coverUri: Uri? = null,
-            forceInternal: Boolean = false,
-        ) {
-            context.startActivity(makeIntent(context, id, name, episode, language, coverUri, forceInternal))
+                    if (streamContext.name != null) putExtra(NAME_EXTRA, streamContext.name)
+                    if (streamContext.coverUri != null) putExtra(COVER_EXTRA, streamContext.coverUri)
+                    if (streamContext.hosterName != null) putExtra(HOSTER_NAME_EXTRA, streamContext.hosterName)
+                }
+            }
+
+        fun play(context: Context, streamContext: AnimeStreamContext? = null, forceInternal: Boolean = false) {
+            context.startActivity(makeIntent(context, streamContext, forceInternal))
         }
     }
 

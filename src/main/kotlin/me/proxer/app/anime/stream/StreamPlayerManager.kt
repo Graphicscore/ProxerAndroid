@@ -79,6 +79,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
 
                     Player.STATE_ENDED -> {
                         playerStateSubject.onNext(PlayerState.PAUSING)
+                        playbackEndedSubject.onNext(Unit)
                     }
 
                     Player.STATE_READY -> {
@@ -202,6 +203,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
     val playerReadySubject = BehaviorSubject.createDefault<Player>(localPlayer)
     val playerStateSubject = PublishSubject.create<PlayerState>()
     val errorSubject = PublishSubject.create<ErrorUtils.ErrorAction>()
+    val playbackEndedSubject = PublishSubject.create<Unit>()
 
     init {
         localPlayer.addListener(eventListener)
@@ -251,16 +253,22 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
         }
     }
 
-    fun reset() {
+    fun reset(startPosition: Long = -1) {
         currentPlayer.playWhenReady = false
 
         wasPlaying = false
-        lastPosition = -1
+        lastPosition = startPosition
 
         localMediaSource = buildLocalMediaSourceWithAds(client, uri)
         castMediaItem = buildCastMediaItem(name, episode, coverUri, uri)
 
         retry()
+
+        // retry() only seeks for the cast player and play() is not called on this path, so the local
+        // player needs an explicit seek to honor the requested start position.
+        if (startPosition > 0) {
+            currentPlayer.seekTo(startPosition)
+        }
 
         currentPlayer.playWhenReady = true
     }

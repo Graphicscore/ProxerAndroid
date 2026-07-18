@@ -14,6 +14,7 @@ import com.squareup.moshi.Moshi
 import me.proxer.app.MainApplication.Companion.USER_AGENT
 import me.proxer.app.anime.AnimeViewModel
 import me.proxer.app.anime.schedule.ScheduleViewModel
+import me.proxer.app.anime.stream.StreamEpisodeViewModel
 import me.proxer.app.auth.LoginHandler
 import me.proxer.app.auth.LoginViewModel
 import me.proxer.app.auth.LogoutViewModel
@@ -323,6 +324,9 @@ internal val viewModelModule =
         viewModel { (entryId: String, language: Language, episode: Int) -> MangaViewModel(entryId, language, episode) }
         viewModel { (entryId: String, language: AnimeLanguage, episode: Int) ->
             AnimeViewModel(entryId, language, episode)
+        }
+        viewModel { (entryId: String, language: AnimeLanguage) ->
+            StreamEpisodeViewModel(entryId, language)
         }
 
         viewModel { (id: String?, entryId: String?) -> EditCommentViewModel(id, entryId) }
