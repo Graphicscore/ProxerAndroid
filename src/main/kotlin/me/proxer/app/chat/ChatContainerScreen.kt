@@ -13,7 +13,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,6 +28,7 @@ import me.proxer.app.R
 import me.proxer.app.chat.prv.conference.ConferenceList
 import me.proxer.app.chat.prv.create.CreateConferenceActivity
 import me.proxer.app.chat.pub.room.ChatRoomList
+import me.proxer.app.ui.compose.ProxerTabRow
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.compose.ProxerTopAppBar
 
@@ -67,7 +67,7 @@ private fun ChatContainerContent(
                 title = { Text(stringResource(R.string.section_chat)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
                 actions = {
@@ -85,10 +85,7 @@ private fun ChatContainerContent(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            SecondaryTabRow(
-                selectedTabIndex = selectedTab,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            ProxerTabRow(selectedTabIndex = selectedTab) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { onTabSelected(0) },

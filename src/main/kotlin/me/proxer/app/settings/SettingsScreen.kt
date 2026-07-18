@@ -397,7 +397,7 @@ private fun SettingsContent(
                 title = { Text(stringResource(R.string.section_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
             )

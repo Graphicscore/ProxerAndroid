@@ -46,7 +46,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,6 +78,7 @@ import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.compose.ProxerTopAppBar
+import me.proxer.app.ui.compose.ProxerTopAppBarSearchField
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.enumSetOf
 import me.proxer.app.util.extension.getQuantityString
@@ -289,14 +289,12 @@ private fun MediaListContent(
             ProxerTopAppBar(
                 title = {
                     if (isSearchActive) {
-                        TextField(
+                        ProxerTopAppBarSearchField(
                             value = searchQuery,
                             onValueChange = onSearchQueryChange,
-                            placeholder = { Text(stringResource(R.string.action_search)) },
-                            singleLine = true,
+                            placeholder = stringResource(R.string.action_search),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { onSearchSubmit() }),
-                            modifier = Modifier.fillMaxWidth(),
                         )
                     } else {
                         Text(
@@ -308,7 +306,7 @@ private fun MediaListContent(
                 },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
                 actions = {

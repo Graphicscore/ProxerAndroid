@@ -910,6 +910,8 @@
     </string>
     <string name="introduction_skip">Überspringen</string>
 
+    <string name="action_back">Zurück</string>
+    <string name="action_open_drawer">Navigation öffnen</string>
     <string name="action_search">Suchen</string>
     <string name="action_filter">Filter</string>
     <string name="action_sort">Sortierung</string>

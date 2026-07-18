@@ -27,7 +27,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
@@ -37,7 +36,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -65,6 +63,7 @@ import me.proxer.app.R
 import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
+import me.proxer.app.ui.compose.ProxerTabRow
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.extension.startActivityOrToast
@@ -142,11 +141,7 @@ private fun TranslatorGroupScreenContent(
         topBar = {
             ProxerTopAppBar(
                 title = { Text(displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
+                onBack = onBack,
                 actions = {
                     if (onShare != null) {
                         IconButton(onClick = onShare) {
@@ -158,7 +153,7 @@ private fun TranslatorGroupScreenContent(
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            PrimaryTabRow(selectedTabIndex = selectedTab) {
+            ProxerTabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, labelRes ->
                     Tab(
                         selected = selectedTab == index,

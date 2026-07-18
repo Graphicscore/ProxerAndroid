@@ -6,12 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -32,6 +27,7 @@ import me.proxer.app.media.episode.EpisodeScreen
 import me.proxer.app.media.info.MediaInfoScreen
 import me.proxer.app.media.recommendation.RecommendationScreen
 import me.proxer.app.media.relation.RelationScreen
+import me.proxer.app.ui.compose.ProxerScrollableTabRow
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.library.enums.Category
@@ -100,16 +96,12 @@ private fun MediaScreenContent(
         topBar = {
             ProxerTopAppBar(
                 title = { Text(displayName) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                    }
-                },
+                onBack = onBack,
             )
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            PrimaryScrollableTabRow(selectedTabIndex = selectedTab) {
+            ProxerScrollableTabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, label ->
                     Tab(
                         selected = selectedTab == index,

@@ -99,7 +99,9 @@ private fun ScheduleContent(
             ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_schedule)) },
                 navigationIcon = {
-                    IconButton(onClick = onOpenDrawer) { Icon(Icons.Default.Menu, contentDescription = null) }
+                    IconButton(onClick = onOpenDrawer) {
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
+                    }
                 },
             )
         },

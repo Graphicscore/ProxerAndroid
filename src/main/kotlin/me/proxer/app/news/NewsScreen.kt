@@ -124,7 +124,7 @@ private fun NewsContent(
                 title = { Text(stringResource(R.string.section_news)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
-                        Icon(Icons.Default.Menu, contentDescription = null)
+                        Icon(Icons.Default.Menu, contentDescription = stringResource(R.string.action_open_drawer))
                     }
                 },
             )

@@ -11,6 +11,13 @@
 
         <item name="android:navigationBarColor">?attr/colorPrimary</item>
 
+        <!--
+          The app bar is the accent color and paints behind the status bar on the edge-to-edge
+          Compose hosts, so status-bar icons must stay light in both modes. The Material3 DayNight
+          parent would otherwise turn them dark in day mode, leaving dark icons on dark red.
+        -->
+        <item name="android:windowLightStatusBar">false</item>
+
         <item name="windowActionModeOverlay">true</item>
 
         <item name="autoCompleteTextViewStyle">@style/Widget.App.AutoCompleteTextView</item>

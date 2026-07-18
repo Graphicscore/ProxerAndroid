@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
@@ -25,7 +24,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +47,7 @@ import me.proxer.app.chat.prv.PrvMessengerActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.ui.compose.ProxerTopAppBar
+import me.proxer.app.ui.compose.ProxerTopAppBarSearchField
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toAppString
@@ -76,11 +75,9 @@ fun ConferenceScreen(initialMessage: String? = null, onBack: () -> Unit) {
             if (showSearch) {
                 ProxerTopAppBar(
                     title = {
-                        OutlinedTextField(
+                        ProxerTopAppBarSearchField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
                         )
                     },
                     navigationIcon = {
@@ -95,11 +92,7 @@ fun ConferenceScreen(initialMessage: String? = null, onBack: () -> Unit) {
             } else {
                 ProxerTopAppBar(
                     title = { Text(stringResource(R.string.activity_prv_messenger_send_to)) },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                        }
-                    },
+                    onBack = onBack,
                     actions = {
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, contentDescription = null)

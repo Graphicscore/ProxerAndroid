@@ -32,8 +32,8 @@ import org.junit.runner.RunWith
  *
  * [LocalContext] is deliberately the SAME [ContextThemeWrapper] for both subtrees: their explicit colors come
  * from identical attribute lookups, so any difference observed between the two schemes can only come from the
- * builder choice. That also makes the "identical explicit color set is passed to both branches" requirement
- * directly assertable, and keeps the test independent of the device's own night setting.
+ * builder choice. That also makes the "both modes carry the same explicit color set" requirement directly
+ * assertable, and keeps the test independent of the device's own night setting.
  */
 @RunWith(AndroidJUnit4::class)
 class ProxerThemeTest {
