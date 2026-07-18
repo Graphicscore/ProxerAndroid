@@ -31,7 +31,8 @@ import me.proxer.app.R
  *
  * @param onBack when non-null, renders the standard labelled back arrow as the navigation icon.
  * Prefer this over hand-rolling one in [navigationIcon] — it keeps the content description in one
- * place instead of leaving each screen to forget it.
+ * place instead of leaving each screen to forget it. Mutually exclusive with [navigationIcon]:
+ * passing both is a programming error and throws rather than silently dropping one of them.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,22 +40,26 @@ fun ProxerTopAppBar(
     title: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
-    navigationIcon: @Composable () -> Unit = {},
+    navigationIcon: (@Composable () -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    require(onBack == null || navigationIcon == null) {
+        "ProxerTopAppBar takes either onBack or navigationIcon, not both — one would be discarded."
+    }
+
     TopAppBar(
         title = title,
         modifier = modifier,
         navigationIcon = {
-            if (onBack != null) {
-                IconButton(onClick = onBack) {
+            when {
+                onBack != null -> IconButton(onClick = onBack) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = stringResource(R.string.action_back),
                     )
                 }
-            } else {
-                navigationIcon()
+
+                navigationIcon != null -> navigationIcon()
             }
         },
         actions = actions,
