@@ -26,10 +26,13 @@ import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import me.proxer.app.R
+import me.proxer.app.anime.resolver.AnimeStreamContext
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.AD_TAG_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.COVER_EXTRA
+import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.EPISODE_AMOUNT_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.EPISODE_EXTRA
+import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.HOSTER_NAME_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.ID_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.INTERNAL_PLAYER_ONLY_EXTRA
 import me.proxer.app.anime.resolver.StreamResolutionResult.Video.Companion.LANGUAGE_EXTRA
@@ -66,6 +69,30 @@ class StreamActivity : BaseActivity() {
     internal val episode: Int
         get() = intent.getIntExtra(EPISODE_EXTRA, -1).let { if (it <= 0) 1 else it }
 
+    /**
+     * The total number of episodes of this anime, or -1 when the launching screen did not know it.
+     */
+    internal val episodeAmount: Int
+        get() = intent.getIntExtra(EPISODE_AMOUNT_EXTRA, -1)
+
+    /**
+     * The hoster the currently playing stream came from, or null when unknown.
+     */
+    internal val hosterName: String?
+        get() = intent.getStringExtra(HOSTER_NAME_EXTRA)
+
+    /**
+     * Whether an episode before the current one exists. False while [episodeAmount] is unknown.
+     */
+    internal val hasPreviousEpisode: Boolean
+        get() = episodeAmount > 0 && episode > 1
+
+    /**
+     * Whether an episode after the current one exists. False while [episodeAmount] is unknown.
+     */
+    internal val hasNextEpisode: Boolean
+        get() = episodeAmount > 0 && episode < episodeAmount
+
     internal val language: AnimeLanguage
         get() =
             requireNotNull(IntentCompat.getSerializableExtra(intent, LANGUAGE_EXTRA, AnimeLanguage::class.java)) {
@@ -94,11 +121,12 @@ class StreamActivity : BaseActivity() {
     internal val isInternalPlayerOnly: Boolean
         get() = intent.getBooleanExtra(INTERNAL_PLAYER_ONLY_EXTRA, false)
 
-    private val adTag: Uri?
+    /** Read by [StreamPlayerManager] on every reset, so an episode swap picks up the new ad tag. */
+    internal val adTag: Uri?
         get() = IntentCompat.getParcelableExtra(intent, AD_TAG_EXTRA, Uri::class.java)
 
     private val client by safeInject<OkHttpClient>()
-    internal val playerManager by unsafeLazy { StreamPlayerManager(this, client, adTag) }
+    internal val playerManager by unsafeLazy { StreamPlayerManager(this, client) }
 
     internal lateinit var playerView: TouchablePlayerView
         private set
@@ -114,6 +142,23 @@ class StreamActivity : BaseActivity() {
     private val clearPendingSystemBarsRunnable = Runnable { pendingSystemBarsVisible = null }
 
     private var contentKey by mutableIntStateOf(0)
+
+    /**
+     * Autoplay state deliberately lives here rather than in [StreamScreen]'s composition.
+     *
+     * A swap bumps [contentKey], which tears the whole subtree down and builds a fresh one. The
+     * navigation observers in that subtree are registered on a [me.proxer.app.util.data.ResettingMutableLiveData],
+     * whose `removeObserver` does not actually unregister what `observe` registered — so the
+     * disposed composition's handler stays live and is the one that wins delivery. Holding this
+     * state on the activity keeps it shared, so the handler computes the same answer no matter
+     * which composition it belongs to.
+     *
+     * Non-null while a countdown is running; holds the remaining seconds.
+     */
+    internal val autoplaySecondsLeftState = mutableStateOf<Int?>(null)
+
+    /** The episode whose playback already ended, guarding against a second `STATE_ENDED` for it. */
+    internal val endedEpisodeState = mutableStateOf<Int?>(null)
 
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -189,11 +234,53 @@ class StreamActivity : BaseActivity() {
         super.onNewIntent(intent)
 
         if (intent.data != null && intent.data != this.intent.data) {
-            this.intent = intent
-
-            playerManager.reset()
-            contentKey++
+            applyStreamIntent(intent)
         }
+    }
+
+    /**
+     * Swaps in a new episode without recreating the activity. The outgoing position is persisted
+     * first: [clearOutgoingPosition] is set when the episode ended naturally, so that reopening it
+     * later starts from the beginning instead of the credits.
+     */
+    internal fun switchToEpisode(
+        episode: Int,
+        video: StreamResolutionResult.Video,
+        hosterName: String,
+        clearOutgoingPosition: Boolean = false,
+    ) {
+        val outgoingPosition = playerManager.currentPlayer.currentPosition
+
+        // Mirrors the guard in onStop: a swap within the first second would otherwise persist a
+        // meaningless 0. The cleared case still writes 0 deliberately.
+        if (clearOutgoingPosition) {
+            storageHelper.putLastAnimePosition(id, this.episode, language, 0)
+        } else if (outgoingPosition > 0) {
+            storageHelper.putLastAnimePosition(id, this.episode, language, outgoingPosition)
+        }
+
+        val streamContext =
+            AnimeStreamContext(
+                id = id,
+                name = name,
+                episode = episode,
+                episodeAmount = episodeAmount,
+                language = language,
+                coverUri = coverUri,
+                // The hoster that actually resolved, not the outgoing one — otherwise every later
+                // navigation keeps re-trying a hoster that already fell through.
+                hosterName = hosterName,
+            )
+
+        applyStreamIntent(video.makeIntent(this, streamContext, forceInternal = true))
+    }
+
+    private fun applyStreamIntent(intent: Intent) {
+        // Assign first, so id, episode and language already read from the new intent below.
+        this.intent = intent
+
+        playerManager.reset(storageHelper.getLastAnimePosition(id, episode, language) ?: -1)
+        contentKey++
     }
 
     override fun onMultiWindowModeChanged(isInMultiWindowMode: Boolean, newConfig: Configuration) {

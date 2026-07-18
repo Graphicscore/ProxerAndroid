@@ -54,6 +54,7 @@ import androidx.core.content.getSystemService
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import me.proxer.app.R
+import me.proxer.app.anime.resolver.AnimeStreamContext
 import me.proxer.app.anime.resolver.ProxerStreamResolver
 import me.proxer.app.anime.resolver.StreamResolutionResult
 import me.proxer.app.auth.LoginDialog
@@ -109,6 +110,7 @@ fun AnimeScreen(
     var expandedStreamId by remember { mutableStateOf<String?>(null) }
     var noWifiStream by remember { mutableStateOf<AnimeStream?>(null) }
     var noWifiRemember by remember { mutableStateOf(false) }
+    // The stream the user actually tapped, so the player can be told which hoster it is playing.
     var appRequiredAction by remember { mutableStateOf<AppRequiredErrorAction?>(null) }
     var lastAdAlertDate by remember { mutableStateOf(storageHelper.lastAdAlertDate) }
     var isLoggedIn by remember { mutableStateOf(storageHelper.isLoggedIn) }
@@ -130,12 +132,16 @@ fun AnimeScreen(
             is StreamResolutionResult.Video -> {
                 result.play(
                     context,
-                    id,
-                    name,
-                    episode,
-                    language,
-                    ProxerUrls.entryImage(id).toString().let { Uri.parse(it) },
-                    true,
+                    AnimeStreamContext(
+                        id = id,
+                        name = name,
+                        episode = episode,
+                        episodeAmount = episodeAmount ?: -1,
+                        language = language,
+                        coverUri = Uri.parse(ProxerUrls.entryImage(id).toString()),
+                        hosterName = viewModel.resolvingHosterName,
+                    ),
+                    forceInternal = true,
                 )
             }
 
@@ -264,7 +270,9 @@ fun AnimeScreen(
         onNoWifiRememberChange = { noWifiRemember = it },
         onConfirmNoWifi = {
             if (noWifiRemember) preferenceHelper.shouldCheckCellular = false
-            noWifiStream?.let { viewModel.resolve(it) }
+            noWifiStream?.let {
+                viewModel.resolve(it)
+            }
             noWifiStream = null
             noWifiRemember = false
         },

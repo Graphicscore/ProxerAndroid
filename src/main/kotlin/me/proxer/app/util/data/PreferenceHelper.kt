@@ -30,6 +30,7 @@ class PreferenceHelper(
         const val AGE_CONFIRMATION = "age_confirmation"
         const val LINK_CHECK = "check_links"
         const val AUTO_BOOKMARK = "auto_bookmark"
+        const val AUTOPLAY_NEXT_EPISODE = "autoplay_next_episode"
         const val CHECK_CELLULAR = "check_cellular"
         const val START_PAGE = "start_page"
         const val THEME = "theme"
@@ -109,6 +110,12 @@ class PreferenceHelper(
         get() = sharedPreferences.getBoolean(AUTO_BOOKMARK, false)
         set(value) {
             sharedPreferences.edit { putBoolean(AUTO_BOOKMARK, value) }
+        }
+
+    var isAutoplayNextEpisodeEnabled
+        get() = sharedPreferences.getBoolean(AUTOPLAY_NEXT_EPISODE, true)
+        set(value) {
+            sharedPreferences.edit { putBoolean(AUTOPLAY_NEXT_EPISODE, value) }
         }
 
     var shouldCheckCellular

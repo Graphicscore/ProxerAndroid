@@ -341,6 +341,9 @@
     <string name="activity_stream_cast_introduction">Tippe hier, um auf dein Google Cast Gerät zu streamen</string>
     <string name="activity_stream_open_no_app">Es ist keine App installiert die dieses Video abspielen kann</string>
 
+    <string name="stream_autoplay_countdown">Nächste Episode in %1$d…</string>
+    <string name="stream_autoplay_play_now">Jetzt abspielen</string>
+
     <string name="dialog_login_title">Anmelden</string>
     <string name="dialog_login_positive">Anmelden</string>
     <string name="dialog_login_password_hint">Passwort</string>
@@ -790,6 +793,13 @@
     </string>
     <string name="preference_auto_bookmark_summary_off">
         Lesezeichen werden beim Wechseln des Kapitels oder der Episode nicht automatisch gesetzt
+    </string>
+    <string name="preference_autoplay_next_episode_title">Nächste Episode automatisch abspielen</string>
+    <string name="preference_autoplay_next_episode_summary_on">
+        Die nächste Episode wird nach dem Ende automatisch abgespielt
+    </string>
+    <string name="preference_autoplay_next_episode_summary_off">
+        Die nächste Episode wird nach dem Ende nicht automatisch abgespielt
     </string>
     <string name="preference_check_wifi_title">Warnung bei mobilen Daten</string>
     <string name="preference_check_wifi_summary_on">

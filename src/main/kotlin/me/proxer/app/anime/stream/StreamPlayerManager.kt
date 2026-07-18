@@ -38,7 +38,7 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, private val adTag: Uri?) {
+class StreamPlayerManager(context: StreamActivity, private val rawClient: OkHttpClient) {
     private companion object {
         private const val WAS_PLAYING_EXTRA = "was_playing"
         private const val LAST_POSITION_EXTRA = "last_position"
@@ -79,6 +79,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
 
                     Player.STATE_ENDED -> {
                         playerStateSubject.onNext(PlayerState.PAUSING)
+                        playbackEndedSubject.onNext(Unit)
                     }
 
                     Player.STATE_READY -> {
@@ -144,23 +145,14 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
             }
         }
 
-    private val client = buildClient(rawClient)
+    // Rebuilt on every reset: the Referer interceptor is derived from the intent, and an episode
+    // swap can land on a different hoster with a different referer.
+    private var client = buildClient(rawClient)
 
     private val localPlayer = buildLocalPlayer(context)
     private val castPlayer = buildCastPlayer(context)
 
-    private var adsLoader: ImaAdsLoader? =
-        when {
-            adTag != null -> {
-                ImaAdsLoader.Builder(context).build().apply {
-                    setPlayer(localPlayer)
-                }
-            }
-
-            else -> {
-                null
-            }
-        }
+    private var adsLoader: ImaAdsLoader? = null
 
     private var localMediaSource = buildLocalMediaSourceWithAds(client, uri)
     private var castMediaItem = buildCastMediaItem(name, episode, coverUri, uri)
@@ -170,6 +162,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
     private val episode: Int? get() = weakContext.get()?.episode
     private val coverUri: Uri? get() = weakContext.get()?.coverUri
     private val referer: String? get() = weakContext.get()?.referer
+    private val adTag: Uri? get() = weakContext.get()?.adTag
 
     private var lastPosition: Long
         get() = weakContext.get()?.intent?.getLongExtra(LAST_POSITION_EXTRA, -1) ?: -1
@@ -202,6 +195,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
     val playerReadySubject = BehaviorSubject.createDefault<Player>(localPlayer)
     val playerStateSubject = PublishSubject.create<PlayerState>()
     val errorSubject = PublishSubject.create<ErrorUtils.ErrorAction>()
+    val playbackEndedSubject = PublishSubject.create<Unit>()
 
     init {
         localPlayer.addListener(eventListener)
@@ -251,16 +245,30 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
         }
     }
 
-    fun reset() {
+    fun reset(startPosition: Long = -1) {
         currentPlayer.playWhenReady = false
 
         wasPlaying = false
-        lastPosition = -1
+        // Coerced because an episode that has never been watched has no stored position (-1), and
+        // that value would otherwise reach CastPlayer.seekTo via retry().
+        lastPosition = startPosition.coerceAtLeast(0)
+
+        // The new episode may come from a different hoster, so the Referer interceptor has to be
+        // rebuilt from the current intent — reusing the first episode's referer draws a 403 from
+        // hosters that check it. buildLocalMediaSourceWithAds likewise re-reads the ad tag.
+        client = buildClient(rawClient)
 
         localMediaSource = buildLocalMediaSourceWithAds(client, uri)
         castMediaItem = buildCastMediaItem(name, episode, coverUri, uri)
 
         retry()
+
+        // retry() prepares the local player with setMediaSource(source, resetPosition = false), which
+        // keeps the *outgoing* episode's position. play() is not called on this path either, so the
+        // new media must always be seeked explicitly — including to 0. Skipping the seek when the
+        // position is 0 would start a fresh episode at the previous one's runtime, which ends it
+        // instantly and chain-loads the rest of the series.
+        currentPlayer.seekTo(lastPosition)
 
         currentPlayer.playWhenReady = true
     }
@@ -288,8 +296,20 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
         val context = requireNotNull(weakContext.get())
         val okHttpDataSourceFactory = OkHttpDataSource.Factory(client).setUserAgent(USER_AGENT)
         val localMediaSource = buildLocalMediaSource(okHttpDataSourceFactory, uri)
-        val safeAdsLoader = adsLoader
         val safeAdTag = adTag
+        // Created lazily rather than in the constructor: the first episode may carry no ad tag while
+        // a later one does, and the loader binds to the local player exactly once.
+        val safeAdsLoader =
+            when {
+                safeAdTag == null -> null
+
+                else ->
+                    adsLoader ?: ImaAdsLoader
+                        .Builder(context)
+                        .build()
+                        .apply { setPlayer(localPlayer) }
+                        .also { adsLoader = it }
+            }
 
         return if (safeAdsLoader != null && safeAdTag != null) {
             AdsMediaSource(

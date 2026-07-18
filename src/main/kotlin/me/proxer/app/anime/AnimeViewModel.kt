@@ -105,8 +105,18 @@ class AnimeViewModel(private val entryId: String, private val language: AnimeLan
         super.load()
     }
 
+    /**
+     * The hoster of the stream most recently passed to [resolve], so that the player can prefer the
+     * same hoster for neighbouring episodes. Held here rather than in the composable because it has
+     * to survive recomposition alongside the resolution it describes.
+     */
+    var resolvingHosterName: String? = null
+        private set
+
     fun resolve(stream: AnimeStream) {
         resolverDisposable?.dispose()
+
+        resolvingHosterName = stream.hosterName
 
         val resolutionSingle =
             stream.resolutionResult?.let { Single.just(it) }

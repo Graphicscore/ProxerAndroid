@@ -62,6 +62,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
     var isLoggedIn by remember { mutableStateOf(storageHelper.isLoggedIn) }
     var ageRestricted by remember { mutableStateOf(preferenceHelper.isAgeRestrictedMediaAllowed) }
     var autoBookmark by remember { mutableStateOf(preferenceHelper.areBookmarksAutomatic) }
+    var autoplayNextEpisode by remember { mutableStateOf(preferenceHelper.isAutoplayNextEpisodeEnabled) }
     var checkCellular by remember { mutableStateOf(preferenceHelper.shouldCheckCellular) }
     var checkLinks by remember { mutableStateOf(preferenceHelper.shouldCheckLinks) }
     var externalCache by remember { mutableStateOf(preferenceHelper.shouldCacheExternally) }
@@ -277,6 +278,7 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
         isLoggedIn = isLoggedIn,
         ageRestricted = ageRestricted,
         autoBookmark = autoBookmark,
+        autoplayNextEpisode = autoplayNextEpisode,
         checkCellular = checkCellular,
         checkLinks = checkLinks,
         externalCache = externalCache,
@@ -306,6 +308,10 @@ fun SettingsScreen(onOpenDrawer: () -> Unit = {}) {
         onAutoBookmarkChange = {
             autoBookmark = it
             preferenceHelper.areBookmarksAutomatic = it
+        },
+        onAutoplayNextEpisodeChange = {
+            autoplayNextEpisode = it
+            preferenceHelper.isAutoplayNextEpisodeEnabled = it
         },
         onCheckCellularChange = {
             checkCellular = it
@@ -358,6 +364,7 @@ private fun SettingsContent(
     isLoggedIn: Boolean,
     ageRestricted: Boolean,
     autoBookmark: Boolean,
+    autoplayNextEpisode: Boolean,
     checkCellular: Boolean,
     checkLinks: Boolean,
     externalCache: Boolean,
@@ -378,6 +385,7 @@ private fun SettingsContent(
     onProfileSettingsClick: () -> Unit,
     onAgeRestrictedChange: (Boolean) -> Unit,
     onAutoBookmarkChange: (Boolean) -> Unit,
+    onAutoplayNextEpisodeChange: (Boolean) -> Unit,
     onCheckCellularChange: (Boolean) -> Unit,
     onCheckLinksChange: (Boolean) -> Unit,
     onExternalCacheChange: (Boolean) -> Unit,
@@ -454,6 +462,27 @@ private fun SettingsContent(
                         Switch(
                             checked = autoBookmark,
                             onCheckedChange = onAutoBookmarkChange,
+                        )
+                    },
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text(stringResource(R.string.preference_autoplay_next_episode_title)) },
+                    supportingContent = {
+                        Text(
+                            if (autoplayNextEpisode) {
+                                stringResource(R.string.preference_autoplay_next_episode_summary_on)
+                            } else {
+                                stringResource(R.string.preference_autoplay_next_episode_summary_off)
+                            },
+                        )
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = autoplayNextEpisode,
+                            onCheckedChange = onAutoplayNextEpisodeChange,
                         )
                     },
                 )
@@ -704,6 +733,7 @@ private fun SettingsScreenPreview() {
             isLoggedIn = true,
             ageRestricted = false,
             autoBookmark = true,
+            autoplayNextEpisode = true,
             checkCellular = false,
             checkLinks = true,
             externalCache = false,
@@ -724,6 +754,7 @@ private fun SettingsScreenPreview() {
             onProfileSettingsClick = {},
             onAgeRestrictedChange = {},
             onAutoBookmarkChange = {},
+            onAutoplayNextEpisodeChange = {},
             onCheckCellularChange = {},
             onCheckLinksChange = {},
             onExternalCacheChange = {},
