@@ -121,11 +121,12 @@ class StreamActivity : BaseActivity() {
     internal val isInternalPlayerOnly: Boolean
         get() = intent.getBooleanExtra(INTERNAL_PLAYER_ONLY_EXTRA, false)
 
-    private val adTag: Uri?
+    /** Read by [StreamPlayerManager] on every reset, so an episode swap picks up the new ad tag. */
+    internal val adTag: Uri?
         get() = IntentCompat.getParcelableExtra(intent, AD_TAG_EXTRA, Uri::class.java)
 
     private val client by safeInject<OkHttpClient>()
-    internal val playerManager by unsafeLazy { StreamPlayerManager(this, client, adTag) }
+    internal val playerManager by unsafeLazy { StreamPlayerManager(this, client) }
 
     internal lateinit var playerView: TouchablePlayerView
         private set
@@ -228,14 +229,18 @@ class StreamActivity : BaseActivity() {
     internal fun switchToEpisode(
         episode: Int,
         video: StreamResolutionResult.Video,
+        hosterName: String,
         clearOutgoingPosition: Boolean = false,
     ) {
-        storageHelper.putLastAnimePosition(
-            id,
-            this.episode,
-            language,
-            if (clearOutgoingPosition) 0 else playerManager.currentPlayer.currentPosition,
-        )
+        val outgoingPosition = playerManager.currentPlayer.currentPosition
+
+        // Mirrors the guard in onStop: a swap within the first second would otherwise persist a
+        // meaningless 0. The cleared case still writes 0 deliberately.
+        if (clearOutgoingPosition) {
+            storageHelper.putLastAnimePosition(id, this.episode, language, 0)
+        } else if (outgoingPosition > 0) {
+            storageHelper.putLastAnimePosition(id, this.episode, language, outgoingPosition)
+        }
 
         val streamContext =
             AnimeStreamContext(
@@ -245,6 +250,8 @@ class StreamActivity : BaseActivity() {
                 episodeAmount = episodeAmount,
                 language = language,
                 coverUri = coverUri,
+                // The hoster that actually resolved, not the outgoing one — otherwise every later
+                // navigation keeps re-trying a hoster that already fell through.
                 hosterName = hosterName,
             )
 

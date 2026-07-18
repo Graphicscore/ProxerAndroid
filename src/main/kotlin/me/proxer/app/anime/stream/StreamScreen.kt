@@ -115,14 +115,11 @@ fun StreamScreen(activity: StreamActivity, playerManager: StreamPlayerManager) {
     var autoplaySecondsLeft by remember { mutableStateOf<Int?>(null) }
     // Guards against a second STATE_ENDED for the same episode restarting the countdown.
     var endedEpisode by remember { mutableStateOf<Int?>(null) }
-    // The episode a pending navigation is heading to, so the result handler knows whether to bookmark.
-    var pendingEpisode by remember { mutableStateOf<Int?>(null) }
 
     val isNavigating by episodeViewModel.isNavigating.observeAsState(false)
 
     fun navigateToEpisode(episode: Int) {
         autoplaySecondsLeft = null
-        pendingEpisode = episode
 
         episodeViewModel.navigateTo(episode, activity.hosterName)
     }
@@ -227,15 +224,17 @@ fun StreamScreen(activity: StreamActivity, playerManager: StreamPlayerManager) {
             episodeViewModel.bookmark(target.episode)
         }
 
-        endedEpisode = null
-        pendingEpisode = null
-
-        // Must stay last: this reassigns the intent, so activity.episode changes underneath.
-        activity.switchToEpisode(target.episode, target.video, clearOutgoingPosition = wasAutoplay)
+        // Must stay last: this reassigns the intent and bumps the content key, which rebuilds this
+        // whole subtree — so there is no point clearing any remembered state beforehand.
+        activity.switchToEpisode(
+            target.episode,
+            target.video,
+            target.hosterName,
+            clearOutgoingPosition = wasAutoplay,
+        )
     }
 
     ObserveLiveDataEvent(episodeViewModel.episodeNavigationError) { action ->
-        pendingEpisode = null
         autoplaySecondsLeft = null
 
         activity.toast(action.message)
@@ -306,12 +305,11 @@ fun StreamScreen(activity: StreamActivity, playerManager: StreamPlayerManager) {
         isProxerStream = activity.isProxerStream,
         hasPreviousEpisode = activity.hasPreviousEpisode,
         hasNextEpisode = activity.hasNextEpisode,
-        isNavigating = isNavigating == true,
+        isNavigating = isNavigating,
         autoplaySecondsLeft = autoplaySecondsLeft,
         onPreviousEpisode = { navigateToEpisode(activity.episode - 1) },
         onNextEpisode = { navigateToEpisode(activity.episode + 1) },
         onCancelAutoplay = { autoplaySecondsLeft = null },
-        onPlayNextNow = { navigateToEpisode(activity.episode + 1) },
         playerContent = {
             AndroidView(
                 factory = { _ ->
@@ -416,7 +414,6 @@ private fun StreamContent(
     onPreviousEpisode: () -> Unit,
     onNextEpisode: () -> Unit,
     onCancelAutoplay: () -> Unit,
-    onPlayNextNow: () -> Unit,
     playerContent: @Composable () -> Unit,
     castButtonContent: (@Composable () -> Unit)?,
     onBack: () -> Unit,
@@ -517,7 +514,9 @@ private fun StreamContent(
                         TextButton(onClick = onCancelAutoplay) {
                             Text(stringResource(R.string.cancel))
                         }
-                        Button(onClick = onPlayNextNow) {
+                        // Gated like the toolbar buttons: repeated taps would otherwise dispose and
+                        // restart an in-flight resolve.
+                        Button(onClick = onNextEpisode, enabled = !isNavigating) {
                             Text(stringResource(R.string.stream_autoplay_play_now))
                         }
                     }
@@ -645,7 +644,6 @@ private fun StreamContentPreview() {
             onPreviousEpisode = {},
             onNextEpisode = {},
             onCancelAutoplay = {},
-            onPlayNextNow = {},
             playerContent = {},
             castButtonContent = null,
             onBack = {},

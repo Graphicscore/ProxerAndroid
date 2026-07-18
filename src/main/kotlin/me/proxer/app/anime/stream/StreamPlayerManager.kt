@@ -38,7 +38,7 @@ import kotlin.properties.Delegates
 /**
  * @author Ruben Gees
  */
-class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, private val adTag: Uri?) {
+class StreamPlayerManager(context: StreamActivity, private val rawClient: OkHttpClient) {
     private companion object {
         private const val WAS_PLAYING_EXTRA = "was_playing"
         private const val LAST_POSITION_EXTRA = "last_position"
@@ -145,23 +145,14 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
             }
         }
 
-    private val client = buildClient(rawClient)
+    // Rebuilt on every reset: the Referer interceptor is derived from the intent, and an episode
+    // swap can land on a different hoster with a different referer.
+    private var client = buildClient(rawClient)
 
     private val localPlayer = buildLocalPlayer(context)
     private val castPlayer = buildCastPlayer(context)
 
-    private var adsLoader: ImaAdsLoader? =
-        when {
-            adTag != null -> {
-                ImaAdsLoader.Builder(context).build().apply {
-                    setPlayer(localPlayer)
-                }
-            }
-
-            else -> {
-                null
-            }
-        }
+    private var adsLoader: ImaAdsLoader? = null
 
     private var localMediaSource = buildLocalMediaSourceWithAds(client, uri)
     private var castMediaItem = buildCastMediaItem(name, episode, coverUri, uri)
@@ -171,6 +162,7 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
     private val episode: Int? get() = weakContext.get()?.episode
     private val coverUri: Uri? get() = weakContext.get()?.coverUri
     private val referer: String? get() = weakContext.get()?.referer
+    private val adTag: Uri? get() = weakContext.get()?.adTag
 
     private var lastPosition: Long
         get() = weakContext.get()?.intent?.getLongExtra(LAST_POSITION_EXTRA, -1) ?: -1
@@ -261,6 +253,11 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
         // that value would otherwise reach CastPlayer.seekTo via retry().
         lastPosition = startPosition.coerceAtLeast(0)
 
+        // The new episode may come from a different hoster, so the Referer interceptor has to be
+        // rebuilt from the current intent — reusing the first episode's referer draws a 403 from
+        // hosters that check it. buildLocalMediaSourceWithAds likewise re-reads the ad tag.
+        client = buildClient(rawClient)
+
         localMediaSource = buildLocalMediaSourceWithAds(client, uri)
         castMediaItem = buildCastMediaItem(name, episode, coverUri, uri)
 
@@ -299,8 +296,20 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
         val context = requireNotNull(weakContext.get())
         val okHttpDataSourceFactory = OkHttpDataSource.Factory(client).setUserAgent(USER_AGENT)
         val localMediaSource = buildLocalMediaSource(okHttpDataSourceFactory, uri)
-        val safeAdsLoader = adsLoader
         val safeAdTag = adTag
+        // Created lazily rather than in the constructor: the first episode may carry no ad tag while
+        // a later one does, and the loader binds to the local player exactly once.
+        val safeAdsLoader =
+            when {
+                safeAdTag == null -> null
+
+                else ->
+                    adsLoader ?: ImaAdsLoader
+                        .Builder(context)
+                        .build()
+                        .apply { setPlayer(localPlayer) }
+                        .also { adsLoader = it }
+            }
 
         return if (safeAdsLoader != null && safeAdTag != null) {
             AdsMediaSource(

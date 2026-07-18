@@ -9,6 +9,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import me.proxer.app.anime.resolver.StreamResolutionResult
+import me.proxer.app.anime.resolver.StreamResolver
 import me.proxer.app.anime.resolver.StreamResolverFactory
 import me.proxer.app.exception.StreamResolutionException
 import me.proxer.app.util.ErrorUtils
@@ -25,8 +26,14 @@ import me.proxer.library.entity.anime.Stream
 import me.proxer.library.enums.AnimeLanguage
 import me.proxer.library.enums.Category
 
-/** A neighbouring episode together with the stream that was successfully resolved for it. */
-data class EpisodeNavigationTarget(val episode: Int, val video: StreamResolutionResult.Video)
+/**
+ * A neighbouring episode together with the stream that was successfully resolved for it.
+ *
+ * [hosterName] is the hoster that actually resolved, which is not necessarily the preferred one —
+ * the candidate walk falls through to others when the preferred hoster is absent or unplayable.
+ * Carrying it forward keeps the next navigation from re-trying a hoster that already failed.
+ */
+data class EpisodeNavigationTarget(val episode: Int, val video: StreamResolutionResult.Video, val hosterName: String)
 
 /**
  * Resolves neighbouring episodes for the internal player.
@@ -54,6 +61,8 @@ class StreamEpisodeViewModel(private val entryId: String, private val language: 
 
         navigationDisposable = null
         bookmarkDisposable = null
+
+        super.onCleared()
     }
 
     fun navigateTo(episode: Int, preferredHoster: String?) {
@@ -65,8 +74,7 @@ class StreamEpisodeViewModel(private val entryId: String, private val language: 
                 .includeProxerStreams(true)
                 .buildSingle()
                 .map { streams -> orderCandidates(streams, preferredHoster) }
-                .flatMap { candidates -> resolveFirstVideo(candidates) }
-                .map { video -> EpisodeNavigationTarget(episode, video) }
+                .flatMap { candidates -> resolveFirstVideo(episode, candidates) }
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doOnSubscribe { isNavigating.value = true }
@@ -96,42 +104,51 @@ class StreamEpisodeViewModel(private val entryId: String, private val language: 
                 .subscribeAndLogErrors()
     }
 
+    /** A stream paired with the resolver that will be used for it, so the lookup happens once. */
+    private data class Candidate(val stream: Stream, val resolver: StreamResolver)
+
     /**
      * Keeps only streams the internal player could actually use, one per hoster, with
      * [preferredHoster] first. The sort is stable, so the remaining order matches the API's.
+     *
+     * The login filter has no counterpart in [me.proxer.app.anime.AnimeViewModel.streamSingle],
+     * which lists non-public streams and gates them in the UI instead. The player has no such UI,
+     * so it filters here; the set of *playable* streams stays the same across both screens.
      */
-    private fun orderCandidates(streams: List<Stream>, preferredHoster: String?): List<Stream> = streams
-        .filter { stream ->
-            val resolver = StreamResolverFactory.resolverFor(stream.hosterName)
-
-            resolver != null && !resolver.ignore
-        }.filter { stream -> stream.isPublic || storageHelper.isLoggedIn }
-        .groupBy { stream -> stream.hoster }
+    private fun orderCandidates(streams: List<Stream>, preferredHoster: String?): List<Candidate> = streams
+        .mapNotNull { stream ->
+            StreamResolverFactory
+                .resolverFor(stream.hosterName)
+                ?.takeUnless { resolver -> resolver.ignore }
+                ?.let { resolver -> Candidate(stream, resolver) }
+        }.filter { candidate -> candidate.stream.isPublic || storageHelper.isLoggedIn }
+        .groupBy { candidate -> candidate.stream.hoster }
         .map { (_, group) -> group.first() }
-        .sortedByDescending { stream -> stream.hosterName.equals(preferredHoster, ignoreCase = true) }
+        .sortedByDescending { candidate ->
+            candidate.stream.hosterName.equals(preferredHoster, ignoreCase = true)
+        }
 
     /**
      * Resolves [candidates] one at a time and emits the first that yields a playable
      * [StreamResolutionResult.Video]. Non-video results and resolver failures are skipped rather
      * than aborting the walk — a hoster that hands back a Link or an App entry is normal.
      */
-    private fun resolveFirstVideo(candidates: List<Stream>): Single<StreamResolutionResult.Video> = Observable
-        .fromIterable(candidates)
-        .concatMapMaybe { stream ->
-            val resolver = StreamResolverFactory.resolverFor(stream.hosterName)
-
-            if (resolver == null) {
-                Maybe.empty()
-            } else {
-                resolver
-                    .resolve(stream.id)
+    private fun resolveFirstVideo(episode: Int, candidates: List<Candidate>): Single<EpisodeNavigationTarget> =
+        Observable
+            .fromIterable(candidates)
+            .concatMapMaybe { candidate ->
+                candidate.resolver
+                    .resolve(candidate.stream.id)
                     .flatMapMaybe { result ->
                         when (result) {
-                            is StreamResolutionResult.Video -> Maybe.just(result)
+                            is StreamResolutionResult.Video ->
+                                Maybe.just(
+                                    EpisodeNavigationTarget(episode, result, candidate.stream.hosterName),
+                                )
+
                             else -> Maybe.empty()
                         }
                     }.onErrorComplete()
-            }
-        }.firstElement()
-        .switchIfEmpty(Single.error(StreamResolutionException()))
+            }.firstElement()
+            .switchIfEmpty(Single.error(StreamResolutionException()))
 }

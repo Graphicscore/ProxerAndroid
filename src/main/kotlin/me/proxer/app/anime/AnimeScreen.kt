@@ -112,7 +112,6 @@ fun AnimeScreen(
     var noWifiStream by remember { mutableStateOf<AnimeStream?>(null) }
     var noWifiRemember by remember { mutableStateOf(false) }
     // The stream the user actually tapped, so the player can be told which hoster it is playing.
-    var playingStream by remember { mutableStateOf<AnimeStream?>(null) }
     var appRequiredAction by remember { mutableStateOf<AppRequiredErrorAction?>(null) }
     var lastAdAlertDate by remember { mutableStateOf(storageHelper.lastAdAlertDate) }
     var isLoggedIn by remember { mutableStateOf(storageHelper.isLoggedIn) }
@@ -141,7 +140,7 @@ fun AnimeScreen(
                         episodeAmount = episodeAmount ?: -1,
                         language = language,
                         coverUri = Uri.parse(ProxerUrls.entryImage(id).toString()),
-                        hosterName = playingStream?.hosterName,
+                        hosterName = viewModel.resolvingHosterName,
                     ),
                     forceInternal = true,
                 )
@@ -261,7 +260,6 @@ fun AnimeScreen(
             if (connectivityManager.isConnectedToCellular && preferenceHelper.shouldCheckCellular) {
                 noWifiStream = stream
             } else {
-                playingStream = stream
                 viewModel.resolve(stream)
             }
         },
@@ -274,7 +272,6 @@ fun AnimeScreen(
         onConfirmNoWifi = {
             if (noWifiRemember) preferenceHelper.shouldCheckCellular = false
             noWifiStream?.let {
-                playingStream = it
                 viewModel.resolve(it)
             }
             noWifiStream = null

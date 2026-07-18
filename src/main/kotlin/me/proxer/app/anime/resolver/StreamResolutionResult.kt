@@ -57,11 +57,17 @@ sealed class StreamResolutionResult {
                 .putExtra(INTERNAL_PLAYER_ONLY_EXTRA, internalPlayerOnly)
                 .addReferer()
 
+        /**
+         * Copies the template rather than handing it out: [StreamActivity] assigns the returned
+         * intent to itself and [me.proxer.app.anime.stream.StreamPlayerManager] then writes
+         * playback bookkeeping extras onto it, which would otherwise mutate this shared instance
+         * and leak across episodes.
+         */
         fun makeIntent(
             context: Context,
             streamContext: AnimeStreamContext? = null,
             forceInternal: Boolean = false,
-        ): Intent = intent
+        ): Intent = Intent(intent)
             .apply { if (forceInternal) component = ComponentName(context, StreamActivity::class.java) }
             .apply {
                 if (streamContext != null) {

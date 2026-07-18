@@ -117,7 +117,7 @@ class StreamEpisodeViewModelTest : KoinTest {
 
         viewModel.navigateTo(TARGET_EPISODE, preferredHoster = null)
 
-        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video), viewModel.episodeNavigationResult.value)
+        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video, "Proxer"), viewModel.episodeNavigationResult.value)
         assertNull(viewModel.episodeNavigationError.value)
         assertFalse(viewModel.isNavigating.value == true)
     }
@@ -134,7 +134,7 @@ class StreamEpisodeViewModelTest : KoinTest {
         viewModel.navigateTo(TARGET_EPISODE, preferredHoster = "Proxer")
 
         assertEquals(
-            EpisodeNavigationTarget(TARGET_EPISODE, preferredVideo),
+            EpisodeNavigationTarget(TARGET_EPISODE, preferredVideo, "Proxer"),
             viewModel.episodeNavigationResult.value,
         )
     }
@@ -148,7 +148,9 @@ class StreamEpisodeViewModelTest : KoinTest {
 
         viewModel.navigateTo(TARGET_EPISODE, preferredHoster = "Proxer")
 
-        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video), viewModel.episodeNavigationResult.value)
+        // The reported hoster is the one that actually resolved, not the preferred one — the player
+        // carries it into the next navigation so it stops re-trying a hoster that isn't there.
+        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video, "Other"), viewModel.episodeNavigationResult.value)
     }
 
     @Test
@@ -162,7 +164,7 @@ class StreamEpisodeViewModelTest : KoinTest {
 
         viewModel.navigateTo(TARGET_EPISODE, preferredHoster = null)
 
-        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video), viewModel.episodeNavigationResult.value)
+        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video, "Proxer"), viewModel.episodeNavigationResult.value)
     }
 
     @Test
@@ -175,7 +177,7 @@ class StreamEpisodeViewModelTest : KoinTest {
 
         viewModel.navigateTo(TARGET_EPISODE, preferredHoster = null)
 
-        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video), viewModel.episodeNavigationResult.value)
+        assertEquals(EpisodeNavigationTarget(TARGET_EPISODE, video, "Proxer"), viewModel.episodeNavigationResult.value)
     }
 
     @Test

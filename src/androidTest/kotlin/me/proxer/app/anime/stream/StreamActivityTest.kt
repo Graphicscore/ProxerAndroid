@@ -100,7 +100,7 @@ class StreamActivityTest : InstrumentedTestBase() {
         every { storageHelper.getLastAnimePosition("1337", 4, AnimeLanguage.ENGLISH_SUB) } returns 90_000L
 
         withActivity(episode = 3, episodeAmount = 12) { activity ->
-            activity.switchToEpisode(4, video(4))
+            activity.switchToEpisode(4, video(4), "Proxer")
 
             assertEquals(4, activity.episode)
             assertEquals("https://example.org/episode-4.mp4", activity.uri.toString())
@@ -125,7 +125,7 @@ class StreamActivityTest : InstrumentedTestBase() {
             // indistinguishable from the clearOutgoingPosition path.
             assertTrue(outgoingPosition > 0)
 
-            activity.switchToEpisode(4, video(4))
+            activity.switchToEpisode(4, video(4), "Proxer")
 
             verify { storageHelper.putLastAnimePosition("1337", 3, AnimeLanguage.ENGLISH_SUB, outgoingPosition) }
         }
@@ -136,7 +136,7 @@ class StreamActivityTest : InstrumentedTestBase() {
         withActivity(episode = 3, episodeAmount = 12) { activity ->
             activity.playerManager.currentPlayer.seekTo(42_000L)
 
-            activity.switchToEpisode(4, video(4), clearOutgoingPosition = true)
+            activity.switchToEpisode(4, video(4), "Proxer", clearOutgoingPosition = true)
 
             verify { storageHelper.putLastAnimePosition("1337", 3, AnimeLanguage.ENGLISH_SUB, 0) }
         }
