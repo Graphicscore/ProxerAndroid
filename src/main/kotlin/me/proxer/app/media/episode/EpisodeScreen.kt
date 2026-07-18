@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
@@ -46,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -252,6 +255,9 @@ private fun EpisodeItem(episode: EpisodeRow, mediaId: String, mediaName: String?
     }
 }
 
+internal const val HOSTER_ROW_TEST_TAG = "episode_hoster_row"
+internal const val HOSTER_ICON_TEST_TAG = "episode_hoster_icon"
+
 @Composable
 private fun LanguageButton(language: MediaLanguage, hosterImages: List<String>?, onClick: () -> Unit) {
     val context = LocalContext.current
@@ -280,15 +286,27 @@ private fun LanguageButton(language: MediaLanguage, hosterImages: List<String>?,
                     .height(16.dp),
             )
 
-            hosterImages.forEach { hosterImage ->
-                AsyncImage(
-                    model = ProxerUrls.hosterImage(hosterImage).toString(),
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .padding(end = 4.dp)
-                        .size(18.dp),
-                )
+            // The button hugs its content, so a long label plus many hosters can exceed the
+            // FlowRow line width. weight(fill = false) lets this row shrink instead of clipping
+            // the trailing icons, and horizontalScroll makes the overflow reachable.
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f, fill = false)
+                    .horizontalScroll(rememberScrollState())
+                    .testTag(HOSTER_ROW_TEST_TAG),
+            ) {
+                hosterImages.forEach { hosterImage ->
+                    AsyncImage(
+                        model = ProxerUrls.hosterImage(hosterImage).toString(),
+                        contentDescription = hosterImage.substringBeforeLast('.'),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .testTag(HOSTER_ICON_TEST_TAG),
+                    )
+                }
             }
         }
     }

@@ -3,10 +3,14 @@ package me.proxer.app.media.episode
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.lifecycle.MutableLiveData
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -32,16 +36,19 @@ class EpisodeScreenTest {
     private val englishSubLabel get() = context.getString(R.string.language_english_sub)
     private val episodeTitle get() = Category.ANIME.toEpisodeAppString(context, 1)
 
-    private fun episodeRow(vararg languages: MediaLanguage) = EpisodeRow(
+    private fun episodeRow(vararg languages: MediaLanguage) =
+        episodeRowWithHosters(*languages.map { it to emptyList<String>() }.toTypedArray())
+
+    private fun episodeRowWithHosters(vararg entries: Pair<MediaLanguage, List<String>>) = EpisodeRow(
         category = Category.ANIME,
         userProgress = null,
         episodeAmount = 12,
-        episodes = languages.map { language ->
+        episodes = entries.map { (language, hosterImages) ->
             AnimeEpisode(
                 number = 1,
                 language = language,
                 hosters = emptySet(),
-                hosterImages = emptyList(),
+                hosterImages = hosterImages,
             )
         },
     )
@@ -92,5 +99,85 @@ class EpisodeScreenTest {
 
         composeTestRule.onNodeWithText(germanSubLabel).assertIsDisplayed()
         composeTestRule.onNodeWithText(englishSubLabel).assertDoesNotExist()
+    }
+
+    // The hoster assertions below all pass useUnmergedTree = true: OutlinedButton merges its
+    // descendants' semantics, so the tagged icon nodes are invisible in the merged tree.
+
+    @Test fun `one_hoster_icon_is_rendered_per_hoster_image`() {
+        setContent(
+            episodeRowWithHosters(
+                MediaLanguage.GERMAN_SUB to listOf("crunchyroll.jpg", "vidoza.jpg", "streamcloud.jpg"),
+            ),
+        )
+
+        composeTestRule.onNodeWithText(episodeTitle).performClick()
+
+        composeTestRule.onAllNodesWithTag(HOSTER_ICON_TEST_TAG, useUnmergedTree = true).assertCountEquals(3)
+        composeTestRule.onAllNodesWithTag(HOSTER_ROW_TEST_TAG, useUnmergedTree = true).assertCountEquals(1)
+    }
+
+    @Test fun `no_hoster_row_is_rendered_when_there_are_no_hoster_images`() {
+        setContent(episodeRow(MediaLanguage.GERMAN_SUB, MediaLanguage.ENGLISH_SUB))
+
+        composeTestRule.onNodeWithText(episodeTitle).performClick()
+
+        composeTestRule.onAllNodesWithTag(HOSTER_ROW_TEST_TAG, useUnmergedTree = true).assertCountEquals(0)
+        composeTestRule.onAllNodesWithTag(HOSTER_ICON_TEST_TAG, useUnmergedTree = true).assertCountEquals(0)
+    }
+
+    @Test fun `each_language_gets_its_own_hoster_row`() {
+        setContent(
+            episodeRowWithHosters(
+                MediaLanguage.GERMAN_SUB to listOf("crunchyroll.jpg"),
+                MediaLanguage.ENGLISH_SUB to listOf("vidoza.jpg", "streamcloud.jpg"),
+            ),
+        )
+
+        composeTestRule.onNodeWithText(episodeTitle).performClick()
+
+        composeTestRule.onAllNodesWithTag(HOSTER_ROW_TEST_TAG, useUnmergedTree = true).assertCountEquals(2)
+        composeTestRule.onAllNodesWithTag(HOSTER_ICON_TEST_TAG, useUnmergedTree = true).assertCountEquals(3)
+    }
+
+    @Test fun `a_language_without_hosters_gets_no_row_even_when_a_sibling_has_them`() {
+        setContent(
+            episodeRowWithHosters(
+                MediaLanguage.GERMAN_SUB to listOf("crunchyroll.jpg"),
+                MediaLanguage.ENGLISH_SUB to emptyList(),
+            ),
+        )
+
+        composeTestRule.onNodeWithText(episodeTitle).performClick()
+
+        composeTestRule.onAllNodesWithTag(HOSTER_ROW_TEST_TAG, useUnmergedTree = true).assertCountEquals(1)
+        composeTestRule.onAllNodesWithTag(HOSTER_ICON_TEST_TAG, useUnmergedTree = true).assertCountEquals(1)
+    }
+
+    @Test fun `hoster_icons_that_overflow_the_button_stay_reachable_by_scrolling`() {
+        val manyHosters = (1..12).map { "hoster$it.jpg" }
+
+        setContent(episodeRowWithHosters(MediaLanguage.GERMAN_SUB to manyHosters))
+
+        composeTestRule.onNodeWithText(episodeTitle).performClick()
+
+        composeTestRule.onAllNodesWithTag(HOSTER_ICON_TEST_TAG, useUnmergedTree = true).assertCountEquals(12)
+
+        // performScrollTo only succeeds inside a scrollable container, so this fails if the
+        // horizontalScroll modifier is ever dropped and the trailing icons get clipped instead.
+        composeTestRule
+            .onNodeWithContentDescription("hoster12", useUnmergedTree = true)
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test fun `hoster_icons_are_described_by_their_name_without_the_file_extension`() {
+        setContent(episodeRowWithHosters(MediaLanguage.GERMAN_SUB to listOf("crunchyroll.jpg")))
+
+        composeTestRule.onNodeWithText(episodeTitle).performClick()
+
+        composeTestRule
+            .onNodeWithContentDescription("crunchyroll", useUnmergedTree = true)
+            .assertExists()
     }
 }

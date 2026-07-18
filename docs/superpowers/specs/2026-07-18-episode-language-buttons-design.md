@@ -78,8 +78,14 @@ New private composable in `EpisodeScreen.kt`. An `OutlinedButton` laying out, in
 
 - flag `Image` at 16dp, from `language.toGeneralLanguage().toAppDrawableRes()`
 - the label `Text` from `language.toAppString(context)`
-- **only when `hosterImages` is non-null and non-empty:** a `VerticalDivider`, then one
-  `AsyncImage` per hoster at 18dp
+- **only when `hosterImages` is non-null and non-empty:** a `VerticalDivider`, then a
+  horizontally scrollable `Row` holding one `AsyncImage` per hoster at 18dp
+
+The hoster `Row` carries `Modifier.weight(1f, fill = false).horizontalScroll(...)`. The button
+hugs its content, so a long label plus many hosters can exceed the `FlowRow` line width;
+`FlowRow` wraps *between* buttons but cannot wrap *within* one. The weight lets the row shrink
+rather than clip, and the scroll keeps the overflowing icons reachable. This is what the
+pre-Compose `FlexboxLayout` achieved by wrapping.
 
 Hoster images load via Coil from `ProxerUrls.hosterImage(...)` with `ContentScale.Fit`,
 matching the existing call site at `AnimeScreen.kt:606`. Coil is the established Compose
@@ -89,9 +95,18 @@ artifact in this project.
 Manga and novel chapters have no hosters — only `AnimeEpisode` exposes `hosterImages`
 (`EpisodeRow.kt:36`), so chapter rows render plain pills and the divider never appears.
 
-`contentDescription = null` on both image types, matching the convention across every
-non-TV screen: the adjacent label text carries the meaning, and a description would cause a
-duplicate announcement.
+**Accessibility.** The two image types get different treatment, for different reasons:
+
+- **Flag: `contentDescription = null`.** The language label sits inside the same button, so a
+  description would make a screen reader announce "Deutsch, GerSub". Note this is *not* the
+  blanket codebase convention — `MediaListScreen.kt:426-441` describes the identical flag
+  drawable with `stringResource(R.string.language_german)`, and correctly so: there the flag
+  stands alone with no adjacent text. The rule is "describe it when nothing else does", not
+  "always null".
+- **Hoster icons: described.** Which host serves an episode appears nowhere else as text, so
+  leaving these null would drop the information entirely for screen-reader users. `hosterImages`
+  holds image filenames rather than display names, so the description is the filename with its
+  extension stripped (`crunchyroll.jpg` → `crunchyroll`). Lowercase, but informative.
 
 ### 3. Wiring into `EpisodeItem`
 
@@ -135,9 +150,14 @@ here: the dialog is about picking a language to bookmark, not about where to wat
 - `toAppDrawable(context)` still resolves for all three values after being rewritten to
   delegate.
 
-**Instrumented** (`src/androidTest`, manual verification only):
-- `EpisodeScreenTest`: a two-language row renders exactly two language buttons; a
-  one-language row renders exactly one.
+**Instrumented** (`src/androidTest`):
+- `EpisodeScreenTest`: language buttons hidden until expanded; one button per available
+  language; an unavailable language gets none; one hoster icon per hoster image; no hoster row
+  when the list is empty; each language gets its own row; overflowing hoster icons stay
+  reachable via `performScrollTo()`; icons are described by filename minus extension.
+- Hoster assertions pass `useUnmergedTree = true` — `OutlinedButton` merges its descendants'
+  semantics, so tagged child nodes are invisible in the merged tree.
+- Verified 2026-07-18: 9/9 green on `Pixel_10_Pro_XL` (API 37) in ~18s.
 
 Precedent: `TvEpisodeScreenTest.kt`. Compose UI test deps are already declared
 (`androidx.compose.ui:ui-test-junit4`). Per CLAUDE.md these require an **API 31+** emulator
