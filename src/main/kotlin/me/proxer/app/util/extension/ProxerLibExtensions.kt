@@ -140,9 +140,6 @@ fun Language.toAppDrawableRes() = when (this) {
     Language.OTHER -> R.drawable.ic_united_nations
 }
 
-fun Language.toAppDrawable(context: Context) = AppCompatResources.getDrawable(context, toAppDrawableRes())
-    ?: error("Could not resolve Drawable for language: $this")
-
 fun MediaLanguage.toAppString(context: Context): String = context.getString(
     when (this) {
         MediaLanguage.GERMAN -> R.string.language_german

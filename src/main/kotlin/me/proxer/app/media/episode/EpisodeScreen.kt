@@ -233,6 +233,7 @@ private fun EpisodeItem(episode: EpisodeRow, mediaId: String, mediaName: String?
         if (expanded) {
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(top = 8.dp),
             ) {
                 episode.languageHosterList.forEach { (language, hosterImages) ->
