@@ -82,6 +82,7 @@ import me.proxer.app.ui.compose.ProxerTheme
 import me.proxer.app.util.ErrorUtils.ErrorAction
 import me.proxer.app.util.extension.enumSetOf
 import me.proxer.app.util.extension.getQuantityString
+import me.proxer.app.util.extension.toAppDrawableRes
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toGeneralLanguage
 import me.proxer.library.entity.list.MediaListEntry
@@ -425,14 +426,14 @@ private fun MediaCard(entry: MediaListEntry, category: Category, onClick: () -> 
                 val languages = entry.languages.map { it.toGeneralLanguage() }.distinct()
                 if (languages.contains(Language.GERMAN)) {
                     Image(
-                        painter = painterResource(R.drawable.ic_germany),
+                        painter = painterResource(Language.GERMAN.toAppDrawableRes()),
                         contentDescription = stringResource(R.string.language_german),
                         modifier = Modifier.size(16.dp),
                     )
                 }
                 if (languages.contains(Language.ENGLISH)) {
                     Image(
-                        painter = painterResource(R.drawable.ic_united_states),
+                        painter = painterResource(Language.ENGLISH.toAppDrawableRes()),
                         contentDescription = stringResource(R.string.language_english),
                         modifier = Modifier.size(16.dp),
                     )
