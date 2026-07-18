@@ -144,4 +144,27 @@ class StreamActivityTest : InstrumentedTestBase() {
         }
     }
 
+    /**
+     * A swap bumps the content key and rebuilds the whole Compose subtree, while the navigation
+     * observers registered inside it survive that rebuild and keep handling events. Autoplay state
+     * must therefore outlive the subtree: remembering it inside the composition loses the "playback
+     * ended by itself" reading on every swap, so from the second episode onwards autoplay persists
+     * the outgoing position instead of clearing it -- and reopening that episode then seeks to its
+     * end, ends immediately and chain-loads the rest of the series.
+     *
+     * This guards the state's lifetime, not the wiring: it still passes if a future change moves
+     * the composition back onto its own `remember` while leaving these holders in place.
+     */
+    @Test
+    fun autoplayStateSurvivesEpisodeSwap() {
+        withActivity(episode = 3, episodeAmount = 12) { activity ->
+            activity.endedEpisodeState.value = 3
+            activity.autoplaySecondsLeftState.value = 5
+
+            activity.switchToEpisode(4, video(4), "Proxer")
+
+            assertEquals(3, activity.endedEpisodeState.value)
+            assertEquals(5, activity.autoplaySecondsLeftState.value)
+        }
+    }
 }

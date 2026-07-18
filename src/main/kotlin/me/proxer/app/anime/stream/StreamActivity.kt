@@ -143,6 +143,23 @@ class StreamActivity : BaseActivity() {
 
     private var contentKey by mutableIntStateOf(0)
 
+    /**
+     * Autoplay state deliberately lives here rather than in [StreamScreen]'s composition.
+     *
+     * A swap bumps [contentKey], which tears the whole subtree down and builds a fresh one. The
+     * navigation observers in that subtree are registered on a [me.proxer.app.util.data.ResettingMutableLiveData],
+     * whose `removeObserver` does not actually unregister what `observe` registered — so the
+     * disposed composition's handler stays live and is the one that wins delivery. Holding this
+     * state on the activity keeps it shared, so the handler computes the same answer no matter
+     * which composition it belongs to.
+     *
+     * Non-null while a countdown is running; holds the remaining seconds.
+     */
+    internal val autoplaySecondsLeftState = mutableStateOf<Int?>(null)
+
+    /** The episode whose playback already ended, guarding against a second `STATE_ENDED` for it. */
+    internal val endedEpisodeState = mutableStateOf<Int?>(null)
+
     private val mainHandler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {

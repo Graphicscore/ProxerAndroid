@@ -111,10 +111,11 @@ fun StreamScreen(activity: StreamActivity, playerManager: StreamPlayerManager) {
         parametersOf(activity.id, activity.language)
     }
 
-    // Non-null while a countdown is running; holds the remaining seconds.
-    var autoplaySecondsLeft by remember { mutableStateOf<Int?>(null) }
-    // Guards against a second STATE_ENDED for the same episode restarting the countdown.
-    var endedEpisode by remember { mutableStateOf<Int?>(null) }
+    // Deliberately activity-scoped rather than remembered here: an episode swap tears this subtree
+    // down, but the navigation observers below survive it and may run against the disposed
+    // composition. See StreamActivity.autoplaySecondsLeftState for the full reasoning.
+    var autoplaySecondsLeft by activity.autoplaySecondsLeftState
+    var endedEpisode by activity.endedEpisodeState
 
     val isNavigating by episodeViewModel.isNavigating.observeAsState(false)
 
