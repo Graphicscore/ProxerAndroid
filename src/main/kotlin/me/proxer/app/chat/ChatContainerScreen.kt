@@ -16,7 +16,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -31,6 +30,7 @@ import me.proxer.app.chat.prv.conference.ConferenceList
 import me.proxer.app.chat.prv.create.CreateConferenceActivity
 import me.proxer.app.chat.pub.room.ChatRoomList
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +63,7 @@ private fun ChatContainerContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_chat)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {

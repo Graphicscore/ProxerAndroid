@@ -28,7 +28,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +48,7 @@ import me.proxer.app.chat.prv.ConferenceWithMessage
 import me.proxer.app.chat.prv.PrvMessengerActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
 import me.proxer.app.util.extension.toAppString
@@ -74,7 +74,7 @@ fun ConferenceScreen(initialMessage: String? = null, onBack: () -> Unit) {
     Scaffold(
         topBar = {
             if (showSearch) {
-                TopAppBar(
+                ProxerTopAppBar(
                     title = {
                         OutlinedTextField(
                             value = searchQuery,
@@ -93,7 +93,7 @@ fun ConferenceScreen(initialMessage: String? = null, onBack: () -> Unit) {
                     },
                 )
             } else {
-                TopAppBar(
+                ProxerTopAppBar(
                     title = { Text(stringResource(R.string.activity_prv_messenger_send_to)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {

@@ -43,7 +43,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -67,6 +66,7 @@ import me.proxer.app.media.MediaActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.extension.startActivityOrToast
 import me.proxer.app.util.extension.toAppString
 import me.proxer.app.util.extension.toCategory
@@ -140,7 +140,7 @@ private fun TranslatorGroupScreenContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(displayName, maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

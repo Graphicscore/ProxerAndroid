@@ -15,7 +15,6 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,6 +33,7 @@ import me.proxer.app.profile.info.ProfileInfoScreen
 import me.proxer.app.profile.media.ProfileMediaListScreen
 import me.proxer.app.profile.topten.TopTenScreen
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.library.enums.Category
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -112,7 +112,7 @@ private fun ProfileContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(displayName) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {

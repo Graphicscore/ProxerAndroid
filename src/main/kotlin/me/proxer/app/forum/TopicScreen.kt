@@ -31,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +55,7 @@ import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.extension.distanceInWordsToNow
@@ -128,7 +128,7 @@ private fun TopicContent(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = {
                     Text(
                         text = displaySubject ?: "",

@@ -29,7 +29,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +56,7 @@ import me.proxer.app.profile.ProfileActivity
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.util.ErrorUtils
 import me.proxer.app.util.data.StorageHelper
@@ -209,7 +209,7 @@ private fun MessengerContent(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             if (selectedIds.isEmpty()) {
-                TopAppBar(
+                ProxerTopAppBar(
                     title = {
                         TextButton(
                             onClick = {
@@ -230,7 +230,7 @@ private fun MessengerContent(
                             Text(
                                 text = conference.topic,
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.onPrimary,
                             )
                         }
                     },
@@ -241,7 +241,7 @@ private fun MessengerContent(
                     },
                 )
             } else {
-                TopAppBar(
+                ProxerTopAppBar(
                     title = { Text(selectedIds.size.toString()) },
                     navigationIcon = {
                         IconButton(onClick = { selectedIds = emptySet() }) {

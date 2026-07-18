@@ -39,7 +39,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +63,7 @@ import me.proxer.app.R
 import me.proxer.app.ui.compose.ContentScreen
 import me.proxer.app.ui.compose.ObserveLiveDataEvent
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.ui.view.bbcode.BBCodeView
 import me.proxer.app.ui.view.bbcode.toSimpleBBTree
 import me.proxer.app.util.ErrorUtils.ErrorAction
@@ -164,7 +164,7 @@ private fun EditCommentContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = {
                     Column {
                         Text(

@@ -1,7 +1,9 @@
 package me.proxer.app.ui.compose
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
@@ -18,21 +20,48 @@ fun ProxerTheme(content: @Composable () -> Unit) {
     val secondary = Color(context.resolveColor(R.attr.colorSecondary))
     val onSecondary = Color(context.resolveColor(R.attr.colorOnSecondary))
     val background = Color(context.resolveColor(android.R.attr.colorBackground))
+    val onBackground = Color(context.resolveColor(R.attr.colorOnBackground))
     val surface = Color(context.resolveColor(R.attr.colorSurface))
     val onSurface = Color(context.resolveColor(R.attr.colorOnSurface))
     val error = Color(context.resolveColor(R.attr.colorError))
 
-    MaterialTheme(
-        colorScheme = lightColorScheme(
+    // The explicit colors above already resolve correctly in both modes: all three theme variants
+    // define these attributes DayNight-aware across values/styles.xml and values-night/styles.xml.
+    // Picking the *matching* builder is what stops the derived roles Material 3 fills in for us
+    // (surfaceVariant, surfaceContainer, outline, scrim, ...) from taking light-mode values at
+    // night. Both branches therefore receive an identical explicit color set.
+    //
+    // isSystemInDarkTheme() reads Configuration.uiMode, which the app drives via
+    // AppCompatDelegate.setDefaultNightMode from the theme-variant preference
+    // (MainApplication.kt:221, ThemeVariant.kt), so no extra plumbing is needed here.
+    val colorScheme = if (isSystemInDarkTheme()) {
+        darkColorScheme(
             primary = primary,
             onPrimary = onPrimary,
             secondary = secondary,
             onSecondary = onSecondary,
             background = background,
+            onBackground = onBackground,
             surface = surface,
             onSurface = onSurface,
             error = error,
-        ),
+        )
+    } else {
+        lightColorScheme(
+            primary = primary,
+            onPrimary = onPrimary,
+            secondary = secondary,
+            onSecondary = onSecondary,
+            background = background,
+            onBackground = onBackground,
+            surface = surface,
+            onSurface = onSurface,
+            error = error,
+        )
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
         content = content,
     )
 }

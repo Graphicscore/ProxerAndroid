@@ -24,7 +24,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +45,7 @@ import me.proxer.app.notification.NotificationWorker
 import me.proxer.app.profile.settings.ProfileSettingsActivity
 import me.proxer.app.settings.theme.ThemeDialog
 import me.proxer.app.ui.compose.ProxerTheme
+import me.proxer.app.ui.compose.ProxerTopAppBar
 import me.proxer.app.util.data.PreferenceHelper
 import me.proxer.app.util.data.StorageHelper
 import me.proxer.app.util.wrapper.DrawerItem
@@ -393,7 +393,7 @@ private fun SettingsContent(
 ) {
     Scaffold(
         topBar = {
-            TopAppBar(
+            ProxerTopAppBar(
                 title = { Text(stringResource(R.string.section_settings)) },
                 navigationIcon = {
                     IconButton(onClick = onOpenDrawer) {
