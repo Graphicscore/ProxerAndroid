@@ -4,6 +4,7 @@ package me.proxer.app.util.extension
 
 import android.content.Context
 import android.content.res.Resources
+import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
@@ -132,14 +133,12 @@ fun AnimeLanguage.toMediaLanguage() = when (this) {
     AnimeLanguage.OTHER -> MediaLanguage.OTHER
 }
 
-fun Language.toAppDrawable(context: Context) = AppCompatResources.getDrawable(
-    context,
-    when (this) {
-        Language.GERMAN -> R.drawable.ic_germany
-        Language.ENGLISH -> R.drawable.ic_united_states
-        Language.OTHER -> R.drawable.ic_united_nations
-    },
-) ?: error("Could not resolve Drawable for language: $this")
+@DrawableRes
+fun Language.toAppDrawableRes() = when (this) {
+    Language.GERMAN -> R.drawable.ic_germany
+    Language.ENGLISH -> R.drawable.ic_united_states
+    Language.OTHER -> R.drawable.ic_united_nations
+}
 
 fun MediaLanguage.toAppString(context: Context): String = context.getString(
     when (this) {
