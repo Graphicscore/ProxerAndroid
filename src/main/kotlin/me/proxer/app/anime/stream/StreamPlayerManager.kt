@@ -257,18 +257,21 @@ class StreamPlayerManager(context: StreamActivity, rawClient: OkHttpClient, priv
         currentPlayer.playWhenReady = false
 
         wasPlaying = false
-        lastPosition = startPosition
+        // Coerced because an episode that has never been watched has no stored position (-1), and
+        // that value would otherwise reach CastPlayer.seekTo via retry().
+        lastPosition = startPosition.coerceAtLeast(0)
 
         localMediaSource = buildLocalMediaSourceWithAds(client, uri)
         castMediaItem = buildCastMediaItem(name, episode, coverUri, uri)
 
         retry()
 
-        // retry() only seeks for the cast player and play() is not called on this path, so the local
-        // player needs an explicit seek to honor the requested start position.
-        if (startPosition > 0) {
-            currentPlayer.seekTo(startPosition)
-        }
+        // retry() prepares the local player with setMediaSource(source, resetPosition = false), which
+        // keeps the *outgoing* episode's position. play() is not called on this path either, so the
+        // new media must always be seeked explicitly — including to 0. Skipping the seek when the
+        // position is 0 would start a fresh episode at the previous one's runtime, which ends it
+        // instantly and chain-loads the rest of the series.
+        currentPlayer.seekTo(lastPosition)
 
         currentPlayer.playWhenReady = true
     }
