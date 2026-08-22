@@ -67,7 +67,7 @@ ext {
     materialDialogsVersion = "3.3.0"
     flexboxVersion = "3.0.0"
     emojiIosVersion = "9058c30868"
-    media3Version = "1.10.1"
+    media3Version = "1.11.0"
     materialProgressBarVersion = "1.6.1"
     materialRatingBarVersion = "1.4.0"
     customtabsHelperVersion = "1.0.6"
