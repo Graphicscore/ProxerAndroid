@@ -22,7 +22,7 @@ ext {
     kotlinVersion = "2.4.10"
 
     // Utility plugins
-    versionsPluginVersion = "0.54.0"
+    versionsPluginVersion = "0.61.0"
     detektPluginVersion = "2.0.0-alpha.5"
     // Frameworks and compatibility libraries
     koinVersion = "4.2.2"
