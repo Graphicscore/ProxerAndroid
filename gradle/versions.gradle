@@ -56,7 +56,7 @@ ext {
     viewpagerVersion = "1.1.0"
     exifinterfaceVersion = "1.4.2"
     materialComponentsVersion = "1.14.0"
-    constaintLayoutVersion = "2.2.1"
+    constaintLayoutVersion = "2.2.2"
     preferenceVersion = "1.2.1"
     supportPreferenceVersion = "2.3.2"
     iconicsVersion = "5.5.0-compose01"
