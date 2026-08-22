@@ -32,7 +32,7 @@ ext {
     roomVersion = "2.8.4"
     workVersion = "2.11.2"
     coreKtxVersion = "1.19.0"
-    fragmentKtxVersion = "1.8.9"
+    fragmentKtxVersion = "1.9.0"
     shareTargetVersion = "1.2.0"
     securityCryptoVersion = "1.1.0"
     appUpdateVersion = "2.1.0"
