@@ -23,7 +23,7 @@ ext {
 
     // Utility plugins
     versionsPluginVersion = "0.61.0"
-    detektPluginVersion = "2.0.0-alpha.5"
+    detektPluginVersion = "2.0.0-alpha.6"
     // Frameworks and compatibility libraries
     koinVersion = "4.2.2"
     appcompatVersion = "1.7.1"
