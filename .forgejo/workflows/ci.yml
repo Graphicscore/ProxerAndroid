@@ -25,6 +25,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
+          packages: platform-tools
 
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
@@ -70,6 +73,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
+          packages: platform-tools
 
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
@@ -112,6 +118,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
+          packages: platform-tools
 
       - name: Enable KVM
         run: |
@@ -170,6 +179,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
+          packages: platform-tools
 
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
@@ -210,6 +222,9 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
+          packages: platform-tools
 
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
