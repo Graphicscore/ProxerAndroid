@@ -23,6 +23,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
         env:
@@ -65,6 +68,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
         env:
@@ -81,14 +87,15 @@ jobs:
         run: ./gradlew test --no-daemon --max-workers 2
 
       - name: Upload test reports
-        uses: actions/upload-artifact@v7
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
         if: failure()
         with:
           name: UnitTestReports
           path: build/reports/tests
 
   instrumented-tests:
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    # was: if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    if: false  # no KVM on runner host
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -102,6 +109,9 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Enable KVM
         run: |
@@ -136,7 +146,7 @@ jobs:
           script: ./gradlew connectedDebugAndroidTest --no-daemon --max-workers 2
 
       - name: Upload test reports
-        uses: actions/upload-artifact@v7
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
         if: always()
         with:
           name: InstrumentedTestReports
@@ -158,6 +168,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
         env:
@@ -174,7 +187,7 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon --max-workers 1
 
       - name: Upload APK
-        uses: actions/upload-artifact@v7
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
         with:
           name: DebugApk
           path: build/outputs/apk/debug/*.apk
@@ -195,6 +208,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install secrets
         run: .github/workflows/create-secrets.sh
         env:
@@ -205,7 +221,7 @@ jobs:
         run: ./gradlew assembleRelease
 
       - name: Upload APK
-        uses: actions/upload-artifact@v7
+        uses: https://data.forgejo.org/forgejo/upload-artifact@v4
         with:
           name: ReleaseApk
           path: build/outputs/apk/release/*.apk
