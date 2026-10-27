@@ -59,7 +59,7 @@ ext {
     constaintLayoutVersion = "2.2.2"
     preferenceVersion = "1.2.1"
     supportPreferenceVersion = "2.3.2"
-    iconicsVersion = "5.5.0-compose01"
+    iconicsVersion = "5.6.0"
     communityMaterialTypefaceVersion = "7.0.96.2-kotlin"
     aboutLibrariesVersion = "15.0.4"
     materialAboutVersion = "3.2.0-rc01"
