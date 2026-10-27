@@ -1,3 +1,5 @@
+@file:OptIn(okhttp3.internal.OkHttpInternalApi::class)
+
 package me.proxer.app.util
 
 import android.os.Build

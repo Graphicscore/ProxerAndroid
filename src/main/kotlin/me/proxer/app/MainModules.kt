@@ -1,3 +1,4 @@
+@file:OptIn(okhttp3.internal.OkHttpInternalApi::class)
 @file:Suppress("DEPRECATION")
 
 package me.proxer.app
