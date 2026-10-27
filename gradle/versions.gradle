@@ -81,7 +81,7 @@ ext {
     glideVersion = "5.0.9"
     retrofitVersion = "3.0.0"
     okHttpVersion = "5.5.1"
-    okioVersion = "3.18.1"
+    okioVersion = "3.18.2"
     moshiVersion = "1.15.2"
     easyHeaderFooterAdapterVersion = "3.0.0"
     kotterknifeVersion = "2.0"
