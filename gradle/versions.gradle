@@ -29,7 +29,7 @@ ext {
     appcompatVersion = "1.8.0"
     browserVersion = "1.10.0"
     lifecycleVersion = "2.11.0"
-    roomVersion = "2.8.4"
+    roomVersion = "2.8.5"
     workVersion = "2.11.2"
     coreKtxVersion = "1.19.0"
     fragmentKtxVersion = "1.9.1"
