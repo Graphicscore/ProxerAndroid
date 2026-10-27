@@ -30,7 +30,7 @@ ext {
     browserVersion = "1.10.0"
     lifecycleVersion = "2.11.0"
     roomVersion = "2.8.4"
-    workVersion = "2.11.2"
+    workVersion = "2.12.0"
     coreKtxVersion = "1.19.0"
     fragmentKtxVersion = "1.9.1"
     shareTargetVersion = "1.2.0"
