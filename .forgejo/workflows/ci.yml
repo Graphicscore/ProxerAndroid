@@ -24,7 +24,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
           packages: platform-tools
@@ -72,7 +72,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
           packages: platform-tools
@@ -117,7 +117,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
           packages: platform-tools
@@ -178,7 +178,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
           packages: platform-tools
@@ -221,7 +221,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           # default 'tools platform-tools' fails: legacy 'tools' package is gone from current sdkmanager
           packages: platform-tools
